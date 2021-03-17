@@ -52,7 +52,7 @@ file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
 if(OPENGUI_LIB)
-add_library(OpenGUI ${sources} ${headers})
+add_library(OpenGUI ${sources} ${headers} "source/VisualElement.h" "thirdparty/function_ref/function_ref.hpp" "include/Core/PrimitiveDraw.h" "include/Core/Math.h")
 target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
 add_library(OpenGUI SHARED ${sources} ${headers})
