@@ -1,0 +1,2 @@
+add_executable(PrimitiveGenerationTest Generation.cpp Draw.cpp)
+catch_discover_tests(PrimitiveGenerationTest)
