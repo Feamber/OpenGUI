@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <string.h>
 
+uint8_t white_tex[4 * 1024 * 1024];
 WGPUDevice device;
 WGPUQueue queue;
 WGPUSwapChain swapchain;
@@ -200,7 +201,6 @@ static void createPipelineAndBuffers() {
 	wgpuShaderModuleRelease(fragMod);
 	wgpuShaderModuleRelease(vertMod);
 
-	uint8_t white_tex[4 * 1024 * 1024];
 	memset(white_tex, 1, 4 * 1024 * 1024); 
 	BitMap bitmap = {};
 	bitmap.bytes = white_tex;
@@ -257,7 +257,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 		#endif
 		}
 	#ifndef __EMSCRIPTEN__
-		window::destroy(wHnd);
+		//if(wHnd) window::destroy(wHnd);
 	#endif
 	}
 	return 0;
