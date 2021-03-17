@@ -1,4 +1,4 @@
-#include <cinttypes>
+#include <stdint.h>
 
 namespace OGUI
 {

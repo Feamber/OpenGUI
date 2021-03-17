@@ -22,6 +22,10 @@ static char const triangle_vert_wgsl[] = R"(
 static char const triangle_frag_wgsl[] = R"(
 	[[location(0)]] var<in> vCol : vec4<f32>;
 	[[location(0)]] var<out> fragColor : vec4<f32>;
+
+    #[[binding(0), group(0)]] var mySampler : sampler;
+    #[[binding(1), group(0)]] var myTexture : texture_2d<f32>;
+
 	[[stage(fragment)]] fn main() -> void {
 		fragColor = vCol;
 	}
@@ -96,7 +100,7 @@ inline static WGPUTexture createTexture(WGPUDevice device, WGPUQueue queue,
     descriptor.usage = WGPUTextureUsage_Sampled | WGPUTextureUsage_CopyDst;
     descriptor.dimension = WGPUTextureDimension_2D;
     descriptor.size = {bitmap.width, bitmap.height, 1};
-    descriptor.mipLevelCount = 0;
+    descriptor.mipLevelCount = 1;
     descriptor.sampleCount = 1;
     descriptor.format = translate(bitmap.format);
     auto tex = wgpuDeviceCreateTexture(device, &descriptor);
