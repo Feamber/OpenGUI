@@ -13,6 +13,11 @@ using namespace OGUI;
 class OGUIWebGPURenderer : public OGUI::IRenderer
 {
 public:
+	~OGUIWebGPURenderer()
+	{
+		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
+		if(index_buffer) wgpuBufferRelease(index_buffer);
+	}
 	PersistantPrimitiveHandle register_primitive(
 		Vertex* vertices, uint32_t num_vertices,
 		uint16_t* indices, uint32_t num_indices)
@@ -179,30 +184,6 @@ static void createPipelineAndBuffers() {
 	wgpuPipelineLayoutRelease(pipelineLayout);
 	wgpuShaderModuleRelease(fragMod);
 	wgpuShaderModuleRelease(vertMod);
-
-	// create the buffers (x, y, r, g, b, a, u, v)
-	float const vertData[] = {
-		-0.8f, -0.8f,   0.0f, 0.0f, 1.0f, 1.f,   0.f, 0.f, // BL
-		 0.8f, -0.8f,   0.0f, 1.0f, 0.0f, 1.f,   0.f, 0.f,// BR
-		-0.0f,  0.8f,   1.0f, 0.0f, 0.0f, 0.1f,  1.f, 1.f// top
-	};
-	static_assert(3 * sizeof(OGUI::Vertex) == sizeof(vertData), "!");
-	uint16_t const indxData[] = {
-		0, 1, 2,
-		0 // padding (better way of doing this?)
-	};
-
-	/*
-	WGPUBindGroupDescriptor bgDesc = {};
-	bgDesc.layout = bindGroupLayout;
-	bgDesc.entryCount = 1;
-	bgDesc.entries = &bgEntry;
-
-	bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
-
-	// last bit of clean-up
-	wgpuBindGroupLayoutRelease(bindGroupLayout);
-	*/
 }
 
 /**
@@ -218,6 +199,7 @@ static bool redraw() {
 	list.indices = {0u, 1u, 2u, 0u};
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
 	renderer->render_primitives(list);
+	delete renderer;
 	return true;
 }
 
