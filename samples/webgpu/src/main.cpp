@@ -1,7 +1,6 @@
 #include "utils.h"
 #include <string.h>
 
-uint8_t white_tex[4 * 1024 * 1024];
 WGPUDevice device;
 WGPUQueue queue;
 WGPUSwapChain swapchain;
@@ -131,6 +130,7 @@ public:
 /**
  * Bare minimum pipeline to draw a triangle using the above shaders.
  */
+uint8_t white_tex[4 * 1024 * 1024];
 static void createPipelineAndBuffers() {
 	// compile shaders
 	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
@@ -210,7 +210,7 @@ static void createPipelineAndBuffers() {
 	wgpuShaderModuleRelease(fragMod);
 	wgpuShaderModuleRelease(vertMod);
 
-	memset(white_tex, 1, 4 * 1024 * 1024); 
+	memset(white_tex, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); 
 	BitMap bitmap = {};
 	bitmap.bytes = white_tex;
 	bitmap.bytes_size = 4 * 1024 * 1024;
