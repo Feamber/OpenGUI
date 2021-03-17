@@ -1,5 +1,6 @@
 #pragma once
 #include "configure.h"
+#include <vector>
 
 namespace OGUI 
 {
@@ -40,7 +41,7 @@ namespace OGUI
 
     struct BitMap
     {
-        byte_t*     bytes;
+        uint8_t*     bytes;
         uint32_t    bytes_size;
         PixelFormat format;
     };
@@ -61,12 +62,24 @@ namespace OGUI
         uint32_t vertex_offset;
         uint32_t index_offset;
         uint32_t element_count; // number of indices
+        TextureHandle texture;
         void*    p_next;
     };
 
     struct PersistantPrimDraw
     {
         PersistantPrimitiveHandle primitive;
+        TextureHandle texture;
         void*    p_next;
+    };
+
+    struct OGUI_API PrimDrawList : public std::vector<PrimDraw>
+    {
+
+    };
+
+    struct OGUI_API PersistantPrimDrawList : public std::vector<PersistantPrimDraw>
+    {
+
     };
 }
