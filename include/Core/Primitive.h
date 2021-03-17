@@ -16,9 +16,18 @@ namespace OGUI
     {
         T data[Dimension];
     };
-    template<typename T> struct Vector<T, 2> { union { struct { T x, y; }; struct { T r, g; }; struct { T data[2]; }; }; };
-    template<typename T> struct Vector<T, 3> { union { struct { T x, y, z; }; struct { T r, g, b; }; struct { T data[3]; }; }; };
-    template<typename T> struct Vector<T, 4> { union { struct { T x, y, z, w; }; struct { T r, g, b, a; }; struct { T data[4]; }; }; };
+    template<typename T> struct Vector<T, 2> { 
+        Vector(T _0, T _1) {x = _0; y = _1;}
+        union { struct { T x, y; }; struct { T r, g; }; struct { T data[2]; }; }; 
+    };
+    template<typename T> struct Vector<T, 3> { 
+        Vector(T _0, T _1, T _2) {x = _0; y = _1; z = _2;}
+        union { struct { T x, y, z; }; struct { T r, g, b; }; struct { T data[3]; }; };
+    };
+    template<typename T> struct Vector<T, 4> { 
+        Vector(T _0, T _1, T _2, T _3) {x = _0; y = _1; z = _2; w = _3;}
+        union { struct { T x, y, z, w; }; struct { T r, g, b, a; }; struct { T data[4]; }; }; 
+    };
     using Vector2f = Vector<float, 2u>;
     using Vector3f = Vector<float, 3u>;
     using Vector4f = Vector<float, 4u>;
@@ -34,7 +43,7 @@ namespace OGUI
     struct Vertex
     {
         Vector2f position;
-        Color4u  color; 
+        Color4f  color; 
         Vector2f texcoord;
     };
 
@@ -48,7 +57,7 @@ namespace OGUI
 
     struct BitMap
     {
-        uint8_t*     bytes;
+        uint8_t*    bytes;
         uint32_t    bytes_size;
         PixelFormat format;
     };
@@ -78,7 +87,6 @@ namespace OGUI
     using IndexList = std::vector<uint16_t>;
     struct OGUI_API PrimDrawList
     {
-        
         VertexList vertices;
         IndexList  indices;
         std::vector<PrimDraw> command_list;
