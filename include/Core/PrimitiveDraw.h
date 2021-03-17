@@ -1,4 +1,5 @@
-#include "Math.h"
+#pragma once
+#include "Primitive.h"
 
 namespace OGUI
 {

@@ -144,7 +144,7 @@ static void createPipelineAndBuffers() {
 	WGPUBindGroupLayoutDescriptor bglDesc = {};
 	bglDesc.entryCount = 0;
 	bglDesc.entries = nullptr;
-	WGPUBindGroupLayout bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
+	//WGPUBindGroupLayout bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
 	
 	// pipeline layout (used by the render pipeline, released after its creation)
 	WGPUPipelineLayoutDescriptor layoutDesc = {};
