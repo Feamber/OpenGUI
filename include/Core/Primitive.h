@@ -1,6 +1,7 @@
 #pragma once
 #include "configure.h"
 #include <vector>
+#include <algorithm>
 
 namespace OGUI 
 {
@@ -50,8 +51,8 @@ namespace OGUI
     enum PixelFormat
     {
         PF_R8G8B8A8, PF_R16G16B16A16,
-        PF_R8G8B8, PF_R16G16B16,
-        PF_R8, PF_R16, PF_R32,
+        PF_R8G8B8A8_SRGB, 
+        PF_R8Uint, PF_R16Uint, PF_R32Uint,
         PF_Count
     };
 
@@ -59,6 +60,7 @@ namespace OGUI
     {
         uint8_t*    bytes;
         uint32_t    bytes_size;
+        uint32_t    width, height;
         PixelFormat format;
     };
 
@@ -85,8 +87,24 @@ namespace OGUI
 
     using VertexList = std::vector<Vertex>;
     using IndexList = std::vector<uint16_t>;
+    struct BatchedPrimDrawSpan {
+        PrimDraw* start;
+        uint64_t count;
+    };
     struct OGUI_API PrimDrawList
     {
+        inline void validate_and_batch()
+        {
+            auto ic = indices.size();
+            indices.reserve(
+                (ic / 4) * 4 + 4
+            );
+            std::sort(command_list.begin(), command_list.end(),
+                [](const PrimDraw& a, const PrimDraw& b){
+                    return a.texture.value < b.texture.value;
+                });
+        }
+
         VertexList vertices;
         IndexList  indices;
         std::vector<PrimDraw> command_list;

@@ -1,6 +1,6 @@
 #pragma once
 #include "webgpu.h"
-
+#include "Core/Renderer.h"
 
 static char const triangle_vert_wgsl[] = R"(
 	const PI : f32 = 3.141592653589793;
@@ -59,4 +59,60 @@ inline static WGPUBuffer createBuffer(WGPUDevice device, WGPUQueue queue,
 	WGPUBuffer buffer = wgpuDeviceCreateBuffer(device, &desc);
 	wgpuQueueWriteBuffer(queue, buffer, 0, data, size);
 	return buffer;
+}
+
+WGPUTextureFormat translate(OGUI::PixelFormat format)
+{   
+    switch(format)
+    {
+    case OGUI::PixelFormat::PF_R8G8B8A8: return WGPUTextureFormat_RGBA8Unorm;
+    case OGUI::PixelFormat::PF_R16G16B16A16: return WGPUTextureFormat_RGBA16Float;
+    case OGUI::PixelFormat::PF_R8G8B8A8_SRGB: return WGPUTextureFormat_RGBA8UnormSrgb;
+    case OGUI::PixelFormat::PF_R8Uint: return WGPUTextureFormat_R8Uint;
+    case OGUI::PixelFormat::PF_R16Uint: return WGPUTextureFormat_R16Uint;
+    case OGUI::PixelFormat::PF_R32Uint: return WGPUTextureFormat_R32Uint;
+    default: return WGPUTextureFormat_Undefined;
+    }
+}
+
+uint32_t size_in_bytes(OGUI::PixelFormat format)
+{
+    switch(format)
+    {
+    case OGUI::PixelFormat::PF_R8G8B8A8: return 4;
+    case OGUI::PixelFormat::PF_R16G16B16A16: return 8;
+    case OGUI::PixelFormat::PF_R8G8B8A8_SRGB: return 4;
+    case OGUI::PixelFormat::PF_R8Uint: return 1;
+    case OGUI::PixelFormat::PF_R16Uint: return 2;
+    case OGUI::PixelFormat::PF_R32Uint: return 4;
+    default: return -1;
+    }
+}
+
+inline static WGPUTexture createTexture(WGPUDevice device, WGPUQueue queue,
+    const OGUI::BitMap& bitmap)
+{
+    WGPUTextureDescriptor descriptor = {};
+    descriptor.usage = WGPUTextureUsage_Sampled | WGPUTextureUsage_CopyDst;
+    descriptor.dimension = WGPUTextureDimension_2D;
+    descriptor.size = {bitmap.width, bitmap.height, 1};
+    descriptor.mipLevelCount = 0;
+    descriptor.sampleCount = 1;
+    descriptor.format = translate(bitmap.format);
+    auto tex = wgpuDeviceCreateTexture(device, &descriptor);
+
+    WGPUTextureCopyView cpyView = {};
+    cpyView.texture = tex;
+    cpyView.mipLevel = 0;
+    cpyView.origin = { 0, 0, 0 };
+    cpyView.aspect = WGPUTextureAspect_All;
+
+    WGPUTextureDataLayout dtLayout = {};
+    dtLayout.offset = 0;
+    dtLayout.bytesPerRow = bitmap.width * size_in_bytes(bitmap.format);
+    dtLayout.rowsPerImage = bitmap.height;
+
+    WGPUExtent3D writeSize = descriptor.size;
+    wgpuQueueWriteTexture(queue, &cpyView, bitmap.bytes, bitmap.bytes_size, &dtLayout, &writeSize);
+    return tex;
 }

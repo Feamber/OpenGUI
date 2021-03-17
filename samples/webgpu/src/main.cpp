@@ -1,6 +1,5 @@
 #include "utils.h"
 #include <string.h>
-#include "Core/Renderer.h"
 
 WGPUDevice device;
 WGPUQueue queue;
@@ -8,12 +7,13 @@ WGPUSwapChain swapchain;
 
 WGPURenderPipeline pipeline;
 WGPUBindGroup bindGroup;
+WGPUTexture texture;
 
 using namespace OGUI;
 class OGUIWebGPURenderer : public OGUI::IRenderer
 {
 public:
-	~OGUIWebGPURenderer()
+	virtual ~OGUIWebGPURenderer()
 	{
 		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
 		if(index_buffer) wgpuBufferRelease(index_buffer);
@@ -32,24 +32,22 @@ public:
 
 	void render_primitives(const PrimDrawList& list)
 	{
+		if(list.command_list.size() <= 0) return;
 		// upload buffer
 		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
 		if(index_buffer) wgpuBufferRelease(index_buffer);
-	
+
 		vertex_buffer = createBuffer(device, queue,
 			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
 		index_buffer = createBuffer(device, queue,
-			list.indices.data(), list.indices.size() * sizeof(uint16_t), WGPUBufferUsage_Index);
+			list.indices.data(), list.indices.capacity() * sizeof(uint16_t), WGPUBufferUsage_Index);
 
 		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
 		WGPURenderPassColorAttachmentDescriptor colorDesc = {};
 		colorDesc.attachment = backBufView;
 		colorDesc.loadOp  = WGPULoadOp_Clear;
 		colorDesc.storeOp = WGPUStoreOp_Store;
-		colorDesc.clearColor.r = 0.3f;
-		colorDesc.clearColor.g = 0.3f;
-		colorDesc.clearColor.b = 0.3f;
-		colorDesc.clearColor.a = 1.0f;
+		colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
 		WGPURenderPassDescriptor renderPass = {};
 		renderPass.colorAttachmentCount = 1;
 		renderPass.colorAttachments = &colorDesc;
@@ -58,12 +56,27 @@ public:
 		// draw the triangle (comment these five lines to simply clear the screen)
 		wgpuRenderPassEncoderSetPipeline(pass, pipeline);
 
+		int last_index = -1;
+		for(auto& cmd : list.command_list)
+		{
+			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
+			if(last_cmd.texture.value != cmd.texture.value || last_index < 0)
+			{
+				// update texture binding
 
+			}
+			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
+				cmd.vertex_offset * sizeof(Vertex),
+				0
+			);
+			wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
+				cmd.index_offset * sizeof(uint16_t),
+				0
+			);
+			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
+			last_index++;
+		}
 		//wgpuRenderPassEncoderSetBindGroup(pass, 0, bindGroup, 0, 0);
-		wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer, 0, 0);
-		wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16, 0, 0);
-		wgpuRenderPassEncoderDrawIndexed(pass, 3, 1, 0, 0, 0);
-
 
 		wgpuRenderPassEncoderEndPass(pass);
 		wgpuRenderPassEncoderRelease(pass);														// release pass
@@ -78,7 +91,7 @@ public:
 		*/
 		wgpuSwapChainPresent(swapchain);
 	#endif
-		wgpuTextureViewRelease(backBufView);													// release textureView
+		wgpuTextureViewRelease(backBufView);													
 
 	}
 
@@ -87,14 +100,16 @@ public:
 		
 	}
 
-	TextureHandle register_texture(const BitMap&)
+	TextureHandle register_texture(const BitMap& bitmap)
 	{
-		return nullptr;
+		ITexture* t = (ITexture*)createTexture(device, queue, bitmap);
+		return t;
 	}
 
-	void release_texture(TextureHandle)
+	void release_texture(TextureHandle h)
 	{
-
+		WGPUTexture t = (WGPUTexture)h.value;
+		wgpuTextureRelease(t);
 	}
 
 	void set_scissor(const Scissor scissor)
@@ -118,18 +133,18 @@ static void createPipelineAndBuffers() {
 	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
 	WGPUShaderModule vertMod = createShader(device, triangle_vert_wgsl);
 	WGPUShaderModule fragMod = createShader(device, triangle_frag_wgsl);
-	/*
+	
 	// bind group layout (used by both the pipeline layout and uniform bind group, released at the end of this function)
 	WGPUBindGroupLayoutEntry bglEntry = {};
 	bglEntry.binding = 0;
-	bglEntry.visibility = WGPUShaderStage_Vertex;
-	bglEntry.type = WGPUBindingType_UniformBuffer;
+	bglEntry.visibility = WGPUShaderStage_Fragment;
+	bglEntry.type = WGPUBindingType_SampledTexture;
 
 	WGPUBindGroupLayoutDescriptor bglDesc = {};
-	bglDesc.entryCount = 1;
-	bglDesc.entries = &bglEntry;
+	bglDesc.entryCount = 0;
+	bglDesc.entries = nullptr;
 	WGPUBindGroupLayout bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
-	*/
+	
 	// pipeline layout (used by the render pipeline, released after its creation)
 	WGPUPipelineLayoutDescriptor layoutDesc = {};
 	layoutDesc.bindGroupLayoutCount = 0;
@@ -184,6 +199,15 @@ static void createPipelineAndBuffers() {
 	wgpuPipelineLayoutRelease(pipelineLayout);
 	wgpuShaderModuleRelease(fragMod);
 	wgpuShaderModuleRelease(vertMod);
+
+	uint8_t white_tex[4 * 1024 * 1024];
+	memset(white_tex, 1, 4 * 1024 * 1024); 
+	BitMap bitmap = {};
+	bitmap.bytes = white_tex;
+	bitmap.bytes_size = 4 * 1024 * 1024;
+	bitmap.width = 1024; bitmap.height = 1024;
+	bitmap.format = PF_R8G8B8A8;
+	//texture = createTexture(device, queue, bitmap);
 }
 
 /**
@@ -192,11 +216,22 @@ static void createPipelineAndBuffers() {
 static bool redraw() {
 	PrimDrawList list;
 	list.vertices = {
-		Vertex{Vector2f(-0.8f, -0.8f), Color4f(0.0f, 0.0f, 1.0f, 1.f), Vector2f(0.f, 0.f)},
-		Vertex{Vector2f(+0.8f, -0.8f), Color4f(0.0f, 1.0f, 0.0f, 1.f), Vector2f(0.f, 0.f)},
-		Vertex{Vector2f(-0.0f, +0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(1.f, 1.f)}
+		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.0f, 0.0f, 1.0f, 1.f), Vector2f(1.f, 1.f)}, //-1 /*offset test*/
+		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.0f, 0.0f, 1.0f, 1.f), Vector2f(1.f, 1.f)}, //0
+		Vertex{Vector2f(-0.8f, +0.8f), Color4f(0.0f, 1.0f, 0.0f, 1.f), Vector2f(0.f, 1.f)}, //1
+		Vertex{Vector2f(+0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(1.f, 0.f)},//2
+		Vertex{Vector2f(-0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(0.f, 0.f)},//3
+		//The final two vertices are used for the triangle optimization (a single triangle spans the entire viewport )
+		Vertex{Vector2f(-0.8f, +0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(-1.f, 0.f)},//4
+		Vertex{Vector2f(+0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(1.f, -1.f)},//5
 	};
-	list.indices = {0u, 1u, 2u, 0u};
+	list.indices = {0u/*offset test*/, 0u, 1u, 2u, 2u, 1u, 3u, 0u, 4u, 5u};
+	list.command_list = {
+		PrimDraw{1u, 1u, 9u, nullptr, nullptr}
+	};
+	list.validate_and_batch();
+
+		
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
 	renderer->render_primitives(list);
 	delete renderer;
