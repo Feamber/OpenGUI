@@ -216,16 +216,13 @@ static void createPipelineAndBuffers() {
 static bool redraw() {
 	PrimDrawList list;
 	list.vertices = {
-		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.0f, 0.0f, 1.0f, 1.f), Vector2f(1.f, 1.f)}, //-1 /*offset test*/
-		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.0f, 0.0f, 1.0f, 1.f), Vector2f(1.f, 1.f)}, //0
-		Vertex{Vector2f(-0.8f, +0.8f), Color4f(0.0f, 1.0f, 0.0f, 1.f), Vector2f(0.f, 1.f)}, //1
-		Vertex{Vector2f(+0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(1.f, 0.f)},//2
-		Vertex{Vector2f(-0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(0.f, 0.f)},//3
-		//The final two vertices are used for the triangle optimization (a single triangle spans the entire viewport )
-		Vertex{Vector2f(-0.8f, +0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(-1.f, 0.f)},//4
-		Vertex{Vector2f(+0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(1.f, -1.f)},//5
+		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 1.f)}, //-1 /*offset test*/
+		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 1.f)}, //0
+		Vertex{Vector2f(-0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(0.f, 1.f)}, //1
+		Vertex{Vector2f(+0.8f, -0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 0.f)},//2
+		Vertex{Vector2f(-0.8f, -0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(0.f, 0.f)},//3
 	};
-	list.indices = {0u/*offset test*/, 0u, 1u, 2u, 2u, 1u, 3u, 0u, 4u, 5u};
+	list.indices = {0u/*offset test*/, 0u, 1u, 2u, 2u, 1u, 3u};
 	list.command_list = {
 		PrimDraw{1u, 1u, 9u, nullptr, nullptr}
 	};
@@ -257,7 +254,9 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 		#endif
 		}
 	#ifndef __EMSCRIPTEN__
-		//if(wHnd) window::destroy(wHnd);
+	#ifdef __APPLE__
+		if(wHnd) window::destroy(wHnd);
+	#endif
 	#endif
 	}
 	return 0;
