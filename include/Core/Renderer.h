@@ -4,20 +4,15 @@
 
 namespace OGUI 
 {
-    struct OGUI_API IRenderer 
+    struct IRenderer 
     {
         virtual PersistantPrimitiveHandle register_primitive(
             Vertex* vertices, uint32_t num_vertices,
-            uint32_t* indices, uint32_t num_indices) = 0;
+            uint16_t* indices, uint32_t num_indices) = 0;
         virtual void release_primitive(PersistantPrimitiveHandle primitive) = 0;
 
-        virtual void render_primitive(
-            Vertex* vertices, uint32_t num_vertices,
-            uint32_t* indices, uint32_t num_indices,
-            TextureHandle texture, const Vector2f& translation) = 0;
-        virtual void render_primitive(
-            PersistantPrimitiveHandle primitive,
-            TextureHandle texture, const Vector2f& translation) = 0;
+        virtual void render_primitives(const PrimDrawList&) = 0;
+        virtual void render_primitives(const PersistantPrimDrawList&) = 0;
 
         virtual TextureHandle register_texture(const BitMap&) = 0;
         virtual void release_texture(TextureHandle) = 0;

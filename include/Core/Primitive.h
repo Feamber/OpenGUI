@@ -4,6 +4,13 @@
 
 namespace OGUI 
 {
+    template<typename T>
+    struct Handle 
+    {
+        inline Handle(T* v) : value(v) {}
+        T* value;
+    };
+
     template<typename T, uint32_t Dimension>
     struct Vector
     {
@@ -48,12 +55,6 @@ namespace OGUI
 
     struct ITexture {};
     struct IPersistantPrimitive {};
-
-    template<typename T>
-    struct Handle 
-    {
-        uintptr_t value;
-    };
     using TextureHandle = Handle<ITexture>;
     using PersistantPrimitiveHandle = Handle<IPersistantPrimitive>;
 
@@ -73,13 +74,19 @@ namespace OGUI
         void*    p_next;
     };
 
-    struct OGUI_API PrimDrawList : public std::vector<PrimDraw>
+    using VertexList = std::vector<Vertex>;
+    using IndexList = std::vector<uint16_t>;
+    struct OGUI_API PrimDrawList
     {
-
+        
+        VertexList vertices;
+        IndexList  indices;
+        std::vector<PrimDraw> command_list;
     };
 
-    struct OGUI_API PersistantPrimDrawList : public std::vector<PersistantPrimDraw>
+    struct OGUI_API PersistantPrimDrawList 
     {
 
+        std::vector<PersistantPrimDraw> command_list;
     };
 }

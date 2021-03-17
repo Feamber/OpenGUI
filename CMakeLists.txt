@@ -50,7 +50,13 @@ option(OPENGUI_SAMPLES "Build Test Targets." ON)
 
 file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
+
+if(OPENGUI_LIB)
 add_library(OpenGUI ${sources} ${headers})
+target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
+else()
+add_library(OpenGUI SHARED ${sources} ${headers})
+endif(OPENGUI_LIB)
 
 target_include_directories(OpenGUI PUBLIC include)
 
