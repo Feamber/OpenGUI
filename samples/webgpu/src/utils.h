@@ -3,10 +3,6 @@
 #include "Core/Renderer.h"
 
 static char const triangle_vert_wgsl[] = R"(
-	const PI : f32 = 3.141592653589793;
-	fn radians(degs : f32) -> f32 {
-		return (degs * PI) / 180.0;
-	}
 	[[location(0)]] var<in>  aPos : vec2<f32>;
 	[[location(1)]] var<in>  aCol : vec4<f32>;
 	[[location(2)]] var<in>  aUV  : vec2<f32>;
@@ -26,11 +22,13 @@ static char const triangle_frag_wgsl[] = R"(
 	[[location(1)]] var<in> vUV : vec2<f32>;
 	[[location(0)]] var<out> fragColor : vec4<f32>;
 
-    [[binding(0), group(0)]] var<uniform_constant> myTexture : texture_2d<f32>;
-    [[binding(1), group(0)]] var<uniform_constant> mySampler : sampler;
+    [[binding(0), set(0)]] var<uniform_constant> myTexture : texture_2d<f32>;
+    [[binding(1), set(0)]] var<uniform_constant> mySampler : sampler;
 
 	[[stage(fragment)]] fn main() -> void {
+        var alpha : f32 = vCol.a; 
 		fragColor = vCol * textureSample(myTexture, mySampler, vUV);
+        fragColor.a = alpha;
     }
 )";
 

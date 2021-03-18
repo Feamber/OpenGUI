@@ -210,7 +210,8 @@ static void createPipelineAndBuffers() {
 	wgpuShaderModuleRelease(fragMod);
 	wgpuShaderModuleRelease(vertMod);
 
-	memset(white_tex, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); 
+	memset(white_tex, 0, 4 * 1024 * 1024 * sizeof(uint8_t)); 
+	memset(white_tex, 255, 2 * 1024 * 1024 * sizeof(uint8_t)); 
 	BitMap bitmap = {};
 	bitmap.bytes = white_tex;
 	bitmap.bytes_size = 4 * 1024 * 1024;
