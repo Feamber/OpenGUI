@@ -14,7 +14,7 @@ namespace OGUI
 			Rect rect;
 			Rect uv;
 			Color4f color;
-			ITexture texture;
+			ITexture* texture;
 			//Radius
 			//SVG
 			//Material

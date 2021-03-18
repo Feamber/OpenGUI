@@ -40,6 +40,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OPENGUI_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<
 link_directories(${OPENGUI_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:Release>$<$<CONFIG:MinSizeRel>:Release>)
 
 project(OpenGUI)
+add_subdirectory(thirdparty)
 include(Download) 
 set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 
@@ -52,14 +53,14 @@ file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
 if(OPENGUI_LIB)
-add_library(OpenGUI ${sources} ${headers} "source/VisualElement.h" "thirdparty/function_ref/function_ref.hpp" "include/Core/PrimitiveDraw.h" "include/Core/Math.h" "source/VisualElement.cpp")
+add_library(OpenGUI ${sources} ${headers} "thirdparty/function_ref/function_ref.hpp")
 target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
 add_library(OpenGUI SHARED ${sources} ${headers})
 endif(OPENGUI_LIB)
 
 target_include_directories(OpenGUI PUBLIC include)
-
+target_link_libraries(OpenGUI PRIVATE Yoga)
 link_libraries(OpenGUI)
 if(OPENGUI_SAMPLES)
     add_subdirectory(samples)
