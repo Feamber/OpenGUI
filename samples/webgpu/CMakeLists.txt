@@ -40,6 +40,19 @@ elseif (WIN32)
 	file(GLOB_RECURSE platform_sources src/win/*)
 elseif (APPLE)
 	file(GLOB_RECURSE platform_sources src/mac/*)
+	link_libraries(
+		libdawn_platform.dylib 
+		libdawn_proc.dylib 
+		libdawn_native.dylib
+	)
+	set(CMAKE_EXE_LINKER_FLAGS 
+		"${CMAKE_EXE_LINKER_FLAGS} \
+		-framework Foundation \ 
+		-framework AppKit \
+		-framework CoreVideo \
+		-framework QuartzCore \
+		"
+	)
 endif()
 
 add_executable(WebgpuSample ${sources} ${platform_sources} ${headers})

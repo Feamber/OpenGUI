@@ -77,10 +77,11 @@ namespace OGUI
             indices.reserve(
                 (ic / 4) * 4 + 4
             );
-            std::sort(command_list.begin(), command_list.end(),
-                [](const PrimDraw& a, const PrimDraw& b){
-                    return a.texture.value < b.texture.value;
-                });
+            // batch not implemented now.
+            //std::sort(command_list.begin(), command_list.end(),
+            //    [](const PrimDraw& a, const PrimDraw& b){
+            //        return a.texture.value < b.texture.value;
+            //    });
         }
 
         VertexList vertices;

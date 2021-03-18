@@ -1,7 +1,6 @@
 #include "utils.h"
 #include <string.h>
 
-uint8_t white_tex[4 * 1024 * 1024];
 WGPUDevice device;
 WGPUQueue queue;
 WGPUSwapChain swapchain;
@@ -9,6 +8,8 @@ WGPUSwapChain swapchain;
 WGPURenderPipeline pipeline;
 WGPUBindGroup bindGroup;
 WGPUTexture texture;
+WGPUTextureView texture_view;
+WGPUSampler sampler;
 
 using namespace OGUI;
 class OGUIWebGPURenderer : public OGUI::IRenderer
@@ -66,6 +67,7 @@ public:
 				// update texture binding
 
 			}
+			wgpuRenderPassEncoderSetBindGroup(pass, 0, bindGroup, 0, 0);
 			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
 				cmd.vertex_offset * sizeof(Vertex),
 				0
@@ -77,7 +79,6 @@ public:
 			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
 			last_index++;
 		}
-		//wgpuRenderPassEncoderSetBindGroup(pass, 0, bindGroup, 0, 0);
 
 		wgpuRenderPassEncoderEndPass(pass);
 		wgpuRenderPassEncoderRelease(pass);														// release pass
@@ -129,6 +130,7 @@ public:
 /**
  * Bare minimum pipeline to draw a triangle using the above shaders.
  */
+uint8_t white_tex[4 * 1024 * 1024];
 static void createPipelineAndBuffers() {
 	// compile shaders
 	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
@@ -136,20 +138,27 @@ static void createPipelineAndBuffers() {
 	WGPUShaderModule fragMod = createShader(device, triangle_frag_wgsl);
 	
 	// bind group layout (used by both the pipeline layout and uniform bind group, released at the end of this function)
-	WGPUBindGroupLayoutEntry bglEntry = {};
-	bglEntry.binding = 0;
-	bglEntry.visibility = WGPUShaderStage_Fragment;
-	bglEntry.type = WGPUBindingType_SampledTexture;
+	WGPUBindGroupLayoutEntry bglEntry[2] = {{}, {}};
+	bglEntry[0].binding = 0;
+	bglEntry[0].visibility = WGPUShaderStage_Fragment;
+	bglEntry[0].type = WGPUBindingType_Undefined;
+	bglEntry[0].texture.sampleType = WGPUTextureSampleType_Float;
+	bglEntry[0].texture.viewDimension = WGPUTextureViewDimension_2D;
+	bglEntry[0].texture.multisampled = false;
+	bglEntry[1].binding = 1;
+	bglEntry[1].visibility = WGPUShaderStage_Fragment;
+	bglEntry[1].type = WGPUBindingType_Undefined;
+	bglEntry[1].sampler.type = WGPUSamplerBindingType_Filtering;
 
 	WGPUBindGroupLayoutDescriptor bglDesc = {};
-	bglDesc.entryCount = 0;
-	bglDesc.entries = nullptr;
+	bglDesc.entryCount = 2;
+	bglDesc.entries = bglEntry;
 	WGPUBindGroupLayout bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
 	
 	// pipeline layout (used by the render pipeline, released after its creation)
 	WGPUPipelineLayoutDescriptor layoutDesc = {};
-	layoutDesc.bindGroupLayoutCount = 0;
-	layoutDesc.bindGroupLayouts = nullptr;
+	layoutDesc.bindGroupLayoutCount = 1;
+	layoutDesc.bindGroupLayouts = &bindGroupLayout;
 	WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(device, &layoutDesc);
 	
 	// begin pipeline set-up
@@ -201,13 +210,50 @@ static void createPipelineAndBuffers() {
 	wgpuShaderModuleRelease(fragMod);
 	wgpuShaderModuleRelease(vertMod);
 
-	memset(white_tex, 1, 4 * 1024 * 1024); 
+	memset(white_tex, 0, 4 * 1024 * 1024 * sizeof(uint8_t)); 
+	memset(white_tex, 255, 2 * 1024 * 1024 * sizeof(uint8_t)); 
 	BitMap bitmap = {};
 	bitmap.bytes = white_tex;
 	bitmap.bytes_size = 4 * 1024 * 1024;
 	bitmap.width = 1024; bitmap.height = 1024;
 	bitmap.format = PF_R8G8B8A8;
-	//texture = createTexture(device, queue, bitmap);
+	texture = createTexture(device, queue, bitmap);
+
+	WGPUTextureViewDescriptor viewDesc = {};
+	viewDesc.format = WGPUTextureFormat_RGBA8Unorm;
+	viewDesc.dimension = WGPUTextureViewDimension_2D;
+	viewDesc.baseMipLevel = 0;
+	viewDesc.mipLevelCount = 1;
+	viewDesc.baseArrayLayer = 0;
+	viewDesc.arrayLayerCount = 1;
+	viewDesc.aspect = WGPUTextureAspect_All;
+	texture_view = wgpuTextureCreateView(texture, &viewDesc);
+
+	WGPUSamplerDescriptor sampDesc = {};
+	sampDesc.addressModeU = WGPUAddressMode_ClampToEdge;
+	sampDesc.addressModeV = WGPUAddressMode_ClampToEdge;
+	sampDesc.addressModeW = WGPUAddressMode_ClampToEdge;
+	sampDesc.magFilter = WGPUFilterMode_Nearest;
+	sampDesc.minFilter = WGPUFilterMode_Nearest;
+	sampDesc.mipmapFilter = WGPUFilterMode_Nearest;
+	sampDesc.lodMinClamp = 0;
+	sampDesc.lodMaxClamp = 1000.f;
+	sampDesc.maxAnisotropy = 1.f;
+	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
+
+	WGPUBindGroupEntry bgEntry[2] = {{}, {}};
+	bgEntry[0].binding = 0;
+	bgEntry[0].textureView = texture_view;
+	bgEntry[1].binding = 1;
+	bgEntry[1].sampler = sampler;
+	WGPUBindGroupDescriptor bgDesc = {};
+	bgDesc.layout = bindGroupLayout;
+	bgDesc.entryCount = 2;
+	bgDesc.entries = bgEntry;
+	bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
+
+	// last bit of clean-up
+	wgpuBindGroupLayoutRelease(bindGroupLayout);
 }
 
 /**
@@ -216,16 +262,13 @@ static void createPipelineAndBuffers() {
 static bool redraw() {
 	PrimDrawList list;
 	list.vertices = {
-		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.0f, 0.0f, 1.0f, 1.f), Vector2f(1.f, 1.f)}, //-1 /*offset test*/
-		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.0f, 0.0f, 1.0f, 1.f), Vector2f(1.f, 1.f)}, //0
-		Vertex{Vector2f(-0.8f, +0.8f), Color4f(0.0f, 1.0f, 0.0f, 1.f), Vector2f(0.f, 1.f)}, //1
-		Vertex{Vector2f(+0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(1.f, 0.f)},//2
-		Vertex{Vector2f(-0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(0.f, 0.f)},//3
-		//The final two vertices are used for the triangle optimization (a single triangle spans the entire viewport )
-		Vertex{Vector2f(-0.8f, +0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(-1.f, 0.f)},//4
-		Vertex{Vector2f(+0.8f, -0.8f), Color4f(1.0f, 0.0f, 0.0f, 0.1f), Vector2f(1.f, -1.f)},//5
+		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 1.f)}, //-1 /*offset test*/
+		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 1.f)}, //0
+		Vertex{Vector2f(-0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(0.f, 1.f)}, //1
+		Vertex{Vector2f(+0.8f, -0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 0.f)},//2
+		Vertex{Vector2f(-0.8f, -0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(0.f, 0.f)},//3
 	};
-	list.indices = {0u/*offset test*/, 0u, 1u, 2u, 2u, 1u, 3u, 0u, 4u, 5u};
+	list.indices = {0u/*offset test*/, 0u, 1u, 2u, 2u, 1u, 3u};
 	list.command_list = {
 		PrimDraw{1u, 1u, 9u, nullptr, nullptr}
 	};
@@ -249,7 +292,9 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			window::loop(wHnd, redraw);
 
 		#ifndef __EMSCRIPTEN__
-			//wgpuBindGroupRelease(bindGroup);
+			wgpuSamplerRelease(sampler);
+			wgpuTextureViewRelease(texture_view);
+			wgpuBindGroupRelease(bindGroup);
 			wgpuRenderPipelineRelease(pipeline);
 			wgpuSwapChainRelease(swapchain);
 			wgpuQueueRelease(queue);
@@ -257,7 +302,9 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 		#endif
 		}
 	#ifndef __EMSCRIPTEN__
-		//if(wHnd) window::destroy(wHnd);
+	#ifdef __APPLE__
+		if(wHnd) window::destroy(wHnd);
+	#endif
 	#endif
 	}
 	return 0;

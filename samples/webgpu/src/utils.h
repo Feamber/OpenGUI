@@ -3,28 +3,33 @@
 #include "Core/Renderer.h"
 
 static char const triangle_vert_wgsl[] = R"(
-	const PI : f32 = 3.141592653589793;
-	fn radians(degs : f32) -> f32 {
-		return (degs * PI) / 180.0;
-	}
 	[[location(0)]] var<in>  aPos : vec2<f32>;
 	[[location(1)]] var<in>  aCol : vec4<f32>;
 	[[location(2)]] var<in>  aUV  : vec2<f32>;
 	[[location(0)]] var<out> vCol : vec4<f32>;
+	[[location(1)]] var<out> vUV : vec2<f32>;
 	[[builtin(position)]] var<out> Position : vec4<f32>;
 	[[stage(vertex)]] fn main() -> void {
 		Position = vec4<f32>(vec3<f32>(aPos, 1.0), 1.0);
 		vCol = aCol;
+        vUV = aUV;
 	}
 )";
 
 
 static char const triangle_frag_wgsl[] = R"(
 	[[location(0)]] var<in> vCol : vec4<f32>;
+	[[location(1)]] var<in> vUV : vec2<f32>;
 	[[location(0)]] var<out> fragColor : vec4<f32>;
+
+    [[binding(0), set(0)]] var<uniform_constant> myTexture : texture_2d<f32>;
+    [[binding(1), set(0)]] var<uniform_constant> mySampler : sampler;
+
 	[[stage(fragment)]] fn main() -> void {
-		fragColor = vCol;
-	}
+        var alpha : f32 = vCol.a; 
+		fragColor = vCol * textureSample(myTexture, mySampler, vUV);
+        fragColor.a = alpha;
+    }
 )";
 
 
@@ -96,7 +101,7 @@ inline static WGPUTexture createTexture(WGPUDevice device, WGPUQueue queue,
     descriptor.usage = WGPUTextureUsage_Sampled | WGPUTextureUsage_CopyDst;
     descriptor.dimension = WGPUTextureDimension_2D;
     descriptor.size = {bitmap.width, bitmap.height, 1};
-    descriptor.mipLevelCount = 0;
+    descriptor.mipLevelCount = 1;
     descriptor.sampleCount = 1;
     descriptor.format = translate(bitmap.format);
     auto tex = wgpuDeviceCreateTexture(device, &descriptor);
