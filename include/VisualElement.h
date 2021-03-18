@@ -2,6 +2,7 @@
 #include <vector>
 #include "Core/Math.h"
 #include "yoga/Yoga.h"
+#include "../thirdparty/function_ref/function_ref.hpp"
 namespace OGUI
 {
 	namespace PrimitiveDraw
@@ -14,6 +15,7 @@ namespace OGUI
 	class VisualElement
 	{
 	public:
+		virtual ~VisualElement();
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
 		Rect GetLayout();
@@ -22,6 +24,7 @@ namespace OGUI
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void ApplyClipping(PrimitiveDraw::DrawContext& Ctx);
+		void CreateYogaNode();
 		std::vector<VisualElement*> _children;
 		VisualElement* _physical_parent;
 		//There could be some node between logical parent and this widget for layout
@@ -32,5 +35,10 @@ namespace OGUI
 		Vector3f _scale;
 		Matrix4x4f _worldTransform;
 		//Rect _layout;
+
+		YGNodeRef _ygnode;
+
+
+		bool _hasInlineStyle;
 	};
 }

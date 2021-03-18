@@ -10,6 +10,21 @@ void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
 void OGUI::VisualElement::ApplyClipping(PrimitiveDraw::DrawContext & Ctx)
 {}
 
+void OGUI::VisualElement::CreateYogaNode()
+{
+	auto config = YGConfigGetDefault();
+	_ygnode = YGNodeNewWithConfig(config);
+	YGNodeSetContext(_ygnode, this);
+}
+
+OGUI::VisualElement::~VisualElement()
+{
+	if (_ygnode)
+	{
+		YGNodeFree(_ygnode);
+	}
+}
+
 void OGUI::VisualElement::DrawPrimitive(PrimitiveDraw::DrawContext& Ctx)
 {
 	DrawBackgroundPrimitive(Ctx);
