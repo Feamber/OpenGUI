@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "configure.h"
+#include "OpenGUI/Configure.h"
 
 namespace OGUI
 {

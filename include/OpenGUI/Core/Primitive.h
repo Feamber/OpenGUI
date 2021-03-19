@@ -1,6 +1,6 @@
 #pragma once
-#include "configure.h"
-#include "Core/Math.h"
+#include "OpenGUI/Configure.h"
+#include "OpenGUI/Core/Math.h"
 #include <vector>
 #include <algorithm>
 

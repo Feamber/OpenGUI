@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Core/Math.h"
+#include "OpenGUI/Core/Math.h"
 #include "yoga/Yoga.h"
 #include "../thirdparty/function_ref/function_ref.hpp"
 #include "xercesc/dom/DOM.hpp"

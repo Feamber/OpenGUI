@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Math/Quaternion.h"
+#include "OpenGUI/Core/Math/Quaternion.h"
 #include "OGUIDXMathVector.h"
 
 #pragma warning( push )

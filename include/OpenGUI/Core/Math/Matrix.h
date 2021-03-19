@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Containers/span.hpp"
+#include "OpenGUI/Core/Containers/span.hpp"
 
 namespace OGUI
 {

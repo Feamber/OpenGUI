@@ -1,6 +1,6 @@
 #pragma once
 #include "webgpu.h"
-#include "Core/Renderer.h"
+#include "OpenGUI/Core/Renderer.h"
 
 static char const triangle_vert_wgsl[] = R"(
 	[[location(0)]] var<in>  aPos : vec2<f32>;

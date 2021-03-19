@@ -3,7 +3,7 @@
 #include <tuple>
 #include <string>
 #include "boost/hana.hpp"
-#include "Core/Math.h"
+#include "OpenGUI/Core/Math.h"
 #include "VariantStorage.h"
 
 namespace OGUI

@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "Core/Containers/span.hpp"
-#include "Core/Containers/array.hpp"
+#include "OpenGUI/Core/Containers/span.hpp"
+#include "OpenGUI/Core/Containers/array.hpp"
 
 namespace OGUI
 {
@@ -144,7 +144,8 @@ namespace OGUI
         FORCEINLINE bool is_zero() const;
         FORCEINLINE bool is_nearly_zero(T tolerence = SMALL_NUMBER) const;
         FORCEINLINE bool is_normalized() const;
-    protected:
+
+
 		union
 		{
 			struct 
@@ -259,7 +260,8 @@ namespace OGUI
         FORCEINLINE bool is_zero() const;
         FORCEINLINE bool is_nearly_zero(T tolerence = SMALL_NUMBER) const;
         FORCEINLINE bool is_normalized() const;
-    protected:
+
+
 		union
 		{
 			struct 
@@ -367,7 +369,7 @@ namespace OGUI
         FORCEINLINE bool is_nearly_zero(float tolerence = SMALL_NUMBER) const;
         FORCEINLINE bool is_normalized() const;
 
-    protected:
+
     	union
     	{
             struct alignas(16)

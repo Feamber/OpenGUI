@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Quaternion.h"
-#include "Core/Math/VectorMath.h"
+#include "OpenGUI/Core/Math/VectorMath.h"
 
 namespace OGUI
 {

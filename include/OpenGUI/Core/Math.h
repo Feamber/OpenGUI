@@ -1,13 +1,13 @@
 #pragma once
-#include "Core/Math/Fixed.h"
-#include "Core/Math/Matrix.h"
-#include "Core/Math/Quaternion.h"
-#include "Core/Math/Vector.h"
-#include "Core/Math/Transform.h"
+#include "OpenGUI/Core/Math/Fixed.h"
+#include "OpenGUI/Core/Math/Matrix.h"
+#include "OpenGUI/Core/Math/Quaternion.h"
+#include "OpenGUI/Core/Math/Vector.h"
+#include "OpenGUI/Core/Math/Transform.h"
 #ifdef OGUI_USE_DXMATH
-#include "Core/Math/DirectXMath/OGUIDXMathVector.h"
-#include "Core/Math/DirectXMath/OGUIDXMathQuaternion.h"
-#include "Core/Math/DirectXMath/OGUIDXMathTransform.h"
+#include "OpenGUI/Core/Math/DirectXMath/OGUIDXMathVector.h"
+#include "OpenGUI/Core/Math/DirectXMath/OGUIDXMathQuaternion.h"
+#include "OpenGUI/Core/Math/DirectXMath/OGUIDXMathTransform.h"
 #endif
 
 namespace OGUI::math

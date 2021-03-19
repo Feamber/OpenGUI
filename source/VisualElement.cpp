@@ -1,5 +1,5 @@
-#include "VisualElement.h"
-#include "Core/PrimitiveDraw.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Core/PrimitiveDraw.h"
 
 void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx)
 {}
