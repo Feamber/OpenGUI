@@ -1,4 +1,5 @@
 #pragma once
+#include "assert.h"
 
 #ifdef __cplusplus 
 #define BEGIN_EXTERN_C extern "C" {
@@ -16,6 +17,10 @@
 #ifndef OGUI_NULLPTR
 #define OGUI_NULLPTR NULL
 #endif
+#endif
+
+#if defined(_WIN32) || defined(_WIN64) || defined(UNIX)
+#define OGUI_USE_DXMATH
 #endif
 
 #ifndef OGUI_MANUAL_CONFIG_CPU_ARCHITECTURE
@@ -206,4 +211,271 @@
 #else
 #define OGUI_ZERO_LEN_ARRAY 1
 #endif
+#endif
+
+
+
+// error/fatal
+#define OGUI_ERROR(node,...) printf_s(node, __VA_ARGS__)
+#define OGUI_FATAL(node,...) printf_s(node, __VA_ARGS__)
+
+#if defined(__MINGW32__)
+# define OGUI_ISSUE_BREAK() DebugBreak();
+#elif defined(_MSC_VER)
+# define OGUI_ISSUE_BREAK() __debugbreak();
+#elif defined(__powerpc64__)
+# define OGUI_ISSUE_BREAK() asm volatile ("tw 31,1,1");
+#elif defined(__i386__) || defined(__ia64__) || defined(__x86_64__)
+# define OGUI_ISSUE_BREAK() asm("int $3");
+#else
+# define OGUI_ISSUE_BREAK() abort();
+#endif
+#ifndef NDEBUG
+#ifndef OGUI_ASSERT_ENABLED
+#define OGUI_ASSERT_ENABLED
+#endif
+#endif
+
+#ifdef OGUI_ASSERT_ENABLED
+#define OGUI_BREAK() \
+  do { \
+    OGUI_FATAL("BREAKPOINT HIT\n\tfile = %s\n\tline=%d\n", __FILE__, __LINE__); \
+    OGUI_ISSUE_BREAK() \
+  } while (false)
+
+#define OGUI_ASSERT(cond) \
+  do { \
+    if (!(cond)) { \
+      OGUI_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n", __FILE__, __LINE__, #cond); \
+      OGUI_ISSUE_BREAK() \
+    } \
+  } while (false)
+
+#define OGUI_ASSERT_MSG(cond, ...) \
+  do { \
+    if (!(cond)) { \
+	  OGUI_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n\tmessage = ", __FILE__, __LINE__, #cond); \
+      OGUI_FATAL(__VA_ARGS__); \
+      OGUI_FATAL("\n"); \
+      OGUI_ISSUE_BREAK(); \
+    } \
+  } while (false)
+
+#define OGUI_ASSERT_CMD(cond, cmd) \
+  do { \
+    if (!(cond)) { \
+      cmd; \
+    } \
+  } while (false)
+
+
+#else
+#define OGUI_BREAK()
+#define OGUI_ASSERT(cond)
+#define OGUI_ASSERT_MSG(cond, ...)
+#define OGUI_ASSERT_CMD(cond, cmd)
+#endif
+
+#ifndef FORCEINLINE
+    #ifdef _MSC_VER
+        #define FORCEINLINE __forceinline
+    #else
+        #define FORCEINLINE inline
+    #endif
+#endif
+
+#ifndef restrict
+    #define RESTRICT __restrict
+#endif
+
+extern "C"
+{
+    typedef unsigned int uint;
+    typedef unsigned char uchar;
+    typedef char char8_t;
+    typedef uint8_t uint8;
+    typedef uint16_t uint16;
+    typedef uint32_t uint32;
+    typedef uint64_t uint64;
+    typedef int8_t int8;
+    typedef int16_t int16;
+    typedef int32_t int32;
+    typedef int64_t int64;
+    typedef uchar byte;
+
+    typedef struct pos2d
+    {
+        uint32 x = 0;
+        uint32 y = 0;
+    } pos2d;
+    typedef struct pos3d
+    {
+        uint32 x;
+        uint32 y;
+        uint32 z;
+    } pos3d;
+    typedef struct extent2d
+    {
+        uint32 width = 0;
+        uint32 height = 0;
+    } extent2d;
+    typedef struct extent3d
+    {
+        uint32 width = 0;
+        uint32 height = 0;
+        uint32 depth = 0;
+    } extent3d;
+    typedef struct double4
+    {
+        union
+        {
+            struct { double r, g, b, a; }; //rgba view
+            struct { double x, y, z, w; }; //xyzw view
+        };
+    } double4;
+    typedef struct buffer
+    {
+        byte* data;
+        uint64_t length;
+    } buffer;
+    typedef struct buffer_view
+    { 
+        byte* data;
+        uint64_t length;
+    } buffer_view;
+}
+
+#include <stdint.h>
+
+#ifndef MAX_UINT8
+#define MAX_UINT8  ((uint8)  ~((uint8) 0))
+#endif
+#ifndef MAX_UINT16
+#define MAX_UINT16 ((uint16) ~((uint16)0))
+#endif
+#ifndef MAX_UINT32
+#define MAX_UINT32 ((uint32) ~((uint32)0))
+#endif
+#ifndef MAX_UINT64
+#define MAX_UINT64 ((uint64) ~((uint64)0))
+#endif
+#ifndef MAX_INT8
+#define MAX_INT8   ((int8)  (MAX_UINT8  >> 1))
+#endif
+#ifndef MAX_INT16
+#define MAX_INT16  ((int16) (MAX_UINT16 >> 1))
+#endif
+#ifndef MAX_INT32
+#define MAX_INT32  ((int32) (MAX_UINT32 >> 1))
+#endif
+#ifndef MAX_INT64
+#define MAX_INT64  ((int64) (MAX_UINT64 >> 1))
+#endif
+#ifndef MIN_INT8
+#define MIN_INT8   ((int8)  ~MAX_INT8)
+#endif
+#ifndef MIN_INT16
+#define MIN_INT16  ((int16) ~MAX_INT16)
+#endif
+#ifndef MIN_INT32
+#define MIN_INT32  ((int32) ~MAX_INT32)
+#endif
+#ifndef MIN_INT64
+#define MIN_INT64  ((int64) ~MAX_INT64)
+#endif
+
+#define OGUI_MAX(a, b) ((a) > (b) ? (a) : (b))
+
+
+
+#ifdef __cplusplus
+#include <cstddef>
+
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
+#ifdef _MSC_VER
+    #pragma warning(disable:4251)//template dll interface
+    #pragma warning(disable:5030)//unknown-attributes
+    #pragma warning(disable:26812)//enum -> enum class
+
+    #pragma warning(disable: 4244)
+    #pragma warning(disable: 4267)
+#endif
+
+namespace OGUI
+{
+    typedef unsigned int uint;
+    typedef unsigned char uchar;
+
+    using char8_t = char;
+
+    using uint8 = uint8_t;
+    using uint8_t = uint8_t;
+    using uint16 = uint16_t;
+    using uint16_t = uint16_t;
+    using uint32 = uint32_t;
+    using uint32_t = uint32_t;
+    using uint64 = uint64_t;
+    using uint64_t = uint64_t;
+    using int8 = int8_t;
+    using int8_t = int8_t;
+    using int16 = int16_t;
+    using int16_t = int16_t;
+    using int32 = int32_t;
+    using int32_t = int32_t;
+    using int64 = int64_t;
+    using int64_t = int64_t;
+    using size_t = std::size_t;
+    using float32 = float;
+    using float32_t = float;
+    using float64 = double;
+    using float64_t = double;
+    using nullptr_t = std::nullptr_t;
+    using pos2d = ::pos2d;
+    using pos3d = ::pos3d;
+    using extent2d = ::extent2d;
+    using extent3d = ::extent3d;
+
+	struct double4 : public ::double4
+	{
+        double4(double _x = 0, double _y = 0, double _z = 0, double _w = 0)
+        {
+            x = _x;
+            y = _y;
+            z = _z;
+            w = _w;
+        }
+		constexpr double operator[](int index) const
+		{
+			switch (index)
+			{
+				case 0: return r;
+				case 1: return g;
+				case 2: return b;
+				case 3: return a;
+                default: return a;
+			}
+		}
+	};
+
+#define KINDA_SMALL_NUMBER	(1.e-4)
+#define SMALL_NUMBER		(1.e-8)
+#define THRESH_VECTOR_NORMALIZED 0.01
+}
+
+template<typename To, typename From>
+FORCEINLINE To force_cast(From f) 
+{
+    return (To)f;
+}
+
+#define ogui_constexpr constexpr
+#define ogui_noexcept noexcept
+
+
 #endif
