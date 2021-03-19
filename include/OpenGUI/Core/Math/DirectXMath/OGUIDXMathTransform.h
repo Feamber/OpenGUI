@@ -2,7 +2,11 @@
 #include "OGUIDXMathVector.h"
 #include "OGUIDXMathQuaternion.h"
 
-namespace OGUI::math::__matrix
+namespace OGUI
+{
+namespace math
+{
+namespace __matrix
 {
 	using MatrixRegister = DirectX::XMMATRIX;
 
@@ -97,4 +101,6 @@ namespace OGUI::math::__matrix
 			ViewWidth, ViewHeight, NearZ, FarZ
 		);
 	}
+}
+}
 }

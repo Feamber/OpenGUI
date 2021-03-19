@@ -1,5 +1,4 @@
 #pragma once
-#include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/Math.h"
 #include <vector>
 #include <algorithm>

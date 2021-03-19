@@ -26,7 +26,9 @@ namespace OGUI
 		{
 
 		};
-		OGUI_API void DrawBox(DrawContext& context, const BoxParams& params);
-		OGUI_API void DrawSphere(DrawContext& context, const SphereParams& params);	
+
+		// Call from DrawList.
+		OGUI_API void DrawBox(PrimDrawList& context, const BoxParams& params);
+		OGUI_API void DrawSphere(PrimDrawList& context, const SphereParams& params);	
 	}
 }

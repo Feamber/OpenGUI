@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <string.h>
+#include <vector>
 
 WGPUDevice device;
 WGPUQueue queue;
@@ -7,9 +8,10 @@ WGPUSwapChain swapchain;
 
 WGPURenderPipeline pipeline;
 WGPUBindGroup bindGroup;
+WGPUSampler sampler;
+std::vector<WGPU_OGUI_Texture> ogui_textures;
 WGPUTexture texture;
 WGPUTextureView texture_view;
-WGPUSampler sampler;
 
 using namespace OGUI;
 class OGUIWebGPURenderer : public OGUI::IRenderer
@@ -104,8 +106,9 @@ public:
 
 	TextureHandle register_texture(const BitMap& bitmap)
 	{
-		ITexture* t = (ITexture*)createTexture(device, queue, bitmap);
-		return t;
+		//ITexture* t = (ITexture*)createTexture(device, queue, bitmap);
+		//return t;
+		return nullptr;
 	}
 
 	void release_texture(TextureHandle h)

@@ -8,7 +8,11 @@
 #pragma warning( pop )
 #include <DirectXPackedVector.h>
 
-namespace OGUI::math::__quaternion
+namespace OGUI
+{
+namespace math
+{
+namespace __quaternion
 {
     using namespace OGUI::math;
     using MatrixRegister = DirectX::XMMATRIX;
@@ -42,4 +46,6 @@ namespace OGUI::math::__quaternion
 		return Q;
 	}
 
+}
+}
 }

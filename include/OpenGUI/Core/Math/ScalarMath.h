@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include <cmath>
 
-namespace OGUI::math
+namespace OGUI
+{
+namespace math
 {
 	FORCEINLINE float squire(const float v) noexcept
 	{
@@ -196,4 +198,5 @@ namespace OGUI::math
 		const float Result = X - IntPortion;
 		return Result;
 	}
+}
 }

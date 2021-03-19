@@ -6,7 +6,11 @@
 #pragma warning( pop )
 #include <DirectXPackedVector.h>
 
-namespace OGUI::math::__vector
+namespace OGUI
+{
+namespace math
+{
+namespace __vector
 {
     using VectorRegister = DirectX::XMVECTOR;
     using VectorRegisterInt = __m128i;
@@ -440,4 +444,6 @@ namespace OGUI::math::__vector
     {
         return DirectX::XMVectorMod(X, Y);
     }
+}
+}
 }

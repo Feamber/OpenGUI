@@ -121,3 +121,9 @@ inline static WGPUTexture createTexture(WGPUDevice device, WGPUQueue queue,
     wgpuQueueWriteTexture(queue, &cpyView, bitmap.bytes, bitmap.bytes_size, &dtLayout, &writeSize);
     return tex;
 }
+
+struct WGPU_OGUI_Texture
+{
+    WGPUTexture texture;
+    WGPUTextureView texture_view;
+};

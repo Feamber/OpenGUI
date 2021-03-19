@@ -287,6 +287,7 @@
 #ifndef restrict
     #define RESTRICT __restrict
 #endif
+#include <stdint.h>
 
 extern "C"
 {
@@ -345,7 +346,6 @@ extern "C"
     } buffer_view;
 }
 
-#include <stdint.h>
 
 #ifndef MAX_UINT8
 #define MAX_UINT8  ((uint8)  ~((uint8) 0))

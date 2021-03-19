@@ -10,10 +10,11 @@
 #include "OpenGUI/Core/Math/DirectXMath/OGUIDXMathTransform.h"
 #endif
 
-namespace OGUI::math
+namespace OGUI
+{
+namespace math
 {
 	// Implementations
-
 	FORCEINLINE float4x4 make_transform
 	(
 		const Vector3f translation,
@@ -156,4 +157,5 @@ namespace OGUI::math
 		__vector::store_aligned(res.data_view(), __quaternion::quaternion_from_axis(__vector::load_float3_w0(axis.data_view()), angle));
 		return res;
 	}
+}
 }

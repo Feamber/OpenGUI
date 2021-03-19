@@ -5,7 +5,9 @@
 
 #endif
 
-namespace OGUI::math
+namespace OGUI
+{
+namespace math
 {
 	template<typename T, size_t Dimension>
 	FORCEINLINE Vector<T, Dimension> normalize(const Vector<T, Dimension>& vec, const T tolerance = SMALL_NUMBER)
@@ -59,4 +61,5 @@ namespace OGUI::math
 	{
 		return length(subtract(a, b));
 	}
+}
 }
