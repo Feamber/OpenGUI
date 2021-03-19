@@ -2,6 +2,7 @@
 #include "webgpu.h"
 #include "OpenGUI/Core/Renderer.h"
 
+// 0 ~ 1 => -1 ~ 1
 static char const triangle_vert_wgsl[] = R"(
 	[[location(0)]] var<in>  aPos : vec2<f32>;
 	[[location(1)]] var<in>  aUV  : vec2<f32>;
@@ -10,7 +11,7 @@ static char const triangle_vert_wgsl[] = R"(
 	[[location(1)]] var<out> vUV : vec2<f32>;
 	[[builtin(position)]] var<out> Position : vec4<f32>;
 	[[stage(vertex)]] fn main() -> void {
-		Position = vec4<f32>(vec3<f32>(aPos, 1.0), 1.0);
+		Position = vec4<f32>(vec3<f32>((aPos * 2.0) - vec2<f32>(1.0, 1.0), 1.0), 1.0);
 		vCol = aCol;
         vUV = aUV;
 	}
@@ -94,9 +95,26 @@ uint32_t size_in_bytes(OGUI::PixelFormat format)
     }
 }
 
-inline static WGPUTexture createTexture(WGPUDevice device, WGPUQueue queue,
+struct WGPU_OGUI_Texture : public OGUI::ITexture
+{
+    WGPUTexture texture;
+    WGPUTextureView texture_view;
+	WGPUBindGroup bind_group;
+
+    inline void Release()
+    {
+        wgpuTextureRelease(texture);
+		wgpuTextureViewRelease(texture_view);
+		if(bind_group) 
+            wgpuBindGroupRelease(bind_group);
+    }
+};
+
+inline static WGPU_OGUI_Texture* createTexture(WGPUDevice device, WGPUQueue queue,
     const OGUI::BitMap& bitmap)
 {
+    WGPU_OGUI_Texture* result = new WGPU_OGUI_Texture();
+
     WGPUTextureDescriptor descriptor = {};
     descriptor.usage = WGPUTextureUsage_Sampled | WGPUTextureUsage_CopyDst;
     descriptor.dimension = WGPUTextureDimension_2D;
@@ -105,6 +123,7 @@ inline static WGPUTexture createTexture(WGPUDevice device, WGPUQueue queue,
     descriptor.sampleCount = 1;
     descriptor.format = translate(bitmap.format);
     auto tex = wgpuDeviceCreateTexture(device, &descriptor);
+    result->texture = tex;
 
     WGPUTextureCopyView cpyView = {};
     cpyView.texture = tex;
@@ -119,11 +138,17 @@ inline static WGPUTexture createTexture(WGPUDevice device, WGPUQueue queue,
 
     WGPUExtent3D writeSize = descriptor.size;
     wgpuQueueWriteTexture(queue, &cpyView, bitmap.bytes, bitmap.bytes_size, &dtLayout, &writeSize);
-    return tex;
+
+	WGPUTextureViewDescriptor viewDesc = {};
+	viewDesc.format = WGPUTextureFormat_RGBA8Unorm;
+	viewDesc.dimension = WGPUTextureViewDimension_2D;
+	viewDesc.baseMipLevel = 0;
+	viewDesc.mipLevelCount = 1;
+	viewDesc.baseArrayLayer = 0;
+	viewDesc.arrayLayerCount = 1;
+	viewDesc.aspect = WGPUTextureAspect_All;
+	result->texture_view = wgpuTextureCreateView(tex, &viewDesc);
+
+    return result;
 }
 
-struct WGPU_OGUI_Texture
-{
-    WGPUTexture texture;
-    WGPUTextureView texture_view;
-};

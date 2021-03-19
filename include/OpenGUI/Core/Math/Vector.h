@@ -158,8 +158,8 @@ namespace OGUI
     using Vector2f = Vector<float, 2u>;
     struct Rect
     {
-        Vector2f Min;
-        Vector2f Max;
+        Vector2f min;
+        Vector2f max;
     };
 
     // Vector3

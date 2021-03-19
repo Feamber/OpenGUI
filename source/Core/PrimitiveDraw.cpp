@@ -3,8 +3,34 @@
 
 namespace OGUI
 {
-    void PrimitiveDraw::DrawBox(PrimDrawList& context, const BoxParams& params)
+    void PrimitiveDraw::DrawBox(PrimDrawList& list, const BoxParams& params)
     {
+        const uint32_t vcount = list.vertices.size();
+        const uint32_t icount = list.indices.size();
         
+        const Vector2f RU = params.rect.max; 
+        const Vector2f RUUV = params.uv.max;
+        const Vector2f RB = Vector2f(params.rect.max.X, params.rect.min.Y);
+        const Vector2f RBUV = Vector2f(params.uv.max.X, params.uv.min.Y);
+        const Vector2f LU = Vector2f(params.rect.min.X, params.rect.max.Y);
+        const Vector2f LUUV = Vector2f(params.uv.min.X, params.uv.max.Y);
+        const Vector2f LB = params.rect.min;
+        const Vector2f LBUV = params.uv.min;
+
+        list.vertices.emplace_back(Vertex{RU, RUUV, params.color}); // vcount + 0
+        list.vertices.emplace_back(Vertex{LU, LUUV, params.color}); // vcount + 1
+        list.vertices.emplace_back(Vertex{RB, RBUV, params.color}); // vcount + 2
+        list.vertices.emplace_back(Vertex{LB, LBUV, params.color}); // vcount + 3
+
+        list.indices.emplace_back(0u);
+        list.indices.emplace_back(1u);
+        list.indices.emplace_back(2u);
+        list.indices.emplace_back(2u);
+        list.indices.emplace_back(1u);
+        list.indices.emplace_back(3u);
+
+        list.command_list.emplace_back(
+            PrimDraw{vcount, icount, 6u, params.texture, nullptr}
+        );
     }
 }

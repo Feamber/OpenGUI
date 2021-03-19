@@ -1,19 +1,19 @@
 #include "utils.h"
 #include <string.h>
-#include <vector>
+#include <unordered_map>
 
 WGPUDevice device;
 WGPUQueue queue;
 WGPUSwapChain swapchain;
-
 WGPURenderPipeline pipeline;
-WGPUBindGroup bindGroup;
+WGPUBindGroupLayout bindGroupLayout;
 WGPUSampler sampler;
-std::vector<WGPU_OGUI_Texture> ogui_textures;
-WGPUTexture texture;
-WGPUTextureView texture_view;
+uint8_t white_tex[4 * 1024 * 1024];
+WGPU_OGUI_Texture* default_ogui_texture;
 
 using namespace OGUI;
+std::unordered_map<ITexture*, WGPU_OGUI_Texture> ogui_textures;
+
 class OGUIWebGPURenderer : public OGUI::IRenderer
 {
 public:
@@ -38,8 +38,10 @@ public:
 	{
 		if(list.command_list.size() <= 0) return;
 		// upload buffer
-		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
-		if(index_buffer) wgpuBufferRelease(index_buffer);
+		if(vertex_buffer) 
+			wgpuBufferRelease(vertex_buffer);
+		if(index_buffer) 
+			wgpuBufferRelease(index_buffer);
 
 		vertex_buffer = createBuffer(device, queue,
 			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
@@ -66,10 +68,26 @@ public:
 			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
 			if(last_cmd.texture.value != cmd.texture.value || last_index < 0)
 			{
-				// update texture binding
-
+				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)last_cmd.texture.value;
+				if(!texture)
+					texture = default_ogui_texture;
+				if(!texture->bind_group)
+				{
+					// update texture binding
+					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
+					bgEntry[0].binding = 0;
+					bgEntry[0].textureView 
+						= texture->texture? texture->texture_view : default_ogui_texture->texture_view;
+					bgEntry[1].binding = 1;
+					bgEntry[1].sampler = sampler;
+					WGPUBindGroupDescriptor bgDesc = {};
+					bgDesc.layout = bindGroupLayout;
+					bgDesc.entryCount = 2;
+					bgDesc.entries = bgEntry;
+					texture->bind_group = wgpuDeviceCreateBindGroup(device, &bgDesc);
+				}
+				wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 			}
-			wgpuRenderPassEncoderSetBindGroup(pass, 0, bindGroup, 0, 0);
 			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
 				cmd.vertex_offset * sizeof(Vertex),
 				0
@@ -96,7 +114,6 @@ public:
 		wgpuSwapChainPresent(swapchain);
 	#endif
 		wgpuTextureViewRelease(backBufView);													
-
 	}
 
 	void render_primitives(const PersistantPrimDrawList&)
@@ -106,15 +123,16 @@ public:
 
 	TextureHandle register_texture(const BitMap& bitmap)
 	{
-		//ITexture* t = (ITexture*)createTexture(device, queue, bitmap);
-		//return t;
-		return nullptr;
+		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
+		ogui_textures[t] = *t;
+		return t;
 	}
 
 	void release_texture(TextureHandle h)
 	{
-		WGPUTexture t = (WGPUTexture)h.value;
-		wgpuTextureRelease(t);
+		if(h.value)
+			ogui_textures.erase(h.value);
+		ogui_textures[h.value].Release();
 	}
 
 	void set_scissor(const Scissor scissor)
@@ -133,7 +151,7 @@ public:
 /**
  * Bare minimum pipeline to draw a triangle using the above shaders.
  */
-uint8_t white_tex[4 * 1024 * 1024];
+
 static void createPipelineAndBuffers() {
 	// compile shaders
 	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
@@ -156,7 +174,7 @@ static void createPipelineAndBuffers() {
 	WGPUBindGroupLayoutDescriptor bglDesc = {};
 	bglDesc.entryCount = 2;
 	bglDesc.entries = bglEntry;
-	WGPUBindGroupLayout bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
+	bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
 	
 	// pipeline layout (used by the render pipeline, released after its creation)
 	WGPUPipelineLayoutDescriptor layoutDesc = {};
@@ -221,17 +239,9 @@ static void createPipelineAndBuffers() {
 	bitmap.bytes_size = 4 * 1024 * 1024;
 	bitmap.width = 1024; bitmap.height = 1024;
 	bitmap.format = PF_R8G8B8A8;
-	texture = createTexture(device, queue, bitmap);
-
-	WGPUTextureViewDescriptor viewDesc = {};
-	viewDesc.format = WGPUTextureFormat_RGBA8Unorm;
-	viewDesc.dimension = WGPUTextureViewDimension_2D;
-	viewDesc.baseMipLevel = 0;
-	viewDesc.mipLevelCount = 1;
-	viewDesc.baseArrayLayer = 0;
-	viewDesc.arrayLayerCount = 1;
-	viewDesc.aspect = WGPUTextureAspect_All;
-	texture_view = wgpuTextureCreateView(texture, &viewDesc);
+	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
+	ogui_textures[t] = *t;
+	default_ogui_texture = t;
 
 	WGPUSamplerDescriptor sampDesc = {};
 	sampDesc.addressModeU = WGPUAddressMode_ClampToEdge;
@@ -244,44 +254,30 @@ static void createPipelineAndBuffers() {
 	sampDesc.lodMaxClamp = 1000.f;
 	sampDesc.maxAnisotropy = 1.f;
 	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
-
-	WGPUBindGroupEntry bgEntry[2] = {{}, {}};
-	bgEntry[0].binding = 0;
-	bgEntry[0].textureView = texture_view;
-	bgEntry[1].binding = 1;
-	bgEntry[1].sampler = sampler;
-	WGPUBindGroupDescriptor bgDesc = {};
-	bgDesc.layout = bindGroupLayout;
-	bgDesc.entryCount = 2;
-	bgDesc.entries = bgEntry;
-	bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
-
-	// last bit of clean-up
-	wgpuBindGroupLayoutRelease(bindGroupLayout);
 }
 
+#include "OpenGUI/Core/PrimitiveDraw.h"
 /**
  * Draws using the above pipeline and buffers.
  */
 static bool redraw() {
 	PrimDrawList list;
-	list.vertices = {
-		Vertex{Vector2f(+0.8f, +0.8f), Vector2f(1.f, 1.f), Color4f(0.2f, 0.2f, 0.2f, .8f)}, //-1 /*offset test*/
-		Vertex{Vector2f(+0.8f, +0.8f), Vector2f(1.f, 1.f), Color4f(0.2f, 0.2f, 0.2f, .8f)}, //0
-		Vertex{Vector2f(-0.8f, +0.8f), Vector2f(0.f, 1.f), Color4f(0.2f, 0.2f, 0.2f, .8f)}, //1
-		Vertex{Vector2f(+0.8f, -0.8f), Vector2f(1.f, 0.f), Color4f(0.2f, 0.2f, 0.2f, .8f)},//2
-		Vertex{Vector2f(-0.8f, -0.8f), Vector2f(0.f, 0.f), Color4f(0.2f, 0.2f, 0.2f, .8f)},//3
-	};
-	list.indices = {0u/*offset test*/, 0u, 1u, 2u, 2u, 1u, 3u};
-	list.command_list = {
-		PrimDraw{1u, 1u, 9u, nullptr, nullptr}
-	};
+
+	PrimitiveDraw::BoxParams box = {};
+	box.rect = {Vector2f(+0.2f, +0.2f), Vector2f(+0.4f, +0.4f)};
+	box.uv = {Vector2f(0.f, 0.f), Vector2f(1.f, 1.f)};
+	box.color = Color4f(.9f, .9f, .9f, .9f);
+	PrimitiveDraw::DrawBox(list, box);
+
+	box.rect = {Vector2f(+0.6f, +0.2f), Vector2f(+0.8f, +0.4f)};
+	PrimitiveDraw::DrawBox(list, box);
+
 	list.validate_and_batch();
 
-		
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
 	renderer->render_primitives(list);
 	delete renderer;
+
 	return true;
 }
 
@@ -296,18 +292,23 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			window::loop(wHnd, redraw);
 
 		#ifndef __EMSCRIPTEN__
+			// last bit of clean-up
 			wgpuSamplerRelease(sampler);
-			wgpuTextureViewRelease(texture_view);
-			wgpuBindGroupRelease(bindGroup);
+			for(auto& tex : ogui_textures)
+			{
+				tex.second.Release();
+			}
+			wgpuBindGroupLayoutRelease(bindGroupLayout);
 			wgpuRenderPipelineRelease(pipeline);
 			wgpuSwapChainRelease(swapchain);
 			wgpuQueueRelease(queue);
-			wgpuDeviceRelease(device);
+			//wgpuDeviceRelease(device);
 		#endif
 		}
 	#ifndef __EMSCRIPTEN__
 	#ifdef __APPLE__
-		if(wHnd) window::destroy(wHnd);
+		if(wHnd) 
+			window::destroy(wHnd);
 	#endif
 	#endif
 	}
