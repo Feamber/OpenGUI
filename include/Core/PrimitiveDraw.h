@@ -22,6 +22,11 @@ namespace OGUI
 
 			static BoxParams MakeSolid(Rect rect, Color4f color);
 		};
-		void DrawBox(DrawContext& context, const BoxParams& params);
+		struct SphereParams
+		{
+
+		};
+		OGUI_API void DrawBox(DrawContext& context, const BoxParams& params);
+		OGUI_API void DrawSphere(DrawContext& context, const SphereParams& params);	
 	}
 }

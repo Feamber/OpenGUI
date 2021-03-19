@@ -175,12 +175,13 @@ static void createPipelineAndBuffers() {
 	vertAttrs[0].format = WGPUVertexFormat_Float2;
 	vertAttrs[0].offset = 0;
 	vertAttrs[0].shaderLocation = 0;
-	vertAttrs[1].format = WGPUVertexFormat_Float4;
+	vertAttrs[1].format = WGPUVertexFormat_Float2;
 	vertAttrs[1].offset = 2 * sizeof(float);
 	vertAttrs[1].shaderLocation = 1;
-	vertAttrs[2].format = WGPUVertexFormat_Float2;
-	vertAttrs[2].offset = 6 * sizeof(float);
+	vertAttrs[2].format = WGPUVertexFormat_Float4;
+	vertAttrs[2].offset = 4 * sizeof(float);
 	vertAttrs[2].shaderLocation = 2;
+
 	WGPUVertexBufferLayoutDescriptor vertDesc = {};
 	vertDesc.arrayStride = 8 * sizeof(float);
 	vertDesc.attributeCount = 3;
@@ -262,11 +263,11 @@ static void createPipelineAndBuffers() {
 static bool redraw() {
 	PrimDrawList list;
 	list.vertices = {
-		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 1.f)}, //-1 /*offset test*/
-		Vertex{Vector2f(+0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 1.f)}, //0
-		Vertex{Vector2f(-0.8f, +0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(0.f, 1.f)}, //1
-		Vertex{Vector2f(+0.8f, -0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(1.f, 0.f)},//2
-		Vertex{Vector2f(-0.8f, -0.8f), Color4f(0.2f, 0.2f, 0.2f, .8f), Vector2f(0.f, 0.f)},//3
+		Vertex{Vector2f(+0.8f, +0.8f), Vector2f(1.f, 1.f), Color4f(0.2f, 0.2f, 0.2f, .8f)}, //-1 /*offset test*/
+		Vertex{Vector2f(+0.8f, +0.8f), Vector2f(1.f, 1.f), Color4f(0.2f, 0.2f, 0.2f, .8f)}, //0
+		Vertex{Vector2f(-0.8f, +0.8f), Vector2f(0.f, 1.f), Color4f(0.2f, 0.2f, 0.2f, .8f)}, //1
+		Vertex{Vector2f(+0.8f, -0.8f), Vector2f(1.f, 0.f), Color4f(0.2f, 0.2f, 0.2f, .8f)},//2
+		Vertex{Vector2f(-0.8f, -0.8f), Vector2f(0.f, 0.f), Color4f(0.2f, 0.2f, 0.2f, .8f)},//3
 	};
 	list.indices = {0u/*offset test*/, 0u, 1u, 2u, 2u, 1u, 3u};
 	list.command_list = {

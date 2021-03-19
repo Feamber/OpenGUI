@@ -22,8 +22,9 @@ namespace OGUI
     struct Vertex
     {
         Vector2f position;
-        Color4f  color; 
         Vector2f texcoord;
+        // Alignment
+        Color4f  color; 
     };
 
     enum PixelFormat

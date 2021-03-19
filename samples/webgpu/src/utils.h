@@ -4,8 +4,8 @@
 
 static char const triangle_vert_wgsl[] = R"(
 	[[location(0)]] var<in>  aPos : vec2<f32>;
-	[[location(1)]] var<in>  aCol : vec4<f32>;
-	[[location(2)]] var<in>  aUV  : vec2<f32>;
+	[[location(1)]] var<in>  aUV  : vec2<f32>;
+	[[location(2)]] var<in>  aCol : vec4<f32>;
 	[[location(0)]] var<out> vCol : vec4<f32>;
 	[[location(1)]] var<out> vUV : vec2<f32>;
 	[[builtin(position)]] var<out> Position : vec4<f32>;
