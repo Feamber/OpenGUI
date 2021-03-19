@@ -4,7 +4,8 @@
 #include <string>
 #include "boost/hana.hpp"
 #include "OpenGUI/Core/Math.h"
-#include "VariantStorage.h"
+#include "OpenGUI/Style/StyleRule.h"
+#include "StyleSelector.h"
 
 namespace OGUI
 {
@@ -18,7 +19,8 @@ namespace OGUI
 			std::string,
 			int
 			> Storage;
-		//StyleRules
-		//Selectors
+		std::vector<StyleRule> styleRules;
+		std::vector<StyleComplexSelector> styleSelectors;
+		void Initialize();
 	};
 }

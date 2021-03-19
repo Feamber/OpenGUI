@@ -1,5 +1,5 @@
 #pragma once
-#include "VariantStorage.h"
+#include "OpenGUI/Style/VariantStorage.h"
 namespace OGUI
 {
 	struct StyleRule
