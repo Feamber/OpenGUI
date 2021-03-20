@@ -55,7 +55,7 @@ file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
 if(OPENGUI_LIB)
-add_library(OpenGUI ${sources} ${headers} "thirdparty/function_ref/function_ref.hpp" "thirdparty/nameof/nameof.hpp")
+add_library(OpenGUI ${sources} ${headers} "thirdparty/function_ref/function_ref.hpp" "thirdparty/nameof/nameof.hpp" "thirdparty/magic_enum/magic_enum.hpp")
 target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
 add_library(OpenGUI SHARED ${sources} ${headers})
