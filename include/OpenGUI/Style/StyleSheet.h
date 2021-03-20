@@ -9,7 +9,17 @@
 
 namespace OGUI
 {
-	
+	struct Dimension
+	{
+		enum
+		{
+			Unitless,
+			Pixel,
+			Percent
+		} unit;
+
+		float value;
+	};
 
 	struct StyleSheet
 	{
@@ -17,10 +27,10 @@ namespace OGUI
 			float,
 			Color4f,
 			std::string,
-			int
+			int,
+			Dimension
 			> Storage;
 		std::vector<StyleRule> styleRules;
 		std::vector<StyleComplexSelector> styleSelectors;
-		void Initialize();
 	};
 }
