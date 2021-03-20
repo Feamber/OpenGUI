@@ -4,11 +4,22 @@
 #include <string>
 #include "boost/hana.hpp"
 #include "OpenGUI/Core/Math.h"
-#include "VariantStorage.h"
+#include "OpenGUI/Style/StyleRule.h"
+#include "StyleSelector.h"
 
 namespace OGUI
 {
-	
+	struct Dimension
+	{
+		enum
+		{
+			Unitless,
+			Pixel,
+			Percent
+		} unit;
+
+		float value;
+	};
 
 	struct StyleSheet
 	{
@@ -16,9 +27,10 @@ namespace OGUI
 			float,
 			Color4f,
 			std::string,
-			int
+			int,
+			Dimension
 			> Storage;
-		//StyleRules
-		//Selectors
+		std::vector<StyleRule> styleRules;
+		std::vector<StyleComplexSelector> styleSelectors;
 	};
 }

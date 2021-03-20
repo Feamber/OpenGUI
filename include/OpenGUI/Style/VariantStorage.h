@@ -6,7 +6,7 @@ namespace OGUI
 
 	struct VariantHandle
 	{
-		int Type;
+		//int Type;
 		int Index;
 	};
 
@@ -20,7 +20,9 @@ namespace OGUI
 			return *hana::index_if(hana::tuple_t<Ts...>, hana::_ == hana::type_c<T>);
 		}
 
-		template<class T> TypeOf() { return IndexOf<T>().value; }
+		template<class T> 
+		constexpr int TypeOf() { return IndexOf<T>().value; }
+
 		template<class T>
 		T& Get(int index)
 		{
@@ -28,9 +30,19 @@ namespace OGUI
 		}
 
 		template<class T>
-		const T& Get(int index) const
+		VariantHandle Push(T const& value)
 		{
-			return hana::at(vectors, IndexOf<T>())[index];
+			contexpr auto index = IndexOf<T>();
+			auto& vector = hana::at(vectors, index);
+			vector.push_back(value);
+			return {vector.size() - 1};
+			//return {index.value, vector.size() - 1};
+		}
+
+		template<class T>
+		const T& Get(VariantHandle handle) const
+		{
+			return hana::at(vectors, IndexOf<T>())[handle.index];
 		}
 	};
 }
