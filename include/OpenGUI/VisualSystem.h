@@ -1,7 +1,11 @@
 #pragma once
-class VisualElement;
-struct VisualSystemBase
+
+namespace OGUI
 {
-	virtual void Update(VisualElement* Tree) = 0;
-};
+	class VisualElement;
+	struct VisualSystemBase
+	{
+		virtual void Update(VisualElement* Tree) = 0;
+	};
+}
 

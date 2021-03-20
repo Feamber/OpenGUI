@@ -14,6 +14,13 @@ namespace OGUI
 		Root = 1 << 5,
 	};
 
+	enum class StyleSelectorRelationship
+	{
+		None,
+		Child,
+		Descendent
+	}
+
 	struct StyleSelector
 	{
 		enum
@@ -22,10 +29,12 @@ namespace OGUI
 			Type,
 			Class,
 			Name,
-		};
+			PseudoClass
+		} type;
 		std::string value;
 		uint32_t pseudoMask;
-		uint32_t reversedPseudoMask;
+		uint32_t reversedPseudoMask; 
+		StyleSelectorRelationship relationship;
 
 		void AddPseudoClass(const char* name);
 	};

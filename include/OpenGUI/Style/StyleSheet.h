@@ -2,6 +2,8 @@
 #include <vector>
 #include <tuple>
 #include <string>
+#include <map>
+#include <string_view>
 #include "boost/hana.hpp"
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/StyleRule.h"
@@ -32,5 +34,12 @@ namespace OGUI
 			> Storage;
 		std::vector<StyleRule> styleRules;
 		std::vector<StyleComplexSelector> styleSelectors;
+
+		using SelectorMap = std::multimap<std::string_view, StyleComplexSelector*>;
+		SelectorMap classSelectors;
+		SelectorMap nameSelectors;
+		SelectorMap typeSelectors;
+
+		void Initialize();
 	};
 }
