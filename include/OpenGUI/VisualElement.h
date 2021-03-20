@@ -2,8 +2,8 @@
 #include <vector>
 #include "OpenGUI/Core/Math.h"
 #include "yoga/Yoga.h"
-#include "xercesc/dom/DOM.hpp"
-#include "OpenGUI/Style/Style.h"
+
+
 namespace OGUI
 {
 	namespace PrimitiveDraw

@@ -22,15 +22,12 @@ namespace OGUI
         list.vertices.emplace_back(Vertex{RB, RBUV, params.color}); // vcount + 2
         list.vertices.emplace_back(Vertex{LB, LBUV, params.color}); // vcount + 3
 
-        list.indices.emplace_back(0u);
-        list.indices.emplace_back(1u);
-        list.indices.emplace_back(2u);
-        list.indices.emplace_back(2u);
-        list.indices.emplace_back(1u);
-        list.indices.emplace_back(3u);
-
-        list.command_list.emplace_back(
-            PrimDraw{vcount, icount, 6u, params.texture, nullptr}
-        );
+        list.indices.emplace_back(vcount + 0u);
+        list.indices.emplace_back(vcount + 1u);
+        list.indices.emplace_back(vcount + 2u);
+        list.indices.emplace_back(vcount + 2u);
+        list.indices.emplace_back(vcount + 1u);
+        list.indices.emplace_back(vcount + 3u);
     }
+
 }
