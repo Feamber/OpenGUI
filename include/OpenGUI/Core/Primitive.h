@@ -73,7 +73,12 @@ namespace OGUI
     {
         inline void validate_and_batch()
         {
-            auto ic = indices.size();
+            const auto ic = indices.size();
+            command_list.emplace_back(
+                PrimDraw{0, 0,
+                (uint32_t)ic,
+                nullptr, nullptr}
+            );
             indices.reserve(
                 (ic / 4) * 4 + 4
             );

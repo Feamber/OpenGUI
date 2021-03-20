@@ -255,6 +255,7 @@ static void createPipelineAndBuffers() {
 	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
 }
 
+
 #include "OpenGUI/Core/PrimitiveDraw.h"
 /**
  * Draws using the above pipeline and buffers.
@@ -264,24 +265,20 @@ static bool redraw() {
 
 	PrimitiveDraw::BoxParams box = {};
 	box.uv = {Vector2f(0.f, 0.f), Vector2f(1.f, 1.f)};
-
+	
 	box.rect = {Vector2f(+0.145f, +0.145f), Vector2f(+0.855f, +0.855f)};
 	box.color = Color4f(.6f, .6f, .6f, 1.f);
 	PrimitiveDraw::DrawBox(list, box);
-
 	box.rect = {Vector2f(+0.1475f, +0.1475f), Vector2f(+0.8525f, +0.8525f)};
 	box.color = Color4f(.75f, .75f, .75f, 1.f);
 	PrimitiveDraw::DrawBox(list, box);
-
 	box.rect = {Vector2f(+0.15f, +0.15f), Vector2f(+0.85f, +0.85f)};
 	box.color = Color4f(.9f, .9f, .9f, 1.f);
 	PrimitiveDraw::DrawBox(list, box);
-	
-
 	box.rect = {Vector2f(+0.145f, +0.8f), Vector2f(+0.855f, +0.855f)};
 	box.color = Color4f(.3f, .3f, .3f, .8f);
 	PrimitiveDraw::DrawBox(list, box);
-	
+
 	list.validate_and_batch();
 
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
