@@ -5,6 +5,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/") 
 if(UNIX)
+    set(PLATFORM_INCLUDES ${PLATFORM_INCLUDES} include/Platform/Unix)
+    set(PLATFORM_INCLUDES ${PLATFORM_INCLUDES} include/Platform/DirectXMath)
     add_definitions(-D "OPENGUI_TARGET_PLATFORM_UNIX")
     if(APPLE)
         add_definitions(-D "OPENGUI_TARGET_PLATFORM_MACOS")
@@ -59,16 +61,27 @@ else()
 add_library(OpenGUI SHARED ${sources} ${headers})
 endif(OPENGUI_LIB)
 
+
+include_directories(${XercesC_INCLUDE_DIR})
+
+target_include_directories(OpenGUI 
+    PUBLIC 
+    include
+    ${PLATFORM_INCLUDES}
+)
+target_link_libraries(OpenGUI PRIVATE Yoga)
+target_link_libraries(OpenGUI INTERFACE hana)
+
+
+### xerces-c
+if(WIN32)
 set(XercesC_INCLUDE_DIR "thirdparty/xerces-c/include")
 set(XercesC_LIBRARY "thirdparty/xerces-c/lib/xerces-c_4D")
 set(XercesC_VERSION "4.0.0")
 find_package(XercesC REQUIRED)
-include_directories (${XercesC_INCLUDE_DIR})
-
-target_include_directories(OpenGUI PUBLIC include)
-target_link_libraries(OpenGUI PRIVATE Yoga)
 target_link_libraries(OpenGUI PRIVATE ${XercesC})
-target_link_libraries(OpenGUI INTERFACE hana)
+endif(WIN32)
+
 link_libraries(OpenGUI)
 if(OPENGUI_SAMPLES)
     add_subdirectory(samples)

@@ -10,7 +10,7 @@ void OGUI::StyleSelector::AddPseudoClass(const char* pseudoClass)
 		PseudoStates state;
 		bool reverse;
 	};
-	static constexpr Name2State map[] =
+	static const Name2State map[] =
 	{
 		{"active", PseudoStates::Active, false},
 		{"hover", PseudoStates::Hover, false},

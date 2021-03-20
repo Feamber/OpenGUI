@@ -19,7 +19,7 @@
 #endif
 #endif
 
-#if defined(_WIN32) || defined(_WIN64) || defined(UNIX)
+#if defined(_WIN32) || defined(_WIN64) || defined(_UNIX) || defined(__APPLE__)
 #define OGUI_USE_DXMATH
 #endif
 
