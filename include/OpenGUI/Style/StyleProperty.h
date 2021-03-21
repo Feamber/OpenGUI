@@ -10,6 +10,18 @@ namespace OGUI
 		Inherited,
 		NonInherited
 	};
+
+	enum class StyleKeyword : int
+	{
+		Inherit,
+		Initial,
+		Auto,
+		Unset,
+		True,
+		False,
+		None
+	};
+
 	enum class StylePropertyId : uint32_t
 	{
 #define	STYLEPROP(name, index, ...)\

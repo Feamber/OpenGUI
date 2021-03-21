@@ -57,17 +57,6 @@ void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::spa
 	}
 }
 
-enum class StyleKeyword : int
-{
-	Inherit,
-	Initial,
-	Auto,
-	Unset,
-	True,
-	False,
-	None
-};
-
 bool OGUI::Style::ApplyGlobalKeyword(const StyleProperty& prop)
 {
 	if (prop.keyword)
