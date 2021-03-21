@@ -58,20 +58,18 @@ if(OPENGUI_LIB)
 add_library(OpenGUI 
     ${sources} 
     ${headers} 
-    #"thirdparty/function_ref/function_ref.hpp" 
-    #"thirdparty/nameof/nameof.hpp" "thirdparty/magic_enum/magic_enum.hpp"
 )
 target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
 add_library(OpenGUI SHARED ${sources} ${headers})
 endif(OPENGUI_LIB)
 
-include_directories(${XercesC_INCLUDE_DIR})
-
 target_include_directories(OpenGUI 
     PUBLIC 
     include
+    include/External
     ${PLATFORM_INCLUDES}
+    ${XercesC_INCLUDE_DIR}
 )
 target_link_libraries(OpenGUI PRIVATE Yoga)
 
