@@ -2,6 +2,8 @@
 #include <vector>
 #include "OpenGUI/Core/Math.h"
 #include "yoga/Yoga.h"
+#include "OpenGUI/Style/StyleSheet.h"
+#include "OpenGUI/Style/Style.h"
 
 
 namespace OGUI
@@ -18,13 +20,15 @@ namespace OGUI
 	class VisualElement
 	{
 	public:
-		virtual ~VisualElement();
+		virtual ~VisualElement() {}
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
+		VisualElement* GetHierachyParent();
 		Rect GetLayout();
 		const std::vector<StyleSheet*>& GetStyleSheets();
 		bool IsA(std::string type);
 		std::string GetTypeName();
+		std::string GetFullTypeName();
 
 		std::string name;
 		std::vector<std::string> classes;
@@ -56,10 +60,20 @@ namespace OGUI
 		uint32_t _triggerPseudoMask;
 		uint32_t _dependencyPseudoMask;
 		uint32_t _pseudoMask;
+		int _inheritedStylesHash = 0;
+		StyleRule _inlineRule;
+		StyleSheet* _inlineSheet;
+		StyleSheetStorage _procedureSheet;
+		StyleRule _procedureRule;
+
 		Style _style;
 		Style* _sharedStyle;
 		std::vector<StyleSheet*> _styleSheets;
 
+		void CalculateLayout();
+		Rect GetLayout();
+		void SetSharedStyle(Style* style);
+		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
 #pragma endregion
 

@@ -1,13 +1,14 @@
 #pragma once
 #include <vector>
+#include "boost/hana.hpp"
 namespace OGUI
 {
 	namespace hana = boost::hana;
 
 	struct VariantHandle
 	{
-		//int Type;
-		int Index;
+		//int type;
+		int index;
 	};
 
 	template<class... Ts>

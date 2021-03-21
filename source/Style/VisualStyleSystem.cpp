@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/VisualElement.h"
@@ -146,12 +147,99 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 	for (int i = 0; i < sheetCount; ++i)
 	{
 		StyleSheet* sheet = context.styleSheetStack[i];
-		SelectorMatchRecord record{sheet, i};
+		SelectorMatchRecord record{sheet, i, nullptr};
 		Lookup(context, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
 		Lookup(context, matchedSelectors, sheet->typeSelectors, "*", record);
 		if(!element->name.empty())
 			Lookup(context, matchedSelectors, sheet->nameSelectors, element->name, record);
 		for(auto& cls : element->classes)
-			Lookup(context, matchedSelectors, sheet->classSelectors, element->classes, record);
+			Lookup(context, matchedSelectors, sheet->classSelectors, cls, record);
+	}
+}
+
+template<class T>
+int cmp(const T& a, const T& b)
+{
+	if (a > b)
+		return 1;
+	if (a < b)
+		return -1;
+	else
+		return 0;
+}
+
+int cmp(const std::string& a, const std::string& b)
+{
+	return a.compare(b);
+}
+
+int cmp(const OGUI::SelectorMatchRecord& a, const OGUI::SelectorMatchRecord& b)
+{
+	int result = cmp(a.complexSelector->specificity, b.complexSelector->specificity);
+	if (result != 0)
+		return result;
+	result = cmp(a.sheetIndex, b.sheetIndex);
+	if (result != 0)
+		return result;
+	result = cmp(a.complexSelector->priority, b.complexSelector->priority);
+	return result;
+}
+
+#if X32
+constexpr size_t _FNV_prime = 16777619U;
+#else
+constexpr size_t _FNV_prime = 1099511628211ULL;
+#endif
+
+size_t append_hash(size_t value, size_t append)
+{
+	return (value * _FNV_prime) ^ append;
+}
+
+template<class T>
+size_t hash(const T& value)
+{
+	return std::hash<T>{}(value);
+}
+
+namespace OGUI
+{
+	void ApplyRules(Style& style, const SelectorMatchRecord& record)
+	{
+
+	}
+}
+
+void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, const std::vector<SelectorMatchRecord>& matchedSelectors, std::unordered_map<size_t, std::unique_ptr<Style>>& styleCache)
+{
+	std::sort(matchedSelectors.begin(), matchedSelectors.end(), [](const SelectorMatchRecord& a, const SelectorMatchRecord& b) { return cmp(a, b) < 0; });
+	size_t matchHash = hash(element->GetFullTypeName());
+
+	for (auto& record : matchedSelectors)
+	{
+		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
+		append_hash(matchHash, hash(rule));
+		append_hash(matchHash, record.complexSelector->specificity);
+	}
+	VisualElement* parent = element->GetHierachyParent();
+	if (parent)
+		append_hash(matchHash, parent->_inheritedStylesHash);
+	auto iter = styleCache.find(matchHash);
+	if (iter != styleCache.end())
+		element->SetSharedStyle(iter->second.get());
+	else
+	{
+		auto parentStyle = parent ? &parent->_style : nullptr;
+
+		Style resolvedStyle = Style::Create(parentStyle, true);
+		for (auto& record : matchedSelectors)
+		{
+			auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
+			resolvedStyle.ApplyProperties(record.sheet->Storage, rule.properties);
+			//resolvedStyle.ApplyCustomProperties(record.sheet, rule.customProperties);
+		}
+		auto pair = styleCache.emplace(matchHash, new Style{std::move(resolvedStyle)});
+		//check(pair.second);
+		element->SetSharedStyle(pair.first->second.get());
 	}
 }

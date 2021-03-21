@@ -4,34 +4,24 @@
 #include <string>
 #include <map>
 #include <string_view>
-#include "boost/hana.hpp"
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/StyleRule.h"
 #include "StyleSelector.h"
+#include "yoga/Yoga.h"
 
 namespace OGUI
 {
-	struct Dimension
-	{
-		enum
-		{
-			Unitless,
-			Pixel,
-			Percent
-		} unit;
 
-		float value;
-	};
+	using StyleSheetStorage = VariantStorage<
+		float,
+		Color4f,
+		int,
+		YGValue
+		>;
 
 	struct StyleSheet
 	{
-		VariantStorage<
-			float,
-			Color4f,
-			std::string,
-			int,
-			Dimension
-			> Storage;
+		StyleSheetStorage Storage;
 		std::vector<StyleRule> styleRules;
 		std::vector<StyleComplexSelector> styleSelectors;
 
