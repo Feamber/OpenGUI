@@ -8,7 +8,7 @@ void OGUI::StyleSheet::Initialize()
 		complexSel.priority = i;
 		auto& lastSel = complexSel.selectors.back();
 		SelectorMap* mapPtr;
-		std::string key = lastSel.value;
+		std::string_view key = lastSel.value;
 		switch (lastSel.type)
 		{
 			case StyleSelector::Class:
@@ -31,8 +31,8 @@ void OGUI::StyleSheet::Initialize()
 				//assert(false);
 				break;
 		}
-		// !![HANG FOR BUILD]!!
-		//mapPtr->insert(key, &complexSel);
+		
+		mapPtr->insert(std::make_pair(key, &complexSel));
 		++i;
 	}
 }

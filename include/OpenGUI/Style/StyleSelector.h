@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <cinttypes>
 
 namespace OGUI
 {
@@ -14,7 +15,7 @@ namespace OGUI
 		Root = 1 << 5,
 	};
 
-	enum class StyleSelectorRelationship
+	enum class StyleSelectorRelationship : uint8_t
 	{
 		None,
 		Child,
@@ -45,6 +46,7 @@ namespace OGUI
 		std::vector<StyleSelector> selectors;
 		int ruleIndex;
 		int priority;
+		int specificity;
 
 		bool IsSimple() { return selectors.size() == 1; }
 	};

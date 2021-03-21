@@ -1,10 +1,11 @@
 #pragma once
-#include "OpenGUI/Style/VariantStorage.h"
+#include "OpenGUI/Style/StyleProperty.h"
+
 namespace OGUI
 {
 	struct StyleRule
 	{
-		std::vector<VariantHandle> properties;
-		int customPropertiesCount;
+		std::vector<StyleProperty> properties;
+		std::vector<CustomStyleProperty> customProperties;
 	};
 }
