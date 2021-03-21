@@ -1,7 +1,7 @@
 #include "OpenGUI/Style/StyleProperty.h"
 #include <unordered_map>
 
-StylePropertyId OGUI::PropertyNameToId(std::string_view name)
+OGUI::StylePropertyId OGUI::PropertyNameToId(std::string_view name)
 {
 	static std::unordered_map<std::string_view, StylePropertyId> name2id =
 	{
@@ -14,7 +14,7 @@ StylePropertyId OGUI::PropertyNameToId(std::string_view name)
 	if (iter != name2id.end())
 		return iter->second;
 	else
-		return StylePropertyId::Unknown;
+		return StylePropertyId::Num;
 }
 
 std::string_view OGUI::PropertyIdToName(StylePropertyId id)
@@ -25,7 +25,7 @@ std::string_view OGUI::PropertyIdToName(StylePropertyId id)
 		name,
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef STYLEPROP
-	}
+	};
 	if (id < StylePropertyId::Num)
 		return id2name[(uint8_t)id];
 	else

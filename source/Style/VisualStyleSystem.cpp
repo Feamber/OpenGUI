@@ -6,7 +6,13 @@
 
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 {
+	StyleMatchingContext matchingContext(+[](VisualElement* element, const MatchResult& result)
+		{
+			element->_triggerPseudoMask |= result.triggerPseudoMask;
+			element->_dependencyPseudoMask |= result.dependencyPseudoMask;
+		});
 	const auto& ess = element->GetStyleSheets();
+	int originStyleSheetCount = matchingContext.styleSheetStack.size();
 	for (auto& ss : ess)
 		matchingContext.styleSheetStack.push_back(ss);
 	int originCustomPropCount = element->_style.GetCustomPropCount();
@@ -14,18 +20,24 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
 		FindMatches(matchingContext, result);
-		// !![HANG FOR BUILD]!!
-		//ProcessMatchedRules(element, result);
+		ApplyMatchedRules(element, result, styleCache);
+		matchingContext.currentElement = nullptr;
 	}
 	element->Traverse([this](VisualElement* element, int depth) { 
 		Traverse(element, depth); 
 	}, depth);
+	int styleSheetCount = matchingContext.styleSheetStack.size();
+	auto start = matchingContext.styleSheetStack.begin();
+	if (styleSheetCount > originStyleSheetCount) //pop
+		matchingContext.styleSheetStack.erase(start + originStyleSheetCount, start + styleSheetCount);
 }
 
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
-
+	//TODO: lazy update
+	Traverse(Tree, 0);
 }
+
 namespace OGUI
 {
 	MatchResult Match(VisualElement* element, StyleSelector& selector)
@@ -160,60 +172,69 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 	}
 }
 
-template<class T>
-int cmp(const T& a, const T& b)
-{
-	if (a > b)
-		return 1;
-	if (a < b)
-		return -1;
-	else
-		return 0;
-}
-
-int cmp(const std::string& a, const std::string& b)
-{
-	return a.compare(b);
-}
-
-int cmp(const OGUI::SelectorMatchRecord& a, const OGUI::SelectorMatchRecord& b)
-{
-	int result = cmp(a.complexSelector->specificity, b.complexSelector->specificity);
-	if (result != 0)
-		return result;
-	result = cmp(a.sheetIndex, b.sheetIndex);
-	if (result != 0)
-		return result;
-	result = cmp(a.complexSelector->priority, b.complexSelector->priority);
-	return result;
-}
-
-#if X32
-constexpr size_t _FNV_prime = 16777619U;
-#else
-constexpr size_t _FNV_prime = 1099511628211ULL;
-#endif
-
-size_t append_hash(size_t value, size_t append)
-{
-	return (value * _FNV_prime) ^ append;
-}
-
-template<class T>
-size_t hash(const T& value)
-{
-	return std::hash<T>{}(value);
-}
 
 namespace OGUI
 {
-	void ApplyRules(Style& style, const SelectorMatchRecord& record)
+	//TODO: Utilitilize those function?
+	template<class T>
+	int cmp(const T& a, const T& b)
 	{
+		if (a > b)
+			return 1;
+		if (a < b)
+			return -1;
+		else
+			return 0;
+	}
 
+	int cmp(const std::string& a, const std::string& b)
+	{
+		return a.compare(b);
+	}
+
+	int cmp(const SelectorMatchRecord& a, const SelectorMatchRecord& b)
+	{
+		int result = cmp(a.complexSelector->specificity, b.complexSelector->specificity);
+		if (result != 0)
+			return result;
+		result = cmp(a.sheetIndex, b.sheetIndex);
+		if (result != 0)
+			return result;
+		result = cmp(a.complexSelector->priority, b.complexSelector->priority);
+		return result;
+	}
+
+#if defined(_X32)
+	_INLINE_VAR constexpr size_t _FNV_offset_basis = 2166136261U;
+	_INLINE_VAR constexpr size_t _FNV_prime = 16777619U;
+#else // defined(_X32)
+	_INLINE_VAR constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
+	_INLINE_VAR constexpr size_t _FNV_prime = 1099511628211ULL;
+#endif // defined(_X32)
+
+	size_t append_hash(size_t value, size_t append)
+	{
+		return (value * _FNV_prime) ^ append;
+	}
+
+	template<class T>
+	size_t hash(const T& value)
+	{
+		return std::hash<T>{}(value);
+	}
+
+	size_t hash(const StyleRule& rule)
+	{
+		size_t value = _FNV_offset_basis;
+		for (auto& prop : rule.properties)
+			append_hash(value, prop.value.index);
+		for (auto& prop : rule.customProperties)
+			append_hash(value, prop.value.index);
+		return value;
 	}
 }
 
-void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, const std::vector<SelectorMatchRecord>& matchedSelectors, std::unordered_map<size_t, std::unique_ptr<Style>>& styleCache)
+void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors, std::unordered_map<size_t, std::unique_ptr<Style>>& styleCache)
 {
 	std::sort(matchedSelectors.begin(), matchedSelectors.end(), [](const SelectorMatchRecord& a, const SelectorMatchRecord& b) { return cmp(a, b) < 0; });
 	size_t matchHash = hash(element->GetFullTypeName());
@@ -244,5 +265,6 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, const st
 		auto pair = styleCache.emplace(matchHash, new Style{std::move(resolvedStyle)});
 		//check(pair.second);
 		element->SetSharedStyle(pair.first->second.get());
+
 	}
 }

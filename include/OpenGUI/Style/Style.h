@@ -29,6 +29,7 @@ namespace OGUI
 		void ApplyInitialKeyword(StylePropertyId propId);
 		void ApplyUnsetKeyword(StylePropertyId propId);
 		void InheritData(Style& parent);
+		size_t GetInheritedHash();
 #define	STYLEPROP(name, index, inherit, type, ...)\
 		type name;
 #include "OpenGUI/Style/StylePropertiesDef.h"

@@ -52,6 +52,7 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 		_style.ApplyProperties(_inlineSheet->Storage, _inlineRule.properties);
 	style->ApplyProperties(_procedureSheet, _procedureRule.properties);
 
+	_inheritedStylesHash = _style.GetInheritedHash();
 	SyncYogaStyle();
 }
 

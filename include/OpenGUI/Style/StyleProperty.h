@@ -12,7 +12,6 @@ namespace OGUI
 	};
 	enum class StylePropertyId : uint32_t
 	{
-		Unknown = -1,
 #define	STYLEPROP(name, index, ...)\
 		name = index,
 #include "OpenGUI/Style/StylePropertiesDef.h"
@@ -30,6 +29,8 @@ namespace OGUI
 	struct CustomStyleProperty
 	{
 		std::string name;
+		int Type : 31;
+		bool Keyword : 1;
 		VariantHandle value;
 	};
 	StylePropertyId PropertyNameToId(std::string_view name);

@@ -17,18 +17,18 @@ namespace OGUI
 	{
 		hana::tuple<std::vector<Ts>...> vectors;
 		template<class T>
-		constexpr auto IndexOf()
+		constexpr static auto IndexOf()
 		{
 			return *hana::index_if(hana::tuple_t<Ts...>, hana::_ == hana::type_c<T>);
 		}
 
 		template<class T> 
-		constexpr int TypeOf() { return IndexOf<T>().value; }
+		constexpr static int TypeOf() { return IndexOf<T>().value; }
 
 		template<class T>
-		T& Get(int index)
+		T& Get(VariantHandle handle)
 		{
-			return hana::at(vectors, IndexOf<T>())[index];
+			return hana::at(vectors, IndexOf<T>())[handle.index];
 		}
 
 		template<class T>

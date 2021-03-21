@@ -22,11 +22,10 @@ namespace OGUI
 	class VisualElement
 	{
 	public:
-		virtual ~VisualElement() {}
+		virtual ~VisualElement();
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
 		VisualElement* GetHierachyParent();
-		Rect GetLayout();
 		const std::vector<StyleSheet*>& GetStyleSheets();
 		bool IsA(std::string type);
 		std::string GetTypeName();
@@ -72,8 +71,8 @@ namespace OGUI
 		Style* _sharedStyle;
 		std::vector<StyleSheet*> _styleSheets;
 
-		void CalculateLayout();
 		Rect GetLayout();
+		void CalculateLayout();
 		void SetSharedStyle(Style* style);
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);

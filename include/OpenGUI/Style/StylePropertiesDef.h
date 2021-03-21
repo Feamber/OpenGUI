@@ -37,6 +37,6 @@ STYLEPROP(	wrap,				33,				NonInherited,			YGWrap,				"wrap",						YGWrapNoWrap	
 STYLEPROP(	display,			34,				NonInherited,			YGDisplay,			"display",					YGDisplayFlex				)
 //End Yoga props																											
 //Begin draw props																											
-STYLEPROP(	color,				35,				Inherited,				Color4f,			"color",					Color4f.vector_zero()		)
+STYLEPROP(	color,				35,				Inherited,				Color4f,			"color",					Color4f::vector_zero()		)
 STYLEPROP(	fontSize,			36,				Inherited,				float,				"fontSize",					0.f							)
 //End draw props
