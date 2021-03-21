@@ -2,26 +2,29 @@
 #include <string>
 #include <vector>
 
-struct XmlTypeRestriction
+namespace OGUI
 {
-public:
-	enum class Type
+	struct XmlTypeRestriction
 	{
-		Null,
-		RegexMatch,
-		Bounds,
-		Enumeration,
+	public:
+		enum class Type
+		{
+			Null,
+			RegexMatch,
+			Bounds,
+			Enum,
+		};
+
+		Type type = Type::Null;
+
+		// RegexMatch
+		std::string regex;
+
+		// Bounds
+		std::string min;
+		std::string max;
+
+		// Enumeration
+		std::vector<std::string> enums;
 	};
-	
-	Type type = Type::Null;
-
-	// RegexMatch
-	std::string regex;
-
-	// Bounds
-	std::string min;
-	std::string max;
-
-	// Enumeration
-	std::vector<std::string> enums;
-};
+}
