@@ -29,6 +29,7 @@ void OGUI::StyleSheet::Initialize()
 				break;
 			default:
 				//assert(false);
+				break;
 		}
 		
 		mapPtr->insert(std::make_pair(key, &complexSel));

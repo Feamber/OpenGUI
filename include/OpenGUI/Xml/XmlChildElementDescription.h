@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "../nameof/nameof.hpp"
+#include "nameof/nameof.hpp"
 
 namespace OGUI
 {

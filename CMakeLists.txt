@@ -55,23 +55,23 @@ file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
 if(OPENGUI_LIB)
-add_library(OpenGUI ${sources} ${headers} "thirdparty/function_ref/function_ref.hpp")
+add_library(OpenGUI 
+    ${sources} 
+    ${headers} 
+)
 target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
 add_library(OpenGUI SHARED ${sources} ${headers})
 endif(OPENGUI_LIB)
 
-
-include_directories(${XercesC_INCLUDE_DIR})
-
 target_include_directories(OpenGUI 
     PUBLIC 
     include
-    "thirdparty/function_ref"
+    include/External
     ${PLATFORM_INCLUDES}
+    ${XercesC_INCLUDE_DIR}
 )
 target_link_libraries(OpenGUI PRIVATE Yoga)
-target_link_libraries(OpenGUI PRIVATE hana)
 
 
 ### xerces-c

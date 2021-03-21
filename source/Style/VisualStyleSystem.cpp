@@ -14,9 +14,12 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
 		FindMatches(matchingContext, result);
-		ProcessMatchedRules(element, result);
+		// !![HANG FOR BUILD]!!
+		//ProcessMatchedRules(element, result);
 	}
-	element->Traverse([this](VisualElement* element, int depth) { Traverse(element, depth) }, depth);
+	element->Traverse([this](VisualElement* element, int depth) { 
+		Traverse(element, depth); 
+	}, depth);
 }
 
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
