@@ -6,11 +6,7 @@
 
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 {
-	StyleMatchingContext matchingContext(+[](VisualElement* element, const MatchResult& result)
-		{
-			element->_triggerPseudoMask |= result.triggerPseudoMask;
-			element->_dependencyPseudoMask |= result.dependencyPseudoMask;
-		});
+	StyleMatchingContext matchingContext;
 	const auto& ess = element->GetStyleSheets();
 	int originStyleSheetCount = matchingContext.styleSheetStack.size();
 	for (auto& ss : ess)
@@ -40,9 +36,8 @@ void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 
 namespace OGUI
 {
-	MatchResult Match(VisualElement* element, StyleSelector& selector)
+	bool Match(VisualElement* element, StyleSelector& selector)
 	{
-		MatchResult result;
 		bool match = true;
 
 		switch (selector.type)
@@ -69,21 +64,20 @@ namespace OGUI
 			{
 				match = (selector.pseudoMask & element->_pseudoMask) == selector.pseudoMask;
 				if (match)
-					result.dependencyPseudoMask = selector.pseudoMask;
+					element->_dependencyPseudoMask |= selector.pseudoMask;
 				else
-					result.triggerPseudoMask = selector.pseudoMask;
+					element->_triggerPseudoMask |= selector.pseudoMask;
 			}
 			if (selector.reversedPseudoMask != 0)
 			{
 				match &= (selector.pseudoMask & ~element->_pseudoMask) == selector.pseudoMask;
 				if (match)
-					result.dependencyPseudoMask |= selector.pseudoMask;
+					element->_dependencyPseudoMask |= selector.pseudoMask;
 				else
-					result.triggerPseudoMask |= selector.pseudoMask;
+					element->_triggerPseudoMask |= selector.pseudoMask;
 			}
 		}
-		result.success = match;
-		return result;
+		return match;
 	}
 
 	bool Match(StyleMatchingContext& context, StyleComplexSelector* complexSel)
@@ -101,9 +95,8 @@ namespace OGUI
 			if (current == nullptr)
 				break;
 
-			MatchResult result = Match(current, selectors[index]);
-			context.processor(current, result);
-			if (!result.success)
+			bool success = Match(current, selectors[index]);
+			if (!success)
 			{
 				if (index < count - 1 && selectors[index + 1].relationship == StyleSelectorRelationship::Descendent)
 				{

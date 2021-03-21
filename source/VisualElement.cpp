@@ -42,6 +42,11 @@ OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 	return _physical_parent;
 }
 
+void OGUI::VisualElement::MarkDirty(DirtyReason reason)
+{
+	//Context.Get().BroadcastDirtyEvent(this, reason);
+}
+
 void OGUI::VisualElement::SetSharedStyle(Style* style)
 {
 	if (style == _sharedStyle)
@@ -120,4 +125,14 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetJustifyContent(_ygnode, _style.justifyContent);
 	YGNodeStyleSetFlexWrap(_ygnode, _style.wrap);
 	YGNodeStyleSetDisplay(_ygnode, _style.display);
+}
+
+void OGUI::VisualElement::SetPseudoMask(uint32_t mask)
+{
+	if (_pseudoMask != mask)
+	{
+		_pseudoMask = mask;
+		if ((mask & _triggerPseudoMask) != 0 || (mask & ~_dependencyPseudoMask) != 0)
+			MarkDirty(DirtyReason::StyleSheet);
+	}
 }

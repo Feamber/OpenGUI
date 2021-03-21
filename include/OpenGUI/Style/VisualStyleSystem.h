@@ -7,12 +7,6 @@
 
 namespace OGUI
 {
-	struct MatchResult
-	{
-		bool success;
-		uint32_t triggerPseudoMask;
-		uint32_t dependencyPseudoMask;
-	};
 	struct SelectorMatchRecord
 	{
 		StyleSheet* sheet;
@@ -22,12 +16,8 @@ namespace OGUI
 	};
 	struct StyleMatchingContext
 	{
-		using ProcessFunction = tl::function_ref<void(VisualElement*, const MatchResult&)>;
-		StyleMatchingContext(ProcessFunction pf)
-			: processor(pf) {}
 		std::vector<StyleSheet*> styleSheetStack;
 		VisualElement* currentElement;
-		ProcessFunction processor;
 	};
 
 	struct Style;
