@@ -19,7 +19,7 @@ namespace OGUI
 		None,
 		Child,
 		Descendent
-	}
+	};
 
 	struct StyleSelector
 	{

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.3)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/") 
 if(UNIX)
     set(PLATFORM_INCLUDES ${PLATFORM_INCLUDES} include/Platform/Unix)
@@ -55,12 +55,16 @@ file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
 if(OPENGUI_LIB)
-add_library(OpenGUI ${sources} ${headers} "thirdparty/function_ref/function_ref.hpp" "thirdparty/nameof/nameof.hpp" "thirdparty/magic_enum/magic_enum.hpp")
+add_library(OpenGUI 
+    ${sources} 
+    ${headers} 
+    #"thirdparty/function_ref/function_ref.hpp" 
+    #"thirdparty/nameof/nameof.hpp" "thirdparty/magic_enum/magic_enum.hpp"
+)
 target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
 add_library(OpenGUI SHARED ${sources} ${headers})
 endif(OPENGUI_LIB)
-
 
 include_directories(${XercesC_INCLUDE_DIR})
 

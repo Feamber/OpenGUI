@@ -22,13 +22,18 @@ namespace OGUI
 
 			static BoxParams MakeSolid(Rect rect, Color4f color);
 		};
-		struct SphereParams
+		struct CheckBox0Params
 		{
-
+			Rect outter;
+			Color4f outter_color;
+			Rect inner;
+			Color4f inner_color;
+			bool checked;
 		};
 
 		// Call from DrawList.
 		OGUI_API void DrawBox(PrimDrawList& context, const BoxParams& params);
-		OGUI_API void DrawSphere(PrimDrawList& context, const SphereParams& params);	
+		OGUI_API void DrawCheckBox0(
+			PrimDrawList& context, const CheckBox0Params& params);	
 	}
 }
