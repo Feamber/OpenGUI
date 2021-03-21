@@ -7,7 +7,7 @@ namespace OGUI
 	struct Style
 	{
 		bool isShared;
-		YGNode* yogaNode;
+		struct YGNode* yogaNode;
 		std::unordered_map<std::string, VariantHandle> customProps;
 		
 		int GetCustomPropCount() { return customProps.size(); }

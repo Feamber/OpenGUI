@@ -29,8 +29,10 @@ void OGUI::StyleSheet::Initialize()
 				break;
 			default:
 				//assert(false);
+				break;
 		}
-		mapPtr->insert(key, &complexSel);
+		// !![HANG FOR BUILD]!!
+		//mapPtr->insert(key, &complexSel);
 		++i;
 	}
 }

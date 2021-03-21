@@ -1,14 +1,14 @@
 #pragma once
 #include <string>
-#include "XmlTypeRestriction.h"
-#include "VisualElementAsset.h"
-#include "../nameof/nameof.hpp"
-#include "../magic_enum/magic_enum.hpp"
+#include "OpenGUI/Xml/XmlTypeRestriction.h"
+#include "OpenGUI/Xml/VisualElementAsset.h"
+#include "nameof/nameof.hpp"
+#include "magic_enum/magic_enum.hpp"
 
 class XmlAttributeDescription
 {
 public:
-	static const std::string xml_schema_namespace = "http://www.w3.org/2001/XMLSchema";
+	inline static const std::string xml_schema_namespace = "http://www.w3.org/2001/XMLSchema";
 
 	enum class Use
 	{
@@ -28,7 +28,7 @@ public:
 };
 
 template<typename T>
-class TypeXmlAttributeDescription
+class TypeXmlAttributeDescription : public XmlAttributeDescription
 {
 public:
 	T default_value;
@@ -36,7 +36,8 @@ public:
 	virtual T GetValue(const VisualElementAsset& element) = 0;
 };
 
-class XmlStringAttributeDescription : public TypeXmlAttributeDescription<std::string>
+class XmlStringAttributeDescription 
+	: public TypeXmlAttributeDescription<std::string>
 {
 public:
 	XmlStringAttributeDescription()
@@ -55,7 +56,7 @@ class XmlFloatAttributeDescription : public TypeXmlAttributeDescription<float>
 public:
 	static std::string AsString();
 
-	XmlStringAttributeDescription()
+	XmlFloatAttributeDescription()
 	{
 		type = "float";
 		type_namespace = xml_schema_namespace;
@@ -69,7 +70,7 @@ public:
 class XmlDoubleAttributeDescription : public TypeXmlAttributeDescription<double>
 {
 public:
-	XmlStringAttributeDescription()
+	XmlDoubleAttributeDescription()
 	{
 		type = "double";
 		type_namespace = xml_schema_namespace;
@@ -83,7 +84,7 @@ public:
 class XmlIntAttributeDescription : public TypeXmlAttributeDescription<int>
 {
 public:
-	XmlStringAttributeDescription()
+	XmlIntAttributeDescription()
 	{
 		type = "int";
 		type_namespace = xml_schema_namespace;
@@ -97,7 +98,7 @@ public:
 class XmlLongAttributeDescription : public TypeXmlAttributeDescription<long>
 {
 public:
-	XmlStringAttributeDescription()
+	XmlLongAttributeDescription()
 	{
 		type = "long";
 		type_namespace = xml_schema_namespace;
@@ -111,24 +112,24 @@ public:
 class XmlBoolAttributeDescription : public TypeXmlAttributeDescription<bool>
 {
 public:
-	XmlStringAttributeDescription()
+	XmlBoolAttributeDescription()
 	{
 		type = "boolean";
 		type_namespace = xml_schema_namespace;
 		default_value = false;
-		default_value_string = dedefault_value ? "true" : "false";
+		default_value_string = default_value ? "true" : "false";
 	}
 
 	bool GetValue(const VisualElementAsset& element) override;
 };
-
+/*
 template<typename E, std::enable_if_t<std::is_enum_v<E>, E> DefaultValue>
 class XmlEnumAttributeDescription : public TypeXmlAttributeDescription<E>
 {
 public:
-	constexpr auto& entries = magic_enum::enum_entries<E>();
+	static constexpr auto& entries = magic_enum::enum_entries<E>();
 
-	XmlStringAttributeDescription()
+	XmlEnumAttributeDescription()
 	{
 		type = "string";
 		type_namespace = xml_schema_namespace;
@@ -152,6 +153,7 @@ public:
 			if (e.has_value()) return e.value();
 		}
 		
-		return dedefault_value;
+		return default_value;
 	}
 };
+*/

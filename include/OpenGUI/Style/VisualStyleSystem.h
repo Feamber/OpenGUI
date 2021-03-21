@@ -1,10 +1,11 @@
-#include "VisualSystem.h"
+#include "OpenGUI/VisualSystem.h"
 #include <unordered_set>
-#include <function_ref.hpp>
-#include "StyleSelector.h"
+#include <function_ref/function_ref.hpp>
+#include "OpenGUI/Style/StyleSelector.h"
+#include "OpenGUI/Style/StyleSheet.h"
+
 namespace OGUI
 {
-	struct StyleSheet;
 	struct MatchResult
 	{
 		bool success;

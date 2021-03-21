@@ -13,9 +13,12 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
 		FindMatches(matchingContext, result);
-		ProcessMatchedRules(element, result);
+		// !![HANG FOR BUILD]!!
+		//ProcessMatchedRules(element, result);
 	}
-	element->Traverse([this](VisualElement* element, int depth) { Traverse(element, depth) }, depth);
+	element->Traverse([this](VisualElement* element, int depth) { 
+		Traverse(element, depth); 
+	}, depth);
 }
 
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
@@ -146,12 +149,14 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 	for (int i = 0; i < sheetCount; ++i)
 	{
 		StyleSheet* sheet = context.styleSheetStack[i];
-		SelectorMatchRecord record{sheet, i};
+		SelectorMatchRecord record{*sheet, i};
 		Lookup(context, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
 		Lookup(context, matchedSelectors, sheet->typeSelectors, "*", record);
 		if(!element->name.empty())
 			Lookup(context, matchedSelectors, sheet->nameSelectors, element->name, record);
-		for(auto& cls : element->classes)
-			Lookup(context, matchedSelectors, sheet->classSelectors, element->classes, record);
+		
+		// !![HANG FOR BUILD]!!
+		//for(auto& cls : element->classes)
+		//	Lookup(context, matchedSelectors, sheet->classSelectors, element->classes, record);
 	}
 }

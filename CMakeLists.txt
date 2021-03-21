@@ -74,7 +74,6 @@ target_include_directories(OpenGUI
     ${PLATFORM_INCLUDES}
 )
 target_link_libraries(OpenGUI PRIVATE Yoga)
-target_link_libraries(OpenGUI INTERFACE hana)
 
 
 ### xerces-c

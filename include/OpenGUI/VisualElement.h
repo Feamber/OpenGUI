@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
+#include <string>
 #include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Style/Style.h"
 #include "yoga/Yoga.h"
 
 

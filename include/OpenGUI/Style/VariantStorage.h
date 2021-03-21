@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <boost/hana.hpp>
+
 namespace OGUI
 {
 	namespace hana = boost::hana;
@@ -7,7 +9,7 @@ namespace OGUI
 	struct VariantHandle
 	{
 		//int Type;
-		int Index;
+		int index;
 	};
 
 	template<class... Ts>
@@ -32,7 +34,7 @@ namespace OGUI
 		template<class T>
 		VariantHandle Push(T const& value)
 		{
-			contexpr auto index = IndexOf<T>();
+			constexpr auto index = IndexOf<T>();
 			auto& vector = hana::at(vectors, index);
 			vector.push_back(value);
 			return {vector.size() - 1};
