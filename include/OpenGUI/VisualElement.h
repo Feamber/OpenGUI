@@ -6,6 +6,9 @@
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
+#include "OpenGUI/Xml/XmlFactory.h"
+#include "OpenGUI/Xml/XmlAttributeDescription.h"
+#include "OpenGUI/Xml/XmlChildElementDescription.h"
 
 
 namespace OGUI
@@ -68,6 +71,22 @@ namespace OGUI
 		void MarkDirty(DirtyReason reason);
 		std::string _name;
 
+#pragma region Xml
+	public:
+		class Traits : public XmlTraits
+		{
+#define ATTRS \
+			PARENT_CLASS(XmlTraits) \
+			ATTR(XmlStringAttributeDescription, name, XmlGenericAttributeNames::name, XmlAttributeUse::Optional)\
+			ATTR(XmlStringAttributeDescription, path, XmlGenericAttributeNames::path, XmlAttributeUse::Optional)\
+			ATTR(XmlStringAttributeDescription, style, "style", XmlAttributeUse::Optional)\
+			ATTR(XmlStringAttributeDescription, class_tag, "class", XmlAttributeUse::Optional)
+#include "OpenGUI/Xml/GenXmlAttrsDesc.h"
+		};
+
+		class Factory : public XmlFactory<VisualElement, Traits> {};
+#pragma endregion
+
 #pragma region Hierachy
 		void PushChild(VisualElement* child);
 		void InsertChild(VisualElement* child, int index);
@@ -79,9 +98,10 @@ namespace OGUI
 #pragma endregion
 
 #pragma region Transform
-		Vector2f _renderPosition = Vector2f::vector_zero();
-		float _renderRotation = 0.f;
-		Vector2f _renderScale = Vector2f::vector_one();
+		Vector2f _localPosition = Vector2f::vector_zero();
+		float _localRotation = 0.f;
+		Vector2f _localScale = Vector2f::vector_one();
+		Vector2f _worldPosition;
 		float4x4 _worldTransform;
 		void UpdateWorldTransform();
 		Rect GetLayout();
@@ -118,4 +138,6 @@ namespace OGUI
 		void Traverse(F&& f, int depth = 0);
 	};
 }
+
+
 #include "VisualElement.inl"

@@ -25,7 +25,7 @@ namespace OGUI
 		std::enable_if_t<!std::is_convertible_v<T, Y>, StyleProperty>
 			AddPropertyImpl(StyleSheetStorage& sheet, StylePropertyId id, const Y& value)
 		{
-			//assert(false);
+			assert(false);
 			return {};
 		}
 	}
@@ -40,7 +40,7 @@ namespace OGUI
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef	STYLEPROP
-		//assert(false);
+		assert(false);
 		return {};
 	}
 }
