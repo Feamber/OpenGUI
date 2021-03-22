@@ -94,6 +94,13 @@ namespace OGUI
         Vector2f uvSize = params.uv.max - params.uv.min;
         Vector2f boxSize = params.rect.max - params.rect.min;
         Vector2f uvBorder = uvSize * params.radius / boxSize;
+
+        // center rect 
+		//    |     |  
+		// --------------
+		//    |  x  |  
+		// --------------
+		//    |     |   
         Rect centerRect{ params.rect.min + params.radius, params.rect.max - params.radius };
         Rect centerRectUV{ params.uv.min + uvBorder, params.uv.max - uvBorder };
         

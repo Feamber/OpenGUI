@@ -10,6 +10,7 @@ namespace OGUI
 		{
 
 		}; 
+
 		struct BoxParams
 		{
 			Rect rect;
@@ -19,8 +20,6 @@ namespace OGUI
 			//Radius
 			//SVG
 			//Material
-
-			static BoxParams MakeSolid(Rect rect, Color4f color);
 		};
 		struct CheckBox0Params
 		{
@@ -33,36 +32,45 @@ namespace OGUI
 		struct CircleParams 
 		{
 			Vector2f pos;
-			float radius;
 			Rect uv;
 			Color4f color;
 			ITexture* texture;
+			float radius;
 		};
 		struct FanParams
 		{
 			Vector2f pos;
-			float radius;
-			float degree;
-			float beginDegree;
 			Rect uv;
 			Color4f color;
 			ITexture* texture;
+			float radius;
+			float degree;
+			float beginDegree;
 		};
 		struct RoundBoxParams
 		{
 			Rect rect;
 			Rect uv;
 			Color4f color;
-			float radius;
 			ITexture* texture;
+			float radius;
+		};
+		struct LineParams
+		{
+			std::vector<Vector2f> points;
+			Rect uv;
+			Color4f color;
+			ITexture* texture;
+			float thinkness;
 		};
 
 		// Call from DrawList.
 		OGUI_API void DrawBox(PrimDrawList& list, const BoxParams& params);
-		OGUI_API void DrawCheckBox0(
-			PrimDrawList& context, const CheckBox0Params& params);
-		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 10);
+		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 20);
 		OGUI_API void DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);
 		OGUI_API void DrawRoundBox(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount = 10);
+		OGUI_API void DrawLines(PrimDrawList& list, const LineParams& params, bool bAnitAliasing = false, bool bClosed = false);
+		
+		OGUI_API void DrawCheckBox0(PrimDrawList& context, const CheckBox0Params& params);
 	}
 }
