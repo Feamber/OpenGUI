@@ -46,7 +46,7 @@ public:
 		vertex_buffer = createBuffer(device, queue,
 			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
 		index_buffer = createBuffer(device, queue,
-			list.indices.data(), list.indices.capacity() * sizeof(uint16_t), WGPUBufferUsage_Index);
+			list.indices.data(), list.indices.size() * sizeof(uint16_t), WGPUBufferUsage_Index);
 
 		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
 		WGPURenderPassColorAttachmentDescriptor colorDesc = {};
@@ -280,16 +280,12 @@ static bool redraw() {
 	box.color = Color4f(.3f, .3f, .3f, .8f);
 	PrimitiveDraw::DrawBox(list, box);
 
-	list.validate_and_batch();
-
 	// circle 
 	PrimitiveDraw::CircleParams circle = {};
 	circle.color = Color4f(1, 0, 0, 1);
 	circle.pos = Vector2f(0.5f, 0.5f);
 	circle.radius = 0.1f;
-	PrimitiveDraw::DrawCircle(list, circle, 100);
-
-	list.validate_and_batch();
+	PrimitiveDraw::DrawCircle(list, circle, 10);
 
 	// fan 
 	PrimitiveDraw::FanParams fan = {};

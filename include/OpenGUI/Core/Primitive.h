@@ -73,14 +73,15 @@ namespace OGUI
     {
         inline void validate_and_batch()
         {
-            const auto ic = indices.size();
+            const size_t ic = indices.size();
             command_list.emplace_back(
                 PrimDraw{0, 0,
                 (uint32_t)ic,
                 nullptr, nullptr}
             );
-            indices.reserve(
-                (ic / 4) * 4 + 4
+            const size_t i_aligned = (ic / 4) * 4 + 4;
+            indices.resize(
+                i_aligned
             );
             // batch not implemented now.
             //std::sort(command_list.begin(), command_list.end(),
