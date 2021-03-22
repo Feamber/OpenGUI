@@ -31,7 +31,7 @@ void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
 	Traverse(Tree, 0);
-	//assert(matchingContext.styleSheetStack.size() == 0)
+	assert(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
 }
 
@@ -57,7 +57,6 @@ namespace OGUI
 				break;
 			default:
 				match = false;
-				//assert(false);
 		}
 		if (match)
 		{

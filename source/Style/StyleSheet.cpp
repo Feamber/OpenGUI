@@ -28,7 +28,7 @@ void OGUI::StyleSheet::Initialize()
 				mapPtr = &typeSelectors;
 				break;
 			default:
-				//assert(false);
+				assert(false);
 				break;
 		}
 		

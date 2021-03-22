@@ -105,7 +105,7 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	using namespace math;
 	auto layout = GetLayout();
 	auto parent = GetHierachyParent();
-	auto localMat = ::make_transform(layout.min + _renderPosition, _renderRotation, _renderScale);
+	auto localMat = ::make_transform(layout.min + _localPosition, _localRotation, _localScale);
 	if (parent)
 		_worldTransform = math::multiply(parent->_worldTransform, localMat);
 	else
