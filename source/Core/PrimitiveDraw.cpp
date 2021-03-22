@@ -133,35 +133,35 @@ namespace OGUI
         // draw corner fan(4->7) 
         DrawFan(list, {
             Vector2f(centerRect.min.X, centerRect.max.Y),
-            params.radius,
-            math::PI / 2,
-            math::PI / 2,
             Rect{Vector2f(params.uv.min.X, centerRectUV.max.Y), Vector2f(centerRectUV.min.X, params.uv.max.Y)},
             params.color,
-            params.texture });
+            params.texture,
+			params.radius,
+			math::PI / 2,
+            math::PI / 2 });
 		DrawFan(list, {
 			Vector2f(centerRect.max.X, centerRect.max.Y),
-			params.radius,
-			math::PI / 2,
-			0,
 			Rect{Vector2f(centerRectUV.max.X, centerRectUV.max.Y), Vector2f(centerRectUV.max.X, centerRectUV.max.Y)},
 			params.color,
-			params.texture });
+			params.texture,
+			params.radius,
+			math::PI / 2,
+			0 });
 		DrawFan(list, {
 			Vector2f(centerRect.min.X, centerRect.min.Y),
-			params.radius,
-			math::PI / 2,
-			-math::PI,
 			Rect{Vector2f(params.uv.min.X, params.uv.min.Y), Vector2f(centerRectUV.min.X, centerRectUV.min.Y)},
 			params.color,
-			params.texture });
-		DrawFan(list, {
-			Vector2f(centerRect.max.X, centerRect.min.Y),
+			params.texture,
 			params.radius,
 			math::PI / 2,
-			-math::PI / 2,
+			-math::PI });
+		DrawFan(list, {
+			Vector2f(centerRect.max.X, centerRect.min.Y),
 			Rect{Vector2f(centerRectUV.min.X, params.uv.min.Y), Vector2f(params.uv.max.X, centerRectUV.min.Y)},
 			params.color,
-			params.texture });
+			params.texture,
+			params.radius,
+			math::PI / 2,
+			-math::PI / 2 });
     }
 }
