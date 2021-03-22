@@ -6,6 +6,9 @@
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
+#include "OpenGUI/Xml/XmlFactory.h"
+#include "OpenGUI/Xml/XmlAttributeDescription.h"
+#include "OpenGUI/Xml/XmlChildElementDescription.h"
 
 
 namespace OGUI
@@ -67,6 +70,22 @@ namespace OGUI
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
 
+#pragma region Xml
+	public:
+		class Traits : public XmlTraits
+		{
+#define ATTRS \
+			PARENT_CLASS(XmlTraits) \
+			ATTR(XmlStringAttributeDescription, name, XmlGenericAttributeNames::name, XmlAttributeUse::Optional)\
+			ATTR(XmlStringAttributeDescription, path, XmlGenericAttributeNames::path, XmlAttributeUse::Optional)\
+			ATTR(XmlStringAttributeDescription, style, "style", XmlAttributeUse::Optional)\
+			ATTR(XmlStringAttributeDescription, class_tag, "class", XmlAttributeUse::Optional)
+#include "OpenGUI/Xml/GenXmlAttrsDesc.h"
+		};
+
+		class Factory : public XmlFactory<VisualElement, Traits> {};
+#pragma endregion
+
 #pragma region Hierachy
 		std::vector<VisualElement*> _children;
 		VisualElement* _physical_parent;
@@ -112,4 +131,6 @@ namespace OGUI
 		void Traverse(F&& f, int depth = 0);
 	};
 }
+
+
 #include "VisualElement.inl"
