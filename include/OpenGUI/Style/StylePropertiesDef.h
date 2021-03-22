@@ -29,7 +29,7 @@ STYLEPROP(	maxWidth,			25,				NonInherited,			YGValue,			"max-width",				YGValue
 STYLEPROP(	maxHeight,			26,				NonInherited,			YGValue,			"max-height",				YGValueUndefined			)
 STYLEPROP(	minWidth,			27,				NonInherited,			YGValue,			"min-width",				YGValueAuto					)
 STYLEPROP(	minHeight,			28,				NonInherited,			YGValue,			"min-height",				YGValueAuto					)
-STYLEPROP(	flexDirection,		29,				NonInherited,			YGFlexDirection,	"flex-direction",			YGFlexDirectionColumn		)
+STYLEPROP(	flexDirection,		29,				NonInherited,			YGFlexDirection,	"flex-direction",			YGFlexDirectionRow			)
 STYLEPROP(	alignContent,		30,				NonInherited,			YGAlign,			"align-content",			YGAlignFlexStart			)
 STYLEPROP(	alignItems,			31,				NonInherited,			YGAlign,			"align-items",				YGAlignStretch				)
 STYLEPROP(	justifyContent,		32,				NonInherited,			YGJustify,			"justify-content",			YGJustifyFlexStart			)

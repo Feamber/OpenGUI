@@ -56,20 +56,11 @@ OGUI::StyleSheet LoadStyleSheet()
         Prop("width", YGPoint(300.f));
         Prop("height", YGPoint(300.f));
         Prop("justify-content", YGJustifyCenter);
+        Prop("align-items", YGAlignCenter);
         Prop("color", Color4f(0.6f, 0.6f, 0.6f, 1.f));
     EndRule();
 
     BeginRule(rule2)
-        //Prop("width", YGPoint(100.f));
-        //Prop("height", YGPoint(100.f));
-        Prop("flex-direction", YGFlexDirectionRow);
-        Prop("justify-content", YGJustifyCenter);
-        Prop("padding-top", YGPoint(10.f));
-        Prop("padding-bottom", YGPoint(10.f));
-        Prop("color", Color4f(0.8f, 0.5f, 0.8f, 1.f));
-    EndRule();
-
-    BeginRule(rule3)
         Prop("width", YGPoint(100.f));
         Prop("height", YGPoint(100.f));
         Prop("margin-right", YGPoint(10.f));
@@ -77,8 +68,7 @@ OGUI::StyleSheet LoadStyleSheet()
     EndRule();
 
     SimpleSelector(Name, "TestElement", rule1);
-    SimpleSelector(Name, "TestElement2", rule2);
-    SimpleSelector(Class, "Child", rule3);
+    SimpleSelector(Class, "Child", rule2);
 
     styleSt.Initialize();
     return styleSt;
@@ -91,24 +81,19 @@ void WidgetSample::Initialize()
     auto ve = std::make_unique<VisualElement>();
     auto styleSt = LoadStyleSheet();
     ve->_name = "TestElement";
-    ve->_styleSheets.push_back(&styleSt);
+    ve->_styleSheets.push_back(&styleSt);\
 
     auto c1 = std::make_unique<VisualElement>();
-    c1->_name = "TestElement2";
+    c1->_name = "Child1";
+    c1->_styleClasses.push_back("Child");
     ve->PushChild(c1.get());
 
     auto c2 = std::make_unique<VisualElement>();
-    c2->_name = "Child1";
+    c2->_name = "Child2";
     c2->_styleClasses.push_back("Child");
-    c1->PushChild(c2.get());
-
-    auto c3 = std::make_unique<VisualElement>();
-    c3->_name = "Child2";
-    c3->_styleClasses.push_back("Child");
-    c1->PushChild(c3.get());
+    ve->PushChild(c2.get());
     nodes.push_back(std::move(c1));
     nodes.push_back(std::move(c2));
-    nodes.push_back(std::move(c3));
 
     styleSys.Update(ve.get());
     ve->CalculateLayout();
