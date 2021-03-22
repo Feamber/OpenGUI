@@ -6,7 +6,6 @@
 
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 {
-	StyleMatchingContext matchingContext;
 	const auto& ess = element->GetStyleSheets();
 	int originStyleSheetCount = matchingContext.styleSheetStack.size();
 	for (auto& ss : ess)
@@ -32,6 +31,8 @@ void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
 	Traverse(Tree, 0);
+	//assert(matchingContext.styleSheetStack.size() == 0)
+	matchingContext.styleSheetStack.clear();
 }
 
 namespace OGUI
@@ -49,7 +50,7 @@ namespace OGUI
 				match = element->ContainClass(selector.value);
 				break;
 			case StyleSelector::Name:
-				match = element->name == selector.value;
+				match = element->_name == selector.value;
 				break;
 			case StyleSelector::Type:
 				match = element->IsA(selector.value);
@@ -158,9 +159,9 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 		SelectorMatchRecord record{sheet, i, nullptr};
 		Lookup(context, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
 		Lookup(context, matchedSelectors, sheet->typeSelectors, "*", record);
-		if(!element->name.empty())
-			Lookup(context, matchedSelectors, sheet->nameSelectors, element->name, record);
-		for(auto& cls : element->classes)
+		if(!element->_name.empty())
+			Lookup(context, matchedSelectors, sheet->nameSelectors, element->_name, record);
+		for(auto& cls : element->_styleClasses)
 			Lookup(context, matchedSelectors, sheet->classSelectors, cls, record);
 	}
 }
@@ -235,12 +236,12 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 	for (auto& record : matchedSelectors)
 	{
 		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-		append_hash(matchHash, hash(rule));
-		append_hash(matchHash, record.complexSelector->specificity);
+		matchHash = append_hash(matchHash, hash(rule));
+		matchHash = append_hash(matchHash, record.complexSelector->specificity);
 	}
 	VisualElement* parent = element->GetHierachyParent();
 	if (parent)
-		append_hash(matchHash, parent->_inheritedStylesHash);
+		matchHash = append_hash(matchHash, parent->_inheritedStylesHash);
 	auto iter = styleCache.find(matchHash);
 	if (iter != styleCache.end())
 		element->SetSharedStyle(iter->second.get());

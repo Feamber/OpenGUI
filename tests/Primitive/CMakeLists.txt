@@ -1,2 +1,4 @@
 add_executable(PrimitiveGenerationTest Generation.cpp Draw.cpp)
+add_executable(StyleTest StyleRuntime.cpp)
+target_link_libraries(StyleTest PRIVATE OpenGUI)
 catch_discover_tests(PrimitiveGenerationTest)

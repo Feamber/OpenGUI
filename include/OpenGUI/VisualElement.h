@@ -52,23 +52,24 @@ namespace OGUI
 	class VisualElement
 	{
 	public:
+		VisualElement();
 		virtual ~VisualElement();
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
 		VisualElement* GetHierachyParent();
-		const std::vector<StyleSheet*>& GetStyleSheets();
-		bool IsA(std::string type);
-		std::string GetTypeName();
-		std::string GetFullTypeName();
+		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 
-		std::string name;
-		std::vector<std::string> classes;
-	protected:
+		virtual bool IsA(std::string_view type) { return GetTypeName() == type; }
+		virtual std::string_view GetTypeName() { return "VisualElement"; }
+		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
+
+	public:
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void ApplyClipping(PrimitiveDraw::DrawContext& Ctx);
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
+		std::string _name;
 
 #pragma region Xml
 	public:
@@ -87,39 +88,44 @@ namespace OGUI
 #pragma endregion
 
 #pragma region Hierachy
+		void PushChild(VisualElement* child);
+		void InsertChild(VisualElement* child, int index);
+
 		std::vector<VisualElement*> _children;
-		VisualElement* _physical_parent;
+		VisualElement* _physical_parent = nullptr;
 		//There could be some node between logical parent and this widget for layout
-		VisualElement* _logical_parent;
+		VisualElement* _logical_parent = nullptr;
 #pragma endregion
 
 #pragma region Transform
-		Vector3f _position;
-		Vector3f _rotation;
-		Vector3f _scale;
-		Matrix4x4f _worldTransform;
+		Vector2f _renderPosition = Vector2f::vector_zero();
+		float _renderRotation = 0.f;
+		Vector2f _renderScale = Vector2f::vector_one();
+		float4x4 _worldTransform;
+		void UpdateWorldTransform();
+		Rect GetLayout();
+		Rect GetRect();
 		//Rect _layout;
 #pragma endregion
 
 #pragma region Style
 	public:
 		YGNodeRef _ygnode;
-		bool _hasInlineStyle;
-		uint32_t _triggerPseudoMask;
-		uint32_t _dependencyPseudoMask;
-		uint32_t _pseudoMask;
+		uint32_t _triggerPseudoMask = 0;
+		uint32_t _dependencyPseudoMask = 0;
+		uint32_t _pseudoMask = 0;
 		int _inheritedStylesHash = 0;
 		StyleRule _inlineRule;
-		StyleSheet* _inlineSheet;
+		StyleSheet* _inlineSheet = nullptr;
 		StyleSheetStorage _procedureSheet;
 		StyleRule _procedureRule;
 
 		Style _style;
-		Style* _sharedStyle;
+		Style* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
+		std::vector<std::string_view> _styleClasses;
 
 		void SetPseudoMask(uint32_t mask);
-		Rect GetLayout();
 		void CalculateLayout();
 		void SetSharedStyle(Style* style);
 		void SyncYogaStyle();
