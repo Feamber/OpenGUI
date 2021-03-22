@@ -7,32 +7,44 @@
 
 namespace OGUI
 {
-//#define Attribute(type, attribute_name, constructors) type attribute_name constructors;
-//#define Attribute(type, attribute_name, constructors, ...)	type attribute_name constructors; AttributeFor(__VA_ARGS__)
-//#define Attributes(type, attribute_name, constructors, ...) struct\
-//	{\
-//		AttributeFor()
-//	} attributes;
+	/*
+	class XmlTraits : public AXmlTraits
+	{
+	public:
+#define ATTRS \
+		PARENT_CLASS(AXmlTraits) \
+		ATTR(XmlFloatAttributeDescription, angle, 45.f, XmlAttributeUse::Optional)\
+		ATTR(XmlStringAttributeDescription, describe, "描述", XmlAttributeUse::Required)
+#include "OpenGUI/Xml/GenXmlAttrsDesc.h.h"
+	}
+	*/
+
+	enum class XmlAttributeUse
+	{
+		Optional,	// 可选
+		Required,	// 必须使用
+	};
+
+	class XmlGenericAttributeNames
+	{
+	public:
+		inline static const std::string name = "name";
+		inline static const std::string path = "path";
+	};
 
 	class XmlAttributeDescription
 	{
 	public:
 		inline static const std::string_view xml_schema_namespace = "http://www.w3.org/2001/XMLSchema";
 
-		enum class Use
-		{
-			Optional,	// 可选
-			Required,	// 必须使用
-		};
-
 		std::string_view name;
 		std::string_view type;
 		std::string_view type_namespace;
 		std::string default_value_string;
-		Use use;
+		XmlAttributeUse use;
 		XmlTypeRestriction restriction;
 
-		XmlAttributeDescription(std::string_view name, std::string_view type, std::string_view type_namespace, std::string default_value_string, Use use) :
+		XmlAttributeDescription(std::string_view name, std::string_view type, std::string_view type_namespace, std::string default_value_string, XmlAttributeUse use) :
 			name(name),
 			type(type),
 			type_namespace(type_namespace),
@@ -43,12 +55,12 @@ namespace OGUI
 		bool GetValueString(std::string& out, const VisualElementAsset& element);
 	};
 
-	template<typename T>
+	template<class T>
 	class TypeXmlAttributeDescription : public XmlAttributeDescription
 	{
 	public:
 		T default_value;
-		TypeXmlAttributeDescription(std::string_view name, std::string_view type, std::string_view type_namespace, std::string default_value_string, Use use, T default_value) :
+		TypeXmlAttributeDescription(std::string_view name, std::string_view type, std::string_view type_namespace, std::string default_value_string, XmlAttributeUse use, T default_value) :
 			XmlAttributeDescription(name, type, type_namespace, default_value_string, use),
 			default_value(default_value) {}
 
@@ -58,7 +70,7 @@ namespace OGUI
 	class XmlStringAttributeDescription : public TypeXmlAttributeDescription<std::string>
 	{
 	public:
-		XmlStringAttributeDescription(std::string_view name, std::string default_value, Use use) :
+		XmlStringAttributeDescription(std::string_view name, std::string default_value, XmlAttributeUse use) :
 			TypeXmlAttributeDescription(
 				name,
 				"string",
@@ -76,7 +88,7 @@ namespace OGUI
 	class XmlFloatAttributeDescription : public TypeXmlAttributeDescription<float>
 	{
 	public:
-		XmlFloatAttributeDescription(std::string_view name, float default_value, Use use) :
+		XmlFloatAttributeDescription(std::string_view name, float default_value, XmlAttributeUse use) :
 			TypeXmlAttributeDescription(
 				name,
 				"float",
@@ -94,7 +106,7 @@ namespace OGUI
 	class XmlDoubleAttributeDescription : public TypeXmlAttributeDescription<double>
 	{
 	public:
-		XmlDoubleAttributeDescription(std::string_view name, double default_value, Use use) :
+		XmlDoubleAttributeDescription(std::string_view name, double default_value, XmlAttributeUse use) :
 			TypeXmlAttributeDescription(
 				name,
 				"double",
@@ -112,7 +124,7 @@ namespace OGUI
 	class XmlIntAttributeDescription : public TypeXmlAttributeDescription<int>
 	{
 	public:
-		XmlIntAttributeDescription(std::string_view name, int default_value, Use use) :
+		XmlIntAttributeDescription(std::string_view name, int default_value, XmlAttributeUse use) :
 			TypeXmlAttributeDescription(
 				name,
 				"int",
@@ -130,7 +142,7 @@ namespace OGUI
 	class XmlLongAttributeDescription : public TypeXmlAttributeDescription<long>
 	{
 	public:
-		XmlLongAttributeDescription(std::string_view name, long default_value, Use use) :
+		XmlLongAttributeDescription(std::string_view name, long default_value, XmlAttributeUse use) :
 			TypeXmlAttributeDescription(
 				name,
 				"long",
@@ -148,7 +160,7 @@ namespace OGUI
 	class XmlBoolAttributeDescription : public TypeXmlAttributeDescription<bool>
 	{
 	public:
-		XmlBoolAttributeDescription(std::string_view name, bool default_value, Use use) :
+		XmlBoolAttributeDescription(std::string_view name, bool default_value, XmlAttributeUse use) :
 			TypeXmlAttributeDescription(
 				name,
 				"boolean",
@@ -163,13 +175,13 @@ namespace OGUI
 		bool GetValue(const VisualElementAsset& element) override;
 	};
 	
-	template<typename E>
-	class XmlEnumAttributeDescription : public TypeXmlAttributeDescription<E>
+	template<class E>
+	class XmlEnumAttributeDescription : public TypeXmlAttributeDescription<std::enable_if_t<std::is_enum_v<E>, E>>
 	{
 	public:
 		virtual const std::vector<std::pair<std::string, E>>& GetEnumEntries() = 0;
 
-		XmlEnumAttributeDescription(std::string_view name, E default_value, Use use) :
+		XmlEnumAttributeDescription(std::string_view name, E default_value, XmlAttributeUse use) :
 			TypeXmlAttributeDescription(
 				name,
 				"string",
@@ -179,8 +191,6 @@ namespace OGUI
 				default_value
 			)
 		{
-			static_assert(std::is_enum_v<E>);
-
 			auto entries = GetEnumEntries();
 			restriction.type = XmlTypeRestriction::Type::Enum;
 			restriction.enums.resize(entries.size());
