@@ -28,7 +28,7 @@ namespace OGUI
         void GetAllAttr(std::vector<XmlAttributeDescription*>& result) {};
 
         // GenXmlChildDesc.h
-        void GetAllChild(std::vector<XmlAttributeDescription*>& result) {};
+        void GetAllChild(std::vector<XmlChildElementDescription*>& result) {};
     };
 
     class IXmlFactory
@@ -70,13 +70,13 @@ namespace OGUI
             return new_element;
         }
 
-    private:
+    protected:
         XmlFactory()
         {
             xml_name = NAMEOF_SHORT_TYPE(TCreatedType).data();
-            xml_namespace = xmlTool::GetTypeNamespace<TCreatedType>();
+            xml_namespace = XmlTool::GetTypeNamespace<TCreatedType>();
             xml_qualified_name = xml_namespace == "" ? xml_name : xml_namespace + '.' + xml_name;
-            _traits.GetAllAttrDesc(_traits.attributes_desc);
+            _traits.GetAllAttr(_traits.attributes_desc);
         }
     };
 }

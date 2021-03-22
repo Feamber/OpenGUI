@@ -56,7 +56,7 @@ namespace OGUI
             return *this;
         }
     protected:
-        alignas(16) union
+        union
         {
             struct
             {

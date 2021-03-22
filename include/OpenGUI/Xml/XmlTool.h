@@ -11,7 +11,7 @@ namespace OGUI
         std::string GetTypeNamespace()
         {
             constexpr auto name = NAMEOF_TYPE(T);
-            std::string_view name2 = { name.begin(), name.end() };
+            std::string name2 = { name.begin(), name.end() };
             if (name2.find("::") == std::string::npos) return "";
 
             int star_index = 0;

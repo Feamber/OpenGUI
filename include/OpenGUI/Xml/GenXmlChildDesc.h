@@ -6,7 +6,7 @@ CHILDREN
 #undef PARENT_CLASS
 #undef CHILD
 
-void GetAllChild(std::vector<XmlAttributeDescription*>& result)
+void GetAllChild(std::vector<XmlChildElementDescription*>& result)
 {
 #define CHILD(...)
 #define PARENT_CLASS(type) \

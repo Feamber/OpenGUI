@@ -18,7 +18,7 @@ namespace OGUI
 #include "OpenGUI/Xml/GenXmlChildDesc.h"
 	};
 
-	class XmlRootElementFactory : XmlFactory<VisualElement, XmlRootElementTraits> 
+	class XmlRootElementFactory : public XmlFactory<VisualElement, XmlRootElementTraits> 
 	{
 	public:
 		inline static const std::string_view element_name = "Root";
@@ -46,7 +46,7 @@ namespace OGUI
 #include "OpenGUI/Xml/GenXmlAttrsDesc.h"
 	};
 
-	class XmlStyleElementFactory : XmlFactory<VisualElement, XmlStyleElementTraits>
+	class XmlStyleElementFactory : public XmlFactory<VisualElement, XmlStyleElementTraits>
 	{
 	public:
 		inline static const std::string_view element_name = "Style";
@@ -75,7 +75,7 @@ namespace OGUI
 #include "OpenGUI/Xml/GenXmlAttrsDesc.h"
 	};
 
-	class XmlTemplateElementFactory : XmlFactory<VisualElement, XmlTemplateElementTraits>
+	class XmlTemplateElementFactory : public XmlFactory<VisualElement, XmlTemplateElementTraits>
 	{
 	public:
 		inline static const std::string_view element_name = "Template";
@@ -103,7 +103,7 @@ namespace OGUI
 #include "OpenGUI/Xml/GenXmlChildDesc.h"
 	};
 
-	class XmlAttributeOverridesElementFactory : XmlFactory<VisualElement, XmlAttributeOverridesElementTraits>
+	class XmlAttributeOverridesElementFactory : public XmlFactory<VisualElement, XmlAttributeOverridesElementTraits>
 	{
 	public:
 		inline static const std::string_view element_name = "AttributeOverrides";

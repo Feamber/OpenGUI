@@ -3,19 +3,22 @@
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 #include <vector>
 
-std::map<std::string_view, IXmlFactory*> OGUI::XmlFactoryRegistry::factories = {};
+namespace OGUI
+{
+	std::map<std::string_view, IXmlFactory*> OGUI::XmlFactoryRegistry::factories = {};
+}
 
 void OGUI::XmlFactoryRegistry::RegisterFactory(IXmlFactory* factory)
 {
-	auto result = factories.find(factory.Xml_qualified_name);
+	auto result = factories.find(factory->xml_qualified_name);
 	if (result == factories.end())
 	{
-		factories[factory.Xml_qualified_name] = factory;
+		factories[factory->xml_qualified_name] = factory;
 	}
 	// TODO 日志：重复注册 XmlFactory
 }
 
-IXmlFactory* OGUI::XmlFactoryRegistry::FindFactory(std::string_view Xml_qualified_name)
+OGUI::IXmlFactory* OGUI::XmlFactoryRegistry::FindFactory(std::string_view Xml_qualified_name)
 {
 	struct Initial
 	{
@@ -39,7 +42,6 @@ void OGUI::XmlFactoryRegistry::RegisterEngineFactories()
 		new XmlRootElementFactory(),
 		new XmlStyleElementFactory,
 		new XmlTemplateElementFactory(),
-		new XmlAttributeOverridesElementTraits
 	};
 
 	for (auto factory : engine_factories)
