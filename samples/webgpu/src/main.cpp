@@ -285,7 +285,7 @@ static bool redraw() {
 	circle.color = Color4f(1, 0, 0, 1);
 	circle.pos = Vector2f(0.5f, 0.5f);
 	circle.radius = 0.1f;
-	PrimitiveDraw::DrawCircle(list, circle, 10);
+	PrimitiveDraw::DrawCircle(list, circle);
 
 	// fan 
 	PrimitiveDraw::FanParams fan = {};
@@ -294,10 +294,16 @@ static bool redraw() {
 	fan.degree = math::PI / 2;
 	fan.pos = Vector2f(0.5f, 0.5f);
 	fan.radius = 0.08f;
-	PrimitiveDraw::DrawFan(list, fan, 24);
+	PrimitiveDraw::DrawFan(list, fan);
+
+	// round box 
+	PrimitiveDraw::RoundBoxParams roundBox;
+	roundBox.rect = { Vector2f(+0.05f, +0.05f), Vector2f(+0.4f, +0.4f) };
+	roundBox.color = Color4f(0, 1, 0, 1);
+	roundBox.radius = 0.1f;
+	PrimitiveDraw::DrawRoundBox(list, roundBox);
 
 	list.validate_and_batch();
-
 
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
 	renderer->render_primitives(list);

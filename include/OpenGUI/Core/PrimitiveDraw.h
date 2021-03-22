@@ -48,6 +48,14 @@ namespace OGUI
 			Color4f color;
 			ITexture* texture;
 		};
+		struct RoundBoxParams
+		{
+			Rect rect;
+			Rect uv;
+			Color4f color;
+			float radius;
+			ITexture* texture;
+		};
 
 		// Call from DrawList.
 		OGUI_API void DrawBox(PrimDrawList& list, const BoxParams& params);
@@ -55,5 +63,6 @@ namespace OGUI
 			PrimDrawList& context, const CheckBox0Params& params);
 		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 10);
 		OGUI_API void DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);
+		OGUI_API void DrawRoundBox(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount = 10);
 	}
 }
