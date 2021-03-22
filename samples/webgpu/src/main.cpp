@@ -291,6 +291,18 @@ static bool redraw() {
 
 	list.validate_and_batch();
 
+	// fan 
+	PrimitiveDraw::FanParams fan = {};
+	fan.color = Color4f(0, 0, 1, 1);
+	fan.beginDegree = math::PI / 4;
+	fan.degree = math::PI / 2;
+	fan.pos = Vector2f(0.5f, 0.5f);
+	fan.radius = 0.08f;
+	PrimitiveDraw::DrawFan(list, fan, 24);
+
+	list.validate_and_batch();
+
+
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
 	renderer->render_primitives(list);
 	delete renderer;

@@ -38,11 +38,22 @@ namespace OGUI
 			Color4f color;
 			ITexture* texture;
 		};
+		struct FanParams
+		{
+			Vector2f pos;
+			float radius;
+			float degree;
+			float beginDegree;
+			Rect uv;
+			Color4f color;
+			ITexture* texture;
+		};
 
 		// Call from DrawList.
-		OGUI_API void DrawBox(PrimDrawList& context, const BoxParams& params);
+		OGUI_API void DrawBox(PrimDrawList& list, const BoxParams& params);
 		OGUI_API void DrawCheckBox0(
 			PrimDrawList& context, const CheckBox0Params& params);
 		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 10);
+		OGUI_API void DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);
 	}
 }
