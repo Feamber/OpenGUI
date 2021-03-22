@@ -49,6 +49,7 @@ namespace OGUI
 	class VisualElement
 	{
 	public:
+		VisualElement();
 		virtual ~VisualElement();
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
@@ -68,17 +69,23 @@ namespace OGUI
 		std::string _name;
 
 #pragma region Hierachy
+		void PushChild(VisualElement* child);
+		void InsertChild(VisualElement* child, int index);
+
 		std::vector<VisualElement*> _children;
-		VisualElement* _physical_parent;
+		VisualElement* _physical_parent = nullptr;
 		//There could be some node between logical parent and this widget for layout
-		VisualElement* _logical_parent;
+		VisualElement* _logical_parent = nullptr;
 #pragma endregion
 
 #pragma region Transform
-		Vector3f _position;
-		Vector3f _rotation;
-		Vector3f _scale;
-		Matrix4x4f _worldTransform;
+		Vector2f _renderPosition = Vector2f::vector_zero();
+		float _renderRotation = 0.f;
+		Vector2f _renderScale = Vector2f::vector_one();
+		float4x4 _worldTransform;
+		void UpdateWorldTransform();
+		Rect GetLayout();
+		Rect GetRect();
 		//Rect _layout;
 #pragma endregion
 
@@ -100,7 +107,6 @@ namespace OGUI
 		std::vector<std::string_view> _styleClasses;
 
 		void SetPseudoMask(uint32_t mask);
-		Rect GetLayout();
 		void CalculateLayout();
 		void SetSharedStyle(Style* style);
 		void SyncYogaStyle();

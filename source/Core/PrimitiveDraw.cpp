@@ -30,4 +30,10 @@ namespace OGUI
         list.indices.emplace_back(vcount + 3u);
     }
 
+    PrimitiveDraw::BoxParams PrimitiveDraw::BoxParams::MakeSolid(Rect rect, Color4f color)
+    {
+        Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
+        return {rect, uv, color, nullptr};
+    }
 }
+

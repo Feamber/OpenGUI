@@ -1,8 +1,14 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Style/Style.h"
 
 void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx)
-{}
+{
+	using namespace PrimitiveDraw;
+	auto rect = GetRect();
+	//TODO: Apply Transform
+	PrimitiveDraw::DrawBox(Ctx.prims, BoxParams::MakeSolid(rect, Color4f(.6f, .6f, .6f, 1.f)));
+}
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
 {}
@@ -15,6 +21,12 @@ void OGUI::VisualElement::CreateYogaNode()
 	auto config = YGConfigGetDefault();
 	_ygnode = YGNodeNewWithConfig(config);
 	YGNodeSetContext(_ygnode, this);
+}
+
+OGUI::VisualElement::VisualElement()
+{
+	CreateYogaNode();
+	_style = Style::GetInitialStyle();
 }
 
 OGUI::VisualElement::~VisualElement()
@@ -47,6 +59,18 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 	//Context.Get().BroadcastDirtyEvent(this, reason);
 }
 
+void OGUI::VisualElement::PushChild(VisualElement* child)
+{
+	InsertChild(child, _children.size());
+}
+
+void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
+{
+	child->_physical_parent = this;
+	YGNodeInsertChild(_ygnode, child->_ygnode, index);
+	_children.insert(_children.begin() + index, child);
+}
+
 void OGUI::VisualElement::SetSharedStyle(Style* style)
 {
 	if (style == _sharedStyle)
@@ -63,16 +87,50 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 
 void OGUI::VisualElement::CalculateLayout()
 {
-	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
+	YGNodeCalculateLayout(_ygnode,YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
 	YGNodeSetHasNewLayout(_ygnode, false);
+}
+
+OGUI::float4x4 make_transform(OGUI::Vector2f pos2d, float rot2d, OGUI::Vector2f scale2d)
+{
+	using namespace OGUI;
+	Vector3f pos{pos2d.X, pos2d.Y, 0};
+	Quaternion rot = math::quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
+	Vector3f scale{scale2d.X, scale2d.Y, 1};
+	return math::make_transform(pos, scale, rot);
+}
+
+void OGUI::VisualElement::UpdateWorldTransform()
+{
+	using namespace math;
+	auto layout = GetLayout();
+	auto parent = GetHierachyParent();
+	auto localMat = ::make_transform(layout.min + _renderPosition, _renderRotation, _renderScale);
+	if (parent)
+		_worldTransform = math::multiply(parent->_worldTransform, localMat);
+	else
+		_worldTransform = localMat;
 }
 
 OGUI::Rect OGUI::VisualElement::GetLayout()
 {
+	Vector2f LB = {YGNodeLayoutGetLeft(_ygnode), YGNodeLayoutGetTop(_ygnode)};
+	Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
 	return
 	{
-		{YGNodeLayoutGetLeft(_ygnode), YGNodeLayoutGetBottom(_ygnode)},
-		{YGNodeLayoutGetRight(_ygnode), YGNodeLayoutGetTop(_ygnode)},
+		LB,
+		LB + WH,
+	};
+}
+
+OGUI::Rect OGUI::VisualElement::GetRect()
+{
+	Vector2f LB = Vector2f::vector_zero();
+	Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
+	return
+	{
+		LB,
+		WH,
 	};
 }
 
@@ -83,26 +141,40 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetFlex(_ygnode, _style.flex);
 	YGNodeStyleSetFlexGrow(_ygnode, _style.flexGrow);
 	YGNodeStyleSetFlexShrink(_ygnode, _style.flexShrink);
-	YGNodeStyleSetFlexBasis(_ygnode, _style.flexBasis);
 #define SetYGEdge(function, edge, v) \
 	if (v.unit == YGUnitPercent) \
 		function##Percent(_ygnode, edge, v.value); \
 	else \
 		function(_ygnode, edge, v.value)
+#define SetYGEdgeAuto(function, edge, v) \
+	if (v.unit == YGUnitPercent) \
+		function##Percent(_ygnode, edge, v.value); \
+	else if(v.unit == YGUnitAuto) \
+		function##Auto(_ygnode, edge); \
+	else \
+		function(_ygnode, edge, v.value)
+#define SetYGValueAuto(function, v) \
+	if (v.unit == YGUnitPercent) \
+		function##Percent(_ygnode, v.value); \
+	else if(v.unit == YGUnitAuto) \
+		function##Auto(_ygnode); \
+	else \
+		function(_ygnode, v.value)
 #define SetYGValue(function, v) \
 	if (v.unit == YGUnitPercent) \
 		function##Percent(_ygnode, v.value); \
 	else \
 		function(_ygnode, v.value)
 
+	SetYGValueAuto(YGNodeStyleSetFlexBasis, _style.flexBasis);
 	SetYGEdge(YGNodeStyleSetPosition, YGEdgeLeft, _style.left);
 	SetYGEdge(YGNodeStyleSetPosition, YGEdgeTop, _style.top);
 	SetYGEdge(YGNodeStyleSetPosition, YGEdgeRight, _style.right);
 	SetYGEdge(YGNodeStyleSetPosition, YGEdgeBottom, _style.buttom);
-	SetYGEdge(YGNodeStyleSetMargin, YGEdgeLeft, _style.marginLeft);
-	SetYGEdge(YGNodeStyleSetMargin, YGEdgeTop, _style.marginTop);
-	SetYGEdge(YGNodeStyleSetMargin, YGEdgeRight, _style.marginRight);
-	SetYGEdge(YGNodeStyleSetMargin, YGEdgeBottom, _style.marginButtom);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeLeft, _style.marginLeft);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeTop, _style.marginTop);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeRight, _style.marginRight);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeBottom, _style.marginButtom);
 	SetYGEdge(YGNodeStyleSetPadding, YGEdgeLeft, _style.paddingLeft);
 	SetYGEdge(YGNodeStyleSetPadding, YGEdgeTop, _style.paddingTop);
 	SetYGEdge(YGNodeStyleSetPadding, YGEdgeRight, _style.paddingRight);
@@ -112,8 +184,8 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetBorder(_ygnode, YGEdgeRight, _style.borderRightWidth);
 	YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, _style.borderBottomWidth);
 
-	SetYGValue(YGNodeStyleSetWidth, _style.width);
-	SetYGValue(YGNodeStyleSetHeight, _style.height);
+	SetYGValueAuto(YGNodeStyleSetWidth, _style.width);
+	SetYGValueAuto(YGNodeStyleSetHeight, _style.height);
 	YGNodeStyleSetPositionType(_ygnode, _style.position);
 	YGNodeStyleSetOverflow(_ygnode, _style.overflow);
 	YGNodeStyleSetAlignSelf(_ygnode, _style.alignSelf);

@@ -29,13 +29,13 @@ namespace OGUI
 	template<typename T>
 	FORCEINLINE constexpr Vector<T, 2> Vector<T, 2>::vector_zero()
 	{
-		return Vector<T, 2>(0, 0, 0);
+		return Vector<T, 2>(0, 0);
 	}
 
 	template<typename T>
 	FORCEINLINE constexpr Vector<T, 2> Vector<T, 2>::vector_one()
 	{
-		return Vector<T, 2>(1, 1, 1);
+		return Vector<T, 2>(1, 1);
 	}
 
 	template<typename T>

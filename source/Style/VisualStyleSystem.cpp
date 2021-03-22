@@ -6,7 +6,6 @@
 
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 {
-	StyleMatchingContext matchingContext;
 	const auto& ess = element->GetStyleSheets();
 	int originStyleSheetCount = matchingContext.styleSheetStack.size();
 	for (auto& ss : ess)
@@ -32,6 +31,8 @@ void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
 	Traverse(Tree, 0);
+	//assert(matchingContext.styleSheetStack.size() == 0)
+	matchingContext.styleSheetStack.clear();
 }
 
 namespace OGUI
@@ -235,12 +236,12 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 	for (auto& record : matchedSelectors)
 	{
 		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-		append_hash(matchHash, hash(rule));
-		append_hash(matchHash, record.complexSelector->specificity);
+		matchHash = append_hash(matchHash, hash(rule));
+		matchHash = append_hash(matchHash, record.complexSelector->specificity);
 	}
 	VisualElement* parent = element->GetHierachyParent();
 	if (parent)
-		append_hash(matchHash, parent->_inheritedStylesHash);
+		matchHash = append_hash(matchHash, parent->_inheritedStylesHash);
 	auto iter = styleCache.find(matchHash);
 	if (iter != styleCache.end())
 		element->SetSharedStyle(iter->second.get());

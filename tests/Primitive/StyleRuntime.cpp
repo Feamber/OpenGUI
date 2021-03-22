@@ -31,7 +31,7 @@ OGUI::StyleSheet LoadStyleSheet()
 
     BeginRule(rule1)
         Prop("left", YGPoint(100.f));
-        Prop("buttom", YGPoint(100.f));
+        Prop("bottom", YGPoint(100.f));
         Prop("fontSize", 24.f);
     EndRule();
 

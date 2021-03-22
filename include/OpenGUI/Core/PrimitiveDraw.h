@@ -8,7 +8,7 @@ namespace OGUI
 	{
 		struct DrawContext
 		{
-
+			PrimDrawList prims;
 		}; 
 		struct BoxParams
 		{

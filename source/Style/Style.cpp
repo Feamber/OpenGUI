@@ -3,7 +3,7 @@
 
 OGUI::Style OGUI::Style::Create(Style* parent, bool isShared)
 {
-	Style style;
+	Style style = GetInitialStyle();
 	style.isShared = isShared;
 	if (parent)
 		style.InheritData(*parent);
