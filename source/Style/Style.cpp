@@ -161,5 +161,5 @@ size_t OGUI::Style::GetInheritedHash()
 		WriteTo(ptr, name);
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef	STYLEPROP
-	return HashBuffer(ptr, size);
+	return HashBuffer(buffer, size);
 }

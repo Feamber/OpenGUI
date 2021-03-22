@@ -15,9 +15,14 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ct
 	using namespace PrimitiveDraw;
 	auto rectPixelPos = GetRect();
 	Rect rect = rectPixelPosToScreenPos(rectPixelPos, Ctx.resolution);
+
+	auto transform = _worldTransform;
+	transform.M[3][0] /= Ctx.resolution.X;
+	transform.M[3][1] /= Ctx.resolution.Y;
+
 	//TODO: Apply Transform
 	PrimitiveDraw::DrawBox(Ctx.prims,
-		BoxParams::MakeSolid(rect, Color4f(.6f, .6f, .6f, 1.f), _worldTransform));
+		BoxParams::MakeSolid(rect, _style.color, transform));
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
@@ -105,7 +110,7 @@ OGUI::float4x4 make_transform(OGUI::Vector2f pos2d, float rot2d, OGUI::Vector2f 
 {
 	using namespace OGUI;
 	Vector3f pos{pos2d.X, pos2d.Y, 0};
-	Quaternion rot = math::quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
+	Quaternion rot = Quaternion::identity();// math::quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
 	Vector3f scale{scale2d.X, scale2d.Y, 1};
 	return math::make_transform(pos, scale, rot);
 }
@@ -180,15 +185,15 @@ void OGUI::VisualElement::SyncYogaStyle()
 	SetYGEdge(YGNodeStyleSetPosition, YGEdgeLeft, _style.left);
 	SetYGEdge(YGNodeStyleSetPosition, YGEdgeTop, _style.top);
 	SetYGEdge(YGNodeStyleSetPosition, YGEdgeRight, _style.right);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeBottom, _style.buttom);
+	SetYGEdge(YGNodeStyleSetPosition, YGEdgeBottom, _style.bottom);
 	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeLeft, _style.marginLeft);
 	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeTop, _style.marginTop);
 	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeRight, _style.marginRight);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeBottom, _style.marginButtom);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeBottom, _style.marginBottom);
 	SetYGEdge(YGNodeStyleSetPadding, YGEdgeLeft, _style.paddingLeft);
 	SetYGEdge(YGNodeStyleSetPadding, YGEdgeTop, _style.paddingTop);
 	SetYGEdge(YGNodeStyleSetPadding, YGEdgeRight, _style.paddingRight);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeBottom, _style.paddingButtom);
+	SetYGEdge(YGNodeStyleSetPadding, YGEdgeBottom, _style.paddingBottom);
 	YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, _style.borderLeftWidth);
 	YGNodeStyleSetBorder(_ygnode, YGEdgeTop, _style.borderTopWidth);
 	YGNodeStyleSetBorder(_ygnode, YGEdgeRight, _style.borderRightWidth);

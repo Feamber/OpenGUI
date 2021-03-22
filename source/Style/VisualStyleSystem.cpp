@@ -220,9 +220,9 @@ namespace OGUI
 	{
 		size_t value = _FNV_offset_basis;
 		for (auto& prop : rule.properties)
-			append_hash(value, prop.value.index);
-		for (auto& prop : rule.customProperties)
-			append_hash(value, prop.value.index);
+			value = append_hash(value, (int)prop.id + prop.value.index);
+		//for (auto& prop : rule.customProperties)
+		//	append_hash(value, prop.value.index);
 		return value;
 	}
 }
