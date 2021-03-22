@@ -30,10 +30,19 @@ namespace OGUI
 			Color4f inner_color;
 			bool checked;
 		};
+		struct CircleParams 
+		{
+			Vector2f pos;
+			float radius;
+			Rect uv;
+			Color4f color;
+			ITexture* texture;
+		};
 
 		// Call from DrawList.
 		OGUI_API void DrawBox(PrimDrawList& context, const BoxParams& params);
 		OGUI_API void DrawCheckBox0(
-			PrimDrawList& context, const CheckBox0Params& params);	
+			PrimDrawList& context, const CheckBox0Params& params);
+		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 10);
 	}
 }

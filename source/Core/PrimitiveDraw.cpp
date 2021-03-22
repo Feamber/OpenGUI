@@ -30,4 +30,30 @@ namespace OGUI
         list.indices.emplace_back(vcount + 3u);
     }
 
+    void PrimitiveDraw::DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount)
+	{
+		const uint32_t vcount = list.vertices.size();
+		const uint32_t icount = list.indices.size();
+
+        Vector2f uvCenter = (params.uv.min + params.uv.max) / 2;
+        Vector2f uvSizeHalf = (params.uv.max - params.uv.min) / 2;
+
+        // center 
+        list.vertices.emplace_back(Vertex{ params.pos, uvCenter, params.color });
+
+        // add border 
+        double DeltaDegree = math::PI * 2 / sampleCount;
+        for (int i = 0; i < sampleCount; ++i)
+        {
+			// add vertex 
+			Vector2f deltaPos;
+			math::sincos(deltaPos.Y, deltaPos.X, DeltaDegree * i);
+            list.vertices.emplace_back(Vertex{ params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color });
+
+			// add index 
+			list.indices.emplace_back(vcount);
+            list.indices.emplace_back(vcount + i + 1);
+            list.indices.emplace_back(vcount + (i + 1) % sampleCount + 1);
+        }
+    }
 }

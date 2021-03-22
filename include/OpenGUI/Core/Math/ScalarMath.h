@@ -5,6 +5,18 @@ namespace OGUI
 {
 namespace math
 {
+	// const values 
+	static constexpr float PI = 3.1415926535897932f;
+	static constexpr float INV_PI = 0.31830988618f;
+	static constexpr float HALF_PI = 1.57079632679f;
+
+	static constexpr float SQRT_2 = 1.4142135623730950488016887242097f;
+	static constexpr float SQRT_3 = 1.7320508075688772935274463415059f;
+	static constexpr float INV_SQRT_2 = 0.70710678118654752440084436210485f;
+	static constexpr float INV_SQRT_3 = 0.57735026918962576450914878050196f;
+	static constexpr float HALF_SQRT_2 = 0.70710678118654752440084436210485f;
+	static constexpr float HALF_SQRT_3 = 0.86602540378443864676372317075294f;
+
 	FORCEINLINE float squire(const float v) noexcept
 	{
 		return v * v;
@@ -131,9 +143,6 @@ namespace math
 
 	FORCEINLINE void sincos(float& outSin, float& outCos, float v) noexcept
 	{
-		static constexpr float PI = 3.1415926535897932f;
-		static constexpr float INV_PI = 0.31830988618f;
-		static constexpr float HALF_PI = 1.57079632679f;
 
 		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
 		float quotient = (INV_PI * 0.5f) * v;

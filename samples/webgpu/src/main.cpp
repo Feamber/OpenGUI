@@ -263,6 +263,7 @@ static void createPipelineAndBuffers() {
 static bool redraw() {
 	PrimDrawList list;
 
+	// box 
 	PrimitiveDraw::BoxParams box = {};
 	box.uv = {Vector2f(0.f, 0.f), Vector2f(1.f, 1.f)};
 	
@@ -278,6 +279,15 @@ static bool redraw() {
 	box.rect = {Vector2f(+0.145f, +0.8f), Vector2f(+0.855f, +0.855f)};
 	box.color = Color4f(.3f, .3f, .3f, .8f);
 	PrimitiveDraw::DrawBox(list, box);
+
+	list.validate_and_batch();
+
+	// circle 
+	PrimitiveDraw::CircleParams circle = {};
+	circle.color = Color4f(1, 0, 0, 1);
+	circle.pos = Vector2f(0.5f, 0.5f);
+	circle.radius = 0.1f;
+	PrimitiveDraw::DrawCircle(list, circle, 100);
 
 	list.validate_and_batch();
 
