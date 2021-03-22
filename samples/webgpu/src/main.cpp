@@ -46,7 +46,7 @@ public:
 		vertex_buffer = createBuffer(device, queue,
 			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
 		index_buffer = createBuffer(device, queue,
-			list.indices.data(), list.indices.capacity() * sizeof(uint16_t), WGPUBufferUsage_Index);
+			list.indices.data(), list.indices.size() * sizeof(uint16_t), WGPUBufferUsage_Index);
 
 		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
 		WGPURenderPassColorAttachmentDescriptor colorDesc = {};
@@ -274,7 +274,7 @@ void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
 static bool redraw() {
 	PrimDrawList list;
 	PrimitiveDraw::DrawContext ctx{list};
-	RenderRec(sample.tree.get());
+	RenderRec(sample.tree.get(), ctx);
 
 	/*PrimitiveDraw::BoxParams box = {};
 	box.uv = {Vector2f(0.f, 0.f), Vector2f(1.f, 1.f)};
@@ -291,6 +291,29 @@ static bool redraw() {
 	box.rect = {Vector2f(+0.145f, +0.8f), Vector2f(+0.855f, +0.855f)};
 	box.color = Color4f(.3f, .3f, .3f, .8f);
 	PrimitiveDraw::DrawBox(list, box);*/
+
+	// circle 
+	PrimitiveDraw::CircleParams circle = {};
+	circle.color = Color4f(1, 0, 0, 1);
+	circle.pos = Vector2f(0.5f, 0.5f);
+	circle.radius = 0.1f;
+	PrimitiveDraw::DrawCircle(list, circle);
+
+	// fan 
+	PrimitiveDraw::FanParams fan = {};
+	fan.color = Color4f(0, 0, 1, 1);
+	fan.beginDegree = math::PI / 4;
+	fan.degree = math::PI / 2;
+	fan.pos = Vector2f(0.5f, 0.5f);
+	fan.radius = 0.08f;
+	PrimitiveDraw::DrawFan(list, fan);
+
+	// round box 
+	PrimitiveDraw::RoundBoxParams roundBox;
+	roundBox.rect = { Vector2f(+0.05f, +0.05f), Vector2f(+0.4f, +0.4f) };
+	roundBox.color = Color4f(0, 1, 0, 1);
+	roundBox.radius = 0.1f;
+	PrimitiveDraw::DrawRoundBox(list, roundBox);
 
 	list.validate_and_batch();
 
