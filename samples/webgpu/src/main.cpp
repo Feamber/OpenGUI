@@ -272,8 +272,9 @@ void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
  * Draws using the above pipeline and buffers.
  */
 static bool redraw() {
-	PrimDrawList list;
-	PrimitiveDraw::DrawContext ctx{list};
+	PrimitiveDraw::DrawContext ctx;
+	ctx.resolution = Vector2f(800.f, 450.f);
+	PrimDrawList& list = ctx.prims;
 	RenderRec(sample.tree.get(), ctx);
 
 	/*PrimitiveDraw::BoxParams box = {};
@@ -290,7 +291,7 @@ static bool redraw() {
 	PrimitiveDraw::DrawBox(list, box);
 	box.rect = {Vector2f(+0.145f, +0.8f), Vector2f(+0.855f, +0.855f)};
 	box.color = Color4f(.3f, .3f, .3f, .8f);
-	PrimitiveDraw::DrawBox(list, box);*/
+	PrimitiveDraw::DrawBox(list, box);
 
 	// circle 
 	PrimitiveDraw::CircleParams circle = {};
@@ -314,7 +315,7 @@ static bool redraw() {
 	roundBox.color = Color4f(0, 1, 0, 1);
 	roundBox.radius = 0.1f;
 	PrimitiveDraw::DrawRoundBox(list, roundBox);
-
+*/
 	list.validate_and_batch();
 
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();

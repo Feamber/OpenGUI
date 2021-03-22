@@ -1,5 +1,6 @@
 #pragma once
 #include "Primitive.h"
+#include <optional>
 
 namespace OGUI
 {
@@ -9,6 +10,7 @@ namespace OGUI
 		struct DrawContext
 		{
 			PrimDrawList prims;
+			Vector2f     resolution = Vector2f(0.f, 0.f);
 		}; 
 
 		struct BoxParams
@@ -17,7 +19,10 @@ namespace OGUI
 			Rect uv;
 			Color4f color;
 			ITexture* texture;
-			static BoxParams MakeSolid(Rect rect, Color4f color);
+			std::optional<float4x4> transform;
+
+			static BoxParams MakeSolid(const Rect rect, const Color4f color);
+			static BoxParams MakeSolid(const Rect rect, const Color4f color, const float4x4& transform);
 			//Radius
 			//SVG
 			//Material

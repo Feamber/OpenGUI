@@ -9,6 +9,7 @@ namespace math
 namespace __matrix
 {
 	using MatrixRegister = DirectX::XMMATRIX;
+	using VectorRegister = DirectX::XMVECTOR;
 
 	FORCEINLINE void store_aligned(OGUI::span<float, 16> target, const MatrixRegister matrix)
 	{
@@ -36,6 +37,15 @@ namespace __matrix
 		return DirectX::XMMatrixTranspose(a);
 	}
 	
+	FORCEINLINE VectorRegister multiply
+	(
+		const VectorRegister a,
+		const MatrixRegister b
+	)
+	{
+		return DirectX::XMVector4Transform(a, b);
+	}
+
 	FORCEINLINE MatrixRegister multiply
 	(
 		const MatrixRegister a,

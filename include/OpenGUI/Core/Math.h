@@ -82,6 +82,20 @@ namespace math
 		return res;
 	}
 
+	FORCEINLINE Vector4f multiply
+	(
+		const Vector4f a,
+		const float4x4 b
+	)
+	{
+		Vector4f res;
+		__vector::store_aligned(
+			res.data_view(),
+			__matrix::multiply(__vector::load_aligned(a.data_view()), __matrix::load_aligned(b.data_view()))
+		);
+		return res;
+	}
+
 	FORCEINLINE float4x4 inverse
 	(
 		const float4x4 a

@@ -2,12 +2,22 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Style/Style.h"
 
+OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
+{
+	OGUI::Rect result = rect;
+	result.max /= resolution;
+	result.min /= resolution;
+	return result;
+}
+
 void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx)
 {
 	using namespace PrimitiveDraw;
-	auto rect = GetRect();
+	auto rectPixelPos = GetRect();
+	Rect rect = rectPixelPosToScreenPos(rectPixelPos, Ctx.resolution);
 	//TODO: Apply Transform
-	PrimitiveDraw::DrawBox(Ctx.prims, BoxParams::MakeSolid(rect, Color4f(.6f, .6f, .6f, 1.f)));
+	PrimitiveDraw::DrawBox(Ctx.prims,
+		BoxParams::MakeSolid(rect, Color4f(.6f, .6f, .6f, 1.f), _worldTransform));
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)

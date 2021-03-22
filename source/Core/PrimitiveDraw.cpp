@@ -3,24 +3,45 @@
 
 namespace OGUI
 {
+    const Vector2f optionalTransform(Vector2f p, const std::optional<float4x4>& transform)
+    {
+        const bool bUseTransform = transform.has_value();
+        if (!bUseTransform)
+            return p;
+        else
+        {
+            const Vector4f dummy = Vector4f(p.X, p.Y, 0.f, 1.f);
+            const Vector4f result = math::multiply(dummy, transform.value());
+            p.X = result.X;
+            p.Y = result.Y;
+            return p;
+        }
+    }
+
     void PrimitiveDraw::DrawBox(PrimDrawList& list, const BoxParams& params)
     {
         const uint32_t vcount = list.vertices.size();
         const uint32_t icount = list.indices.size();
         
-        const Vector2f RU = params.rect.max; 
+        const Vector2f RU = optionalTransform(params.rect.max, params.transform);
+        const Vector2f RB = optionalTransform(Vector2f(params.rect.max.X, params.rect.min.Y), params.transform);
+        const Vector2f LU = optionalTransform(Vector2f(params.rect.min.X, params.rect.max.Y), params.transform);
+        const Vector2f LB = optionalTransform(params.rect.min, params.transform);
+
         const Vector2f RUUV = params.uv.max;
-        const Vector2f RB = Vector2f(params.rect.max.X, params.rect.min.Y);
         const Vector2f RBUV = Vector2f(params.uv.max.X, params.uv.min.Y);
-        const Vector2f LU = Vector2f(params.rect.min.X, params.rect.max.Y);
         const Vector2f LUUV = Vector2f(params.uv.min.X, params.uv.max.Y);
-        const Vector2f LB = params.rect.min;
         const Vector2f LBUV = params.uv.min;
 
-        list.vertices.emplace_back(Vertex{RU, RUUV, params.color}); // vcount + 0
-        list.vertices.emplace_back(Vertex{LU, LUUV, params.color}); // vcount + 1
-        list.vertices.emplace_back(Vertex{RB, RBUV, params.color}); // vcount + 2
-        list.vertices.emplace_back(Vertex{LB, LBUV, params.color}); // vcount + 3
+        const auto vRU = Vertex{ RU, RUUV, params.color };
+        const auto vLU = Vertex{ LU, LUUV, params.color };
+        const auto vRB = Vertex{ RB, RBUV, params.color };
+        const auto vLB = Vertex{ LB, LBUV, params.color };
+
+        list.vertices.emplace_back(vRU); // vcount + 0
+        list.vertices.emplace_back(vLU); // vcount + 1
+        list.vertices.emplace_back(vRB); // vcount + 2
+        list.vertices.emplace_back(vLB); // vcount + 3
 
         list.indices.emplace_back(vcount + 0u);
         list.indices.emplace_back(vcount + 1u);
@@ -30,10 +51,17 @@ namespace OGUI
         list.indices.emplace_back(vcount + 3u);
     }
 
-    PrimitiveDraw::BoxParams PrimitiveDraw::BoxParams::MakeSolid(Rect rect, Color4f color)
+    PrimitiveDraw::BoxParams PrimitiveDraw::BoxParams::MakeSolid(const Rect rect, const Color4f color)
     {
         Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-        return {rect, uv, color, nullptr};
+        return { rect, uv, color, nullptr };
+    }
+
+    PrimitiveDraw::BoxParams PrimitiveDraw::BoxParams::MakeSolid(const Rect rect,
+        const Color4f color, const float4x4& transform)
+    {
+        Rect uv = { Vector2f::vector_zero(), Vector2f::vector_one() };
+        return { rect, uv, color, nullptr, transform };
     }
 
     void PrimitiveDraw::DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount)

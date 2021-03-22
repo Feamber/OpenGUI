@@ -39,6 +39,15 @@ namespace OGUI
             
         }
     	
+        OGUI::span<float, 16> data_view()
+        {
+            return M16;
+        }
+        const OGUI::span<const float, 16> data_view() const
+        {
+            return M16;
+        }
+
         FORCEINLINE Transform& operator=(const Transform& Other)
         {
             this->rotation_ = Other.rotation_;
@@ -47,9 +56,21 @@ namespace OGUI
             return *this;
         }
     protected:
-        VectorStorage rotation_ = OGUI::math::__vector::register_zero;
-        VectorStorage translation_ = OGUI::math::__vector::vector_register(0.f, 0.f, 0.f, 1.f);
-        VectorStorage scale_ = OGUI::math::__vector::register_one;
+        alignas(16) union
+        {
+            struct
+            {
+                VectorStorage rotation_;
+                VectorStorage translation_;
+                VectorStorage scale_;
+            };
+            alignas(16) float M16[16] = {
+                0.f, 0.f, 0.f, 0.f,
+                0.f, 0.f, 0.f, 1.f,
+                1.f, 1.f, 1.f, 1.f
+            };
+        };
+
     };
 
 
