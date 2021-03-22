@@ -37,7 +37,7 @@ namespace OGUI
 			constexpr auto index = IndexOf<T>();
 			auto& vector = hana::at(vectors, index);
 			vector.push_back(value);
-			return {vector.size() - 1};
+			return {int(vector.size() - 1)};
 			//return {index.value, vector.size() - 1};
 		}
 

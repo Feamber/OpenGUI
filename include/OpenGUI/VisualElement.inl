@@ -9,8 +9,7 @@ namespace OGUI
 		while (i < count)
 		{
 			auto child = _children[i];
-			// !![HANG FOR BUILD]!!
-			//f(function, depth + 1);
+			f(child, depth + 1);
 			if (child->_physical_parent != this)
 				continue;
 			i++;

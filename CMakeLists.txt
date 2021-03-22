@@ -71,7 +71,7 @@ target_include_directories(OpenGUI
     ${PLATFORM_INCLUDES}
     ${XercesC_INCLUDE_DIR}
 )
-target_link_libraries(OpenGUI PRIVATE Yoga)
+target_link_libraries(OpenGUI PUBLIC Yoga)
 
 
 ### xerces-c

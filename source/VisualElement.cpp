@@ -78,6 +78,8 @@ OGUI::Rect OGUI::VisualElement::GetLayout()
 
 void OGUI::VisualElement::SyncYogaStyle()
 {
+	if (!_ygnode)
+		return;
 	YGNodeStyleSetFlex(_ygnode, _style.flex);
 	YGNodeStyleSetFlexGrow(_ygnode, _style.flexGrow);
 	YGNodeStyleSetFlexShrink(_ygnode, _style.flexShrink);
@@ -135,4 +137,9 @@ void OGUI::VisualElement::SetPseudoMask(uint32_t mask)
 		if ((mask & _triggerPseudoMask) != 0 || (mask & ~_dependencyPseudoMask) != 0)
 			MarkDirty(DirtyReason::StyleSheet);
 	}
+}
+
+bool OGUI::VisualElement::ContainClass(std::string_view cls)
+{
+	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
 }

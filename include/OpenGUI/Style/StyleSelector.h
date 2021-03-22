@@ -33,8 +33,8 @@ namespace OGUI
 			PseudoClass
 		} type;
 		std::string value;
-		uint32_t pseudoMask;
-		uint32_t reversedPseudoMask; 
+		uint32_t pseudoMask = 0;
+		uint32_t reversedPseudoMask = 0; 
 		StyleSelectorRelationship relationship;
 
 		void AddPseudoClass(const char* name);
@@ -48,6 +48,7 @@ namespace OGUI
 		int priority;
 		int specificity;
 
+		void UpdateSpecificity();
 		bool IsSimple() { return selectors.size() == 1; }
 	};
 }

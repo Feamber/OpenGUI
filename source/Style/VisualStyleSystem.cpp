@@ -49,7 +49,7 @@ namespace OGUI
 				match = element->ContainClass(selector.value);
 				break;
 			case StyleSelector::Name:
-				match = element->name == selector.value;
+				match = element->_name == selector.value;
 				break;
 			case StyleSelector::Type:
 				match = element->IsA(selector.value);
@@ -158,9 +158,9 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 		SelectorMatchRecord record{sheet, i, nullptr};
 		Lookup(context, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
 		Lookup(context, matchedSelectors, sheet->typeSelectors, "*", record);
-		if(!element->name.empty())
-			Lookup(context, matchedSelectors, sheet->nameSelectors, element->name, record);
-		for(auto& cls : element->classes)
+		if(!element->_name.empty())
+			Lookup(context, matchedSelectors, sheet->nameSelectors, element->_name, record);
+		for(auto& cls : element->_styleClasses)
 			Lookup(context, matchedSelectors, sheet->classSelectors, cls, record);
 	}
 }

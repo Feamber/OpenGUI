@@ -53,19 +53,19 @@ namespace OGUI
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
 		VisualElement* GetHierachyParent();
-		const std::vector<StyleSheet*>& GetStyleSheets();
-		bool IsA(std::string type);
-		std::string GetTypeName();
-		std::string GetFullTypeName();
+		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 
-		std::string name;
-		std::vector<std::string> classes;
-	protected:
+		virtual bool IsA(std::string_view type) { return GetTypeName() == type; }
+		virtual std::string_view GetTypeName() { return "VisualElement"; }
+		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
+
+	public:
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void ApplyClipping(PrimitiveDraw::DrawContext& Ctx);
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
+		std::string _name;
 
 #pragma region Hierachy
 		std::vector<VisualElement*> _children;
@@ -85,19 +85,19 @@ namespace OGUI
 #pragma region Style
 	public:
 		YGNodeRef _ygnode;
-		bool _hasInlineStyle;
-		uint32_t _triggerPseudoMask;
-		uint32_t _dependencyPseudoMask;
-		uint32_t _pseudoMask;
+		uint32_t _triggerPseudoMask = 0;
+		uint32_t _dependencyPseudoMask = 0;
+		uint32_t _pseudoMask = 0;
 		int _inheritedStylesHash = 0;
 		StyleRule _inlineRule;
-		StyleSheet* _inlineSheet;
+		StyleSheet* _inlineSheet = nullptr;
 		StyleSheetStorage _procedureSheet;
 		StyleRule _procedureRule;
 
 		Style _style;
-		Style* _sharedStyle;
+		Style* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
+		std::vector<std::string_view> _styleClasses;
 
 		void SetPseudoMask(uint32_t mask);
 		Rect GetLayout();
