@@ -96,6 +96,7 @@ namespace OGUI
 		std::weak_ptr<VisualElement> _physical_parent;
 		//There could be some node between logical parent and this widget for layout
 		std::weak_ptr<VisualElement> _logical_parent;
+		bool _rerouteEvent;
 		template<class F>
 		void Traverse(F&& f, int depth = 0);
 #pragma endregion
