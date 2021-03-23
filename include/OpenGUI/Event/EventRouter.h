@@ -43,7 +43,7 @@ namespace OGUI
         EventRoutePhase& currentPhase = event.currentPhase;
         std::vector<VisualElement*> routePath;
         if (currentPhase == EventRoutePhase::None)
-            currentPhase = NextPhase(currentPhase, phaseMask);
+            currentPhase = phaseMask & (phaseMask - 1);
         if (currentPhase == EventRoutePhase::TrickleDown)
         {
             BuildRoutePath(target, routePath);
