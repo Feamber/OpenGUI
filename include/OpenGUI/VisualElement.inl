@@ -8,9 +8,9 @@ namespace OGUI
 		int i = 0;
 		while (i < count)
 		{
-			auto child = _children[i];
+			auto child = _children[i].get();
 			f(child, depth + 1);
-			if (child->_physical_parent != this)
+			if (child->_physical_parent.lock().get() != this)
 				continue;
 			i++;
 		}

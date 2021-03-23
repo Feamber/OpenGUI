@@ -61,12 +61,12 @@ void OGUI::VisualElement::DrawPrimitive(PrimitiveDraw::DrawContext& Ctx)
 
 OGUI::VisualElement* OGUI::VisualElement::GetParent()
 {
-	return _logical_parent;
+	return _logical_parent.lock().get();
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 {
-	return _physical_parent;
+	return _physical_parent.lock().get();
 }
 
 void OGUI::VisualElement::MarkDirty(DirtyReason reason)
@@ -81,9 +81,9 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 {
-	child->_physical_parent = this;
+	child->_physical_parent = shared_from_this();
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
-	_children.insert(_children.begin() + index, child);
+	_children.insert(_children.begin() + index, child->shared_from_this());
 }
 
 void OGUI::VisualElement::SetSharedStyle(Style* style)
