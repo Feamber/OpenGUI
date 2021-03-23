@@ -3,6 +3,9 @@
 #include "OpenGUI/Style/StyleHelpers.h"
 #include "OpenGUI/VisualElement.h"
 
+#include "OpenGUI/CSSParser/CSSParser.h"
+#include <iostream>
+
 template<class T>
 void SetProp(OGUI::StyleSheet& sheet, OGUI::StyleRule& rule, std::string_view name, const T& value)
 {
@@ -60,4 +63,33 @@ TEST_CASE("StyleRuntime", "[SharedStyle][NameSelector]")
     styleSys.Update(ve.get());
     REQUIRE(ve->_style.left.value == 100.f);
     REQUIRE(ve->_style.fontSize == 24.f);
+
+    std::cout << "CSSParser test here!\n";
+    std::cout << "--------------------------------------------------------------\n";
+
+    std::string text = 
+R"(selector : keyword {
+        left : 0.0 | auto | test;
+        top: 0.0 | auto;
+        right : 640.0 | auto|fuck;bottom: 320.0 | auto;
+    }
+)";
+
+	std::string text1 =
+R"(selector {
+        left : 0.0 | auto | test;
+    }
+)";
+
+    OGUI::Lexer lexer(text);
+   
+    while (true)
+    {
+        Token t = lexer.GetNextToken();
+        if (t.type == TokenType::TEOF)
+            break;
+        std::cout << t.value << std::endl;
+    };
+
+    std::cout << "--------------------------------------------------------------\n";
 }
