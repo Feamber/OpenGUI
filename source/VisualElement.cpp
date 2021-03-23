@@ -110,7 +110,8 @@ OGUI::float4x4 make_transform(OGUI::Vector2f pos2d, float rot2d, OGUI::Vector2f 
 {
 	using namespace OGUI;
 	Vector3f pos{pos2d.X, pos2d.Y, 0};
-	Quaternion rot = Quaternion::identity();// math::quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
+	//TODO: rotate pivot is left bottom now
+	Quaternion rot = math::quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
 	Vector3f scale{scale2d.X, scale2d.Y, 1};
 	return math::make_transform(pos, scale, rot);
 }
