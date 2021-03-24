@@ -51,16 +51,19 @@ namespace OGUI
             for (int i = count-1; i >= 0; --i)
             {
                 auto& element = routePath[i];
-                element->_eventHandler.Handle(event);
+                if(element->_eventHandler.Handle(event))
+                    return;
             }
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
         if (currentPhase == EventRoutePhase::Reach)
         {
-            target->_eventHandler.Handle(event);
+            if(target->_eventHandler.Handle(event))
+                return;
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
-                    parent->_eventHandler.Handle(event);
+                    if(parent->_eventHandler.Handle(event))
+                        return;
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
         if (currentPhase == EventRoutePhase::Broadcast)
@@ -72,7 +75,8 @@ namespace OGUI
         {
             if(routePath.size() == 0) BuildRoutePath(target, routePath);
             for(auto parent : routePath)
-                parent->_eventHandler.Handle(event);
+                if(parent->_eventHandler.Handle(event))
+                    return;
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
     }
