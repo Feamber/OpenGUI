@@ -42,7 +42,7 @@ namespace OGUI
     void TransformRec(VisualElement* element)
     {
         element->UpdateWorldTransform();
-        element->Traverse([&](VisualElement* next, int depth) { TransformRec(next); }, 0);
+        element->Traverse([&](VisualElement* next) { TransformRec(next); });
     }
 }
 

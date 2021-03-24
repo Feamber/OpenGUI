@@ -265,7 +265,7 @@ static WidgetSample sample;
 void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
 {
 	element->DrawBackgroundPrimitive(ctx);
-	element->Traverse([&](VisualElement* next, int depth) { RenderRec(next, ctx); }, 0);
+	element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 }
 
 /**

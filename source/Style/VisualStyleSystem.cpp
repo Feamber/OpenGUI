@@ -4,7 +4,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style/StyleSelector.h"
 
-void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
+void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 {
 	const auto& ess = element->GetStyleSheets();
 	int originStyleSheetCount = matchingContext.styleSheetStack.size();
@@ -18,9 +18,9 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 		ApplyMatchedRules(element, result, styleCache);
 		matchingContext.currentElement = nullptr;
 	}
-	element->Traverse([this](VisualElement* element, int depth) { 
-		Traverse(element, depth); 
-	}, depth);
+	element->Traverse([this](VisualElement* element) { 
+		Traverse(element); 
+	});
 	int styleSheetCount = matchingContext.styleSheetStack.size();
 	auto start = matchingContext.styleSheetStack.begin();
 	if (styleSheetCount > originStyleSheetCount) //pop
@@ -30,7 +30,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
-	Traverse(Tree, 0);
+	Traverse(Tree);
 	assert(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
 }

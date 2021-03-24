@@ -6,18 +6,18 @@
 
 namespace OGUI
 {
-	class VisualSystem;
-	class VisualElement;
+	class VisualWindow;
 	struct Context
 	{
-		std::vector<std::shared_ptr<VisualElement>> desktops;
-		std::vector<std::shared_ptr<VisualElement>> dialogs;
+		std::vector<std::shared_ptr<VisualWindow>> desktops;
+		std::vector<std::shared_ptr<VisualWindow>> dialogs;
 		VisualStyleSystem styleSystem;
 		std::unique_ptr<InputInterface> inputImpl;
 		std::unique_ptr<SystemInterface> systemImpl;
 		float deltaTime;
 
-		void Update(float dt);
+		void Update(int window, float dt);
+		void Render(int window);
 		static Context& Get();
 	};
 }

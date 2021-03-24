@@ -98,7 +98,7 @@ namespace OGUI
 		std::weak_ptr<VisualElement> _logical_parent;
 		bool _rerouteEvent;
 		template<class F>
-		void Traverse(F&& f, int depth = 0);
+		void Traverse(F&& f);
 #pragma endregion
 
 #pragma region Transform
@@ -137,9 +137,12 @@ namespace OGUI
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
 #pragma endregion
+
 #pragma region Event
 	public:
 		EventHandler _eventHandler;
+
+		bool Intersect(Vector2f point);
 #pragma endregion
 	};
 }

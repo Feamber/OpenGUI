@@ -1,6 +1,6 @@
 #include "OpenGUI/Context.h"
 
-void OGUI::Context::Update(float dt)
+void OGUI::Context::Update(int window, float dt)
 {
 	deltaTime = dt;
 }

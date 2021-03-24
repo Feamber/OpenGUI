@@ -26,7 +26,7 @@ namespace OGUI
 		std::unordered_map<size_t, std::unique_ptr<Style>> styleCache;
 		StyleMatchingContext matchingContext;
 
-		void Traverse(VisualElement* element, int depth);
+		void Traverse(VisualElement* element);
 
 		static void FindMatches(StyleMatchingContext& context, std::vector<SelectorMatchRecord>& matchedSelectors);
 		static void ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors, std::unordered_map<size_t, std::unique_ptr<Style>>& styleCache);

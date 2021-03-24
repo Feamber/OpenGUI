@@ -6,9 +6,9 @@ namespace OGUI
     template<class T>
     void BroadcastEvent(VisualElement* element, T& event)
     {
-        element->Traverse([&](VisualElement* next, int depth) { 
+        element->Traverse([&](VisualElement* next) { 
             next->_eventHandler.Handle(event);
-            BroadcastEvent<T>(next, event); }, 0);
+            BroadcastEvent<T>(next, event); });
     }
 
     void BuildRoutePath(VisualElement* target, std::vector<VisualElement*>& path)
