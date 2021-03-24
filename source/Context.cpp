@@ -2,7 +2,12 @@
 
 void OGUI::Context::Update(int window, float dt)
 {
-	deltaTime = dt;
+	_deltaTime = dt;
+}
+
+void OGUI::Context::Render(int window)
+{
+
 }
 
 OGUI::Context& OGUI::Context::Get()

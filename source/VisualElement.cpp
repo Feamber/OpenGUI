@@ -231,3 +231,9 @@ bool OGUI::VisualElement::ContainClass(std::string_view cls)
 {
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
 }
+
+bool OGUI::VisualElement::Intersect(Vector2f point)
+{
+	auto layout = GetLayout();
+	return layout.IntersectPoint(point);
+}
