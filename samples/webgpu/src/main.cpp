@@ -14,7 +14,7 @@ WGPU_OGUI_Texture* default_ogui_texture;
 using namespace OGUI;
 std::unordered_map<ITexture*, WGPU_OGUI_Texture> ogui_textures;
 
-class OGUIWebGPURenderer : public OGUI::IRenderer
+class OGUIWebGPURenderer : public OGUI::RenderInterface
 {
 public:
 	virtual ~OGUIWebGPURenderer()
@@ -22,19 +22,19 @@ public:
 		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
 		if(index_buffer) wgpuBufferRelease(index_buffer);
 	}
-	PersistantPrimitiveHandle register_primitive(
+	PersistantPrimitiveHandle RegisterPrimitive(
 		Vertex* vertices, uint32_t num_vertices,
 		uint16_t* indices, uint32_t num_indices)
 	{
 		return nullptr;
 	}
 	
-	void release_primitive(PersistantPrimitiveHandle primitive)
+	void ReleasePrimitive(PersistantPrimitiveHandle primitive)
 	{
 		
 	}
 
-	void render_primitives(const PrimDrawList& list)
+	void RenderPrimitives(const PrimDrawList& list)
 	{
 		if(list.command_list.size() <= 0) return;
 		// upload buffer
@@ -116,31 +116,31 @@ public:
 		wgpuTextureViewRelease(backBufView);													
 	}
 
-	void render_primitives(const PersistantPrimDrawList&)
+	void RenderPrimitives(const PersistantPrimDrawList&)
 	{
 		
 	}
 
-	TextureHandle register_texture(const BitMap& bitmap)
+	TextureHandle RegisterTexture(const BitMap& bitmap)
 	{
 		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
 		ogui_textures[t] = *t;
 		return t;
 	}
 
-	void release_texture(TextureHandle h)
+	void ReleaseTexture(TextureHandle h)
 	{
 		if(h.value)
 			ogui_textures.erase(h.value);
 		ogui_textures[h.value].Release();
 	}
 
-	void set_scissor(const Scissor scissor)
+	void SetScissor(const Scissor scissor)
 	{
 
 	}
 
-	void reset_scissor()
+	void ResetScissor()
 	{
 
 	}
@@ -319,7 +319,7 @@ static bool redraw() {
 	list.ValidateAndBatch();
 
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
-	renderer->render_primitives(list);
+	renderer->RenderPrimitives(list);
 	delete renderer;
 
 	return true;

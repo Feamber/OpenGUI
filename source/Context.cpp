@@ -1,6 +1,19 @@
 #include "OpenGUI/Context.h"
 #include <iostream>
 
+void OGUI::Context::Initialize(
+	InputInterface* I, SystemInterface* S,
+	RenderInterface* R, FileInterface* F)
+{
+	if(initialized)
+		assert(0 && "already initialized!");
+	inputImpl.reset(I);
+	systemImpl.reset(S);
+	renderImpl.reset(R);
+	fileImpl.reset(F);
+	initialized = true;
+}
+
 void OGUI::Context::Update(int window, float dt)
 {
 	_deltaTime = dt;

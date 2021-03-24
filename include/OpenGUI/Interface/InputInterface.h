@@ -208,6 +208,7 @@ namespace OGUI
 {
 	struct InputInterface
 	{
+		virtual ~InputInterface();
 		virtual bool UseSystemGesture() = 0;
 
 		virtual bool IsKeyDown(EKeyCode key_code) = 0;
