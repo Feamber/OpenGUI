@@ -78,17 +78,17 @@ void WidgetSample::Initialize()
 {
     using namespace OGUI;
     VisualStyleSystem styleSys;
-    auto ve = std::make_unique<VisualElement>();
+    auto ve = std::make_shared<VisualElement>();
     auto styleSt = LoadStyleSheet();
     ve->_name = "TestElement";
     ve->_styleSheets.push_back(&styleSt);\
 
-    auto c1 = std::make_unique<VisualElement>();
+    auto c1 = std::make_shared<VisualElement>();
     c1->_name = "Child1";
     c1->_styleClasses.push_back("Child");
     ve->PushChild(c1.get());
 
-    auto c2 = std::make_unique<VisualElement>();
+    auto c2 = std::make_shared<VisualElement>();
     c2->_name = "Child2";
     c2->_styleClasses.push_back("Child");
     ve->PushChild(c2.get());

@@ -176,34 +176,35 @@ namespace OGUI
 	};
 	
 	template<class E>
-	class XmlEnumAttributeDescription : public TypeXmlAttributeDescription<std::enable_if_t<std::is_enum_v<E>, E>>
+	class XmlEnumAttributeDescription 
+		: public TypeXmlAttributeDescription<std::enable_if_t<std::is_enum_v<E>, E>>
 	{
 	public:
 		virtual const std::vector<std::pair<std::string, E>>& GetEnumEntries() = 0;
 
 		XmlEnumAttributeDescription(std::string_view name, E default_value, XmlAttributeUse use) :
-			TypeXmlAttributeDescription(
+			TypeXmlAttributeDescription<E>(
 				name,
 				"string",
-				xml_schema_namespace,
-				NAMEOF_ENUM(DefaultValue),
+				XmlAttributeDescription::xml_schema_namespace,
+				NAMEOF_ENUM(default_value),
 				use,
 				default_value
 			)
 		{
 			auto entries = GetEnumEntries();
-			restriction.type = XmlTypeRestriction::Type::Enum;
-			restriction.enums.resize(entries.size());
+			XmlAttributeDescription::restriction.type = XmlTypeRestriction::Type::Enum;
+			XmlAttributeDescription::restriction.enums.resize(entries.size());
 			for (auto entrie : entries)
 			{
-				restriction.enums.push_back(entrie.first);
+				XmlAttributeDescription::restriction.enums.push_back(entrie.first);
 			}
 		}
 
 		bool GetValue(const VisualElementAsset& element) override
 		{
 			std::string out;
-			if (GetValueString(out, element))
+			if (XmlAttributeDescription::GetValueString(out, element))
 			{
 				auto entries = GetEnumEntries();
 				for (auto entrie : entries)
@@ -212,8 +213,8 @@ namespace OGUI
 						return entrie.second;
 				}
 			}
-
-			return default_value;
+			return true;
+			//return default_value;
 		}
 	};
 }

@@ -3,7 +3,10 @@ cmake_minimum_required (VERSION 3.3)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/") 
+include(RTTI) 
+
 if(UNIX)
     set(PLATFORM_INCLUDES ${PLATFORM_INCLUDES} include/Platform/Unix)
     set(PLATFORM_INCLUDES ${PLATFORM_INCLUDES} include/Platform/DirectXMath)

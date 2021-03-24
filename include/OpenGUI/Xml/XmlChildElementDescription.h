@@ -15,6 +15,7 @@ namespace OGUI
 #include "OpenGUI/Xml/GenXmlChildDesc.h"
 	}
 	*/
+    class VisualElement;
 	struct XmlChildElementDescription
 	{
 		std::string_view elementName;
@@ -28,7 +29,7 @@ namespace OGUI
 		template<class T>
 		static XmlChildElementDescription Build()
 		{
-			static_assert(std::is_base_of_v<class VisualElement, T>);
+			static_assert(std::is_base_of_v<OGUI::VisualElement, T>, "!");
 			return XmlChildElementDescription(NAMEOF_SHORT_TYPE(T), XmlTool::GetTypeNamespace<T>());
 		}
 	};

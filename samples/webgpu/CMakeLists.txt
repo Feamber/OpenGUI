@@ -18,7 +18,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-nullability-extension \
 	-Wno-reserved-id-macro -Wno-unused-command-line-argument -Wno-c++98-compat \
 	-Wno-unknown-argument -Wno-nonportable-include-path \
-	-fno-exceptions -fno-rtti")
+	-fno-exceptions")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -D_DEBUG=1 -Wno-unused -O0")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g0 -DNDEBUG=1 -flto -O3")
 endif()

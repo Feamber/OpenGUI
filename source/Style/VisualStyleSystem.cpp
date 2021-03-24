@@ -198,11 +198,11 @@ namespace OGUI
 	}
 
 #if defined(_X32)
-	_INLINE_VAR constexpr size_t _FNV_offset_basis = 2166136261U;
-	_INLINE_VAR constexpr size_t _FNV_prime = 16777619U;
+	static constexpr size_t _FNV_offset_basis = 2166136261U;
+	static constexpr size_t _FNV_prime = 16777619U;
 #else // defined(_X32)
-	_INLINE_VAR constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
-	_INLINE_VAR constexpr size_t _FNV_prime = 1099511628211ULL;
+	static constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
+	static constexpr size_t _FNV_prime = 1099511628211ULL;
 #endif // defined(_X32)
 
 	size_t append_hash(size_t value, size_t append)
