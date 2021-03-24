@@ -316,7 +316,7 @@ static bool redraw() {
 	roundBox.radius = 0.1f;
 	PrimitiveDraw::DrawRoundBox(list, roundBox);
 */
-	list.validate_and_batch();
+	list.ValidateAndBatch();
 
 	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
 	renderer->render_primitives(list);
