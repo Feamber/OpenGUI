@@ -17,13 +17,14 @@ namespace OGUI
 
     enum class ButtonId : uint8
     {
+        Invalid,
         Left,
         Middle,
         Right,
-        Ex1,
-        Ex2,
-        Ex3,
-        Ex4
+        Thumb01,
+        Thumb02,
+        Thumb03,
+        Thumb04
     };
 
     struct PointerData

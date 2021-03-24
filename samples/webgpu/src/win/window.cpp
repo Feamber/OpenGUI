@@ -1,5 +1,8 @@
 #include "window.h"
-
+#include <windowsx.h>
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Event/PointerEvent.h"
 #include "glue.h"
 
 #include <mmsystem.h>
@@ -301,6 +304,7 @@ static UINT getWindowDpi(HWND const hWnd = NULL) {
  * \param[in[ uMsg message type
  */
 LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wParam, LPARAM const lParam) {
+	auto& ctx = OGUI::Context::Get();
 	switch (uMsg) {
 	case WM_SIZE:
 		/*
@@ -416,6 +420,119 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 		return TRUE;
 	}
 #endif
+	case WM_LBUTTONDBLCLK:
+	case WM_LBUTTONDOWN:
+	case WM_MBUTTONDBLCLK:
+	case WM_MBUTTONDOWN:
+	case WM_RBUTTONDBLCLK:
+	case WM_RBUTTONDOWN:
+	case WM_XBUTTONDBLCLK:
+	case WM_XBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_XBUTTONUP:
+	{
+		POINT CursorPoint;
+		CursorPoint.x = GET_X_LPARAM(lParam);
+		CursorPoint.y = GET_Y_LPARAM(lParam);
+
+		ClientToScreen(hWnd, &CursorPoint);
+		using namespace OGUI;
+
+		ButtonId MouseButton = ButtonId::Invalid;
+		bool bDoubleClick = false;
+		bool bMouseUp = false;
+		switch (uMsg)
+		{
+			case WM_LBUTTONDBLCLK:
+				bDoubleClick = true;
+				MouseButton = ButtonId::Left;
+				break;
+			case WM_LBUTTONUP:
+				bMouseUp = true;
+				MouseButton = ButtonId::Left;
+				break;
+			case WM_LBUTTONDOWN:
+				MouseButton = ButtonId::Left;
+				break;
+			case WM_MBUTTONDBLCLK:
+				bDoubleClick = true;
+				MouseButton = ButtonId::Middle;
+				break;
+			case WM_MBUTTONUP:
+				bMouseUp = true;
+				MouseButton = ButtonId::Middle;
+				break;
+			case WM_MBUTTONDOWN:
+				MouseButton = ButtonId::Middle;
+				break;
+			case WM_RBUTTONDBLCLK:
+				bDoubleClick = true;
+				MouseButton = ButtonId::Right;
+				break;
+			case WM_RBUTTONUP:
+				bMouseUp = true;
+				MouseButton = ButtonId::Right;
+				break;
+			case WM_RBUTTONDOWN:
+				MouseButton = ButtonId::Right;
+				break;
+			case WM_XBUTTONDBLCLK:
+				bDoubleClick = true;
+				MouseButton = (HIWORD(wParam) & XBUTTON1) ? ButtonId::Thumb01 : ButtonId::Thumb02;
+				break;
+			case WM_XBUTTONUP:
+				bMouseUp = true;
+				MouseButton = (HIWORD(wParam) & XBUTTON1) ? ButtonId::Thumb01 : ButtonId::Thumb02;
+				break;
+			case WM_XBUTTONDOWN:
+				MouseButton = (HIWORD(wParam) & XBUTTON1) ? ButtonId::Thumb01 : ButtonId::Thumb02;
+				break;
+			default:
+				assert(0);
+		}
+
+		if (bMouseUp)
+		{
+			return ctx.OnMouseUp(0, MouseButton, CursorPoint.x, CursorPoint.y) ? 0 : 1;
+		}
+		else if (bDoubleClick)
+		{
+			return ctx.OnMouseDoubleClick(0, MouseButton, CursorPoint.x, CursorPoint.y);
+		}
+		else
+		{
+			return ctx.OnMouseDown(0, MouseButton, CursorPoint.x, CursorPoint.y);
+		}
+		return 0;
+	}
+	break;
+	// Mouse Movement
+	case WM_INPUT:
+	{
+		uint32 Size = 0;
+		::GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &Size, sizeof(RAWINPUTHEADER));
+
+		auto RawData = std::make_unique<uint8[]>(Size);
+
+		if (::GetRawInputData((HRAWINPUT)lParam, RID_INPUT, RawData.get(), &Size, sizeof(RAWINPUTHEADER)) == Size)
+		{
+			const RAWINPUT* const Raw = (const RAWINPUT* const)RawData.get();
+
+			if (Raw->header.dwType == RIM_TYPEMOUSE)
+			{
+				const bool IsAbsoluteInput = (Raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE;
+
+				const int posx = Raw->data.mouse.lLastX;
+				const int posy = Raw->data.mouse.lLastY;
+
+				ctx.OnMouseMove(!IsAbsoluteInput, posx, posy);
+				return 1;
+			}
+		}
+	}
+	break;
 	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
