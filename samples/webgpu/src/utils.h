@@ -1,6 +1,6 @@
 #pragma once
 #include "webgpu.h"
-#include "OpenGUI/Core/Renderer.h"
+#include "OpenGUI/Interface/RenderInterface.h"
 
 // 0 ~ 1 => -1 ~ 1
 static char const triangle_vert_wgsl[] = R"(
