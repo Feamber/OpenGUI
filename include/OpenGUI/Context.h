@@ -36,8 +36,13 @@ namespace OGUI
 		bool OnMouseUp(int window, EMouseKey button, int32 x, int32 y);
 		bool OnMouseDoubleClick(int window, EMouseKey button, int32 x, int32 y);
 		bool OnMouseMove(bool relative, int32 x, int32 y);
+		bool OnMouseMoveHP(bool relative, float x, float y);
 		bool OnMouseWheel(float delta);
 
 		static Context& Get();
+
+
+	public:
+		std::weak_ptr<VisualElement> _elementUnderCursor;
 	};
 }
