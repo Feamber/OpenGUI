@@ -193,6 +193,16 @@ namespace OGUI
 		Hand,
 		NotAllowed
 	};
+
+	enum class EGestureEvent : uint8
+	{
+		None,
+		Scroll,
+		Magnify,
+		Swipe,
+		Rotate,
+		LongPress,
+	};
 }
 namespace OGUI
 {

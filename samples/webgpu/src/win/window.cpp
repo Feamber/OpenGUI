@@ -440,54 +440,54 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 		ClientToScreen(hWnd, &CursorPoint);
 		using namespace OGUI;
 
-		ButtonId MouseButton = ButtonId::Invalid;
+		EMouseKey MouseButton = EMouseKey::None;
 		bool bDoubleClick = false;
 		bool bMouseUp = false;
 		switch (uMsg)
 		{
 			case WM_LBUTTONDBLCLK:
 				bDoubleClick = true;
-				MouseButton = ButtonId::Left;
+				MouseButton = EMouseKey::LB;
 				break;
 			case WM_LBUTTONUP:
 				bMouseUp = true;
-				MouseButton = ButtonId::Left;
+				MouseButton = EMouseKey::LB;
 				break;
 			case WM_LBUTTONDOWN:
-				MouseButton = ButtonId::Left;
+				MouseButton = EMouseKey::LB;
 				break;
 			case WM_MBUTTONDBLCLK:
 				bDoubleClick = true;
-				MouseButton = ButtonId::Middle;
+				MouseButton = EMouseKey::MB;
 				break;
 			case WM_MBUTTONUP:
 				bMouseUp = true;
-				MouseButton = ButtonId::Middle;
+				MouseButton = EMouseKey::MB;
 				break;
 			case WM_MBUTTONDOWN:
-				MouseButton = ButtonId::Middle;
+				MouseButton = EMouseKey::MB;
 				break;
 			case WM_RBUTTONDBLCLK:
 				bDoubleClick = true;
-				MouseButton = ButtonId::Right;
+				MouseButton = EMouseKey::RB;
 				break;
 			case WM_RBUTTONUP:
 				bMouseUp = true;
-				MouseButton = ButtonId::Right;
+				MouseButton = EMouseKey::RB;
 				break;
 			case WM_RBUTTONDOWN:
-				MouseButton = ButtonId::Right;
+				MouseButton = EMouseKey::RB;
 				break;
 			case WM_XBUTTONDBLCLK:
 				bDoubleClick = true;
-				MouseButton = (HIWORD(wParam) & XBUTTON1) ? ButtonId::Thumb01 : ButtonId::Thumb02;
+				MouseButton = (HIWORD(wParam) & XBUTTON1) ? EMouseKey::X1B : EMouseKey::X2B;
 				break;
 			case WM_XBUTTONUP:
 				bMouseUp = true;
-				MouseButton = (HIWORD(wParam) & XBUTTON1) ? ButtonId::Thumb01 : ButtonId::Thumb02;
+				MouseButton = (HIWORD(wParam) & XBUTTON1) ? EMouseKey::X1B : EMouseKey::X2B;
 				break;
 			case WM_XBUTTONDOWN:
-				MouseButton = (HIWORD(wParam) & XBUTTON1) ? ButtonId::Thumb01 : ButtonId::Thumb02;
+				MouseButton = (HIWORD(wParam) & XBUTTON1) ? EMouseKey::X1B : EMouseKey::X2B;
 				break;
 			default:
 				assert(0);

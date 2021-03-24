@@ -10,17 +10,18 @@ void OGUI::Context::Render(int window)
 
 }
 
-bool OGUI::Context::OnMouseDown(int window, ButtonId button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDown(int window, EMouseKey button, int32 x, int32 y)
+{
+
+	return false;
+}
+
+bool OGUI::Context::OnMouseUp(int window, EMouseKey button, int32 x, int32 y)
 {
 	return false;
 }
 
-bool OGUI::Context::OnMouseUp(int window, ButtonId button, int32 x, int32 y)
-{
-	return false;
-}
-
-bool OGUI::Context::OnMouseDoubleClick(int window, ButtonId button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDoubleClick(int window, EMouseKey button, int32 x, int32 y)
 {
 	return false;
 }
