@@ -53,21 +53,24 @@ void OGUI::StyleComplexSelector::UpdateSpecificity()
 {
 	constexpr int typeWeight = 1, classWeight = 10, nameWeight = 100;
 	specificity = 0;
-	for (auto sel : selectors)
+	for (auto& sel : selectors)
 	{
-		switch (sel.type)
+		for (auto& part : sel.parts)
 		{
-			case StyleSelector::Type:
-				specificity += typeWeight;
-				break;
-			case StyleSelector::Class:
-				specificity += classWeight;
-				break;
-			case StyleSelector::Name:
-				specificity += nameWeight;
-				break;
-			default:
-				break;
+			switch (part.type)
+			{
+				case StyleSelector::Type:
+					specificity += typeWeight;
+					break;
+				case StyleSelector::Class:
+					specificity += classWeight;
+					break;
+				case StyleSelector::Name:
+					specificity += nameWeight;
+					break;
+				default:
+					break;
+			}
 		}
 		specificity += bitcount(sel.pseudoMask) * classWeight;
 		specificity += bitcount(sel.reversedPseudoMask) * classWeight;

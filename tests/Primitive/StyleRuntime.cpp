@@ -18,6 +18,20 @@ YGValue YGPoint(float v)
 {
     return {v, YGUnitPoint};
 }
+#define SimpleSelector(t, v, r) \
+{ \
+    StyleComplexSelector complexSel; \
+    complexSel.priority = line++; \
+    complexSel.ruleIndex = r; \
+    StyleSelector selector; \
+    StyleSelector::Part selPart; \
+    selPart.type = StyleSelector::t; \
+    selPart.value = v; \
+    selector.parts.push_back(std::move(selPart)); \
+    complexSel.selectors.push_back(std::move(selector)); \
+    complexSel.UpdateSpecificity(); \
+    styleSt.styleSelectors.push_back(std::move(complexSel)); \
+}
 
 #define BeginRule(name) \
     auto name = styleSt.styleRules.size(); \
@@ -31,6 +45,7 @@ OGUI::StyleSheet LoadStyleSheet()
 {
     using namespace OGUI;
     StyleSheet styleSt;
+    int line = 0;
 
     BeginRule(rule1)
         Prop("left", YGPoint(100.f));
@@ -38,15 +53,7 @@ OGUI::StyleSheet LoadStyleSheet()
         Prop("fontSize", 24.f);
     EndRule();
 
-    StyleComplexSelector complexSel;
-    StyleSelector selector;
-    selector.type = StyleSelector::Name;
-    selector.value = "TestElement";
-    complexSel.priority = 0;
-    complexSel.ruleIndex = rule1;
-    complexSel.UpdateSpecificity();
-    complexSel.selectors.push_back(std::move(selector));
-    styleSt.styleSelectors.push_back(std::move(complexSel));
+    SimpleSelector(Name, "TestElement", rule1);
 
     styleSt.Initialize();
     return styleSt;

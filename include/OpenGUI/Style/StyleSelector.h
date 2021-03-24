@@ -24,15 +24,19 @@ namespace OGUI
 
 	struct StyleSelector
 	{
-		enum
+		enum Cond
 		{
 			Wildcard,
 			Type,
 			Class,
-			Name,
-			PseudoClass
-		} type;
-		std::string value;
+			Name
+		};
+		struct Part
+		{
+			Cond type;
+			std::string value;
+		};
+		std::vector<Part> parts;
 		uint32_t pseudoMask = 0;
 		uint32_t reversedPseudoMask = 0; 
 		StyleSelectorRelationship relationship;
