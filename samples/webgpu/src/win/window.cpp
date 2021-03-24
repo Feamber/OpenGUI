@@ -533,6 +533,18 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 		}
 	}
 	break;
+	// Mouse Movement
+	case WM_NCMOUSEMOVE:
+	case WM_MOUSEMOVE:
+	{
+		BOOL Result = false;
+		int posx = GET_X_LPARAM(lParam);
+		int posy = GET_Y_LPARAM(lParam);
+		ctx.OnMouseMove(true, posx, posy);
+
+		return Result ? 0 : 1;
+	}
+	break;
 	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
@@ -556,7 +568,7 @@ bool yield() {
 }
 
 //******************************** Public API ********************************/
-
+window::Handle wh;
 window::Handle window::create(unsigned winW, unsigned winH, const char* /*name*/) {
 	/*
 	 * Dynamically added polyfill available only in the Win10 Creators Update.
@@ -628,6 +640,7 @@ window::Handle window::create(unsigned winW, unsigned winH, const char* /*name*/
 			 */
 			DragAcceptFiles(window, FALSE);
 			RegisterHotKey (window, VK_SNAPSHOT, 0, VK_SNAPSHOT);
+			wh = TO_HND(window);
 			return TO_HND(window);
 		}
 		UnregisterClass(wndClass.lpszClassName, wndClass.hInstance);
@@ -651,4 +664,53 @@ void window::loop(window::Handle /*wHnd*/, window::Redraw func) {
 			}
 		}
 	}
+}
+
+#include "OpenGUI/Interface/InputInterface.h"
+
+namespace OGUI
+{
+	struct WindowsInput : public InputInterface
+	{
+		virtual bool UseSystemGesture() override
+		{
+			return false;
+		}
+		virtual bool IsKeyDown(EKeyCode key_code) override
+		{
+			return false;
+		}
+		virtual bool IsKeyDown(EMouseKey key_code) override
+		{
+			return false;
+		}
+		virtual bool SetCursorPos(int32 x, int32 y) override
+		{
+			return ::SetCursorPos(x, y);
+		}
+		virtual bool SetCursor(EMouseCursor cursor) override
+		{
+			return false;
+		}
+		virtual bool GetCursorPos(int32& x, int32& y) override
+		{
+			POINT cursor;
+			if (::GetCursorPos(&cursor))
+			{
+				x = cursor.x;
+				y = cursor.y;
+				return true;
+			}
+			return false;
+		}
+		virtual bool IsKeyToggled(EMouseKey key_code) override
+		{
+			return false;
+		}
+		virtual void SetHighPrecisionMouseMode(int window, bool Enable) override
+		{
+			assert(window == 0);
+			//not implemented
+		}
+	};
 }

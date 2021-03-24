@@ -217,5 +217,6 @@ namespace OGUI
 		virtual bool SetCursor(EMouseCursor cursor) = 0;
 		virtual bool GetCursorPos(int32& x, int32& y) = 0;
 		virtual bool IsKeyToggled(EMouseKey key_code) = 0;
+		virtual void SetHighPrecisionMouseMode(int window, bool Enable) = 0;
 	};
 }
