@@ -1,30 +1,9 @@
 #pragma once
 #include <string_view>
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Interface/InputInterface.h"
 
 namespace OGUI
 {
-    enum class GestureEvent : uint8
-    {
-        None,
-        Scroll,
-        Magnify,
-        Swipe,
-        Rotate,
-        LongPress,
-        Count
-    };
-
-    enum class ButtonId : uint8
-    {
-        Left,
-        Middle,
-        Right,
-        Ex1,
-        Ex2,
-        Ex3,
-        Ex4
-    };
 
     struct PointerData
     {
@@ -32,13 +11,14 @@ namespace OGUI
         std::string_view pointerType;
         bool isPrimary;
         bool isTouch;
-        GestureEvent gestureType;
-        int buttonMask;
-        ButtonId buttonPrimary;
+        bool isAbsolute;
+        bool isDoubleClick;
+        EGestureEvent gestureType;
+        EMouseKey buttonPrimary;
         Vector2f position;
         Vector2f deltaPosition;
         Vector2f wheelOrGestureDelta;
-        float deltaTime;
+        float accTime;
         int clickCount;
         float pressure;
     };
@@ -47,6 +27,7 @@ namespace OGUI
     struct PointerMoveEvent : PointerData {};
     struct PointerUpEvent : PointerData {};
     struct PointerClickEvent : PointerData {};
+    struct PointerDoubleClickEvent : PointerData {};
     struct MouseEnterEvent : PointerData {};
     struct MouseLeaveEvent : PointerData {};
     struct TouchGestureEvent : PointerData {};
