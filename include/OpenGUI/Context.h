@@ -4,6 +4,7 @@
 #include "OpenGUI/Interface/InputInterface.h"
 #include "OpenGUI/Interface/SystemInterface.h"
 #include "OpenGUI/Interface/RenderInterface.h"
+#include "OpenGUI/Interface/FileInterface.h"
 #include "OpenGUI/Event/PointerEvent.h"
 
 namespace OGUI
@@ -11,6 +12,9 @@ namespace OGUI
 	class VisualWindow;
 	struct Context
 	{
+		//Initialize
+		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*);
+
 		//Windows
 		std::vector<std::shared_ptr<VisualWindow>> desktops;
 		std::vector<std::shared_ptr<VisualWindow>> dialogs;
@@ -18,14 +22,9 @@ namespace OGUI
 		//Systems
 		VisualStyleSystem styleSystem;
 
-		//Hooks
-		std::unique_ptr<InputInterface> inputImpl;
-		std::unique_ptr<SystemInterface> systemImpl;
-		std::unique_ptr<RenderInterface> renderImpl;
-
 		//Global States
 		float _deltaTime;
-
+	
 		//APIs
 		void Update(int window, float dt);
 		void Render(int window);
@@ -39,5 +38,13 @@ namespace OGUI
 		bool OnMouseWheel(float delta);
 
 		static Context& Get();
+
+	protected:
+		//Hooks
+		std::unique_ptr<InputInterface>  inputImpl;
+		std::unique_ptr<SystemInterface> systemImpl;
+		std::unique_ptr<RenderInterface> renderImpl;
+		std::unique_ptr<FileInterface>   fileImpl;
+		bool initialized = false;
 	};
 }
