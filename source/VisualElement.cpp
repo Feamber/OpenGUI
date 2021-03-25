@@ -1,6 +1,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Style/Style.h"
+#include "OpenGui/Xml/XmlFactoryTool.h"
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {
@@ -74,6 +75,12 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 	//Context.Get().BroadcastDirtyEvent(this, reason);
 }
 
+void OGUI::VisualElement::MoveChild(OGUI::VisualElement* child, OGUI::VisualElement* target)
+{
+	target->PushChild(child);
+    RemoveChild(child);
+}
+
 void OGUI::VisualElement::PushChild(VisualElement* child)
 {
 	InsertChild(child, _children.size());
@@ -84,6 +91,21 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 	child->_physical_parent = shared_from_this();
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
 	_children.insert(_children.begin() + index, child->shared_from_this());
+}
+
+void OGUI::VisualElement::RemoveChild(VisualElement* child)
+{
+    child->_physical_parent.reset();
+    YGNodeRemoveChild(_ygnode, child->_ygnode);
+	auto it = _children.begin();
+	while (it != _children.end())
+	{
+		if (it->get() == child)
+		{
+			_children.erase(it);
+			break;
+		}
+	}
 }
 
 void OGUI::VisualElement::SetSharedStyle(Style* style)
@@ -230,6 +252,39 @@ void OGUI::VisualElement::SetPseudoMask(uint32_t mask)
 bool OGUI::VisualElement::ContainClass(std::string_view cls)
 {
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
+}
+
+bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element, const DOMElement &asset, CreationContext& context)
+{
+    if(!XmlTraits::InitAttribute(new_element, asset, context)) return false;
+
+    new_element._name = name.GetValue(asset);
+    new_element._path = path.GetValue(asset);
+    // TODO style
+    new_element._class_tag = class_tag.GetValue(asset);
+
+    auto _slot_name = slot_name.GetValue(asset);
+    auto _slot = slot.GetValue(asset);
+
+    if(!_slot_name.empty())
+    {
+        auto& template_container = context.stack_template.front().template_container;
+        template_container.slots[_slot_name] = &new_element;
+    }
+
+    if(!_slot.empty())
+    {
+        auto parent_node = context.stack.front();
+        if(parent_node->IsA("TemplateContainer"))
+        {
+            auto template_container = (TemplateContainer*)parent_node;
+            auto find_slots = template_container->slots.find(_slot);
+            if(find_slots != template_container->slots.end())
+                find_slots->second->PushChild(&new_element);
+        }
+    }
+
+    return true;
 }
 
 bool OGUI::VisualElement::Intersect(Vector2f point)

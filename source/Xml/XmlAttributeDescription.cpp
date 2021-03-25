@@ -1,43 +1,49 @@
+#include "xercesc/util/XMLString.hpp"
+#include "xercesc/dom/DOMAttr.hpp"
 #include "OpenGUI/Xml/XmlAttributeDescription.h"
 
 namespace OGUI
 {
-	bool XmlAttributeDescription::GetValueString(std::string& out, const VisualElementAsset& element)
+	bool XmlAttributeDescription::GetValueString(std::string& out, const DOMElement& element)
 	{
-		return element.GetAttributeValue(out, name);
+        auto node = element.getAttributeNode(XMLString::transcode(name.data()));
+        if(node == nullptr) return false;
+
+        out = XMLString::transcode(node->getValue());
+		return true;
 	}
 
-	std::string XmlStringAttributeDescription::GetValue(const VisualElementAsset& element)
+	std::string XmlStringAttributeDescription::GetValue(const DOMElement& element)
 	{
 		std::string out;
 		return GetValueString(out, element) ? out : default_value;
 	}
 
-	float XmlFloatAttributeDescription::GetValue(const VisualElementAsset& element)
+	float XmlFloatAttributeDescription::GetValue(const DOMElement& element)
 	{
 		std::string out;
 		return GetValueString(out, element) ? std::stof(out) : default_value;
 	}
 
-	double XmlDoubleAttributeDescription::GetValue(const VisualElementAsset& element)
+	double XmlDoubleAttributeDescription::GetValue(const DOMElement& element)
 	{
 		std::string out;
 		return GetValueString(out, element) ? std::stod(out) : default_value;
 	}
 
-	int XmlIntAttributeDescription::GetValue(const VisualElementAsset& element)
+	int XmlIntAttributeDescription::GetValue(const DOMElement& element)
 	{
 		std::string out;
 		return GetValueString(out, element) ? std::stoi(out) : default_value;
 	}
 
-	long XmlLongAttributeDescription::GetValue(const VisualElementAsset& element)
+	long XmlLongAttributeDescription::GetValue(const DOMElement& element)
 	{
 		std::string out;
 		return GetValueString(out, element) ? std::stol(out) : default_value;
 	}
 
-	bool XmlBoolAttributeDescription::GetValue(const VisualElementAsset& element)
+	bool XmlBoolAttributeDescription::GetValue(const DOMElement& element)
 	{
 		std::string out;
 		return GetValueString(out, element) ? out == "true" : default_value;

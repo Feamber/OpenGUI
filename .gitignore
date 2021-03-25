@@ -371,4 +371,5 @@ FodyWeavers.xsd
 /cmake-build-debug
 CMakeSettings.json
 cpp.hint
+/cmake-build-debug-visual-studio
 /.vscode

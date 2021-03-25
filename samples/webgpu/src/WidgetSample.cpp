@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "WidgetSample.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Style/StyleHelpers.h"

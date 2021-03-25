@@ -9,11 +9,11 @@ namespace OGUI
 	class XmlFactoryRegistry
 	{
 	public:
-		static std::map<std::string_view, IXmlFactory*> factories;
+		static std::map<std::string, IXmlFactory*> factories;
 
 		static void RegisterFactory(IXmlFactory* factory);
 
-		static IXmlFactory* FindFactory(std::string_view Xml_qualified_name);
+		static IXmlFactory* FindFactory(const std::string& Xml_qualified_name);
 
 	private:
 		static void RegisterEngineFactories();
