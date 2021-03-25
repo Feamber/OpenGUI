@@ -7,6 +7,5 @@ TEST_CASE("XmlParser", "[XmlAsset]")
     auto asset = XmlAsset::LoadXmlFile("XmlParserTest.xml");
     REQUIRE(asset);
     auto ins = XmlAsset::Instantiate(asset->id);
-
     REQUIRE(ins);
 }
