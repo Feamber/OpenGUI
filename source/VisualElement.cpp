@@ -62,12 +62,12 @@ void OGUI::VisualElement::DrawPrimitive(PrimitiveDraw::DrawContext& Ctx)
 
 OGUI::VisualElement* OGUI::VisualElement::GetParent()
 {
-	return _logical_parent;
+	return _logical_parent.lock().get();
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 {
-	return _physical_parent;
+	return _physical_parent.lock().get();
 }
 
 void OGUI::VisualElement::MarkDirty(DirtyReason reason)
@@ -77,8 +77,8 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 
 void OGUI::VisualElement::MoveChild(OGUI::VisualElement* child, OGUI::VisualElement* target)
 {
+	target->PushChild(child);
     RemoveChild(child);
-    target->PushChild(child);
 }
 
 void OGUI::VisualElement::PushChild(VisualElement* child)
@@ -88,17 +88,24 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 {
-	child->_physical_parent = this;
+	child->_physical_parent = shared_from_this();
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
-	_children.insert(_children.begin() + index, child);
+	_children.insert(_children.begin() + index, child->shared_from_this());
 }
 
 void OGUI::VisualElement::RemoveChild(VisualElement* child)
 {
-    child->_physical_parent = nullptr;
+    child->_physical_parent.reset();
     YGNodeRemoveChild(_ygnode, child->_ygnode);
-    auto find = std::find(_children.begin(), _children.end(), child);
-    if(find != _children.end()) _children.erase(find);
+	auto it = _children.begin();
+	while (it != _children.end())
+	{
+		if (it->get() == child)
+		{
+			_children.erase(it);
+			break;
+		}
+	}
 }
 
 void OGUI::VisualElement::SetSharedStyle(Style* style)
@@ -278,4 +285,10 @@ bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element
     }
 
     return true;
+}
+
+bool OGUI::VisualElement::Intersect(Vector2f point)
+{
+	auto layout = GetLayout();
+	return layout.IntersectPoint(point);
 }

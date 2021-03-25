@@ -1,6 +1,7 @@
 #pragma once
+#include "img/stb_image.h"
 #include "webgpu.h"
-#include "OpenGUI/Core/Renderer.h"
+#include "OpenGUI/Interface/RenderInterface.h"
 
 // 0 ~ 1 => -1 ~ 1
 static char const triangle_vert_wgsl[] = R"(
@@ -67,7 +68,7 @@ inline static WGPUBuffer createBuffer(WGPUDevice device, WGPUQueue queue,
 	return buffer;
 }
 
-WGPUTextureFormat translate(OGUI::PixelFormat format)
+inline static WGPUTextureFormat translate(OGUI::PixelFormat format)
 {   
     switch(format)
     {
@@ -81,7 +82,7 @@ WGPUTextureFormat translate(OGUI::PixelFormat format)
     }
 }
 
-uint32_t size_in_bytes(OGUI::PixelFormat format)
+inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
 {
     switch(format)
     {
@@ -152,3 +153,7 @@ inline static WGPU_OGUI_Texture* createTexture(WGPUDevice device, WGPUQueue queu
     return result;
 }
 
+inline static void createBitMapFromJPG(const char* filename, OGUI::BitMap& bm)
+{
+    
+}

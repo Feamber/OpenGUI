@@ -7,7 +7,7 @@ namespace OGUI
 }
 struct WidgetSample
 {
-    std::unique_ptr<OGUI::VisualElement> tree;
-    std::vector<std::unique_ptr<OGUI::VisualElement>> nodes;
+    std::shared_ptr<OGUI::VisualElement> tree;
+    std::vector<std::shared_ptr<OGUI::VisualElement>> nodes;
     void Initialize();
 };

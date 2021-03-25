@@ -220,18 +220,20 @@ namespace OGUI
         root.release();
     }
 
-    class VisualElement *XmlAsset::Instantiate(XmlAssetID asset_id)
+    std::shared_ptr<VisualElement> XmlAsset::Instantiate(XmlAssetID asset_id)
     {
         auto result = all_xml_asset.find(asset_id);
         if(result == all_xml_asset.end()) return nullptr;
 
         CreationContext new_context {};
-        return ParseTemplate(result->second->root, new_context);
+        auto new_template = ParseTemplate(result->second->root, new_context);
+        if(new_template) return new_template->shared_from_this();
+        return nullptr;
     }
 
     TemplateContainer* XmlAsset::ParseTemplate(DOMElement &xml_root, CreationContext &context)
     {
-        auto new_template = new TemplateContainer();
+        auto new_template = context.New<TemplateContainer>();
         context.stack_template.emplace_front(xml_root, *new_template);
 
         // 覆盖属性
@@ -264,7 +266,6 @@ namespace OGUI
                         {
                             context.is_error = true;
                             std::cerr << "<AttributeOverrides element_name=?> 找不到element_name" << std::endl;
-                            delete new_template;
                             return nullptr;
                         }
                         // 合并父模板中的属性覆盖
@@ -324,7 +325,6 @@ namespace OGUI
 
         if(context.is_error)
         {
-            delete new_template;
             return nullptr;
         }
         return new_template;
@@ -356,10 +356,6 @@ namespace OGUI
             return nullptr;
         }
 
-        // 覆盖属性
-        {
-
-        }
         auto new_element = factory->Create(xml_element, context);
         if(new_element != nullptr)
         {

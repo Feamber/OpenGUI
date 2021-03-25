@@ -57,6 +57,18 @@ namespace OGUI
 
         // 解析<Instance>时缓存
         DOMElement const* instance_asset;
+
+        // 生成过程中生成的所有VisualElement
+        std::list<std::shared_ptr<VisualElement>> all;
+
+        template<class T>
+        T* New()
+        {
+            static_assert(std::is_base_of_v<VisualElement, T>);
+            auto new_element = std::make_shared<T>();
+            all.push_front(new_element);
+            return new_element.get();
+        }
     };
 
     // XmlTraits描述了从 VisualElement 派生的类的XML属性和子元素类型。
@@ -114,7 +126,7 @@ namespace OGUI
     public:
         VisualElement* Create(const DOMElement& asset, CreationContext& context) override
         {
-            VisualElement* new_element = new TCreatedType();
+            VisualElement* new_element = context.New<TCreatedType>();
             if(!_traits.InitAttribute(*new_element, asset, context))
             {
                 context.is_error = true;

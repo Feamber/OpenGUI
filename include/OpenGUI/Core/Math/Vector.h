@@ -160,6 +160,11 @@ namespace OGUI
     {
         Vector2f min;
         Vector2f max;
+
+        bool IntersectPoint(Vector2f point)
+        {
+            return point.X >= min.X && point.Y >= min.Y && point.X < max.X && point.Y < max.Y;
+        }
     };
 
     // Vector3

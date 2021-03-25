@@ -4,7 +4,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style/StyleSelector.h"
 
-void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
+void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 {
 	const auto& ess = element->GetStyleSheets();
 	int originStyleSheetCount = matchingContext.styleSheetStack.size();
@@ -18,9 +18,9 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 		ApplyMatchedRules(element, result, styleCache);
 		matchingContext.currentElement = nullptr;
 	}
-	element->Traverse([this](VisualElement* element, int depth) { 
-		Traverse(element, depth); 
-	}, depth);
+	element->Traverse([this](VisualElement* element) { 
+		Traverse(element); 
+	});
 	int styleSheetCount = matchingContext.styleSheetStack.size();
 	auto start = matchingContext.styleSheetStack.begin();
 	if (styleSheetCount > originStyleSheetCount) //pop
@@ -30,7 +30,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, int depth)
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
-	Traverse(Tree, 0);
+	Traverse(Tree);
 	assert(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
 }
@@ -41,41 +41,43 @@ namespace OGUI
 	{
 		bool match = true;
 
-		switch (selector.type)
+		for(auto& part : selector.parts)
 		{
-			case StyleSelector::Wildcard:
-			case StyleSelector::PseudoClass:
-				break;
-			case StyleSelector::Class:
-				match = element->ContainClass(selector.value);
-				break;
-			case StyleSelector::Name:
-				match = element->_name == selector.value;
-				break;
-			case StyleSelector::Type:
-				match = element->IsA(selector.value);
-				break;
-			default:
-				match = false;
+			switch (part.type)
+			{
+				case StyleSelector::Wildcard:
+					break;
+				case StyleSelector::Class:
+					match = element->ContainClass(part.value);
+					break;
+				case StyleSelector::Name:
+					match = element->_name == part.value;
+					break;
+				case StyleSelector::Type:
+					match = element->IsA(part.value);
+					break;
+				default:
+					match = false;
+					break;
+			}
+			if (!match)
+				return false;
 		}
-		if (match)
+		if (selector.pseudoMask != 0)
 		{
-			if (selector.pseudoMask != 0)
-			{
-				match = (selector.pseudoMask & element->_pseudoMask) == selector.pseudoMask;
-				if (match)
-					element->_dependencyPseudoMask |= selector.pseudoMask;
-				else
-					element->_triggerPseudoMask |= selector.pseudoMask;
-			}
-			if (selector.reversedPseudoMask != 0)
-			{
-				match &= (selector.pseudoMask & ~element->_pseudoMask) == selector.pseudoMask;
-				if (match)
-					element->_dependencyPseudoMask |= selector.pseudoMask;
-				else
-					element->_triggerPseudoMask |= selector.pseudoMask;
-			}
+			match = (selector.pseudoMask & element->_pseudoMask) == selector.pseudoMask;
+			if (match)
+				element->_dependencyPseudoMask |= selector.pseudoMask;
+			else
+				element->_triggerPseudoMask |= selector.pseudoMask;
+		}
+		if (selector.reversedPseudoMask != 0)
+		{
+			match &= (selector.pseudoMask & ~element->_pseudoMask) == selector.pseudoMask;
+			if (match)
+				element->_dependencyPseudoMask |= selector.pseudoMask;
+			else
+				element->_triggerPseudoMask |= selector.pseudoMask;
 		}
 		return match;
 	}
@@ -198,11 +200,11 @@ namespace OGUI
 	}
 
 #if defined(_X32)
-	_INLINE_VAR constexpr size_t _FNV_offset_basis = 2166136261U;
-	_INLINE_VAR constexpr size_t _FNV_prime = 16777619U;
+	static constexpr size_t _FNV_offset_basis = 2166136261U;
+	static constexpr size_t _FNV_prime = 16777619U;
 #else // defined(_X32)
-	_INLINE_VAR constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
-	_INLINE_VAR constexpr size_t _FNV_prime = 1099511628211ULL;
+	static constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
+	static constexpr size_t _FNV_prime = 1099511628211ULL;
 #endif // defined(_X32)
 
 	size_t append_hash(size_t value, size_t append)

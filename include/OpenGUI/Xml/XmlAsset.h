@@ -21,7 +21,7 @@ namespace OGUI
 
 		static XmlAssetID GenerateID(const std::string& absolute_path);
 
-		static class VisualElement* Instantiate(XmlAssetID asset_id);
+		static std::shared_ptr<VisualElement> Instantiate(XmlAssetID asset_id);
 
         XmlAssetID id;
 

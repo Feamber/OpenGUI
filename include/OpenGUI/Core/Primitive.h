@@ -71,7 +71,7 @@ namespace OGUI
     };
     struct OGUI_API PrimDrawList
     {
-        inline void validate_and_batch()
+        inline void ValidateAndBatch()
         {
             const size_t ic = indices.size();
             command_list.emplace_back(

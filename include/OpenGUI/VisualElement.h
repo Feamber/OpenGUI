@@ -10,6 +10,7 @@
 #include "OpenGUI/Xml/XmlFactory.h"
 #include "OpenGUI/Xml/XmlAttributeDescription.h"
 #include "OpenGUI/Xml/XmlChildElementDescription.h"
+#include "OpenGUI/Event/EventHandler.h"
 
 using namespace XERCES_CPP_NAMESPACE;
 namespace OGUI
@@ -50,7 +51,7 @@ namespace OGUI
 
 	struct StyleSheet;
 
-	class VisualElement
+	class VisualElement : public std::enable_shared_from_this<VisualElement>
 	{
 	public:
 		VisualElement();
@@ -110,10 +111,13 @@ namespace OGUI
 		void InsertChild(VisualElement* child, int index);
 		void RemoveChild(VisualElement* child);
 
-		std::vector<VisualElement*> _children;
-		VisualElement* _physical_parent = nullptr;
+		std::vector<std::shared_ptr<VisualElement>> _children;
+		std::weak_ptr<VisualElement> _physical_parent;
 		//There could be some node between logical parent and this widget for layout
-		VisualElement* _logical_parent = nullptr;
+		std::weak_ptr<VisualElement> _logical_parent;
+		bool _rerouteEvent;
+		template<class F>
+		void Traverse(F&& f);
 #pragma endregion
 
 #pragma region Transform
@@ -130,6 +134,7 @@ namespace OGUI
 
 #pragma region Style
 	public:
+
 		YGNodeRef _ygnode;
 		uint32_t _triggerPseudoMask = 0;
 		uint32_t _dependencyPseudoMask = 0;
@@ -152,9 +157,12 @@ namespace OGUI
 		bool ContainClass(std::string_view c);
 #pragma endregion
 
+#pragma region Event
 	public:
-		template<class F>
-		void Traverse(F&& f, int depth = 0);
+		EventHandler _eventHandler;
+
+		bool Intersect(Vector2f point);
+#pragma endregion
 	};
 }
 

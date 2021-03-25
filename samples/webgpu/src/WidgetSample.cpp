@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "WidgetSample.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Style/StyleHelpers.h"
@@ -27,13 +28,15 @@ YGValue YGPoint(float v)
 #define SimpleSelector(t, v, r) \
 { \
     StyleComplexSelector complexSel; \
-    StyleSelector selector; \
-    selector.type = StyleSelector::t; \
-    selector.value = v; \
     complexSel.priority = line++; \
     complexSel.ruleIndex = r; \
-    complexSel.UpdateSpecificity(); \
+    StyleSelector selector; \
+    StyleSelector::Part selPart; \
+    selPart.type = StyleSelector::t; \
+    selPart.value = v; \
+    selector.parts.push_back(std::move(selPart)); \
     complexSel.selectors.push_back(std::move(selector)); \
+    complexSel.UpdateSpecificity(); \
     styleSt.styleSelectors.push_back(std::move(complexSel)); \
 }
 
@@ -42,7 +45,7 @@ namespace OGUI
     void TransformRec(VisualElement* element)
     {
         element->UpdateWorldTransform();
-        element->Traverse([&](VisualElement* next, int depth) { TransformRec(next); }, 0);
+        element->Traverse([&](VisualElement* next) { TransformRec(next); });
     }
 }
 
@@ -78,17 +81,17 @@ void WidgetSample::Initialize()
 {
     using namespace OGUI;
     VisualStyleSystem styleSys;
-    auto ve = std::make_unique<VisualElement>();
+    auto ve = std::make_shared<VisualElement>();
     auto styleSt = LoadStyleSheet();
     ve->_name = "TestElement";
     ve->_styleSheets.push_back(&styleSt);\
 
-    auto c1 = std::make_unique<VisualElement>();
+    auto c1 = std::make_shared<VisualElement>();
     c1->_name = "Child1";
     c1->_styleClasses.push_back("Child");
     ve->PushChild(c1.get());
 
-    auto c2 = std::make_unique<VisualElement>();
+    auto c2 = std::make_shared<VisualElement>();
     c2->_name = "Child2";
     c2->_styleClasses.push_back("Child");
     ve->PushChild(c2.get());

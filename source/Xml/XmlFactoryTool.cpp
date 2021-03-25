@@ -40,14 +40,12 @@ namespace OGUI
             {
                 context.is_error = true;
                 std::cerr << "ParseTemplate失败 aliasName： " << template_name << std::endl;
-                delete new_template_container;
                 return nullptr;
             }
             if(!_traits.InitAttribute(*new_template_container, asset, context))
             {
                 context.is_error = true;
                 std::cerr << "ParseTemplate InitAttribute失败 aliasName： " << template_name << std::endl;
-                delete new_template_container;
                 return nullptr;
             }
 
