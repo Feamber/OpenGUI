@@ -3,7 +3,7 @@
 #include <string_view>
 #include <bitset>
 
-void OGUI::StyleSelector::AddPseudoClass(const char* pseudoClass)
+void OGUI::StyleSelector::AddPseudoClass(std::string_view pseudoClass)
 {
 	struct Name2State
 	{
