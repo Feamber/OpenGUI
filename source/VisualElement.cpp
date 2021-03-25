@@ -93,7 +93,7 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 	_sharedStyle = style;
 	_style = *style;
 	if (_inlineSheet)
-		_style.ApplyProperties(_inlineSheet->Storage, _inlineRule.properties);
+		_style.ApplyProperties(_inlineSheet->storage, _inlineRule.properties);
 	style->ApplyProperties(_procedureSheet, _procedureRule.properties);
 
 	_inheritedStylesHash = _style.GetInheritedHash();

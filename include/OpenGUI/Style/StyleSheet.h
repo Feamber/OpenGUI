@@ -21,15 +21,23 @@ namespace OGUI
 
 	struct StyleSheet
 	{
-		StyleSheetStorage Storage;
+		StyleSheetStorage storage;
 		std::vector<StyleRule> styleRules;
 		std::vector<StyleComplexSelector> styleSelectors;
 
-		using SelectorMap = std::multimap<std::string_view, StyleComplexSelector*>;
+		using SelectorMap = std::multimap<std::string_view, int>;
 		SelectorMap classSelectors;
 		SelectorMap nameSelectors;
 		SelectorMap typeSelectors;
 
 		void Initialize();
 	};
+
+	enum class ParseErrorType
+	{
+		None,
+		InvalidProperty,
+		InvalidValue
+	};
+	bool ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType);
 }
