@@ -538,9 +538,16 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 	case WM_MOUSEMOVE:
 	{
 		BOOL Result = false;
-		int posx = GET_X_LPARAM(lParam);
-		int posy = GET_Y_LPARAM(lParam);
-		ctx.OnMouseMove(true, posx, posy);
+
+		// comes problem when cursor move around border of window
+		// int posx = GET_X_LPARAM(lParam);
+		// int posy = GET_Y_LPARAM(lParam);
+		// ctx.OnMouseMove(true, posx, posy);
+
+		POINT p;
+		::GetCursorPos(&p);
+		::ScreenToClient(hWnd, &p);
+		ctx.OnMouseMove(true, p.x, p.y);
 
 		return Result ? 0 : 1;
 	}
