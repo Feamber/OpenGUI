@@ -254,6 +254,22 @@ bool OGUI::VisualElement::ContainClass(std::string_view cls)
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
 }
 
+namespace std
+{
+	void split(const string& s, vector<string>& tokens, const string_view& delimiters = " ")
+	{
+		string::size_type lastPos = s.find_first_not_of(delimiters, 0);
+		string::size_type pos = s.find_first_of(delimiters, lastPos);
+		while (string::npos != pos || string::npos != lastPos)
+		{
+			auto substr = s.substr(lastPos, pos - lastPos);
+			tokens.push_back(substr);//use emplace_back after C++11
+			lastPos = s.find_first_not_of(delimiters, pos);
+			pos = s.find_first_of(delimiters, lastPos);
+		}
+	}
+}
+
 bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element, const DOMElement &asset, CreationContext& context)
 {
     if(!XmlTraits::InitAttribute(new_element, asset, context)) return false;
@@ -261,7 +277,7 @@ bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element
     new_element._name = name.GetValue(asset);
     new_element._path = path.GetValue(asset);
     // TODO style
-    new_element._class_tag = class_tag.GetValue(asset);
+	std::split(class_tag.GetValue(asset), new_element._styleClasses, ",");
 
     auto _slot_name = slot_name.GetValue(asset);
     auto _slot = slot.GetValue(asset);

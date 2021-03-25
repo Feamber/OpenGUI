@@ -73,7 +73,6 @@ namespace OGUI
 		void MarkDirty(DirtyReason reason);
 		std::string _name;
         std::string _path;
-        std::string _class_tag;
 
 #pragma region Xml
 	public:
@@ -148,7 +147,7 @@ namespace OGUI
 		Style _style;
 		Style* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
-		std::vector<std::string_view> _styleClasses;
+		std::vector<std::string> _styleClasses;
 
 		void SetPseudoMask(uint32_t mask);
 		void CalculateLayout();

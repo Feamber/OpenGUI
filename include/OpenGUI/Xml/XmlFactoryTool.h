@@ -133,6 +133,7 @@ namespace OGUI
     {
     public:
         std::map<std::string, VisualElement*> slots;
+		TemplateContainer();
 
         virtual std::string_view GetTypeName() { return "TemplateContainer"; }
         virtual std::string_view GetFullTypeName() { return "OGUI::TemplateContainer"; }

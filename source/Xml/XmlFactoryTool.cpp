@@ -61,5 +61,9 @@ namespace OGUI
     {
         return VisualElement::Traits::InitAttribute(new_element, asset, context);
     }
+    TemplateContainer::TemplateContainer()
+    {
+        
+    }
 }
 
