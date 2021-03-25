@@ -10,8 +10,8 @@ namespace OGUI
 	public:
 #define CHILDREN \
 		PARENT_CLASS(AXmlTraits) \
-		CHILD(child1, VisualElementA)\
-		CHILD(child2, VisualElementB)\
+		CHILD(child1, "VisualElementA", "OGUI")\
+		CHILD(child2, "VisualElementB", "OGUI")\
 #include "OpenGUI/Xml/GenXmlChildDesc.h"
 	}
 	*/
@@ -24,12 +24,5 @@ namespace OGUI
 			elementName(elementName),
 			elementNamespace(elementNamespace)
 		{}
-
-		template<class T>
-		static XmlChildElementDescription Build()
-		{
-			static_assert(std::is_base_of_v<class VisualElement, T>);
-			return XmlChildElementDescription(NAMEOF_SHORT_TYPE(T), XmlTool::GetTypeNamespace<T>());
-		}
 	};
 }

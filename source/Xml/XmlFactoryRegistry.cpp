@@ -5,7 +5,7 @@
 
 namespace OGUI
 {
-	std::map<std::string_view, IXmlFactory*> OGUI::XmlFactoryRegistry::factories = {};
+	std::map<std::string, IXmlFactory*> OGUI::XmlFactoryRegistry::factories = {};
 }
 
 void OGUI::XmlFactoryRegistry::RegisterFactory(IXmlFactory* factory)
@@ -18,7 +18,7 @@ void OGUI::XmlFactoryRegistry::RegisterFactory(IXmlFactory* factory)
 	// TODO 日志：重复注册 XmlFactory
 }
 
-OGUI::IXmlFactory* OGUI::XmlFactoryRegistry::FindFactory(std::string_view Xml_qualified_name)
+OGUI::IXmlFactory* OGUI::XmlFactoryRegistry::FindFactory(const std::string& Xml_qualified_name)
 {
 	struct Initial
 	{
@@ -42,6 +42,8 @@ void OGUI::XmlFactoryRegistry::RegisterEngineFactories()
 		new XmlRootElementFactory(),
 		new XmlStyleElementFactory,
 		new XmlTemplateElementFactory(),
+		new XmlAttributeOverridesElementFactory(),
+        new TemplateContainer::Factory(),
 	};
 
 	for (auto factory : engine_factories)

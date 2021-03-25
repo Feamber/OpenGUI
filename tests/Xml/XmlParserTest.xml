@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:Root xmlns:engine="OGUI">
+    <engine:Template name="test2" path="XmlParserTest2.xml"/>
+    <engine:VisualElement name="A">
+        <engine:Instance template_name="test2" name="B1">
+            <engine:VisualElement name="B1_1" slot="ss"/>
+            <engine:Instance template_name="test2" name="B1_2" slot="ss"/>
+            <engine:AttributeOverrides element_name="BB2" class_tag="aaaaaa" path="aaaa"/>
+            <engine:AttributeOverrides element_name="BB2_1" slot="ssss"/>
+            <engine:AttributeOverrides element_name="BBB" slot_name="cuowu"/>
+        </engine:Instance>
+        <engine:Instance template_name="test2" name="B2"/>
+        <engine:VisualElement name="B3"/>
+    </engine:VisualElement>
+</engine:Root>
