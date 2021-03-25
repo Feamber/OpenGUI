@@ -41,41 +41,43 @@ namespace OGUI
 	{
 		bool match = true;
 
-		switch (selector.type)
+		for(auto& part : selector.parts)
 		{
-			case StyleSelector::Wildcard:
-			case StyleSelector::PseudoClass:
-				break;
-			case StyleSelector::Class:
-				match = element->ContainClass(selector.value);
-				break;
-			case StyleSelector::Name:
-				match = element->_name == selector.value;
-				break;
-			case StyleSelector::Type:
-				match = element->IsA(selector.value);
-				break;
-			default:
-				match = false;
+			switch (part.type)
+			{
+				case StyleSelector::Wildcard:
+					break;
+				case StyleSelector::Class:
+					match = element->ContainClass(part.value);
+					break;
+				case StyleSelector::Name:
+					match = element->_name == part.value;
+					break;
+				case StyleSelector::Type:
+					match = element->IsA(part.value);
+					break;
+				default:
+					match = false;
+					break;
+			}
+			if (!match)
+				return false;
 		}
-		if (match)
+		if (selector.pseudoMask != 0)
 		{
-			if (selector.pseudoMask != 0)
-			{
-				match = (selector.pseudoMask & element->_pseudoMask) == selector.pseudoMask;
-				if (match)
-					element->_dependencyPseudoMask |= selector.pseudoMask;
-				else
-					element->_triggerPseudoMask |= selector.pseudoMask;
-			}
-			if (selector.reversedPseudoMask != 0)
-			{
-				match &= (selector.pseudoMask & ~element->_pseudoMask) == selector.pseudoMask;
-				if (match)
-					element->_dependencyPseudoMask |= selector.pseudoMask;
-				else
-					element->_triggerPseudoMask |= selector.pseudoMask;
-			}
+			match = (selector.pseudoMask & element->_pseudoMask) == selector.pseudoMask;
+			if (match)
+				element->_dependencyPseudoMask |= selector.pseudoMask;
+			else
+				element->_triggerPseudoMask |= selector.pseudoMask;
+		}
+		if (selector.reversedPseudoMask != 0)
+		{
+			match &= (selector.pseudoMask & ~element->_pseudoMask) == selector.pseudoMask;
+			if (match)
+				element->_dependencyPseudoMask |= selector.pseudoMask;
+			else
+				element->_triggerPseudoMask |= selector.pseudoMask;
 		}
 		return match;
 	}

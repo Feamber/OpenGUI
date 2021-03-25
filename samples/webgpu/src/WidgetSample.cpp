@@ -28,13 +28,15 @@ YGValue YGPoint(float v)
 #define SimpleSelector(t, v, r) \
 { \
     StyleComplexSelector complexSel; \
-    StyleSelector selector; \
-    selector.type = StyleSelector::t; \
-    selector.value = v; \
     complexSel.priority = line++; \
     complexSel.ruleIndex = r; \
-    complexSel.UpdateSpecificity(); \
+    StyleSelector selector; \
+    StyleSelector::Part selPart; \
+    selPart.type = StyleSelector::t; \
+    selPart.value = v; \
+    selector.parts.push_back(std::move(selPart)); \
     complexSel.selectors.push_back(std::move(selector)); \
+    complexSel.UpdateSpecificity(); \
     styleSt.styleSelectors.push_back(std::move(complexSel)); \
 }
 
