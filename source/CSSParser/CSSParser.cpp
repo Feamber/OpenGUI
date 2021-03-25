@@ -4,6 +4,11 @@
 
 namespace OGUI
 {
+	template<class T>
+	std::remove_cv_t<T> any_move(std::any& any)
+	{
+		return std::any_cast<T>(std::move(any));
+	}
 	std::optional<StyleSheet> ParseCSS(std::string_view str)
 	{
 		auto grammar = R"(
@@ -37,11 +42,11 @@ namespace OGUI
 
 		auto ok = parser.load_grammar(grammar);
 
-		auto token = [](const SemanticValues& vs)
+		auto token = [](SemanticValues& vs)
 		{
 			return vs.token(0);
 		};
-		auto forward = [](const SemanticValues& vs)
+		auto forward = [](SemanticValues& vs)
 		{
 			return vs[0];
 		};
@@ -52,63 +57,63 @@ namespace OGUI
 		parser["IDENT"] = token;
 		parser["SizeList"] = token;
 		parser["Value"] = forward;
-		parser["Property"] = [](const SemanticValues& vs)
+		parser["Property"] = [](SemanticValues& vs)
 		{
-			auto name = any_cast<string_view>(vs[0]);
-			auto value = any_cast<string_view>(vs[1]);
+			auto name = any_move<string_view>(vs[0]);
+			auto value = any_move<string_view>(vs[1]);
 			return make_pair(name, value);
 		};
 		using property_list_t = vector<pair<string_view, string_view>>;
-		parser["PropertyList"] = [&](const SemanticValues& vs)
+		parser["PropertyList"] = [&](SemanticValues& vs)
 		{
 			property_list_t pairs;
 			for (auto& p : vs)
-				pairs.push_back(any_cast<pair<string_view, string_view>>(p));
+				pairs.push_back(any_move<pair<string_view, string_view>>(p));
 			return pairs;
 		};
-		parser["SelectorPart"] = [](const SemanticValues& vs)
+		parser["SelectorPart"] = [](SemanticValues& vs)
 		{
 			string value;
 			if(vs.tokens.size() != 0) value = {vs.tokens[0].begin(), vs.tokens[0].end()};
 			return StyleSelector::Part{(StyleSelector::Kind)vs.choice(), value};
 		};
-		parser["Selector"] = [](const SemanticValues& vs)
+		parser["Selector"] = [](SemanticValues& vs)
 		{
 			StyleSelector selector;
 			for (auto& p : vs)
 				if(p.type() == typeid(StyleSelector::Part))
-					selector.parts.push_back(any_cast<StyleSelector::Part>(p));
+					selector.parts.push_back(any_move<StyleSelector::Part>(p));
 			for (auto& p : vs.tokens)
 				selector.AddPseudoClass(p);
 			return selector;
 		};
 		struct ComplexPart { StyleSelector selector; };
-		parser["ComplexPart"] = [](const SemanticValues& vs)
+		parser["ComplexPart"] = [](SemanticValues& vs)
 		{
-			StyleSelector selector = any_cast<StyleSelector>(vs[0]);
+			StyleSelector selector = any_move<StyleSelector>(vs[0]);
 			selector.relationship = vs.choice() == 0 ? StyleSelectorRelationship::Descendent : StyleSelectorRelationship::Child;
 			return selector;
 		};
-		parser["ComplexSelector"] = [](const SemanticValues& vs)
+		parser["ComplexSelector"] = [](SemanticValues& vs)
 		{
 			StyleComplexSelector complexSelector;
 			for (auto& p : vs)
-				complexSelector.selectors.push_back(any_cast<StyleSelector>(p));
+				complexSelector.selectors.push_back(any_move<StyleSelector>(p));
 			complexSelector.ruleIndex = vs.line_info().first;
 			complexSelector.UpdateSpecificity();
 			return complexSelector;
 		};
-		parser["SelectorList"] = [](const SemanticValues& vs)
+		parser["SelectorList"] = [](SemanticValues& vs)
 		{
 			vector<StyleComplexSelector> selectorList;
 			for (auto& p : vs)
-				selectorList.push_back(any_cast<StyleComplexSelector>(p));
+				selectorList.push_back(any_move<StyleComplexSelector>(p));
 			return selectorList;
 		};
-		parser["StyleRule"] = [&](const SemanticValues& vs)
+		parser["StyleRule"] = [&](SemanticValues& vs)
 		{
 			StyleRule rule;
-			auto& list = any_cast<property_list_t>(vs[1]);
+			auto& list = any_move<property_list_t>(vs[1]);
 			for (auto& pair : list)
 			{
 				const char* errorMsg;
@@ -120,7 +125,7 @@ namespace OGUI
 			}
 			int ruleIndex = sheet.styleRules.size();
 			sheet.styleRules.push_back(std::move(rule));
-			auto& selectorList = any_cast<vector<StyleComplexSelector>>(vs[0]);
+			auto& selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
 			for (auto& sel : selectorList)
 			{
 				sel.ruleIndex = ruleIndex;
