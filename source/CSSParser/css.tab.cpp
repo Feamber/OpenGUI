@@ -131,18 +131,18 @@ enum yysymbol_kind_t
   YYSYMBOL_COLON = 8,                      /* COLON  */
   YYSYMBOL_WHITESPACE = 9,                 /* WHITESPACE  */
   YYSYMBOL_NUM = 10,                       /* NUM  */
-  YYSYMBOL_CLASS = 11,                     /* CLASS  */
-  YYSYMBOL_NAME = 12,                      /* NAME  */
-  YYSYMBOL_IDENT = 13,                     /* IDENT  */
-  YYSYMBOL_SIZE = 14,                      /* SIZE  */
-  YYSYMBOL_STRING = 15,                    /* STRING  */
-  YYSYMBOL_COMMA = 16,                     /* COMMA  */
-  YYSYMBOL_SEMICOLON = 17,                 /* SEMICOLON  */
-  YYSYMBOL_KEYWORD = 18,                   /* KEYWORD  */
-  YYSYMBOL_URL = 19,                       /* URL  */
-  YYSYMBOL_COLOR = 20,                     /* COLOR  */
-  YYSYMBOL_21_ = 21,                       /* ' '  */
-  YYSYMBOL_22_ = 22,                       /* '*'  */
+  YYSYMBOL_MULTIPLY = 11,                  /* MULTIPLY  */
+  YYSYMBOL_CLASS = 12,                     /* CLASS  */
+  YYSYMBOL_NAME = 13,                      /* NAME  */
+  YYSYMBOL_IDENT = 14,                     /* IDENT  */
+  YYSYMBOL_SIZE = 15,                      /* SIZE  */
+  YYSYMBOL_STRING = 16,                    /* STRING  */
+  YYSYMBOL_COMMA = 17,                     /* COMMA  */
+  YYSYMBOL_SEMICOLON = 18,                 /* SEMICOLON  */
+  YYSYMBOL_KEYWORD = 19,                   /* KEYWORD  */
+  YYSYMBOL_URL = 20,                       /* URL  */
+  YYSYMBOL_COLOR = 21,                     /* COLOR  */
+  YYSYMBOL_22_ = 22,                       /* ' '  */
   YYSYMBOL_23_ = 23,                       /* ','  */
   YYSYMBOL_YYACCEPT = 24,                  /* $accept  */
   YYSYMBOL_StyleSheet = 25,                /* StyleSheet  */
@@ -475,19 +475,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  14
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   34
+#define YYLAST   35
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  24
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  12
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  28
+#define YYNRULES  29
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  40
+#define YYNSTATES  41
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   275
+#define YYMAXUTOK   276
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -504,8 +504,8 @@ static const yytype_int8 yytranslate[] =
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,    21,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,    22,     2,    23,     2,     2,     2,     2,     2,
+       2,     2,    22,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,    23,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -528,7 +528,7 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    20
+      15,    16,    17,    18,    19,    20,    21
 };
 
 #if YYDEBUG
@@ -537,7 +537,7 @@ static const yytype_uint8 yyrline[] =
 {
        0,    56,    56,    57,    61,    66,    78,    85,    94,   101,
      108,   115,   120,   127,   132,   137,   141,   146,   152,   166,
-     167,   169,   172,   173,   174,   175,   176,   181,   182
+     167,   169,   172,   173,   174,   175,   176,   177,   182,   183
 };
 #endif
 
@@ -554,11 +554,12 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
 static const char *const yytname[] =
 {
   "\"end of file\"", "error", "\"invalid token\"", "LPAREN", "RPAREN",
-  "LBRACKET", "RBRACKET", "GREATER", "COLON", "WHITESPACE", "NUM", "CLASS",
-  "NAME", "IDENT", "SIZE", "STRING", "COMMA", "SEMICOLON", "KEYWORD",
-  "URL", "COLOR", "' '", "'*'", "','", "$accept", "StyleSheet",
-  "Statement", "RuleSet", "SelectorList", "ComplexSelector", "Selector",
-  "SelectorPart", "RuleSetItem", "RuleSetContent", "Value", "SizeList", YY_NULLPTR
+  "LBRACKET", "RBRACKET", "GREATER", "COLON", "WHITESPACE", "NUM",
+  "MULTIPLY", "CLASS", "NAME", "IDENT", "SIZE", "STRING", "COMMA",
+  "SEMICOLON", "KEYWORD", "URL", "COLOR", "' '", "','", "$accept",
+  "StyleSheet", "Statement", "RuleSet", "SelectorList", "ComplexSelector",
+  "Selector", "SelectorPart", "RuleSetItem", "RuleSetContent", "Value",
+  "SizeList", YY_NULLPTR
 };
 
 static const char *
@@ -575,11 +576,11 @@ static const yytype_int16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,    32,    42,    44
+     275,   276,    32,    44
 };
 #endif
 
-#define YYPACT_NINF (-11)
+#define YYPACT_NINF (-18)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -593,10 +594,11 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -7,   -10,   -11,   -11,   -11,   -11,     0,   -11,   -11,     2,
-       1,    -5,    -7,   -11,   -11,   -11,     7,    -7,    -7,    -7,
-     -11,    13,     8,    20,   -11,   -11,   -11,     4,     7,   -11,
-     -11,     5,   -11,   -11,   -11,   -11,   -11,   -11,    15,   -11
+      -5,   -10,   -18,   -18,   -18,   -18,     5,   -18,   -18,     6,
+      -3,    -7,    -5,   -18,   -18,   -18,    -4,    -5,    -5,    -5,
+     -18,     4,     3,    16,   -18,   -18,   -18,    10,    -4,   -18,
+     -18,   -18,     0,   -18,   -18,   -18,   -18,   -18,   -18,    12,
+     -18
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -604,24 +606,25 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,    14,    16,    13,    17,     0,     2,     4,     0,
+       0,     0,    17,    14,    16,    13,     0,     2,     4,     0,
        6,    10,    11,    15,     1,     3,    21,     0,     0,     0,
       12,     0,    19,     0,     7,     9,     8,     0,    21,     5,
-      25,    27,    22,    24,    23,    18,    26,    20,     0,    28
+      26,    23,    28,    22,    25,    24,    18,    27,    20,     0,
+      29
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -11,   -11,    21,   -11,    14,    -9,    18,   -11,   -11,     6,
-     -11,    -6
+     -18,   -18,    22,   -18,    15,   -17,    17,   -18,   -18,     7,
+     -18,    -6
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
       -1,     6,     7,     8,     9,    10,    11,    12,    22,    23,
-      35,    36
+      36,    37
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -629,28 +632,29 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      14,     1,    18,    13,     2,     3,     4,    16,     1,    25,
-      26,     2,     3,     4,    30,     5,    19,    17,    31,    32,
-      21,    27,     5,    33,    34,    28,    29,    15,    38,    31,
-      20,    24,    39,     0,    37
+      18,    25,    26,     1,    13,    14,     2,     3,     4,     5,
+      21,    16,    27,     1,    17,    19,     2,     3,     4,     5,
+      30,    28,    29,    39,    31,    32,    33,    32,    15,    20,
+      34,    35,    24,    40,     0,    38
 };
 
 static const yytype_int8 yycheck[] =
 {
-       0,     8,     7,    13,    11,    12,    13,     5,     8,    18,
-      19,    11,    12,    13,    10,    22,    21,    16,    14,    15,
-      13,     8,    22,    19,    20,    17,     6,     6,    23,    14,
-      12,    17,    38,    -1,    28
+       7,    18,    19,     8,    14,     0,    11,    12,    13,    14,
+      14,     5,     8,     8,    17,    22,    11,    12,    13,    14,
+      10,    18,     6,    23,    14,    15,    16,    15,     6,    12,
+      20,    21,    17,    39,    -1,    28
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     8,    11,    12,    13,    22,    25,    26,    27,    28,
-      29,    30,    31,    13,     0,    26,     5,    16,     7,    21,
-      30,    13,    32,    33,    28,    29,    29,     8,    17,     6,
-      10,    14,    15,    19,    20,    34,    35,    33,    23,    35
+       0,     8,    11,    12,    13,    14,    25,    26,    27,    28,
+      29,    30,    31,    14,     0,    26,     5,    17,     7,    22,
+      30,    14,    32,    33,    28,    29,    29,     8,    18,     6,
+      10,    14,    15,    16,    20,    21,    34,    35,    33,    23,
+      35
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
@@ -658,7 +662,7 @@ static const yytype_int8 yyr1[] =
 {
        0,    24,    25,    25,    26,    27,    28,    28,    29,    29,
       29,    30,    30,    31,    31,    31,    31,    31,    32,    33,
-      33,    33,    34,    34,    34,    34,    34,    35,    35
+      33,    33,    34,    34,    34,    34,    34,    34,    35,    35
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
@@ -666,7 +670,7 @@ static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     2,     1,     4,     1,     3,     3,     3,
        1,     1,     2,     1,     1,     2,     1,     1,     3,     1,
-       3,     0,     1,     1,     1,     1,     1,     1,     3
+       3,     0,     1,     1,     1,     1,     1,     1,     1,     3
 };
 
 
@@ -1512,14 +1516,14 @@ yyreduce:
   case 3: /* StyleSheet: StyleSheet Statement  */
 #line 58 "css.y"
     {}
-#line 1516 "css.tab.cpp"
+#line 1520 "css.tab.cpp"
     break;
 
   case 4: /* Statement: RuleSet  */
 #line 62 "css.y"
     {
     }
-#line 1523 "css.tab.cpp"
+#line 1527 "css.tab.cpp"
     break;
 
   case 5: /* RuleSet: SelectorList LBRACKET RuleSetContent RBRACKET  */
@@ -1533,7 +1537,7 @@ yyreduce:
             styleSheet.styleSelectors[i].ruleIndex = ruleId;
         complexSelectorCount = newSize;
     }
-#line 1537 "css.tab.cpp"
+#line 1541 "css.tab.cpp"
     break;
 
   case 6: /* SelectorList: ComplexSelector  */
@@ -1544,7 +1548,7 @@ yyreduce:
         styleSheet.styleSelectors.push_back(std::move(complexSelector));
         reset(complexSelector);
     }
-#line 1548 "css.tab.cpp"
+#line 1552 "css.tab.cpp"
     break;
 
   case 7: /* SelectorList: ComplexSelector COMMA SelectorList  */
@@ -1555,7 +1559,7 @@ yyreduce:
         styleSheet.styleSelectors.push_back(std::move(complexSelector));
         reset(complexSelector);
     }
-#line 1559 "css.tab.cpp"
+#line 1563 "css.tab.cpp"
     break;
 
   case 8: /* ComplexSelector: Selector ' ' ComplexSelector  */
@@ -1566,7 +1570,7 @@ yyreduce:
         complexSelector.selectors.push_back(std::move(selector));
         reset(selector);
     }
-#line 1570 "css.tab.cpp"
+#line 1574 "css.tab.cpp"
     break;
 
   case 9: /* ComplexSelector: Selector GREATER ComplexSelector  */
@@ -1577,7 +1581,7 @@ yyreduce:
         complexSelector.selectors.push_back(std::move(selector));
         reset(selector);
     }
-#line 1581 "css.tab.cpp"
+#line 1585 "css.tab.cpp"
     break;
 
   case 10: /* ComplexSelector: Selector  */
@@ -1586,7 +1590,7 @@ yyreduce:
         complexSelector.selectors.push_back(std::move(selector));
         reset(selector);
     }
-#line 1590 "css.tab.cpp"
+#line 1594 "css.tab.cpp"
     break;
 
   case 11: /* Selector: SelectorPart  */
@@ -1595,7 +1599,7 @@ yyreduce:
         selector.parts.push_back(std::move(selectorPart));
         reset(selectorPart);
     }
-#line 1599 "css.tab.cpp"
+#line 1603 "css.tab.cpp"
     break;
 
   case 12: /* Selector: SelectorPart Selector  */
@@ -1604,7 +1608,7 @@ yyreduce:
         selector.parts.push_back(std::move(selectorPart));
         reset(selectorPart);
     }
-#line 1608 "css.tab.cpp"
+#line 1612 "css.tab.cpp"
     break;
 
   case 13: /* SelectorPart: IDENT  */
@@ -1613,7 +1617,7 @@ yyreduce:
         selectorPart.type = OGUI::StyleSelector::Type;
         selectorPart.value = (yyvsp[0].text);
     }
-#line 1617 "css.tab.cpp"
+#line 1621 "css.tab.cpp"
     break;
 
   case 14: /* SelectorPart: CLASS  */
@@ -1622,7 +1626,7 @@ yyreduce:
         selectorPart.type = OGUI::StyleSelector::Class;
         selectorPart.value = (yyvsp[0].text);
     }
-#line 1626 "css.tab.cpp"
+#line 1630 "css.tab.cpp"
     break;
 
   case 15: /* SelectorPart: COLON IDENT  */
@@ -1630,7 +1634,7 @@ yyreduce:
     {
         selector.AddPseudoClass((yyvsp[0].text));
     }
-#line 1634 "css.tab.cpp"
+#line 1638 "css.tab.cpp"
     break;
 
   case 16: /* SelectorPart: NAME  */
@@ -1639,15 +1643,15 @@ yyreduce:
         selectorPart.type = OGUI::StyleSelector::Name;
         selectorPart.value = (yyvsp[0].text);
     }
-#line 1643 "css.tab.cpp"
+#line 1647 "css.tab.cpp"
     break;
 
-  case 17: /* SelectorPart: '*'  */
+  case 17: /* SelectorPart: MULTIPLY  */
 #line 147 "css.y"
     {
         selectorPart.type = OGUI::StyleSelector::Wildcard;
     }
-#line 1651 "css.tab.cpp"
+#line 1655 "css.tab.cpp"
     break;
 
   case 18: /* RuleSetItem: IDENT COLON Value  */
@@ -1663,64 +1667,70 @@ yyreduce:
         
         memset(value, 0, sizeof(value));
     }
-#line 1667 "css.tab.cpp"
+#line 1671 "css.tab.cpp"
     break;
 
   case 21: /* RuleSetContent: %empty  */
 #line 169 "css.y"
     {}
-#line 1673 "css.tab.cpp"
+#line 1677 "css.tab.cpp"
     break;
 
   case 22: /* Value: STRING  */
 #line 172 "css.y"
            { strcat(value, (yyvsp[0].text)); }
-#line 1679 "css.tab.cpp"
+#line 1683 "css.tab.cpp"
     break;
 
-  case 23: /* Value: COLOR  */
+  case 23: /* Value: IDENT  */
 #line 173 "css.y"
             { strcat(value, (yyvsp[0].text)); }
-#line 1685 "css.tab.cpp"
+#line 1689 "css.tab.cpp"
     break;
 
-  case 24: /* Value: URL  */
+  case 24: /* Value: COLOR  */
 #line 174 "css.y"
-          { strcat(value, (yyvsp[0].text)); }
-#line 1691 "css.tab.cpp"
+            { strcat(value, (yyvsp[0].text)); }
+#line 1695 "css.tab.cpp"
     break;
 
-  case 25: /* Value: NUM  */
+  case 25: /* Value: URL  */
 #line 175 "css.y"
           { strcat(value, (yyvsp[0].text)); }
-#line 1697 "css.tab.cpp"
+#line 1701 "css.tab.cpp"
     break;
 
-  case 26: /* Value: SizeList  */
+  case 26: /* Value: NUM  */
 #line 176 "css.y"
+          { strcat(value, (yyvsp[0].text)); }
+#line 1707 "css.tab.cpp"
+    break;
+
+  case 27: /* Value: SizeList  */
+#line 177 "css.y"
                {}
-#line 1703 "css.tab.cpp"
+#line 1713 "css.tab.cpp"
     break;
 
-  case 27: /* SizeList: SIZE  */
-#line 181 "css.y"
+  case 28: /* SizeList: SIZE  */
+#line 182 "css.y"
          { strcat(value, (yyvsp[0].text)); }
-#line 1709 "css.tab.cpp"
+#line 1719 "css.tab.cpp"
     break;
 
-  case 28: /* SizeList: SIZE ',' SizeList  */
-#line 183 "css.y"
+  case 29: /* SizeList: SIZE ',' SizeList  */
+#line 184 "css.y"
     {   
         static char temp[100];
         strcpy(temp, (yyvsp[-2].text));
         strcat(temp, value);
         strcpy(value, temp); 
     }
-#line 1720 "css.tab.cpp"
+#line 1730 "css.tab.cpp"
     break;
 
 
-#line 1724 "css.tab.cpp"
+#line 1734 "css.tab.cpp"
 
       default: break;
     }
@@ -1950,7 +1960,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 190 "css.y"
+#line 191 "css.y"
 
 
 extern ParseContext* yyget_extra ( yyscan_t yyscanner );
@@ -1959,6 +1969,8 @@ void yyerror(struct YYLTYPE * yylloc_param, yyscan_t yyscanner, const char *s)
 {
     auto& yylloc = *yylloc_param;
     fprintf(stderr,"error: %s in line %d, column %d\n", s, yylloc.first_line, yylloc.first_column);
+    if(!yyscanner)
+        return;
     const char* buf = yyget_extra(yyscanner)->linebuf;
     if(strlen(buf) == 0)
         return;

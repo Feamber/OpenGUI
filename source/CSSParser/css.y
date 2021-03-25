@@ -46,7 +46,7 @@ extern int yylex(YYSTYPE * yylval_param, YYLTYPE * yylloc_param , yyscan_t yysca
     char* text;
 }
 
-%token LPAREN RPAREN LBRACKET RBRACKET GREATER COLON WHITESPACE NUM
+%token LPAREN RPAREN LBRACKET RBRACKET GREATER COLON WHITESPACE NUM MULTIPLY
 %token CLASS NAME IDENT SIZE STRING COMMA SEMICOLON KEYWORD URL COLOR
 
 %type<text> CLASS NAME STRING SIZE IDENT COLOR URL NUM
@@ -143,7 +143,7 @@ SelectorPart:
         selectorPart.type = OGUI::StyleSelector::Name;
         selectorPart.value = $1;
     }
-    | '*'
+    | MULTIPLY
     {
         selectorPart.type = OGUI::StyleSelector::Wildcard;
     };
@@ -170,6 +170,7 @@ RuleSetContent:
 
 Value:
     STRING { strcat(value, $1); }
+    | IDENT { strcat(value, $1); }
     | COLOR { strcat(value, $1); }
     | URL { strcat(value, $1); }
     | NUM { strcat(value, $1); }
@@ -195,6 +196,8 @@ void yyerror(struct YYLTYPE * yylloc_param, yyscan_t yyscanner, const char *s)
 {
     auto& yylloc = *yylloc_param;
     fprintf(stderr,"error: %s in line %d, column %d\n", s, yylloc.first_line, yylloc.first_column);
+    if(!yyscanner)
+        return;
     const char* buf = yyget_extra(yyscanner)->linebuf;
     if(strlen(buf) == 0)
         return;

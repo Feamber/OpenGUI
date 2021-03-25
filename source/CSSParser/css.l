@@ -45,6 +45,7 @@ nmstart		[_a-z]|{nonascii}|{escape}
 nmchar		[_a-zA-Z0-9-]|{nonascii}|{escape}
 string1		\"([\t !#$%&(-~]|\\{nl}|\’|{nonascii}|{escape})*\"
 string2		\’([\t !#$%&(-~]|\\{nl}|\"|{nonascii}|{escape})*\’
+color       "rgba("{w}{num}{w}","{w}{num}{w}","{w}{num}{w}","{w}{num}{w}")"
 ident		{nmstart}{nmchar}*
 name		{nmchar}+
 num			[0-9]+|[0-9]*"."[0-9]+
@@ -56,7 +57,6 @@ nl			\n|\r\n|\r|\f
 range		\?{1,6}|{h}(\?{0,5}|{h}(\?{0,4}|{h}(\?{0,3}|{h}(\?{0,2}|{h}(\??|{h})))))
 size_type   "px"|"%"
 size        ({num}{size_type})|"0"
-color       "rgba("{num}","{num}","{num}")"
 
 %%
 "."{ident}      { yylval->text = _strdup(yytext + 1); return CLASS; }
@@ -74,9 +74,10 @@ color       "rgba("{num}","{num}","{num}")"
 ","             { return COMMA; }
 ";"             { return SEMICOLON; }
 ":"             { return COLON; }
+"*"             { return MULTIPLY; }
 "url("{url}")"  { yylval->text = _strdup(yytext+4); yylval->text[strlen(yylval->text) - 1] = 0; return URL; }
-{color}         { yylval->text = _strdup(yytext+5); yylval->text[strlen(yylval->text) - 1] = 0; return COLOR; }
-.               { yyerror(yylloc, nullptr, "unexcepted token."); }
+{color}         { yylval->text = _strdup(yytext+5); yylval->text[strlen(yylval->text) - 1] = 0; ; return COLOR; }
+.               { yyerror(yylloc, nullptr, "unexcepted token."); fprintf(stderr, "%s\n", yytext); }
 %%
 
 typedef intptr_t ssize_t;

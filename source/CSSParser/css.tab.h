@@ -73,16 +73,17 @@ struct ParseContext {
     COLON = 263,                   /* COLON  */
     WHITESPACE = 264,              /* WHITESPACE  */
     NUM = 265,                     /* NUM  */
-    CLASS = 266,                   /* CLASS  */
-    NAME = 267,                    /* NAME  */
-    IDENT = 268,                   /* IDENT  */
-    SIZE = 269,                    /* SIZE  */
-    STRING = 270,                  /* STRING  */
-    COMMA = 271,                   /* COMMA  */
-    SEMICOLON = 272,               /* SEMICOLON  */
-    KEYWORD = 273,                 /* KEYWORD  */
-    URL = 274,                     /* URL  */
-    COLOR = 275                    /* COLOR  */
+    MULTIPLY = 266,                /* MULTIPLY  */
+    CLASS = 267,                   /* CLASS  */
+    NAME = 268,                    /* NAME  */
+    IDENT = 269,                   /* IDENT  */
+    SIZE = 270,                    /* SIZE  */
+    STRING = 271,                  /* STRING  */
+    COMMA = 272,                   /* COMMA  */
+    SEMICOLON = 273,               /* SEMICOLON  */
+    KEYWORD = 274,                 /* KEYWORD  */
+    URL = 275,                     /* URL  */
+    COLOR = 276                    /* COLOR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -95,7 +96,7 @@ union YYSTYPE
 
     char* text;
 
-#line 99 "css.tab.h"
+#line 100 "css.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

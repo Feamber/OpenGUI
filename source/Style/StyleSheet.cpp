@@ -88,11 +88,12 @@ namespace OGUI
 		Color4f res;
 		for (int i = 0; i < 4; ++i)
 		{
-			if (FromString(tokens[0], comp))
+			if (FromString(tokens[i], comp))
 				res.m_[i] = comp;
 			else
 				return false;
 		}
+		value = res;
 		return true;
 	}
 	bool FromString(std::string_view str, int& value)
@@ -143,7 +144,7 @@ namespace OGUI
 
 		if (FromString(numstr, comp))
 		{
-			value = YGValue{comp, YGUnitPercent};
+			value = YGValue{comp, unit};
 			return true;
 		}
 		else

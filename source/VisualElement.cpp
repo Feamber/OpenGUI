@@ -124,7 +124,7 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 
 void OGUI::VisualElement::CalculateLayout()
 {
-	YGNodeCalculateLayout(_ygnode,YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
+	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
 	YGNodeSetHasNewLayout(_ygnode, false);
 }
 
