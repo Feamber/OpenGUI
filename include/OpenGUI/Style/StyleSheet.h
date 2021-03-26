@@ -11,12 +11,18 @@
 
 namespace OGUI
 {
-
+	struct Picture
+	{
+		std::string path;
+		int loadingStatus;
+		std::shared_ptr<ITexture> texture;
+	};
 	using StyleSheetStorage = VariantStorage<
 		float,
 		Color4f,
 		int,
-		YGValue
+		YGValue,
+		Picture
 		>;
 
 	struct StyleSheet
