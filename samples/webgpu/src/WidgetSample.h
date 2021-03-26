@@ -8,7 +8,6 @@ namespace OGUI
 }
 struct WidgetSample
 {
-    OGUI::StyleSheet styleSheet;
     std::shared_ptr<OGUI::VisualElement> tree;
     std::vector<std::shared_ptr<OGUI::VisualElement>> nodes;
     void Initialize();
