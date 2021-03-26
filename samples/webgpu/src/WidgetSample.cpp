@@ -34,12 +34,8 @@ void WidgetSample::Initialize()
     VisualStyleSystem styleSys;
     auto ve = std::make_shared<VisualElement>();
 
-    styleSheet = ParseCSSFile("test.css").value();
-    styleSheet.Initialize();
-
     auto asset = XmlAsset::LoadXmlFile("test.xml");
     ve = XmlAsset::Instantiate(asset->id);
-    ve->_styleSheets.push_back(&styleSheet);
     ve->_pseudoMask |= (int)PseudoStates::Root;
 
     styleSys.Update(ve.get());

@@ -235,6 +235,8 @@ namespace OGUI
     {
         auto new_template = context.New<TemplateContainer>();
         context.stack_template.emplace_front(xml_root, *new_template);
+        if(context.stack.size() == 0)
+            context.stack.push_front(new_template);
 
         // 覆盖属性
         {

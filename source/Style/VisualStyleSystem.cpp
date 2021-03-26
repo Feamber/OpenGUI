@@ -15,7 +15,8 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
 		FindMatches(matchingContext, result);
-		ApplyMatchedRules(element, result, styleCache);
+		if(result.size() > 0)
+			ApplyMatchedRules(element, result, styleCache);
 		matchingContext.currentElement = nullptr;
 	}
 	element->Traverse([this](VisualElement* element) { 
