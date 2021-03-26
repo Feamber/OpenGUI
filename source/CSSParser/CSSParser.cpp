@@ -19,14 +19,14 @@ namespace OGUI
 			ComplexPart		<- ([ ]+ Selector) / (w '>' w Selector)
 			Selector		<- SelectorPart+ (':' <IDENT>)*
 			SelectorPart	<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT>
-			PropertyList	<- Property? (';' _ Property)*
+			PropertyList	<- Property? (';' _ Property)* _
 			Property		<- IDENT w ':' w Value
 			Value			<- SizeList / SIZE / COLOR / IDENT / NUM _
 			SizeList		<- <SIZE (',' w SIZE){3}> _
 			SIZE			<- (<NUM ('px' / '%')>) / <'0'>
 			NUM				<- < ([0-9]*"."[0-9]+) / ([0-9]+) >
-			COLOR			<- (IDENT '(' < CNUM (',' CNUM)* > ')') / (<'#' NUM>)
-			CNUM			<- NUM (IDENT / '%')
+			COLOR			<- (< IDENT w '(' w CNUM ( w ',' w CNUM)* w ')' >) / (<'#' NUM>)
+			CNUM			<- NUM (IDENT / '%')?
 			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
 			~_				<- [ \t\r\n]*
 			~w				<- [ ]*
@@ -492,15 +492,15 @@ namespace OGUI
 		
 		auto grammar = R"(
 			Color	<- CALLS / CALL / HEX / IDENT
-			CALL	<- FUNC '(' _ CNUM _ > ',' _ CNUM _ ',' _ CNUM _ (',' _ CNUM _)? ')'
+			CALL	<- FUNC '(' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ (',' _ CNUM _)? ')'
 			CALLS	<- FUNC '(' _ CNUM __ CNUM __ CNUM _ ('/' _ CNUM _)? ')'
 			FUNC	<- <'rgba' / 'rgb' / 'hsl' / 'hsla'>
 			NUM		<- < ([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+) >
 			CNUM	<- < NUM ('deg' / 'rad' / 'grad' / 'turn' / '%')? >
 			HEX		<- '#' < [0-9a-fA-F] >
 			IDENT	<- < [a-zA-Z] [a-zA-Z0-9-]* >
-			_		<- [ ]*
-			__		<- [ ]+
+			~_		<- [ ]*
+			~__		<- [ ]+
 		)";
 
 		using namespace peg;
@@ -528,8 +528,28 @@ namespace OGUI
 		};
 		auto CALL = [](SemanticValues& vs)
 		{
-			int type = any_move<int>(vs[0]);
+			size_t type = any_move<size_t>(vs[0]);
 			Color4f color = Color4f::vector_one();
+			auto ParseCNUM = [](string_view str, bool mustBePercent, bool normalize = true)
+			{
+				bool isPercent = false;
+				auto valuestr = str;
+				if (ends_with(str, "%"))
+				{
+					isPercent = true;
+					valuestr = str.substr(0, str.length() - 1);
+				}
+				else if (mustBePercent)
+					throw parse_error("invalid number, except percent.");
+				float value;
+				if (!FromString(valuestr, value))
+					throw parse_error("invalid number.");
+				if (isPercent && !mustBePercent)
+					value = value / 100;
+				else if (normalize)
+					value = roundf(value) / 255;
+				return value;
+			};
 			int size = vs.size();
 			if (size < 4)
 				throw parse_error("not enough parameter for color function.");
@@ -580,26 +600,8 @@ namespace OGUI
 					value = value * 360;// turn2deg(value);
 				color.X = value;
 			}
-			auto ParseCNUM = [](string_view str, bool mustBePercent, bool normalize = true) 
-			{
-				bool isPercent = false;
-				auto valuestr = str;
-				if (ends_with(str, "%"))
-				{
-					isPercent = true;
-					valuestr = str.substr(0, str.length() - 1);
-				}
-				else if(mustBePercent)
-					throw parse_error("invalid number, except percent.");
-				float value;
-				if (!FromString(valuestr, value))
-					throw parse_error("invalid number.");
-				if (isPercent && !mustBePercent)
-					value = value / 100;
-				else if(normalize)
-					value = roundf(value) / 255;
-				return value;
-			}; 
+			else
+				color.X = ParseCNUM(first, false);
 			auto second = any_move<string_view>(vs[2]);
 			color.Y = ParseCNUM(second, type == 1);
 			auto third = any_move<string_view>(vs[3]);
