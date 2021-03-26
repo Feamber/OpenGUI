@@ -11,6 +11,7 @@
 
 namespace OGUI
 {
+	struct ITexture;
 	struct Picture
 	{
 		std::string path;
