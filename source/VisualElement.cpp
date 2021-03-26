@@ -1,6 +1,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Style/Style.h"
+#include "OpenGui/Xml/XmlFactoryTool.h"
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {
@@ -75,6 +76,12 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 	//Context.Get().BroadcastDirtyEvent(this, reason);
 }
 
+void OGUI::VisualElement::MoveChild(OGUI::VisualElement* child, OGUI::VisualElement* target)
+{
+	target->PushChild(child);
+    RemoveChild(child);
+}
+
 void OGUI::VisualElement::PushChild(VisualElement* child)
 {
 	InsertChild(child, _children.size());
@@ -87,15 +94,31 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 	_children.insert(_children.begin() + index, child->shared_from_this());
 }
 
+void OGUI::VisualElement::RemoveChild(VisualElement* child)
+{
+    child->_physical_parent.reset();
+    YGNodeRemoveChild(_ygnode, child->_ygnode);
+	auto it = _children.begin();
+	while (it != _children.end())
+	{
+		if (it->get() == child)
+		{
+			_children.erase(it);
+			break;
+		}
+	}
+}
+
 void OGUI::VisualElement::SetSharedStyle(Style* style)
 {
 	if (style == _sharedStyle)
 		return;
 	_sharedStyle = style;
 	_style = *style;
-	if (_inlineSheet)
-		_style.ApplyProperties(_inlineSheet->Storage, _inlineRule.properties);
-	style->ApplyProperties(_procedureSheet, _procedureRule.properties);
+	if (_inlineStyle)
+		_style.ApplyProperties(_inlineStyle->storage, _inlineStyle->rule.properties);
+	if(_procedureStyle)
+		style->ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties);
 
 	_inheritedStylesHash = _style.GetInheritedHash();
 	SyncYogaStyle();
@@ -103,7 +126,7 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 
 void OGUI::VisualElement::CalculateLayout()
 {
-	YGNodeCalculateLayout(_ygnode,YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
+	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
 	YGNodeSetHasNewLayout(_ygnode, false);
 }
 
@@ -233,8 +256,65 @@ bool OGUI::VisualElement::ContainClass(std::string_view cls)
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
 }
 
+namespace std
+{
+	void split(const string& s, vector<string>& tokens, const string_view& delimiters = " ")
+	{
+		string::size_type lastPos = s.find_first_not_of(delimiters, 0);
+		string::size_type pos = s.find_first_of(delimiters, lastPos);
+		while (string::npos != pos || string::npos != lastPos)
+		{
+			auto substr = s.substr(lastPos, pos - lastPos);
+			tokens.push_back(substr);//use emplace_back after C++11
+			lastPos = s.find_first_not_of(delimiters, pos);
+			pos = s.find_first_of(delimiters, lastPos);
+		}
+	}
+}
+
+bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element, const DOMElement &asset, CreationContext& context)
+{
+    if(!XmlTraits::InitAttribute(new_element, asset, context)) return false;
+
+    new_element._name = name.GetValue(asset);
+    new_element._path = path.GetValue(asset);
+    // TODO style
+	std::split(class_tag.GetValue(asset), new_element._styleClasses, ",");
+
+    auto _slot_name = slot_name.GetValue(asset);
+    auto _slot = slot.GetValue(asset);
+
+    if(!_slot_name.empty())
+    {
+        auto& template_container = context.stack_template.front().template_container;
+        template_container.slots[_slot_name] = &new_element;
+    }
+
+    if(!_slot.empty())
+    {
+        auto parent_node = context.stack.front();
+        if(parent_node->IsA("TemplateContainer"))
+        {
+            auto template_container = (TemplateContainer*)parent_node;
+            auto find_slots = template_container->slots.find(_slot);
+            if(find_slots != template_container->slots.end())
+                find_slots->second->PushChild(&new_element);
+        }
+    }
+
+    return true;
+}
+
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
 	auto layout = GetLayout();
 	return layout.IntersectPoint(point);
+}
+
+#include "OpenGUI/CSSParser/CSSParser.h"
+void OGUI::VisualElement::InitInlineStyle(std::string_view str)
+{
+	auto res = ParseInlineStyle(str);
+	if(res)
+		_inlineStyle = std::make_unique<InlineStyle>(std::move(res.value()));
 }

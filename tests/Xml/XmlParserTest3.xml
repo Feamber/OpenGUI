@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:Root xmlns:engine="OGUI">
+    <engine:VisualElement name="AAA">
+        <engine:VisualElement name="BBB" slot_name="sss"/>
+    </engine:VisualElement>
+</engine:Root>

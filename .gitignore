@@ -371,4 +371,9 @@ FodyWeavers.xsd
 /cmake-build-debug
 CMakeSettings.json
 cpp.hint
+/cmake-build-debug-visual-studio
 /.vscode
+
+*.exe
+!thirdparty/xerces-c/bin/xerces-c_4_0D.dll
+!thirdparty/xerces-c/bin

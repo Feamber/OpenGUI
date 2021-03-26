@@ -138,9 +138,10 @@ namespace OGUI
 		{
 			for (auto iter = range.first; iter != range.second; ++iter)
 			{
-				if (Match(context, iter->second))
+				auto& selector = record.sheet->styleSelectors[iter->second];
+				if (Match(context, &selector))
 				{
-					record.complexSelector = iter->second;
+					record.complexSelector = &selector;
 					matchedSelectors.push_back(record);
 				}
 			}
@@ -254,7 +255,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		for (auto& record : matchedSelectors)
 		{
 			auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-			resolvedStyle.ApplyProperties(record.sheet->Storage, rule.properties);
+			resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties);
 			//resolvedStyle.ApplyCustomProperties(record.sheet, rule.customProperties);
 		}
 		auto pair = styleCache.emplace(matchHash, new Style{std::move(resolvedStyle)});

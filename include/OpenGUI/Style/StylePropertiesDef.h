@@ -38,5 +38,5 @@ STYLEPROP(	display,			34,				NonInherited,			YGDisplay,			"display",					YGDispl
 //End Yoga props																											
 //Begin draw props																											
 STYLEPROP(	color,				35,				Inherited,				Color4f,			"color",					Color4f(1.f,1.f,1.f,1.f)	)
-STYLEPROP(	fontSize,			36,				Inherited,				float,				"fontSize",					0.f							)
+STYLEPROP(	fontSize,			36,				Inherited,				float,				"font-size",					0.f							)
 //End draw props

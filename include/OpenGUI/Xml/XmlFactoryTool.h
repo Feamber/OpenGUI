@@ -5,6 +5,7 @@
 #include "OpenGUI/Xml/XmlFactory.h"
 #include "OpenGUI/Xml/XmlAttributeDescription.h"
 #include "OpenGUI/Xml/XmlChildElementDescription.h"
+#include "OpenGUI/Xml/XmlAsset.h"
 
 namespace OGUI
 {
@@ -14,22 +15,23 @@ namespace OGUI
 	public:
 #define CHILDREN \
 		PARENT_CLASS(XmlTraits) \
-		CHILD(child1, VisualElement)
+		CHILD(child1, "VisualElement", "OGUI")
 #include "OpenGUI/Xml/GenXmlChildDesc.h"
 	};
 
 	class XmlRootElementFactory : public XmlFactory<VisualElement, XmlRootElementTraits> 
 	{
 	public:
-		inline static const std::string_view element_name = "Root";
+		inline static const std::string element_name = "Root";
 
 		XmlRootElementFactory()
 		{
 			xml_name = element_name;
+            xml_namespace = "OGUI";
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 		}
 
-		VisualElement* Create(const VisualElementAsset& asset) override
+		VisualElement* Create(const DOMElement& asset, CreationContext& context) override
 		{
 			// <Root> 这个元素没有实际控件
 			return nullptr;
@@ -42,7 +44,7 @@ namespace OGUI
 	public:
 #define ATTRS \
 		PARENT_CLASS(XmlTraits) \
-		ATTR(XmlStringAttributeDescription, path, XmlGenericAttributeNames::path, XmlAttributeUse::Required)
+		ATTR(XmlStringAttributeDescription, path, "", XmlAttributeUse::Required)
 #include "OpenGUI/Xml/GenXmlAttrsDesc.h"
 	};
 
@@ -54,10 +56,11 @@ namespace OGUI
 		XmlStyleElementFactory()
 		{
 			xml_name = element_name;
+            xml_namespace = "OGUI";
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 		}
 
-		VisualElement* Create(const VisualElementAsset& asset) override
+		VisualElement* Create(const DOMElement& asset, CreationContext& context) override
 		{
 			// <Style> 这个元素没有实际控件
 			return nullptr;
@@ -70,8 +73,8 @@ namespace OGUI
 	public:
 #define ATTRS \
 		PARENT_CLASS(XmlTraits) \
-		ATTR(XmlStringAttributeDescription, name, XmlGenericAttributeNames::name, XmlAttributeUse::Optional)\
-		ATTR(XmlStringAttributeDescription, path, XmlGenericAttributeNames::path, XmlAttributeUse::Required)
+		ATTR(XmlStringAttributeDescription, name, "", XmlAttributeUse::Required)\
+		ATTR(XmlStringAttributeDescription, path, "", XmlAttributeUse::Required)
 #include "OpenGUI/Xml/GenXmlAttrsDesc.h"
 	};
 
@@ -83,23 +86,25 @@ namespace OGUI
 		XmlTemplateElementFactory()
 		{
 			xml_name = element_name;
+            xml_namespace = "OGUI";
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 		}
 
-		VisualElement* Create(const VisualElementAsset& asset) override
-		{
-			// <Template> 这个元素没有实际控件
-			return nullptr;
-		}
+		VisualElement* Create(const DOMElement& asset, CreationContext& context) override;
 	};
 
 	// AttributeOverrides -----------------------------------------
 	class XmlAttributeOverridesElementTraits : public XmlTraits
 	{
 	public:
+#define ATTRS \
+		PARENT_CLASS(XmlTraits) \
+		ATTR(XmlStringAttributeDescription, element_name, "", XmlAttributeUse::Required)
+#include "OpenGUI/Xml/GenXmlAttrsDesc.h"
+
 #define CHILDREN \
 		PARENT_CLASS(XmlTraits) \
-		CHILD(child1, VisualElement)
+		CHILD(child1, "VisualElement", "OGUI")
 #include "OpenGUI/Xml/GenXmlChildDesc.h"
 	};
 
@@ -111,14 +116,50 @@ namespace OGUI
 		XmlAttributeOverridesElementFactory()
 		{
 			xml_name = element_name;
+            xml_namespace = "OGUI";
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 			any_attribute = true;
 		}
 
-		VisualElement* Create(const VisualElementAsset& asset) override
-		{
-			// <AttributeOverrides> 这个元素没有实际控件
-			return nullptr;
-		}
+		VisualElement* Create(const DOMElement& asset, CreationContext& context) override
+        {
+            // <AttributeOverrides> 这个元素没有实际控件
+            return nullptr;
+        }
 	};
+
+	// TemplateContainer ------------------------------
+    class TemplateContainer : public VisualElement
+    {
+    public:
+        std::map<std::string, VisualElement*> slots;
+		TemplateContainer();
+
+        virtual std::string_view GetTypeName() { return "TemplateContainer"; }
+        virtual std::string_view GetFullTypeName() { return "OGUI::TemplateContainer"; }
+
+        class Traits : public VisualElement::Traits
+        {
+        public:
+#define ATTRS \
+			PARENT_CLASS(VisualElement::Traits) \
+			ATTR(XmlStringAttributeDescription, template_name, "", XmlAttributeUse::Required)
+#include "OpenGUI/Xml/GenXmlAttrsDesc.h"
+
+            bool InitAttribute(VisualElement& new_element, const DOMElement& asset, CreationContext& context);
+        };
+
+        class Factory : public XmlFactory<VisualElement, Traits>
+        {
+        public:
+            Factory()
+            {
+                xml_name = "Instance";
+                xml_namespace = "OGUI";
+                xml_qualified_name = xml_namespace + '.' + xml_name;
+            }
+
+            VisualElement* Create(const DOMElement& asset, CreationContext& context) override;
+        };
+    };
 }

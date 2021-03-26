@@ -1,6 +1,6 @@
 #define PARENT_CLASS(type)
-#define CHILD(name, element_type) \
-XmlChildElementDescription name = XmlChildElementDescription::Build<element_type>();
+#define CHILD(name, elementName, elementNamespace) \
+XmlChildElementDescription name = XmlChildElementDescription(elementName, elementNamespace);
 
 CHILDREN
 #undef PARENT_CLASS
