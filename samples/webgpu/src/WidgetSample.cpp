@@ -34,7 +34,7 @@ void WidgetSample::Initialize()
     VisualStyleSystem styleSys;
     auto ve = std::make_shared<VisualElement>();
 
-    auto asset = XmlAsset::LoadXmlFile("test.xml");
+    auto asset = XmlAsset::LoadXmlFile("res/test.xml");
     ve = XmlAsset::Instantiate(asset->id);
     ve->_pseudoMask |= (int)PseudoStates::Root;
 
@@ -44,7 +44,7 @@ void WidgetSample::Initialize()
     tree = std::move(ve);
 
     OGUI::BitMap bm;
-    createBitMapFromJPG("test.jpg", bm);
+    createBitMapFromJPG("img/test.jpg", bm);
     
     freeBitMap(bm);
 }

@@ -12,6 +12,8 @@ download_and_extract(
 )
 file(COPY imgs/test.jpg DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug)
 file(COPY imgs/test.jpg DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release)
+file(COPY res/test.xml DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug)
+file(COPY res/test.css DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -60,3 +62,4 @@ endif()
 add_executable(WebgpuSample ${sources} ${platform_sources} ${headers})
 
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
+set_property(TARGET WebgpuSample PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/samples/webgpu")
