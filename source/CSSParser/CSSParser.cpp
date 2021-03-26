@@ -42,6 +42,8 @@ namespace OGUI
 		};
 
 		auto ok = parser.load_grammar(grammar);
+		if (!ok)
+			return {};
 
 		auto token = [](SemanticValues& vs)
 		{
@@ -166,6 +168,8 @@ namespace OGUI
 		};
 
 		auto ok = parser.load_grammar(grammar);
+		if (!ok)
+			return {};
 
 		auto token = [](SemanticValues& vs)
 		{
@@ -260,6 +264,40 @@ namespace OGUI
 
 	bool FromString(std::string_view str, Color4f& value)
 	{
+		auto grammar = R"(
+			Color	<- RGBA / RGB/ HSLA / HSL / HEX / IDENT
+			RGBA	<- 'rgba(' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ ')'
+			RGBAS	<- 'rgba(' _ CNUM __ CNUM __ CNUM _ '/' _ CNUM _ ')'
+			HSLA	<- 'hsla(' _ ANUM _ ',' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ ')'
+			HSLAS	<- 'hsl(' _ ANUM __ CNUM __ CNUM _ '/' _ CNUM _ ')'
+			NUM		<- < ([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+) >
+			CNUM	<- NUM '%'?
+			ANUM	<- NUM ('deg' / 'rad' / 'grad' / 'turn')?
+			HEX		<- '#' [0-9a-fA-F]
+			IDENT	<- < [a-zA-Z] [a-zA-Z0-9-]* >
+			_		<- [ ]*
+			__		<- [ ]+
+		)";
+
+		using namespace peg;
+		using namespace std;
+
+		parser parser;
+
+		parser.log = [](size_t line, size_t col, const string& msg)
+		{
+			cerr << line << ":" << col << ": " << msg << "\n";
+		};
+
+		auto ok = parser.load_grammar(grammar);
+		if (!ok)
+			return {};
+
+		parser["IDENT"] = [](SemanticValues& vs)
+		{
+			
+		};
+
 		std::vector<std::string_view> tokens;
 		std::split(str, tokens, ",");
 		if (tokens.size() != 4)
