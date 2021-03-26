@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <string.h>
 #include <unordered_map>
+#include "OpenGUI/Core/PrimitiveDraw.h"
 
 WGPUDevice device;
 WGPUQueue queue;
