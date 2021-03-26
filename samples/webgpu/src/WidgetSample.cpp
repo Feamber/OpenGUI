@@ -1,3 +1,4 @@
+#include "OpenGUI/Core/Primitive.h"
 #include "utils.h"
 #include "WidgetSample.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"
@@ -45,4 +46,9 @@ void WidgetSample::Initialize()
     ve->CalculateLayout();
     OGUI::TransformRec(ve.get());
     tree = std::move(ve);
+
+    OGUI::BitMap bm;
+    createBitMapFromJPG("test.jpg", bm);
+    
+    freeBitMap(bm);
 }

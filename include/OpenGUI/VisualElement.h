@@ -4,6 +4,7 @@
 #include <xercesc/dom/DOMElement.hpp>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/Style.h"
+#include "OpenGUI/Core/Primitive.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
@@ -109,6 +110,7 @@ namespace OGUI
 		void RemoveChild(VisualElement* child);
 
 		std::vector<std::shared_ptr<VisualElement>> _children;
+		
 		std::weak_ptr<VisualElement> _physical_parent;
 		//There could be some node between logical parent and this widget for layout
 		std::weak_ptr<VisualElement> _logical_parent;

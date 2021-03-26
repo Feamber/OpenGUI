@@ -21,9 +21,10 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ct
 	transform.M[3][0] /= Ctx.resolution.X;
 	transform.M[3][1] /= Ctx.resolution.Y;
 
-	//TODO: Apply Transform
-	PrimitiveDraw::DrawBox(Ctx.prims,
-		BoxParams::MakeSolid(rect, _style.color, transform));
+	auto params = BoxParams::MakeSolid(rect, _style.color, transform);
+	// TODO: Apply Texture.
+	
+	PrimitiveDraw::DrawBox(Ctx.prims, params);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)

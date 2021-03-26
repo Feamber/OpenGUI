@@ -1,5 +1,6 @@
 #pragma once
-#include "img/stb_image.h"
+#include "OpenGUI/Core/Primitive.h"
+#include "stb_image.h"
 #include "webgpu.h"
 #include "OpenGUI/Interface/RenderInterface.h"
 
@@ -111,8 +112,10 @@ struct WGPU_OGUI_Texture : public OGUI::ITexture
     }
 };
 
-inline static WGPU_OGUI_Texture* createTexture(WGPUDevice device, WGPUQueue queue,
-    const OGUI::BitMap& bitmap)
+inline static WGPU_OGUI_Texture* createTexture(
+    WGPUDevice device, WGPUQueue queue,
+    const OGUI::BitMap& bitmap
+)
 {
     WGPU_OGUI_Texture* result = new WGPU_OGUI_Texture();
 
@@ -155,5 +158,16 @@ inline static WGPU_OGUI_Texture* createTexture(WGPUDevice device, WGPUQueue queu
 
 inline static void createBitMapFromJPG(const char* filename, OGUI::BitMap& bm)
 {
-    
+    int x, y, n;
+    auto data = stbi_load(filename, &x, &y, &n, STBI_rgb_alpha);
+    bm.bytes = data;
+    bm.bytes_size = x * y * n * sizeof(*data);
+    bm.format = OGUI::PF_R8G8B8A8;
+    bm.height = y;
+    bm.width = x;
+}
+
+inline static void freeBitMap(OGUI::BitMap& bm)
+{
+    stbi_image_free(bm.bytes);
 }
