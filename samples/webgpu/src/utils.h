@@ -1,8 +1,8 @@
 #pragma once
-#include "OpenGUI/Core/Primitive.h"
+#include "OpenGUI/Core/Types.h"
 #include "stb_image.h"
 #include "webgpu.h"
-#include "OpenGUI/Interface/RenderInterface.h"
+#include "OpenGUI/Interface/Interfaces.h"
 
 // 0 ~ 1 => -1 ~ 1
 static char const triangle_vert_wgsl[] = R"(
@@ -97,7 +97,7 @@ inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
     }
 }
 
-struct WGPU_OGUI_Texture : public OGUI::ITexture
+struct WGPU_OGUI_Texture : public OGUI::TextureInterface
 {
     WGPUTexture texture;
     WGPUTextureView texture_view;

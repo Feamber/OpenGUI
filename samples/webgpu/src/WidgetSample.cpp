@@ -1,4 +1,4 @@
-#include "OpenGUI/Core/Primitive.h"
+#include "OpenGUI/Core/Types.h"
 #include "utils.h"
 #include "WidgetSample.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"

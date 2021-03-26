@@ -1,8 +1,40 @@
 #pragma once
+#include "OpenGUI/Core/Math.h"
+#include <vector>
+#include <algorithm>
 
-namespace OGUI
+namespace OGUI 
 {
-	enum class EKeyCode : uint32
+    template<typename T>
+    struct Handle
+    {
+        inline Handle(T* v) : value(v) {}
+        T* value;
+    };
+    
+    struct Scissor
+    {
+        int x, y;
+        int width, height;
+    };
+
+    struct Vertex
+    {
+        Vector2f position;
+        Vector2f texcoord;
+        // Alignment
+        Color4f  color; 
+    };
+
+    enum PixelFormat
+    {
+        PF_R8G8B8A8, PF_R16G16B16A16,
+        PF_R8G8B8A8_SRGB, 
+        PF_R8Uint, PF_R16Uint, PF_R32Uint,
+        PF_Count
+    };
+
+    enum class EKeyCode : uint32
 	{
 		Invalid = 0x00,
 		Backspace = 0x08,
@@ -203,20 +235,12 @@ namespace OGUI
 		Rotate,
 		LongPress,
 	};
-}
-namespace OGUI
-{
-	struct InputInterface
-	{
-		virtual ~InputInterface();
-		virtual bool UseSystemGesture() = 0;
 
-		virtual bool IsKeyDown(EKeyCode key_code) = 0;
-		virtual bool IsKeyDown(EMouseKey key_code) = 0;
-		virtual bool SetCursorPos(int32 x, int32 y) = 0;
-		virtual bool SetCursor(EMouseCursor cursor) = 0;
-		virtual bool GetCursorPos(int32& x, int32& y) = 0;
-		virtual bool IsKeyToggled(EMouseKey key_code) = 0;
-		virtual void SetHighPrecisionMouseMode(int window, bool Enable) = 0;
-	};
+    struct BitMap
+    {
+        uint8_t*    bytes;
+        uint32_t    bytes_size;
+        uint32_t    width, height;
+        PixelFormat format;
+    };
 }

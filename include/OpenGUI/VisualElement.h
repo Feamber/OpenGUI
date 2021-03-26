@@ -4,7 +4,7 @@
 #include <xercesc/dom/DOMElement.hpp>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/Style.h"
-#include "OpenGUI/Core/Primitive.h"
+#include "OpenGUI/Core/Types.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
