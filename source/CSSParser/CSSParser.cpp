@@ -1,6 +1,7 @@
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "peglib.h"
 #include <fstream>
+#include <regex>
 
 namespace OGUI
 {
@@ -670,7 +671,6 @@ namespace OGUI
 
 		parser["IDENT"] = [](SemanticValues& vs)
 		{
-			//TODO
 			Color4f res;
 			if(!FromColorName(vs.token(), res))
 				throw parse_error("invalid color name");
@@ -708,8 +708,8 @@ namespace OGUI
 			value = YGValueUndefined;
 			return true;
 		}
-		//TODO: allow 0.0000...
-		if (str == "0")
+		std::regex zero("0(\\.0+)?");
+		if (std::regex_match(str.begin(), str.end(), zero))
 		{
 			value = YGValueZero;
 			return true;

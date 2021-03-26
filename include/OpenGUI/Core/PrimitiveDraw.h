@@ -112,7 +112,8 @@ namespace OGUI
 			Rect uv;
 			Color4f color;
 			TextureInterface* texture;
-			float radius;
+			std::optional<float4x4> transform;
+			float radius[4];
 		};
 		struct LineParams
 		{
@@ -128,6 +129,7 @@ namespace OGUI
 		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 20);
 		OGUI_API void DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);
 		OGUI_API void DrawRoundBox(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount = 10);
+		OGUI_API void DrawRoundBox2(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount = 10);
 		OGUI_API void DrawLines(PrimDrawList& list, const LineParams& params, bool bAnitAliasing = false, bool bClosed = false);
 		
 		OGUI_API void DrawCheckBox0(PrimDrawList& context, const CheckBox0Params& params);

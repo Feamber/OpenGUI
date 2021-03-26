@@ -15,16 +15,20 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ct
 {
 	using namespace PrimitiveDraw;
 	auto rectPixelPos = GetRect();
-	Rect rect = rectPixelPosToScreenPos(rectPixelPos, Ctx.resolution);
+	Rect rect = GetRect();
+	//Rect rect = rectPixelPosToScreenPos(rectPixelPos, Ctx.resolution);
 
 	auto transform = _worldTransform;
-	transform.M[3][0] /= Ctx.resolution.X;
-	transform.M[3][1] /= Ctx.resolution.Y;
+	//transform.M[3][0] /= Ctx.resolution.X;
+	//transform.M[3][1] /= Ctx.resolution.Y;
 
-	auto params = BoxParams::MakeSolid(rect, _style.color, transform);
-	// TODO: Apply Texture.
-	
-	PrimitiveDraw::DrawBox(Ctx.prims, params);
+	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
+	RoundBoxParams params {rect, uv, _style.color, nullptr, transform};
+	params.radius[0] = _style.borderTopLeftRadius.value;// / Ctx.resolution.Y;
+	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
+	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
+	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
+	PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
