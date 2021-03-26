@@ -476,7 +476,7 @@ namespace OGUI
 // customize (if required)
 		});
 
-		std::string lower;
+		std::string lower(str);
 		std::transform(str.cbegin(), str.cend(), lower.begin(),
 			[](unsigned char c) { return std::tolower(c); });
 		auto it = NamedColor.find(lower);
