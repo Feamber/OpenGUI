@@ -263,6 +263,7 @@ namespace OGUI
 		using namespace std::string_view_literals;
 		static const std::unordered_map<std::string_view, Color4f> NamedColor =
 		{ 
+// pre-defined
 {"aliceblue"sv,Color4f({240.f / 255,248.f / 255,255.f / 255, 1.f})},
 {"antiquewhite"sv,Color4f({250.f / 255,235.f / 255,215.f / 255, 1.f})},
 {"aqua"sv,Color4f({0.f / 255,255.f / 255,255.f / 255, 1.f})},
@@ -410,8 +411,20 @@ namespace OGUI
 {"white"sv,Color4f({255.f / 255,255.f / 255,255.f / 255, 1.f})},
 {"whitesmoke"sv,Color4f({245.f / 255,245.f / 255,245.f / 255, 1.f})},
 {"yellow"sv,Color4f({255.f / 255,255.f / 255,0.f / 255, 1.f})},
-{"yellowgreen"sv,Color4f({154.f / 255,205.f / 255,50.f / 255, 1.f})}
+{"yellowgreen"sv,Color4f({154.f / 255,205.f / 255,50.f / 255, 1.f})},
+// special
+{ "transparent"sv, Color4f({ 0.f, 0.f, 0.f, 0.f }) }
+// customize (if required)
 		};
+
+		std::transform(str.begin(), str.end(), str.begin(),
+			[](unsigned char c) { return std::tolower(c); });
+		auto it = NamedColor.find(str);
+		if (it != NamedColor.cend())
+		{
+			value = it->second;
+			return true;
+		}
 
 		std::vector<std::string_view> tokens;
 		std::split(str, tokens, ",");
