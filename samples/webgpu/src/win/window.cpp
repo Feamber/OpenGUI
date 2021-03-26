@@ -674,6 +674,7 @@ void window::loop(window::Handle /*wHnd*/, window::Redraw func) {
 }
 
 #include "OpenGUI/Interface/Interfaces.h"
+extern window::Handle hWnd;
 
 namespace OGUI
 {
@@ -719,5 +720,25 @@ namespace OGUI
 			assert(window == 0);
 			//not implemented
 		}
+
+		virtual void ClientToScreen(WindowHandle window, int& x, int& y) 
+		{
+			POINT p{x, y};
+			::ClientToScreen((HWND)hWnd, &p);
+			x = p.x; y = p.y;
+		};
+
+		virtual void ScreenToClient(WindowHandle window, int& x, int& y)
+		{
+			POINT p{x, y};
+			::ScreenToClient((HWND)hWnd, &p);
+			x = p.x; y = p.y;
+		};
 	};
+}
+
+void InstallInput()
+{
+	auto& ctx = OGUI::Context::Get();
+	ctx.inputImpl = std::make_unique<OGUI::WindowsInput>();
 }

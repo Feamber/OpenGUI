@@ -30,6 +30,7 @@ namespace OGUI
 			Class,
 			Name,
 			Type,
+			PseudoClass,
 		};
 		struct Part
 		{

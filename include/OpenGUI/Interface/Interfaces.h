@@ -5,6 +5,7 @@
 namespace OGUI
 {
     using FileHandle = void*;
+	using WindowHandle = int;
 	
     struct SystemInterface
 	{
@@ -23,7 +24,9 @@ namespace OGUI
 		virtual bool SetCursor(EMouseCursor cursor) = 0;
 		virtual bool GetCursorPos(int32& x, int32& y) = 0;
 		virtual bool IsKeyToggled(EMouseKey key_code) = 0;
-		virtual void SetHighPrecisionMouseMode(int window, bool Enable) = 0;
+		virtual void ClientToScreen(WindowHandle window, int& x, int& y) = 0;
+		virtual void ScreenToClient(WindowHandle window, int& x, int& y) = 0;
+		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) = 0;
 	};
     
     struct FileInterface

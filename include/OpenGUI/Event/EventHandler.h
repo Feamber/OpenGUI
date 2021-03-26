@@ -7,7 +7,7 @@ namespace OGUI
     struct EventHandler
     {
         template<class T>
-        void Handle(T& event);
+        bool Handle(T& event);
 
         template<class E, auto F>
         std::enable_if_t<!std::is_member_function_pointer_v<decltype(F)>, void>
@@ -21,7 +21,7 @@ namespace OGUI
         std::enable_if_t<std::is_member_function_pointer_v<decltype(F)>, void>
         Register(O* owner);
 
-        using Trampoline = void(*)(void* owner, void* event);
+        using Trampoline = bool(*)(void* owner, void* event);
 
         struct Callback
         {

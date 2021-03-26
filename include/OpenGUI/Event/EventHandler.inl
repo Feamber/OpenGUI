@@ -1,15 +1,17 @@
 namespace OGUI
 {
     template<class T>
-    void EventHandler::Handle(T& event)
+    bool EventHandler::Handle(T& event)
     {
         for (auto& callback : _callbacks)
         {
             if (callback.eventType == typeid(T))
             {
-                callback.trampoline(callback.payload, (void*)&event);
+                if (callback.trampoline(callback.payload, (void*)&event))
+                    return true;
             }
         }
+        return false;
     }
 
 
@@ -20,9 +22,9 @@ namespace OGUI
         Callback callback;
         callback.eventType = typeid(E);
         callback.payload = nullptr;
-        callback.trampoline = +[](void* _, void* event)
+        callback.trampoline = +[](void* _, void* event) -> bool
         {
-            (*f)(*(E*)event);
+            return (*f)(*(E*)event);
         };
         _callbacks.push_back(std::move(callback));
     }
@@ -34,9 +36,9 @@ namespace OGUI
         Callback callback;
         callback.eventType = typeid(E);
         callback.payload = &userData;
-        callback.trampoline = +[](void* userdata, void* event)
+        callback.trampoline = +[](void* userdata, void* event) -> bool
         {
-            (*f)(*(E*)event, *(T*)userdata);
+            return (*f)(*(E*)event, *(T*)userdata);
         };
         _callbacks.push_back(std::move(callback));
     }
@@ -48,9 +50,9 @@ namespace OGUI
         Callback callback;
         callback.eventType = typeid(E);
         callback.payload = owner;
-        callback.trampoline = +[](void* owner, void* event)
+        callback.trampoline = +[](void* owner, void* event) -> bool
         {
-            (((O*)owner)->*f)(*(E*)event);
+            return (((O*)owner)->*f)(*(E*)event);
         };
         _callbacks.push_back(std::move(callback));
     }

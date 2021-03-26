@@ -1,29 +1,34 @@
 #pragma once
 #include <string_view>
 #include "OpenGUI/Interface/Interfaces.h"
+#include "OpenGUI/Event/EventBase.h"
 
 namespace OGUI
 {
 
     struct PointerData
     {
-        int pointerId;
-        std::string_view pointerType;
-        bool isPrimary;
-        bool isTouch;
-        bool isAbsolute;
-        bool isDoubleClick;
-        EGestureEvent gestureType;
+        int pointerId = 0;
+        std::string_view pointerType = "unknown";
+        bool isPrimary = true;
+        bool isTouch = false;
+        bool isAbsolute = true;
+        bool isDoubleClick = false;
+        EGestureEvent gestureType = EGestureEvent::None;
         EMouseKey buttonPrimary;
-        Vector2f position;
-        Vector2f deltaPosition;
-        Vector2f wheelOrGestureDelta;
-        float accTime;
-        int clickCount;
-        float pressure;
+        Vector2f position = Vector2f::vector_zero();
+        Vector2f deltaPosition = Vector2f::vector_zero();
+        Vector2f wheelOrGestureDelta= Vector2f::vector_zero();
+        float accTime = 0;
+        int clickCount = 1;
+        float pressure = 0;
     };
     
-    struct PointerDownEvent : PointerData {};
+    struct PointerDownEvent : PointerData 
+    {
+        EventRoutePhase currentPhase;
+        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+    };
     struct PointerMoveEvent : PointerData {};
     struct PointerUpEvent : PointerData {};
     struct PointerClickEvent : PointerData {};

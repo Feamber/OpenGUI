@@ -8,16 +8,15 @@ void OGUI::StyleSheet::Initialize()
 		complexSel.priority = i;
 		auto& lastSel = complexSel.selectors.back();
 		SelectorMap* mapPtr = nullptr;
-		std::string_view key = lastSel.parts.back().value;
-
+		std::string_view key;
 		if (lastSel.parts.size() == 0)
 		{
 			key = "*";
 			mapPtr = &typeSelectors;
-			break;
 		}
 		else
 		{
+			key = lastSel.parts.back().value;
 			switch (lastSel.parts.back().type)
 			{
 				case StyleSelector::Class:

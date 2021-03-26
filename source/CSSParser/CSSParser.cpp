@@ -18,8 +18,8 @@ namespace OGUI
 			SelectorList	<- ComplexSelector (',' w ComplexSelector)* _
 			ComplexSelector <- Selector ComplexPart*
 			ComplexPart		<- ([ ]+ Selector) / (w '>' w Selector)
-			Selector		<- SelectorPart+ (':' <IDENT>)*
-			SelectorPart	<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT>
+			Selector		<- SelectorPart+
+			SelectorPart	<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
 			PropertyList	<- Property? (';' _ Property)* _
 			Property		<- IDENT w ':' w Value
 			Value			<- SizeList / SIZE / COLOR / IDENT / NUM _
@@ -85,10 +85,13 @@ namespace OGUI
 		{
 			StyleSelector selector;
 			for (auto& p : vs)
-				if(p.type() == typeid(StyleSelector::Part))
-					selector.parts.push_back(any_move<StyleSelector::Part>(p));
-			for (auto& p : vs.tokens)
-				selector.AddPseudoClass(p);
+			{
+				auto part = any_move<StyleSelector::Part>(p);
+				if(part.type == StyleSelector::PseudoClass)
+					selector.AddPseudoClass(part.value);
+				else
+					selector.parts.push_back(std::move(part));
+			}
 			return selector;
 		};
 		struct ComplexPart { StyleSelector selector; };

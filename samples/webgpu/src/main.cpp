@@ -1,7 +1,16 @@
 #include "utils.h"
 #include <string.h>
 #include <unordered_map>
+
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Style/VisualStyleSystem.h"
+#include "OpenGUI/Style/StyleHelpers.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/CSSParser/CSSParser.h"
+#include "OpenGUI/Xml/XmlAsset.h"
+#include "OpenGUI/Window/VisualWindow.h"
 
 WGPUDevice device;
 WGPUQueue queue;
@@ -256,13 +265,6 @@ static void createPipelineAndBuffers() {
 	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
 }
 
-
-#include "OpenGUI/Core/PrimitiveDraw.h"
-#include "OpenGUI/VisualElement.h"
-#include "WidgetSample.h"
-
-static WidgetSample sample;
-
 void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
 {
 	element->DrawBackgroundPrimitive(ctx);
@@ -273,11 +275,9 @@ void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
  * Draws using the above pipeline and buffers.
  */
 static bool redraw() {
-	PrimitiveDraw::DrawContext ctx;
-	ctx.resolution = Vector2f(800.f, 450.f);
-	PrimDrawList& list = ctx.prims;
-	RenderRec(sample.tree.get(), ctx);
-
+	auto& ctx = OGUI::Context::Get();
+	ctx.Update(0, 0.f);
+	ctx.Render(0);
 	/*PrimitiveDraw::BoxParams box = {};
 	box.uv = {Vector2f(0.f, 0.f), Vector2f(1.f, 1.f)};
 	
@@ -317,25 +317,62 @@ static bool redraw() {
 	roundBox.radius = 0.1f;
 	PrimitiveDraw::DrawRoundBox(list, roundBox);
 */
-	list.ValidateAndBatch();
-
-	OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
-	renderer->RenderPrimitives(list);
-	delete renderer;
+	
 
 	return true;
 }
 
+struct WGPURenderer : RenderInterface
+{
+	virtual PersistantPrimitiveHandle RegisterPrimitive(
+		Vertex* vertices, uint32_t num_vertices,
+		uint16_t* indices, uint32_t num_indices)
+	{
+		return nullptr;
+	};
+	virtual void ReleasePrimitive(PersistantPrimitiveHandle primitive) {};
+
+	virtual void RenderPrimitives(const struct PrimDrawList& list)
+	{
+		((PrimDrawList&)list).ValidateAndBatch();
+
+		OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
+		renderer->RenderPrimitives(list);
+		delete renderer;
+	};
+	virtual void RenderPrimitives(const struct PersistantPrimDrawList&) {};
+
+	virtual TextureHandle RegisterTexture(const BitMap&) { return nullptr; };
+	virtual void ReleaseTexture(TextureHandle) {};
+
+	virtual void SetScissor(const Scissor scissor) {};
+	virtual void ResetScissor() {};
+
+};
+extern void InstallInput();
+window::Handle hWnd;
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
-	if (window::Handle wHnd = window::create()) {
-		if ((device = webgpu::create(wHnd))) {
+	if (hWnd = window::create()) {
+		if ((device = webgpu::create(hWnd))) {
 			queue = wgpuDeviceGetDefaultQueue(device);
 			swapchain = webgpu::createSwapChain(device);
 			createPipelineAndBuffers();
+			InstallInput();
+			{
+				using namespace OGUI;
+				auto& ctx = Context::Get();
+				ctx.renderImpl = std::make_unique<WGPURenderer>();
+				ctx.desktops = std::make_shared<VisualWindow>();
+				ctx.desktops->_pseudoMask |= (int)PseudoStates::Root;
 
-			sample.Initialize();
-			window::show(wHnd);
-			window::loop(wHnd, redraw);
+				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
+				auto ve = XmlAsset::Instantiate(asset->id);
+				ve->_name = "TestElement";
+				ctx.desktops->PushChild(ve.get());
+			}
+
+			window::show(hWnd);
+			window::loop(hWnd, redraw);
 
 		#ifndef __EMSCRIPTEN__
 			// last bit of clean-up
