@@ -1,7 +1,4 @@
-﻿#include "OpenGUI/Interface/RenderInterface.h"
-#include "OpenGUI/Interface/InputInterface.h"
-#include "OpenGUI/Interface/SystemInterface.h"
-#include "OpenGUI/Interface/FileInterface.h"
+﻿#include "OpenGUI/Interface/Interfaces.h"
 
 namespace OGUI
 {

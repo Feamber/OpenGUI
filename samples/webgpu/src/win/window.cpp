@@ -673,7 +673,7 @@ void window::loop(window::Handle /*wHnd*/, window::Redraw func) {
 	}
 }
 
-#include "OpenGUI/Interface/InputInterface.h"
+#include "OpenGUI/Interface/Interfaces.h"
 
 namespace OGUI
 {

@@ -1,6 +1,6 @@
 #pragma once
 #include <string_view>
-#include "OpenGUI/Interface/InputInterface.h"
+#include "OpenGUI/Interface/Interfaces.h"
 
 namespace OGUI
 {

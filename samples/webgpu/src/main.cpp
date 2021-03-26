@@ -12,7 +12,7 @@ uint8_t white_tex[4 * 1024 * 1024];
 WGPU_OGUI_Texture* default_ogui_texture;
 
 using namespace OGUI;
-std::unordered_map<ITexture*, WGPU_OGUI_Texture> ogui_textures;
+std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 
 class OGUIWebGPURenderer : public OGUI::RenderInterface
 {

@@ -1,10 +1,7 @@
 #pragma once
 #include <vector>
 #include "OpenGUI/Style/VisualStyleSystem.h"
-#include "OpenGUI/Interface/InputInterface.h"
-#include "OpenGUI/Interface/SystemInterface.h"
-#include "OpenGUI/Interface/RenderInterface.h"
-#include "OpenGUI/Interface/FileInterface.h"
+#include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Event/PointerEvent.h"
 
 namespace OGUI
