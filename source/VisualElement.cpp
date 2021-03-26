@@ -278,7 +278,7 @@ bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element
 
     new_element._name = name.GetValue(asset);
     new_element._path = path.GetValue(asset);
-    // TODO style
+	new_element.InitInlineStyle(style.GetValue(asset));
 	std::split(class_tag.GetValue(asset), new_element._styleClasses, ",");
 
     auto _slot_name = slot_name.GetValue(asset);
