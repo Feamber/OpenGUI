@@ -247,6 +247,62 @@ namespace std
 		return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 	}
 }
+
+void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV)
+{
+	float fC = fV * fS; // Chroma
+	float fHPrime = fmod(fH / 60.0, 6);
+	float fX = fC * (1 - fabs(fmod(fHPrime, 2) - 1));
+	float fM = fV - fC;
+
+	if (0 <= fHPrime && fHPrime < 1)
+	{
+		fR = fC;
+		fG = fX;
+		fB = 0;
+	}
+	else if (1 <= fHPrime && fHPrime < 2)
+	{
+		fR = fX;
+		fG = fC;
+		fB = 0;
+	}
+	else if (2 <= fHPrime && fHPrime < 3)
+	{
+		fR = 0;
+		fG = fC;
+		fB = fX;
+	}
+	else if (3 <= fHPrime && fHPrime < 4)
+	{
+		fR = 0;
+		fG = fX;
+		fB = fC;
+	}
+	else if (4 <= fHPrime && fHPrime < 5)
+	{
+		fR = fX;
+		fG = 0;
+		fB = fC;
+	}
+	else if (5 <= fHPrime && fHPrime < 6)
+	{
+		fR = fC;
+		fG = 0;
+		fB = fX;
+	}
+	else
+	{
+		fR = 0;
+		fG = 0;
+		fB = 0;
+	}
+
+	fR += fM;
+	fG += fM;
+	fB += fM;
+}
+
 namespace OGUI
 {
 	bool FromString(std::string_view str, float& value)
@@ -265,15 +321,13 @@ namespace OGUI
 	bool FromString(std::string_view str, Color4f& value)
 	{
 		auto grammar = R"(
-			Color	<- RGBA / RGB/ HSLA / HSL / HEX / IDENT
-			RGBA	<- 'rgba(' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ ')'
-			RGBAS	<- 'rgba(' _ CNUM __ CNUM __ CNUM _ '/' _ CNUM _ ')'
-			HSLA	<- 'hsla(' _ ANUM _ ',' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ ')'
-			HSLAS	<- 'hsl(' _ ANUM __ CNUM __ CNUM _ '/' _ CNUM _ ')'
+			Color	<- CALLS / CALL / HEX / IDENT
+			CALL	<- FUNC '(' _ CNUM _ > ',' _ CNUM _ ',' _ CNUM _ (',' _ CNUM _)? ')'
+			CALLS	<- FUNC '(' _ CNUM __ CNUM __ CNUM _ ('/' _ CNUM _)? ')'
+			FUNC	<- <'rgba' / 'rgb' / 'hsl' / 'hsla'>
 			NUM		<- < ([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+) >
-			CNUM	<- NUM '%'?
-			ANUM	<- NUM ('deg' / 'rad' / 'grad' / 'turn')?
-			HEX		<- '#' [0-9a-fA-F]
+			CNUM	<- < NUM ('deg' / 'rad' / 'grad' / 'turn' / '%')? >
+			HEX		<- '#' < [0-9a-fA-F] >
 			IDENT	<- < [a-zA-Z] [a-zA-Z0-9-]* >
 			_		<- [ ]*
 			__		<- [ ]+
@@ -292,27 +346,169 @@ namespace OGUI
 		auto ok = parser.load_grammar(grammar);
 		if (!ok)
 			return {};
+		auto token = [](SemanticValues& vs)
+		{
+			return vs.token(0);
+		};
+		parser["CNUM"] = token;
+
+		parser["FUNC"] = [](SemanticValues& vs)
+		{
+			return vs.choice() / 2;
+		};
+		auto CALL = [](SemanticValues& vs)
+		{
+			int type = any_move<int>(vs[0]);
+			Color4f color = Color4f::vector_one();
+			int size = vs.size();
+			if (size < 4)
+				throw parse_error("not enough parameter for color function.");
+			if (size > 5)
+				throw parse_error("too many parameter for color function.");
+			auto first = any_move<string_view>(vs[1]);
+			if (type == 1)
+			{
+				int angleType;
+				string_view anglestr;
+				if (ends_with(first, "deg"))
+				{
+					anglestr = first.substr(0, first.length() - 3);
+					angleType = 0;
+				}
+				else if (ends_with(first, "rad"))
+				{
+					anglestr = first.substr(0, first.length() - 3);
+					angleType = 1;
+				}
+				else if (ends_with(first, "grad"))
+				{
+					anglestr = first.substr(0, first.length() - 4);
+					angleType = 2;
+				}
+				else if (ends_with(first, "turn"))
+				{
+					anglestr = first.substr(0, first.length() - 4);
+					angleType = 3;
+				}
+				else if (ends_with(first, "%"))
+				{
+					throw parse_error("hue can not be percent value.");
+				}
+				else
+				{
+					anglestr = first.substr(0, first.length() - 3);
+					angleType = 0;
+				}
+				float value;
+				if(!FromString(anglestr, value))
+					throw parse_error("invalid number.");
+				if (angleType == 1)
+					value = value / math::PI;// rad2deg(value);
+				else if (angleType == 2)
+					value = value * 0.9;// grad2deg(value);
+				else if (angleType == 3)
+					value = value * 360;// turn2deg(value);
+				color.X = value;
+			}
+			auto ParseCNUM = [](string_view str, bool mustBePercent, bool normalize = true) 
+			{
+				bool isPercent = false;
+				auto valuestr = str;
+				if (ends_with(str, "%"))
+				{
+					isPercent = true;
+					valuestr = str.substr(0, str.length() - 1);
+				}
+				else if(mustBePercent)
+					throw parse_error("invalid number, except percent.");
+				float value;
+				if (!FromString(valuestr, value))
+					throw parse_error("invalid number.");
+				if (isPercent && !mustBePercent)
+					value = value / 100;
+				else if(normalize)
+					value = roundf(value) / 255;
+				return value;
+			}; 
+			auto second = any_move<string_view>(vs[2]);
+			color.Y = ParseCNUM(second, type == 1);
+			auto third = any_move<string_view>(vs[3]);
+			color.Z = ParseCNUM(third, type == 1);
+			if (vs.size() == 5)
+			{
+				auto forth = any_move<string_view>(vs[4]);
+				color.W = ParseCNUM(forth, false, false);
+			}
+			if (type == 1)
+			{
+				Color4f hsv = color;
+				HSVtoRGB(hsv.X, hsv.Y, hsv.Z, color.X, color.Y, color.Z);
+			}
+			return color;
+		};
+		parser["CALLS"] = CALL;
+		parser["CALL"] = CALL;
+
+		parser["HEX"] = [](SemanticValues& vs)
+		{
+			Color4f color = Color4f::vector_one();
+			auto str = vs.token();
+			auto S2H = [](string_view hex)
+			{
+				string hexstr = {hex.begin(), hex.end()};
+				try
+				{
+					return stoi(hexstr, nullptr, 16);
+				}
+				catch (std::exception)
+				{
+					throw parse_error("invalid hex value");
+				}
+			};
+			auto length = str.length();
+			string fullstr;
+			if (length == 3 || length == 4)
+			{
+				fullstr.push_back(str[0]); fullstr.push_back(str[0]);
+				fullstr.push_back(str[1]); fullstr.push_back(str[1]);
+				fullstr.push_back(str[2]); fullstr.push_back(str[2]);
+				if(length == 4)
+				{
+					fullstr.push_back(str[3]); fullstr.push_back(str[3]);
+				}
+				length = length * 2;
+				str = fullstr;
+			}
+			if (length == 6 || length == 8)
+			{
+				color.X = S2H(str.substr(0, 2)) / 255.0;
+				color.Y = S2H(str.substr(2, 2)) / 255.0;
+				color.Z = S2H(str.substr(4, 2)) / 255.0;
+				if (length == 8)
+				{
+					color.W = S2H(str.substr(6, 2)) / 255.0;
+				}
+			}
+			else
+			{
+				throw parse_error("invalid hex value");
+			}
+			return color;
+		};
 
 		parser["IDENT"] = [](SemanticValues& vs)
 		{
-			
+			//TODO
+			Color4f res;
+			return res;
 		};
-
-		std::vector<std::string_view> tokens;
-		std::split(str, tokens, ",");
-		if (tokens.size() != 4)
-			return false;
-		float comp;
-		Color4f res;
-		for (int i = 0; i < 4; ++i)
+		auto forward = [](SemanticValues& vs)
 		{
-			if (FromString(tokens[i], comp))
-				res.m_[i] = comp / 255;
-			else
-				return false;
-		}
-		value = res;
-		return true;
+			return vs[0];
+		};
+		parser["Color"] = forward;
+
+		return parser.parse(str, value);
 	}
 	bool FromString(std::string_view str, int& value)
 	{
