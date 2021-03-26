@@ -33,6 +33,12 @@ namespace OGUI
 		void Initialize();
 	};
 
+	struct InlineStyle
+	{
+		StyleRule rule;
+		StyleSheetStorage storage;
+	};
+
 	enum class ParseErrorType
 	{
 		None,

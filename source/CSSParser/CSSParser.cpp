@@ -139,6 +139,77 @@ namespace OGUI
 		return {};
 	}
 
+	std::optional<InlineStyle> ParseInlineStyle(std::string_view str)
+	{
+		auto grammar = R"(
+			PropertyList	<- Property? (';' _ Property)*
+			Property		<- IDENT w ':' w Value
+			Value			<- SizeList / SIZE / COLOR / IDENT / NUM _
+			SizeList		<- <SIZE (',' w SIZE){3}> _
+			SIZE			<- (<NUM ('px' / '%')>) / <'0'>
+			NUM				<- < ([0-9]*"."[0-9]+) / ([0-9]+) >
+			COLOR			<- 'rgba('< w NUM ',' w NUM ',' w NUM ',' w NUM >')' _
+			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
+			~_				<- [ \t\r\n]*
+			~w				<- [ ]*
+		)";
+		using namespace peg;
+		using namespace std;
+		parser parser;
+		InlineStyle sheet;
+
+		parser.log = [](size_t line, size_t col, const string& msg)
+		{
+			cerr << line << ":" << col << ": " << msg << "\n";
+		};
+
+		auto ok = parser.load_grammar(grammar);
+
+		auto token = [](SemanticValues& vs)
+		{
+			return vs.token(0);
+		};
+		auto forward = [](SemanticValues& vs)
+		{
+			return vs[0];
+		};
+
+		parser["SIZE"] = token;
+		parser["COLOR"] = token;
+		parser["NUM"] = token;
+		parser["IDENT"] = token;
+		parser["SizeList"] = token;
+		parser["Value"] = forward;
+		parser["Property"] = [](SemanticValues& vs)
+		{
+			auto name = any_move<string_view>(vs[0]);
+			auto value = any_move<string_view>(vs[1]);
+			return make_pair(name, value);
+		};
+		using property_list_t = vector<pair<string_view, string_view>>;
+		parser["PropertyList"] = [&](SemanticValues& vs)
+		{
+			property_list_t pairs;
+			for (auto& p : vs)
+				pairs.push_back(any_move<pair<string_view, string_view>>(p));
+
+			for (auto& pair : pairs)
+			{
+				const char* errorMsg;
+				ParseErrorType errorType;
+				if (!ParseProperty(sheet.storage, pair.first, pair.second, sheet.rule, errorMsg, errorType))
+				{
+					throw parse_error(errorMsg);
+				}
+			}
+		};
+
+		//parser.enable_packrat_parsing(); // Enable packrat parsing.
+		if (parser.parse(str))
+			return sheet;
+		return {};
+	}
+
 	std::optional<StyleSheet> ParseCSSFile(std::string path)
 	{
 		std::ifstream ifs(path);

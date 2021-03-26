@@ -114,9 +114,10 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 		return;
 	_sharedStyle = style;
 	_style = *style;
-	if (_inlineSheet)
-		_style.ApplyProperties(_inlineSheet->storage, _inlineRule.properties);
-	style->ApplyProperties(_procedureSheet, _procedureRule.properties);
+	if (_inlineStyle)
+		_style.ApplyProperties(_inlineStyle->storage, _inlineStyle->rule.properties);
+	if(_procedureStyle)
+		style->ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties);
 
 	_inheritedStylesHash = _style.GetInheritedHash();
 	SyncYogaStyle();
@@ -307,4 +308,12 @@ bool OGUI::VisualElement::Intersect(Vector2f point)
 {
 	auto layout = GetLayout();
 	return layout.IntersectPoint(point);
+}
+
+#include "OpenGUI/CSSParser/CSSParser.h"
+void OGUI::VisualElement::InitInlineStyle(std::string_view str)
+{
+	auto res = ParseInlineStyle(str);
+	if(res)
+		_inlineStyle = std::make_unique<InlineStyle>(std::move(res.value()));
 }

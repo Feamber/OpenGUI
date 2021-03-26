@@ -49,8 +49,6 @@ namespace OGUI
 
 	struct Matrix4x4f{};
 
-	struct StyleSheet;
-
 	class VisualElement : public std::enable_shared_from_this<VisualElement>
 	{
 	public:
@@ -139,16 +137,15 @@ namespace OGUI
 		uint32_t _dependencyPseudoMask = 0;
 		uint32_t _pseudoMask = 0;
 		int _inheritedStylesHash = 0;
-		StyleRule _inlineRule;
-		StyleSheet* _inlineSheet = nullptr;
-		StyleSheetStorage _procedureSheet;
-		StyleRule _procedureRule;
+		std::unique_ptr<InlineStyle> _inlineStyle;
+		std::unique_ptr<InlineStyle> _procedureStyle;
 
 		Style _style;
 		Style* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
+		void InitInlineStyle(std::string_view str);
 		void SetPseudoMask(uint32_t mask);
 		void CalculateLayout();
 		void SetSharedStyle(Style* style);
