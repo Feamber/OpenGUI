@@ -318,7 +318,7 @@ namespace OGUI
 		}
 	}
 
-	bool FromString(std::string_view str, Color4f& value)
+	bool FromColorName(std::string_view str, Color4f& value)
 	{
 		using namespace std::string_view_literals;
 		static const std::unordered_map<std::string_view, Color4f> NamedColor =
@@ -485,7 +485,10 @@ namespace OGUI
 			value = it->second;
 			return true;
 		}
-
+		return false;
+	}
+	bool FromString(std::string_view str, Color4f& value)
+	{
 		
 		auto grammar = R"(
 			Color	<- CALLS / CALL / HEX / IDENT
@@ -667,6 +670,8 @@ namespace OGUI
 		{
 			//TODO
 			Color4f res;
+			if(!FromColorName(vs.token(), res))
+				throw parse_error("invalid color name");
 			return res;
 		};
 		auto forward = [](SemanticValues& vs)
