@@ -131,7 +131,11 @@ namespace OGUI
         int fanCount = 0;
         BoxParams boxes[5];
         //TODO: transform doesnt affect radius
-        const float* radius = params.radius;
+        float radius[4];
+        std::memcpy(radius, params.radius, sizeof(radius));
+        auto size = prect.max - prect.min;
+        float shortEdge = std::min(size.X, size.Y);
+        for (int i = 0; i < 4; ++i) radius[i] = std::clamp(radius[i], 0.f, shortEdge/2);
         Vector2f uvS = (params.uv.max - params.uv.min) / (prect.max - prect.min);
         if (radius[0] > 0.f)
         {
@@ -211,7 +215,7 @@ namespace OGUI
             DrawBox(list, boxes[i]);
 
         for (int i = 0; i < fanCount; i++)
-            DrawFan(list, fans[i]);
+            DrawFan(list, fans[i], sampleCount);
     }
     
     void PrimitiveDraw::DrawRoundBox(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount /* = 10 */)

@@ -8,9 +8,9 @@
 
 .Child {
     width:200px;
-    height:200px;
+    height:100px;
     margin-right:10px;
-    border-top-left-radius:20px;
-    border-bottom-right-radius:100px;
+    border-top-right-radius:100px;
+    border-bottom-right-radius:50px;
     color:rgb(41, 133, 182)
 }
