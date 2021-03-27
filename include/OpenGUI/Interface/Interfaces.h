@@ -38,6 +38,7 @@ namespace OGUI
 		virtual int Seek(FileHandle stream, size_t offset, int fromwhere);
 		virtual size_t Tell(const FileHandle file);
 		virtual size_t Length(const FileHandle file);
+		virtual MemoryResource Load(const char* path);
 	};
 
 	struct TextureInterface {};
