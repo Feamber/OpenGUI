@@ -21,3 +21,12 @@
     transform: rotate(90deg);
     color:rgb(73, 214, 125)
 }
+
+@keyframes testanim {
+    from,   50%   {
+        width: 100px;
+    }
+    to {
+        width: 150px;
+    }
+}

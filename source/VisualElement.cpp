@@ -121,14 +121,11 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 	if (style == _sharedStyle)
 		return;
 	if (style == _prevSharedStyle)
-	{
 		_interpolation.reverse();
-		std::swap(_sharedStyle, _prevSharedStyle);
-		return;
-	}
+	else
+		_interpolation.reset();
 	_prevSharedStyle = _sharedStyle;
 	_sharedStyle = style;
-	_interpolation.reset();
 }
 
 void OGUI::VisualElement::ApplySharedStyle(float time)

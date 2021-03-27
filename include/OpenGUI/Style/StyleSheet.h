@@ -27,16 +27,37 @@ namespace OGUI
 		Vector2f
 		>;
 
+	struct AnimationCurve
+	{
+		struct Key
+		{
+			float percentage;
+			int frameIndex;
+		};
+		std::vector<Key> keys;
+	};
+
+	struct StyleKeyframes
+	{
+		std::string name;
+		AnimationCurve curve;
+		std::vector<StyleRule> frames;
+	};
+
 	struct StyleSheet
 	{
 		StyleSheetStorage storage;
 		std::vector<StyleRule> styleRules;
 		std::vector<StyleComplexSelector> styleSelectors;
+		std::vector<StyleKeyframes> styleKeyframes;
 
 		using SelectorMap = std::multimap<std::string_view, int>;
 		SelectorMap classSelectors;
 		SelectorMap nameSelectors;
 		SelectorMap typeSelectors;
+
+		using KeyframesMap = std::map<std::string_view, int>;
+		KeyframesMap namedKeyframes;
 
 		void Initialize();
 	};

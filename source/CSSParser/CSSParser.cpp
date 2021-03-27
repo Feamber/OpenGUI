@@ -4,217 +4,6 @@
 #include <regex>
 #include "OpenGUI/Core/Math.h"
 
-namespace OGUI
-{
-	template<class T>
-	std::remove_cv_t<T> any_move(std::any& any)
-	{
-		return std::any_cast<T>(std::move(any));
-	}
-	std::optional<StyleSheet> ParseCSS(std::string_view str)
-	{
-		auto grammar = R"(
-			Stylesheet		<- StyleRule*
-			StyleRule		<- SelectorList _ '{' _ PropertyList '}' _
-			SelectorList	<- ComplexSelector (',' w ComplexSelector)* _
-			ComplexSelector <- Selector ComplexPart*
-			ComplexPart		<- ([ ]+ Selector) / (w '>' w Selector)
-			Selector		<- SelectorPart+
-			SelectorPart	<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
-			PropertyList	<- Property? (';' _ Property)* _
-			Property		<- IDENT w ':' w Value
-			Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
-			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
-			~TransformList	<- <CALL+>
-			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
-			~SizeList		<- < CNUM (',' w CNUM){3} >
-			~COLOR			<- < ('#' NUM) / CALL >
-			~CNUM			<- < NUM (IDENT / '%')? >
-			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
-			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
-			~_				<- [ \t\r\n]*
-			~w				<- [ ]*
-		)";
-		using namespace peg;
-		using namespace std;
-		parser parser;
-		StyleSheet sheet;
-
-		parser.log = [](size_t line, size_t col, const string& msg)
-		{
-			cerr << line << ":" << col << ": " << msg << "\n";
-		};
-
-		auto ok = parser.load_grammar(grammar);
-		if (!ok)
-			return {};
-
-		auto token = [](SemanticValues& vs)
-		{
-			return vs.token(0);
-		};
-		parser["IDENT"] = token;
-		parser["Value"] = token;
-		parser["Property"] = [](SemanticValues& vs)
-		{
-			auto name = any_move<string_view>(vs[0]);
-			auto value = any_move<string_view>(vs[1]);
-			return make_pair(name, value);
-		};
-		using property_list_t = vector<pair<string_view, string_view>>;
-		parser["PropertyList"] = [&](SemanticValues& vs)
-		{
-			property_list_t pairs;
-			for (auto& p : vs)
-				pairs.push_back(any_move<pair<string_view, string_view>>(p));
-			return pairs;
-		};
-		parser["SelectorPart"] = [](SemanticValues& vs)
-		{
-			string value;
-			if(vs.tokens.size() != 0) value = {vs.tokens[0].begin(), vs.tokens[0].end()};
-			return StyleSelector::Part{(StyleSelector::Kind)vs.choice(), value};
-		};
-		parser["Selector"] = [](SemanticValues& vs)
-		{
-			StyleSelector selector;
-			for (auto& p : vs)
-			{
-				auto part = any_move<StyleSelector::Part>(p);
-				if(part.type == StyleSelector::PseudoClass)
-					selector.AddPseudoClass(part.value);
-				else
-					selector.parts.push_back(std::move(part));
-			}
-			return selector;
-		};
-		struct ComplexPart { StyleSelector selector; };
-		parser["ComplexPart"] = [](SemanticValues& vs)
-		{
-			StyleSelector selector = any_move<StyleSelector>(vs[0]);
-			selector.relationship = vs.choice() == 0 ? StyleSelectorRelationship::Descendent : StyleSelectorRelationship::Child;
-			return selector;
-		};
-		parser["ComplexSelector"] = [](SemanticValues& vs)
-		{
-			StyleComplexSelector complexSelector;
-			for (auto& p : vs)
-				complexSelector.selectors.push_back(any_move<StyleSelector>(p));
-			complexSelector.ruleIndex = vs.line_info().first;
-			complexSelector.UpdateSpecificity();
-			return complexSelector;
-		};
-		parser["SelectorList"] = [](SemanticValues& vs)
-		{
-			vector<StyleComplexSelector> selectorList;
-			for (auto& p : vs)
-				selectorList.push_back(any_move<StyleComplexSelector>(p));
-			return selectorList;
-		};
-		parser["StyleRule"] = [&](SemanticValues& vs)
-		{
-			StyleRule rule;
-			auto& list = any_move<property_list_t>(vs[1]);
-			for (auto& pair : list)
-			{
-				const char* errorMsg;
-				ParseErrorType errorType;
-				if (!ParseProperty(sheet.storage, pair.first, pair.second, rule, errorMsg, errorType))
-				{
-					throw parse_error(errorMsg);
-				}
-			}
-			int ruleIndex = sheet.styleRules.size();
-			sheet.styleRules.push_back(std::move(rule));
-			auto& selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
-			for (auto& sel : selectorList)
-			{
-				sel.ruleIndex = ruleIndex;
-				sheet.styleSelectors.push_back(sel);
-			}
-		};
-
-		//parser.enable_packrat_parsing(); // Enable packrat parsing.
-		if (parser.parse(str))
-			return sheet;
-		return {};
-	}
-
-	std::optional<InlineStyle> ParseInlineStyle(std::string_view str)
-	{
-		auto grammar = R"(
-			PropertyList	<- Property? (';' _ Property)*
-			Property		<- IDENT w ':' w Value
-			Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
-			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
-			~TransformList	<- <CALL+>
-			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
-			~SizeList		<- < CNUM (',' w CNUM){3} >
-			~COLOR			<- < ('#' NUM) / CALL >
-			~CNUM			<- < NUM (IDENT / '%')? >
-			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
-			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
-			~_				<- [ \t\r\n]*
-			~w				<- [ ]*
-		)";
-		using namespace peg;
-		using namespace std;
-		parser parser;
-		InlineStyle sheet;
-
-		parser.log = [](size_t line, size_t col, const string& msg)
-		{
-			cerr << line << ":" << col << ": " << msg << "\n";
-		};
-
-		auto ok = parser.load_grammar(grammar);
-		if (!ok)
-			return {};
-
-		auto token = [](SemanticValues& vs)
-		{
-			return vs.token(0);
-		};
-		parser["IDENT"] = token;
-		parser["Value"] = token;
-		parser["Property"] = [](SemanticValues& vs)
-		{
-			auto name = any_move<string_view>(vs[0]);
-			auto value = any_move<string_view>(vs[1]);
-			return make_pair(name, value);
-		};
-		using property_list_t = vector<pair<string_view, string_view>>;
-		parser["PropertyList"] = [&](SemanticValues& vs)
-		{
-			property_list_t pairs;
-			for (auto& p : vs)
-				pairs.push_back(any_move<pair<string_view, string_view>>(p));
-
-			for (auto& pair : pairs)
-			{
-				const char* errorMsg;
-				ParseErrorType errorType;
-				if (!ParseProperty(sheet.storage, pair.first, pair.second, sheet.rule, errorMsg, errorType))
-				{
-					throw parse_error(errorMsg);
-				}
-			}
-		};
-
-		//parser.enable_packrat_parsing(); // Enable packrat parsing.
-		if (parser.parse(str))
-			return sheet;
-		return {};
-	}
-
-	std::optional<StyleSheet> ParseCSSFile(std::string path)
-	{
-		std::ifstream ifs(path);
-		std::string content((std::istreambuf_iterator<char>(ifs)),
-			(std::istreambuf_iterator<char>()));
-		return ParseCSS(content);
-	}
-}
 
 
 namespace std
@@ -238,6 +27,8 @@ namespace std
 		return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 	}
 }
+
+
 
 void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV)
 {
@@ -296,6 +87,12 @@ void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV)
 
 namespace OGUI
 {
+	template<class T>
+	std::remove_cv_t<T> any_move(std::any& any)
+	{
+		return std::any_cast<T>(std::move(any));
+	}
+
 	template<class T>
 	bool FromString(std::string_view str, T& value)
 	{
@@ -376,159 +173,159 @@ namespace OGUI
 	{
 		using namespace std::string_view_literals;
 		static const std::unordered_map<std::string_view, Color4f> NamedColor({
-// pre-defined
-{"aliceblue"sv,Color4f(240.f / 255,248.f / 255,255.f / 255, 1.f)},
-{"antiquewhite"sv,Color4f(250.f / 255,235.f / 255,215.f / 255, 1.f)},
-{"aqua"sv,Color4f(0.f / 255,255.f / 255,255.f / 255, 1.f)},
-{"aquamarine"sv,Color4f(127.f / 255,255.f / 255,212.f / 255, 1.f)},
-{"azure"sv,Color4f(240.f / 255,255.f / 255,255.f / 255, 1.f)},
-{"beige"sv,Color4f(245.f / 255,245.f / 255,220.f / 255, 1.f)},
-{"bisque"sv,Color4f(255.f / 255,228.f / 255,196.f / 255, 1.f)},
-{"black"sv,Color4f(0.f / 255,0.f / 255,0.f / 255, 1.f)},
-{"blanchedalmond"sv,Color4f(255.f / 255,235.f / 255,205.f / 255, 1.f)},
-{"blue"sv,Color4f(0.f / 255,0.f / 255,255.f / 255, 1.f)},
-{"blueviolet"sv,Color4f(138.f / 255,43.f / 255,226.f / 255, 1.f)},
-{"brown"sv,Color4f(165.f / 255,42.f / 255,42.f / 255, 1.f)},
-{"burlywood"sv,Color4f(222.f / 255,184.f / 255,135.f / 255, 1.f)},
-{"cadetblue"sv,Color4f(95.f / 255,158.f / 255,160.f / 255, 1.f)},
-{"chartreuse"sv,Color4f(127.f / 255,255.f / 255,0.f / 255, 1.f)},
-{"chocolate"sv,Color4f(210.f / 255,105.f / 255,30.f / 255, 1.f)},
-{"coral"sv,Color4f(255.f / 255,127.f / 255,80.f / 255, 1.f)},
-{"cornflowerblue"sv,Color4f(100.f / 255,149.f / 255,237.f / 255, 1.f)},
-{"cornsilk"sv,Color4f(255.f / 255,248.f / 255,220.f / 255, 1.f)},
-{"crimson"sv,Color4f(220.f / 255,20.f / 255,60.f / 255, 1.f)},
-{"cyan"sv,Color4f(0.f / 255,255.f / 255,255.f / 255, 1.f)},
-{"darkblue"sv,Color4f(0.f / 255,0.f / 255,139.f / 255, 1.f)},
-{"darkcyan"sv,Color4f(0.f / 255,139.f / 255,139.f / 255, 1.f)},
-{"darkgoldenrod"sv,Color4f(184.f / 255,134.f / 255,11.f / 255, 1.f)},
-{"darkgray"sv,Color4f(169.f / 255,169.f / 255,169.f / 255, 1.f)},
-{"darkgrey"sv,Color4f(169.f / 255,169.f / 255,169.f / 255, 1.f)},
-{"darkgreen"sv,Color4f(0.f / 255,100.f / 255,0.f / 255, 1.f)},
-{"darkkhaki"sv,Color4f(189.f / 255,183.f / 255,107.f / 255, 1.f)},
-{"darkmagenta"sv,Color4f(139.f / 255,0.f / 255,139.f / 255, 1.f)},
-{"darkolivegreen"sv,Color4f(85.f / 255,107.f / 255,47.f / 255, 1.f)},
-{"darkorange"sv,Color4f(255.f / 255,140.f / 255,0.f / 255, 1.f)},
-{"darkorchid"sv,Color4f(153.f / 255,50.f / 255,204.f / 255, 1.f)},
-{"darkred"sv,Color4f(139.f / 255,0.f / 255,0.f / 255, 1.f)},
-{"darksalmon"sv,Color4f(233.f / 255,150.f / 255,122.f / 255, 1.f)},
-{"darkseagreen"sv,Color4f(143.f / 255,188.f / 255,143.f / 255, 1.f)},
-{"darkslateblue"sv,Color4f(72.f / 255,61.f / 255,139.f / 255, 1.f)},
-{"darkslategray"sv,Color4f(47.f / 255,79.f / 255,79.f / 255, 1.f)},
-{"darkslategrey"sv,Color4f(47.f / 255,79.f / 255,79.f / 255, 1.f)},
-{"darkturquoise"sv,Color4f(0.f / 255,206.f / 255,209.f / 255, 1.f)},
-{"darkviolet"sv,Color4f(148.f / 255,0.f / 255,211.f / 255, 1.f)},
-{"deeppink"sv,Color4f(255.f / 255,20.f / 255,147.f / 255, 1.f)},
-{"deepskyblue"sv,Color4f(0.f / 255,191.f / 255,255.f / 255, 1.f)},
-{"dimgray"sv,Color4f(105.f / 255,105.f / 255,105.f / 255, 1.f)},
-{"dimgrey"sv,Color4f(105.f / 255,105.f / 255,105.f / 255, 1.f)},
-{"dodgerblue"sv,Color4f(30.f / 255,144.f / 255,255.f / 255, 1.f)},
-{"firebrick"sv,Color4f(178.f / 255,34.f / 255,34.f / 255, 1.f)},
-{"floralwhite"sv,Color4f(255.f / 255,250.f / 255,240.f / 255, 1.f)},
-{"forestgreen"sv,Color4f(34.f / 255,139.f / 255,34.f / 255, 1.f)},
-{"fuchsia"sv,Color4f(255.f / 255,0.f / 255,255.f / 255, 1.f)},
-{"gainsboro"sv,Color4f(220.f / 255,220.f / 255,220.f / 255, 1.f)},
-{"ghostwhite"sv,Color4f(248.f / 255,248.f / 255,255.f / 255, 1.f)},
-{"gold"sv,Color4f(255.f / 255,215.f / 255,0.f / 255, 1.f)},
-{"goldenrod"sv,Color4f(218.f / 255,165.f / 255,32.f / 255, 1.f)},
-{"gray"sv,Color4f(128.f / 255,128.f / 255,128.f / 255, 1.f)},
-{"grey"sv,Color4f(128.f / 255,128.f / 255,128.f / 255, 1.f)},
-{"green"sv,Color4f(0.f / 255,128.f / 255,0.f / 255, 1.f)},
-{"greenyellow"sv,Color4f(173.f / 255,255.f / 255,47.f / 255, 1.f)},
-{"honeydew"sv,Color4f(240.f / 255,255.f / 255,240.f / 255, 1.f)},
-{"hotpink"sv,Color4f(255.f / 255,105.f / 255,180.f / 255, 1.f)},
-{"indianred"sv,Color4f(205.f / 255,92.f / 255,92.f / 255, 1.f)},
-{"indigo"sv,Color4f(75.f / 255,0.f / 255,130.f / 255, 1.f)},
-{"ivory"sv,Color4f(255.f / 255,255.f / 255,240.f / 255, 1.f)},
-{"khaki"sv,Color4f(240.f / 255,230.f / 255,140.f / 255, 1.f)},
-{"lavender"sv,Color4f(230.f / 255,230.f / 255,250.f / 255, 1.f)},
-{"lavenderblush"sv,Color4f(255.f / 255,240.f / 255,245.f / 255, 1.f)},
-{"lawngreen"sv,Color4f(124.f / 255,252.f / 255,0.f / 255, 1.f)},
-{"lemonchiffon"sv,Color4f(255.f / 255,250.f / 255,205.f / 255, 1.f)},
-{"lightblue"sv,Color4f(173.f / 255,216.f / 255,230.f / 255, 1.f)},
-{"lightcoral"sv,Color4f(240.f / 255,128.f / 255,128.f / 255, 1.f)},
-{"lightcyan"sv,Color4f(224.f / 255,255.f / 255,255.f / 255, 1.f)},
-{"lightgoldenrodyellow"sv,Color4f(250.f / 255,250.f / 255,210.f / 255, 1.f)},
-{"lightgray"sv,Color4f(211.f / 255,211.f / 255,211.f / 255, 1.f)},
-{"lightgrey"sv,Color4f(211.f / 255,211.f / 255,211.f / 255, 1.f)},
-{"lightgreen"sv,Color4f(144.f / 255,238.f / 255,144.f / 255, 1.f)},
-{"lightpink"sv,Color4f(255.f / 255,182.f / 255,193.f / 255, 1.f)},
-{"lightsalmon"sv,Color4f(255.f / 255,160.f / 255,122.f / 255, 1.f)},
-{"lightseagreen"sv,Color4f(32.f / 255,178.f / 255,170.f / 255, 1.f)},
-{"lightskyblue"sv,Color4f(135.f / 255,206.f / 255,250.f / 255, 1.f)},
-{"lightslategray"sv,Color4f(119.f / 255,136.f / 255,153.f / 255, 1.f)},
-{"lightslategrey"sv,Color4f(119.f / 255,136.f / 255,153.f / 255, 1.f)},
-{"lightsteelblue"sv,Color4f(176.f / 255,196.f / 255,222.f / 255, 1.f)},
-{"lightyellow"sv,Color4f(255.f / 255,255.f / 255,224.f / 255, 1.f)},
-{"lime"sv,Color4f(0.f / 255,255.f / 255,0.f / 255, 1.f)},
-{"limegreen"sv,Color4f(50.f / 255,205.f / 255,50.f / 255, 1.f)},
-{"linen"sv,Color4f(250.f / 255,240.f / 255,230.f / 255, 1.f)},
-{"magenta"sv,Color4f(255.f / 255,0.f / 255,255.f / 255, 1.f)},
-{"maroon"sv,Color4f(128.f / 255,0.f / 255,0.f / 255, 1.f)},
-{"mediumaquamarine"sv,Color4f(102.f / 255,205.f / 255,170.f / 255, 1.f)},
-{"mediumblue"sv,Color4f(0.f / 255,0.f / 255,205.f / 255, 1.f)},
-{"mediumorchid"sv,Color4f(186.f / 255,85.f / 255,211.f / 255, 1.f)},
-{"mediumpurple"sv,Color4f(147.f / 255,112.f / 255,219.f / 255, 1.f)},
-{"mediumseagreen"sv,Color4f(60.f / 255,179.f / 255,113.f / 255, 1.f)},
-{"mediumslateblue"sv,Color4f(123.f / 255,104.f / 255,238.f / 255, 1.f)},
-{"mediumspringgreen"sv,Color4f(0.f / 255,250.f / 255,154.f / 255, 1.f)},
-{"mediumturquoise"sv,Color4f(72.f / 255,209.f / 255,204.f / 255, 1.f)},
-{"mediumvioletred"sv,Color4f(199.f / 255,21.f / 255,133.f / 255, 1.f)},
-{"midnightblue"sv,Color4f(25.f / 255,25.f / 255,112.f / 255, 1.f)},
-{"mintcream"sv,Color4f(245.f / 255,255.f / 255,250.f / 255, 1.f)},
-{"mistyrose"sv,Color4f(255.f / 255,228.f / 255,225.f / 255, 1.f)},
-{"moccasin"sv,Color4f(255.f / 255,228.f / 255,181.f / 255, 1.f)},
-{"navajowhite"sv,Color4f(255.f / 255,222.f / 255,173.f / 255, 1.f)},
-{"navy"sv,Color4f(0.f / 255,0.f / 255,128.f / 255, 1.f)},
-{"oldlace"sv,Color4f(253.f / 255,245.f / 255,230.f / 255, 1.f)},
-{"olive"sv,Color4f(128.f / 255,128.f / 255,0.f / 255, 1.f)},
-{"olivedrab"sv,Color4f(107.f / 255,142.f / 255,35.f / 255, 1.f)},
-{"orange"sv,Color4f(255.f / 255,165.f / 255,0.f / 255, 1.f)},
-{"orangered"sv,Color4f(255.f / 255,69.f / 255,0.f / 255, 1.f)},
-{"orchid"sv,Color4f(218.f / 255,112.f / 255,214.f / 255, 1.f)},
-{"palegoldenrod"sv,Color4f(238.f / 255,232.f / 255,170.f / 255, 1.f)},
-{"palegreen"sv,Color4f(152.f / 255,251.f / 255,152.f / 255, 1.f)},
-{"paleturquoise"sv,Color4f(175.f / 255,238.f / 255,238.f / 255, 1.f)},
-{"palevioletred"sv,Color4f(219.f / 255,112.f / 255,147.f / 255, 1.f)},
-{"papayawhip"sv,Color4f(255.f / 255,239.f / 255,213.f / 255, 1.f)},
-{"peachpuff"sv,Color4f(255.f / 255,218.f / 255,185.f / 255, 1.f)},
-{"peru"sv,Color4f(205.f / 255,133.f / 255,63.f / 255, 1.f)},
-{"pink"sv,Color4f(255.f / 255,192.f / 255,203.f / 255, 1.f)},
-{"plum"sv,Color4f(221.f / 255,160.f / 255,221.f / 255, 1.f)},
-{"powderblue"sv,Color4f(176.f / 255,224.f / 255,230.f / 255, 1.f)},
-{"purple"sv,Color4f(128.f / 255,0.f / 255,128.f / 255, 1.f)},
-{"rebeccapurple"sv,Color4f(102.f / 255,51.f / 255,153.f / 255, 1.f)},
-{"red"sv,Color4f(255.f / 255,0.f / 255,0.f / 255, 1.f)},
-{"rosybrown"sv,Color4f(188.f / 255,143.f / 255,143.f / 255, 1.f)},
-{"royalblue"sv,Color4f(65.f / 255,105.f / 255,225.f / 255, 1.f)},
-{"saddlebrown"sv,Color4f(139.f / 255,69.f / 255,19.f / 255, 1.f)},
-{"salmon"sv,Color4f(250.f / 255,128.f / 255,114.f / 255, 1.f)},
-{"sandybrown"sv,Color4f(244.f / 255,164.f / 255,96.f / 255, 1.f)},
-{"seagreen"sv,Color4f(46.f / 255,139.f / 255,87.f / 255, 1.f)},
-{"seashell"sv,Color4f(255.f / 255,245.f / 255,238.f / 255, 1.f)},
-{"sienna"sv,Color4f(160.f / 255,82.f / 255,45.f / 255, 1.f)},
-{"silver"sv,Color4f(192.f / 255,192.f / 255,192.f / 255, 1.f)},
-{"skyblue"sv,Color4f(135.f / 255,206.f / 255,235.f / 255, 1.f)},
-{"slateblue"sv,Color4f(106.f / 255,90.f / 255,205.f / 255, 1.f)},
-{"slategray"sv,Color4f(112.f / 255,128.f / 255,144.f / 255, 1.f)},
-{"slategrey"sv,Color4f(112.f / 255,128.f / 255,144.f / 255, 1.f)},
-{"snow"sv,Color4f(255.f / 255,250.f / 255,250.f / 255, 1.f)},
-{"springgreen"sv,Color4f(0.f / 255,255.f / 255,127.f / 255, 1.f)},
-{"steelblue"sv,Color4f(70.f / 255,130.f / 255,180.f / 255, 1.f)},
-{"tan"sv,Color4f(210.f / 255,180.f / 255,140.f / 255, 1.f)},
-{"teal"sv,Color4f(0.f / 255,128.f / 255,128.f / 255, 1.f)},
-{"thistle"sv,Color4f(216.f / 255,191.f / 255,216.f / 255, 1.f)},
-{"tomato"sv,Color4f(255.f / 255,99.f / 255,71.f / 255, 1.f)},
-{"turquoise"sv,Color4f(64.f / 255,224.f / 255,208.f / 255, 1.f)},
-{"violet"sv,Color4f(238.f / 255,130.f / 255,238.f / 255, 1.f)},
-{"wheat"sv,Color4f(245.f / 255,222.f / 255,179.f / 255, 1.f)},
-{"white"sv,Color4f(255.f / 255,255.f / 255,255.f / 255, 1.f)},
-{"whitesmoke"sv,Color4f(245.f / 255,245.f / 255,245.f / 255, 1.f)},
-{"yellow"sv,Color4f(255.f / 255,255.f / 255,0.f / 255, 1.f)},
-{"yellowgreen"sv,Color4f(154.f / 255,205.f / 255,50.f / 255, 1.f)},
-// special
-{ "transparent"sv, Color4f( 0.f, 0.f, 0.f, 0.f ) }
-// customize (if required)
-		});
+			// pre-defined
+			{"aliceblue"sv,Color4f(240.f / 255,248.f / 255,255.f / 255, 1.f)},
+			{"antiquewhite"sv,Color4f(250.f / 255,235.f / 255,215.f / 255, 1.f)},
+			{"aqua"sv,Color4f(0.f / 255,255.f / 255,255.f / 255, 1.f)},
+			{"aquamarine"sv,Color4f(127.f / 255,255.f / 255,212.f / 255, 1.f)},
+			{"azure"sv,Color4f(240.f / 255,255.f / 255,255.f / 255, 1.f)},
+			{"beige"sv,Color4f(245.f / 255,245.f / 255,220.f / 255, 1.f)},
+			{"bisque"sv,Color4f(255.f / 255,228.f / 255,196.f / 255, 1.f)},
+			{"black"sv,Color4f(0.f / 255,0.f / 255,0.f / 255, 1.f)},
+			{"blanchedalmond"sv,Color4f(255.f / 255,235.f / 255,205.f / 255, 1.f)},
+			{"blue"sv,Color4f(0.f / 255,0.f / 255,255.f / 255, 1.f)},
+			{"blueviolet"sv,Color4f(138.f / 255,43.f / 255,226.f / 255, 1.f)},
+			{"brown"sv,Color4f(165.f / 255,42.f / 255,42.f / 255, 1.f)},
+			{"burlywood"sv,Color4f(222.f / 255,184.f / 255,135.f / 255, 1.f)},
+			{"cadetblue"sv,Color4f(95.f / 255,158.f / 255,160.f / 255, 1.f)},
+			{"chartreuse"sv,Color4f(127.f / 255,255.f / 255,0.f / 255, 1.f)},
+			{"chocolate"sv,Color4f(210.f / 255,105.f / 255,30.f / 255, 1.f)},
+			{"coral"sv,Color4f(255.f / 255,127.f / 255,80.f / 255, 1.f)},
+			{"cornflowerblue"sv,Color4f(100.f / 255,149.f / 255,237.f / 255, 1.f)},
+			{"cornsilk"sv,Color4f(255.f / 255,248.f / 255,220.f / 255, 1.f)},
+			{"crimson"sv,Color4f(220.f / 255,20.f / 255,60.f / 255, 1.f)},
+			{"cyan"sv,Color4f(0.f / 255,255.f / 255,255.f / 255, 1.f)},
+			{"darkblue"sv,Color4f(0.f / 255,0.f / 255,139.f / 255, 1.f)},
+			{"darkcyan"sv,Color4f(0.f / 255,139.f / 255,139.f / 255, 1.f)},
+			{"darkgoldenrod"sv,Color4f(184.f / 255,134.f / 255,11.f / 255, 1.f)},
+			{"darkgray"sv,Color4f(169.f / 255,169.f / 255,169.f / 255, 1.f)},
+			{"darkgrey"sv,Color4f(169.f / 255,169.f / 255,169.f / 255, 1.f)},
+			{"darkgreen"sv,Color4f(0.f / 255,100.f / 255,0.f / 255, 1.f)},
+			{"darkkhaki"sv,Color4f(189.f / 255,183.f / 255,107.f / 255, 1.f)},
+			{"darkmagenta"sv,Color4f(139.f / 255,0.f / 255,139.f / 255, 1.f)},
+			{"darkolivegreen"sv,Color4f(85.f / 255,107.f / 255,47.f / 255, 1.f)},
+			{"darkorange"sv,Color4f(255.f / 255,140.f / 255,0.f / 255, 1.f)},
+			{"darkorchid"sv,Color4f(153.f / 255,50.f / 255,204.f / 255, 1.f)},
+			{"darkred"sv,Color4f(139.f / 255,0.f / 255,0.f / 255, 1.f)},
+			{"darksalmon"sv,Color4f(233.f / 255,150.f / 255,122.f / 255, 1.f)},
+			{"darkseagreen"sv,Color4f(143.f / 255,188.f / 255,143.f / 255, 1.f)},
+			{"darkslateblue"sv,Color4f(72.f / 255,61.f / 255,139.f / 255, 1.f)},
+			{"darkslategray"sv,Color4f(47.f / 255,79.f / 255,79.f / 255, 1.f)},
+			{"darkslategrey"sv,Color4f(47.f / 255,79.f / 255,79.f / 255, 1.f)},
+			{"darkturquoise"sv,Color4f(0.f / 255,206.f / 255,209.f / 255, 1.f)},
+			{"darkviolet"sv,Color4f(148.f / 255,0.f / 255,211.f / 255, 1.f)},
+			{"deeppink"sv,Color4f(255.f / 255,20.f / 255,147.f / 255, 1.f)},
+			{"deepskyblue"sv,Color4f(0.f / 255,191.f / 255,255.f / 255, 1.f)},
+			{"dimgray"sv,Color4f(105.f / 255,105.f / 255,105.f / 255, 1.f)},
+			{"dimgrey"sv,Color4f(105.f / 255,105.f / 255,105.f / 255, 1.f)},
+			{"dodgerblue"sv,Color4f(30.f / 255,144.f / 255,255.f / 255, 1.f)},
+			{"firebrick"sv,Color4f(178.f / 255,34.f / 255,34.f / 255, 1.f)},
+			{"floralwhite"sv,Color4f(255.f / 255,250.f / 255,240.f / 255, 1.f)},
+			{"forestgreen"sv,Color4f(34.f / 255,139.f / 255,34.f / 255, 1.f)},
+			{"fuchsia"sv,Color4f(255.f / 255,0.f / 255,255.f / 255, 1.f)},
+			{"gainsboro"sv,Color4f(220.f / 255,220.f / 255,220.f / 255, 1.f)},
+			{"ghostwhite"sv,Color4f(248.f / 255,248.f / 255,255.f / 255, 1.f)},
+			{"gold"sv,Color4f(255.f / 255,215.f / 255,0.f / 255, 1.f)},
+			{"goldenrod"sv,Color4f(218.f / 255,165.f / 255,32.f / 255, 1.f)},
+			{"gray"sv,Color4f(128.f / 255,128.f / 255,128.f / 255, 1.f)},
+			{"grey"sv,Color4f(128.f / 255,128.f / 255,128.f / 255, 1.f)},
+			{"green"sv,Color4f(0.f / 255,128.f / 255,0.f / 255, 1.f)},
+			{"greenyellow"sv,Color4f(173.f / 255,255.f / 255,47.f / 255, 1.f)},
+			{"honeydew"sv,Color4f(240.f / 255,255.f / 255,240.f / 255, 1.f)},
+			{"hotpink"sv,Color4f(255.f / 255,105.f / 255,180.f / 255, 1.f)},
+			{"indianred"sv,Color4f(205.f / 255,92.f / 255,92.f / 255, 1.f)},
+			{"indigo"sv,Color4f(75.f / 255,0.f / 255,130.f / 255, 1.f)},
+			{"ivory"sv,Color4f(255.f / 255,255.f / 255,240.f / 255, 1.f)},
+			{"khaki"sv,Color4f(240.f / 255,230.f / 255,140.f / 255, 1.f)},
+			{"lavender"sv,Color4f(230.f / 255,230.f / 255,250.f / 255, 1.f)},
+			{"lavenderblush"sv,Color4f(255.f / 255,240.f / 255,245.f / 255, 1.f)},
+			{"lawngreen"sv,Color4f(124.f / 255,252.f / 255,0.f / 255, 1.f)},
+			{"lemonchiffon"sv,Color4f(255.f / 255,250.f / 255,205.f / 255, 1.f)},
+			{"lightblue"sv,Color4f(173.f / 255,216.f / 255,230.f / 255, 1.f)},
+			{"lightcoral"sv,Color4f(240.f / 255,128.f / 255,128.f / 255, 1.f)},
+			{"lightcyan"sv,Color4f(224.f / 255,255.f / 255,255.f / 255, 1.f)},
+			{"lightgoldenrodyellow"sv,Color4f(250.f / 255,250.f / 255,210.f / 255, 1.f)},
+			{"lightgray"sv,Color4f(211.f / 255,211.f / 255,211.f / 255, 1.f)},
+			{"lightgrey"sv,Color4f(211.f / 255,211.f / 255,211.f / 255, 1.f)},
+			{"lightgreen"sv,Color4f(144.f / 255,238.f / 255,144.f / 255, 1.f)},
+			{"lightpink"sv,Color4f(255.f / 255,182.f / 255,193.f / 255, 1.f)},
+			{"lightsalmon"sv,Color4f(255.f / 255,160.f / 255,122.f / 255, 1.f)},
+			{"lightseagreen"sv,Color4f(32.f / 255,178.f / 255,170.f / 255, 1.f)},
+			{"lightskyblue"sv,Color4f(135.f / 255,206.f / 255,250.f / 255, 1.f)},
+			{"lightslategray"sv,Color4f(119.f / 255,136.f / 255,153.f / 255, 1.f)},
+			{"lightslategrey"sv,Color4f(119.f / 255,136.f / 255,153.f / 255, 1.f)},
+			{"lightsteelblue"sv,Color4f(176.f / 255,196.f / 255,222.f / 255, 1.f)},
+			{"lightyellow"sv,Color4f(255.f / 255,255.f / 255,224.f / 255, 1.f)},
+			{"lime"sv,Color4f(0.f / 255,255.f / 255,0.f / 255, 1.f)},
+			{"limegreen"sv,Color4f(50.f / 255,205.f / 255,50.f / 255, 1.f)},
+			{"linen"sv,Color4f(250.f / 255,240.f / 255,230.f / 255, 1.f)},
+			{"magenta"sv,Color4f(255.f / 255,0.f / 255,255.f / 255, 1.f)},
+			{"maroon"sv,Color4f(128.f / 255,0.f / 255,0.f / 255, 1.f)},
+			{"mediumaquamarine"sv,Color4f(102.f / 255,205.f / 255,170.f / 255, 1.f)},
+			{"mediumblue"sv,Color4f(0.f / 255,0.f / 255,205.f / 255, 1.f)},
+			{"mediumorchid"sv,Color4f(186.f / 255,85.f / 255,211.f / 255, 1.f)},
+			{"mediumpurple"sv,Color4f(147.f / 255,112.f / 255,219.f / 255, 1.f)},
+			{"mediumseagreen"sv,Color4f(60.f / 255,179.f / 255,113.f / 255, 1.f)},
+			{"mediumslateblue"sv,Color4f(123.f / 255,104.f / 255,238.f / 255, 1.f)},
+			{"mediumspringgreen"sv,Color4f(0.f / 255,250.f / 255,154.f / 255, 1.f)},
+			{"mediumturquoise"sv,Color4f(72.f / 255,209.f / 255,204.f / 255, 1.f)},
+			{"mediumvioletred"sv,Color4f(199.f / 255,21.f / 255,133.f / 255, 1.f)},
+			{"midnightblue"sv,Color4f(25.f / 255,25.f / 255,112.f / 255, 1.f)},
+			{"mintcream"sv,Color4f(245.f / 255,255.f / 255,250.f / 255, 1.f)},
+			{"mistyrose"sv,Color4f(255.f / 255,228.f / 255,225.f / 255, 1.f)},
+			{"moccasin"sv,Color4f(255.f / 255,228.f / 255,181.f / 255, 1.f)},
+			{"navajowhite"sv,Color4f(255.f / 255,222.f / 255,173.f / 255, 1.f)},
+			{"navy"sv,Color4f(0.f / 255,0.f / 255,128.f / 255, 1.f)},
+			{"oldlace"sv,Color4f(253.f / 255,245.f / 255,230.f / 255, 1.f)},
+			{"olive"sv,Color4f(128.f / 255,128.f / 255,0.f / 255, 1.f)},
+			{"olivedrab"sv,Color4f(107.f / 255,142.f / 255,35.f / 255, 1.f)},
+			{"orange"sv,Color4f(255.f / 255,165.f / 255,0.f / 255, 1.f)},
+			{"orangered"sv,Color4f(255.f / 255,69.f / 255,0.f / 255, 1.f)},
+			{"orchid"sv,Color4f(218.f / 255,112.f / 255,214.f / 255, 1.f)},
+			{"palegoldenrod"sv,Color4f(238.f / 255,232.f / 255,170.f / 255, 1.f)},
+			{"palegreen"sv,Color4f(152.f / 255,251.f / 255,152.f / 255, 1.f)},
+			{"paleturquoise"sv,Color4f(175.f / 255,238.f / 255,238.f / 255, 1.f)},
+			{"palevioletred"sv,Color4f(219.f / 255,112.f / 255,147.f / 255, 1.f)},
+			{"papayawhip"sv,Color4f(255.f / 255,239.f / 255,213.f / 255, 1.f)},
+			{"peachpuff"sv,Color4f(255.f / 255,218.f / 255,185.f / 255, 1.f)},
+			{"peru"sv,Color4f(205.f / 255,133.f / 255,63.f / 255, 1.f)},
+			{"pink"sv,Color4f(255.f / 255,192.f / 255,203.f / 255, 1.f)},
+			{"plum"sv,Color4f(221.f / 255,160.f / 255,221.f / 255, 1.f)},
+			{"powderblue"sv,Color4f(176.f / 255,224.f / 255,230.f / 255, 1.f)},
+			{"purple"sv,Color4f(128.f / 255,0.f / 255,128.f / 255, 1.f)},
+			{"rebeccapurple"sv,Color4f(102.f / 255,51.f / 255,153.f / 255, 1.f)},
+			{"red"sv,Color4f(255.f / 255,0.f / 255,0.f / 255, 1.f)},
+			{"rosybrown"sv,Color4f(188.f / 255,143.f / 255,143.f / 255, 1.f)},
+			{"royalblue"sv,Color4f(65.f / 255,105.f / 255,225.f / 255, 1.f)},
+			{"saddlebrown"sv,Color4f(139.f / 255,69.f / 255,19.f / 255, 1.f)},
+			{"salmon"sv,Color4f(250.f / 255,128.f / 255,114.f / 255, 1.f)},
+			{"sandybrown"sv,Color4f(244.f / 255,164.f / 255,96.f / 255, 1.f)},
+			{"seagreen"sv,Color4f(46.f / 255,139.f / 255,87.f / 255, 1.f)},
+			{"seashell"sv,Color4f(255.f / 255,245.f / 255,238.f / 255, 1.f)},
+			{"sienna"sv,Color4f(160.f / 255,82.f / 255,45.f / 255, 1.f)},
+			{"silver"sv,Color4f(192.f / 255,192.f / 255,192.f / 255, 1.f)},
+			{"skyblue"sv,Color4f(135.f / 255,206.f / 255,235.f / 255, 1.f)},
+			{"slateblue"sv,Color4f(106.f / 255,90.f / 255,205.f / 255, 1.f)},
+			{"slategray"sv,Color4f(112.f / 255,128.f / 255,144.f / 255, 1.f)},
+			{"slategrey"sv,Color4f(112.f / 255,128.f / 255,144.f / 255, 1.f)},
+			{"snow"sv,Color4f(255.f / 255,250.f / 255,250.f / 255, 1.f)},
+			{"springgreen"sv,Color4f(0.f / 255,255.f / 255,127.f / 255, 1.f)},
+			{"steelblue"sv,Color4f(70.f / 255,130.f / 255,180.f / 255, 1.f)},
+			{"tan"sv,Color4f(210.f / 255,180.f / 255,140.f / 255, 1.f)},
+			{"teal"sv,Color4f(0.f / 255,128.f / 255,128.f / 255, 1.f)},
+			{"thistle"sv,Color4f(216.f / 255,191.f / 255,216.f / 255, 1.f)},
+			{"tomato"sv,Color4f(255.f / 255,99.f / 255,71.f / 255, 1.f)},
+			{"turquoise"sv,Color4f(64.f / 255,224.f / 255,208.f / 255, 1.f)},
+			{"violet"sv,Color4f(238.f / 255,130.f / 255,238.f / 255, 1.f)},
+			{"wheat"sv,Color4f(245.f / 255,222.f / 255,179.f / 255, 1.f)},
+			{"white"sv,Color4f(255.f / 255,255.f / 255,255.f / 255, 1.f)},
+			{"whitesmoke"sv,Color4f(245.f / 255,245.f / 255,245.f / 255, 1.f)},
+			{"yellow"sv,Color4f(255.f / 255,255.f / 255,0.f / 255, 1.f)},
+			{"yellowgreen"sv,Color4f(154.f / 255,205.f / 255,50.f / 255, 1.f)},
+			// special
+			{ "transparent"sv, Color4f(0.f, 0.f, 0.f, 0.f) }
+			// customize (if required)
+			});
 
 		std::string lower(str);
 		std::transform(str.cbegin(), str.cend(), lower.begin(),
@@ -664,7 +461,7 @@ namespace OGUI
 		parser["NUM"] = [](SemanticValues& vs)
 		{
 			float value = 0;
-			if(!FromString(vs.token(), value))
+			if (!FromString(vs.token(), value))
 				throw peg::parse_error("invalid number.");
 			return value;
 		};
@@ -690,7 +487,7 @@ namespace OGUI
 #undef ARG
 		parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
 		parser["TransformList"] = [](SemanticValues& vs)
-		{ 
+		{
 			tt finalM = any_move<tt>(vs[0]);
 			for (int i = 1; i < vs.size(); ++i)
 			{
@@ -710,7 +507,7 @@ namespace OGUI
 
 	bool FromString(std::string_view str, Color4f& value)
 	{
-		
+
 		auto grammar = R"(
 			Color	<- CALLS / CALL / HEX / IDENT
 			CALL	<- FUNC '(' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ (',' _ CNUM _)? ')'
@@ -826,7 +623,7 @@ namespace OGUI
 				fullstr.push_back(str[0]); fullstr.push_back(str[0]);
 				fullstr.push_back(str[1]); fullstr.push_back(str[1]);
 				fullstr.push_back(str[2]); fullstr.push_back(str[2]);
-				if(length == 4)
+				if (length == 4)
 				{
 					fullstr.push_back(str[3]); fullstr.push_back(str[3]);
 				}
@@ -853,7 +650,7 @@ namespace OGUI
 		parser["IDENT"] = [](SemanticValues& vs)
 		{
 			Color4f res;
-			if(!FromColorName(vs.token(), res))
+			if (!FromColorName(vs.token(), res))
 				throw parse_error("invalid color name");
 			return res;
 		};
@@ -1092,6 +889,259 @@ namespace OGUI
 			return true;
 		}
 		return false;
+	}
+}
+
+namespace OGUI
+{
+	std::optional<StyleSheet> ParseCSS(std::string_view str)
+	{
+		auto grammar = R"(
+			Stylesheet			<- StyleRule*
+			StyleRule			<- SelectorList _ '{' _ PropertyList _ '}' _
+			Keyframes			<- '@keyframes' w <IDENT> _ '{' _ KeyframeBlock* _ '}' _
+			KeyframeBlock		<- <KeyframeSelector (w ',' w KeyframeSelector w)*> _ '{' _ PropertyList _ '}' _
+			SelectorList		<- ComplexSelector (',' w ComplexSelector)* _
+			ComplexSelector		<- Selector ComplexPart*
+			ComplexPart			<- ([ ]+ Selector) / (w '>' w Selector)
+			Selector			<- SelectorPart+
+			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
+			PropertyList		<- Property? (';' _ Property)*
+			Property			<- <IDENT> w ':' w <Value>
+			~Value				<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
+			~IDENT				<- < [a-zA-Z] [a-zA-Z0-9-]* >
+			~TransformList		<- <CALL+>
+			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
+			~SizeList			<- < CNUM (',' w CNUM){3} >
+			~COLOR				<- < ('#' NUM) / CALL >
+			~CNUM				<- < NUM (IDENT / '%')? >
+			~KeyframeSelector	<- (< NUM > %') / 'from' / 'to'
+			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
+			~_					<- [ \t\r\n]*
+			~w					<- [ ]*
+		)";
+		using namespace peg;
+		using namespace std;
+		parser parser;
+		StyleSheet sheet;
+
+		parser.log = [](size_t line, size_t col, const string& msg)
+		{
+			cerr << line << ":" << col << ": " << msg << "\n";
+		};
+
+		auto ok = parser.load_grammar(grammar);
+		if (!ok)
+			return {};
+
+		parser["Property"] = [](SemanticValues& vs)
+		{
+			auto name = vs.token();
+			auto value = vs.token(1);
+			return make_pair(name, value);
+		};
+		using property_list_t = vector<pair<string_view, string_view>>;
+		parser["PropertyList"] = [&](SemanticValues& vs)
+		{
+			property_list_t pairs;
+			for (auto& p : vs)
+				pairs.push_back(any_move<pair<string_view, string_view>>(p));
+			return pairs;
+		};
+		parser["SelectorPart"] = [](SemanticValues& vs)
+		{
+			string value;
+			if(vs.tokens.size() != 0) value = {vs.tokens[0].begin(), vs.tokens[0].end()};
+			return StyleSelector::Part{(StyleSelector::Kind)vs.choice(), value};
+		};
+		parser["Selector"] = [](SemanticValues& vs)
+		{
+			StyleSelector selector;
+			for (auto& p : vs)
+			{
+				auto part = any_move<StyleSelector::Part>(p);
+				if(part.type == StyleSelector::PseudoClass)
+					selector.AddPseudoClass(part.value);
+				else
+					selector.parts.push_back(std::move(part));
+			}
+			return selector;
+		};
+		struct ComplexPart { StyleSelector selector; };
+		parser["ComplexPart"] = [](SemanticValues& vs)
+		{
+			StyleSelector selector = any_move<StyleSelector>(vs[0]);
+			selector.relationship = vs.choice() == 0 ? StyleSelectorRelationship::Descendent : StyleSelectorRelationship::Child;
+			return selector;
+		};
+		parser["ComplexSelector"] = [](SemanticValues& vs)
+		{
+			StyleComplexSelector complexSelector;
+			for (auto& p : vs)
+				complexSelector.selectors.push_back(any_move<StyleSelector>(p));
+			complexSelector.ruleIndex = vs.line_info().first;
+			complexSelector.UpdateSpecificity();
+			return complexSelector;
+		};
+		parser["SelectorList"] = [](SemanticValues& vs)
+		{
+			vector<StyleComplexSelector> selectorList;
+			for (auto& p : vs)
+				selectorList.push_back(any_move<StyleComplexSelector>(p));
+			return selectorList;
+		};
+		parser["StyleRule"] = [&](SemanticValues& vs)
+		{
+			StyleRule rule;
+			auto& list = any_move<property_list_t>(vs[1]);
+			for (auto& pair : list)
+			{
+				const char* errorMsg;
+				ParseErrorType errorType;
+				if (!ParseProperty(sheet.storage, pair.first, pair.second, rule, errorMsg, errorType))
+				{
+					throw parse_error(errorMsg);
+				}
+			}
+			int ruleIndex = sheet.styleRules.size();
+			sheet.styleRules.push_back(std::move(rule));
+			auto& selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
+			for (auto& sel : selectorList)
+			{
+				sel.ruleIndex = ruleIndex;
+				sheet.styleSelectors.push_back(sel);
+			}
+		};
+		parser["KeyframeBlock"] = [&](SemanticValues& vs)
+		{
+			auto keyStr = vs.token();
+			std::vector<std::string_view> keys;
+			std::split(keyStr, keys, ",");
+			AnimationCurve curve;
+			for (auto& key : keys)
+			{
+				AnimationCurve::Key k;
+				if (key == "from")
+					k.percentage = 0.f;
+				else if (key == "to")
+					k.percentage = 1.f;
+				else if (std::ends_with(key, "%"))
+				{
+					if (!FromString(key.substr(0, key.length()), k.percentage))
+						throw parse_error("invalid number");
+					k.percentage /= 100;
+				}
+				else
+					throw parse_error("invalid keyframe selector");
+
+				curve.keys.push_back(k);
+			}
+			StyleRule frame;
+			auto& list = any_move<property_list_t>(vs[0]);
+			for (auto& pair : list)
+			{
+				const char* errorMsg;
+				ParseErrorType errorType;
+				if (!ParseProperty(sheet.storage, pair.first, pair.second, frame, errorMsg, errorType))
+				{
+					throw parse_error(errorMsg);
+				}
+			}
+			return std::make_pair(curve, frame);
+		};
+		parser["Keyframes"] = [&](SemanticValues& vs)
+		{
+			StyleKeyframes keyframes;
+			auto name = vs.token();
+			keyframes.name = {name.begin(), name.end()};
+			for (auto& p : vs)
+			{
+				auto pair = any_move<std::pair<AnimationCurve, StyleRule>>(p);
+				int frameIndex = keyframes.frames.size();
+				keyframes.frames.push_back(std::move(pair.second));
+				for(auto& k : pair.first.keys)
+				{
+					k.frameIndex = frameIndex;
+					keyframes.curve.keys.push_back(k);
+				}
+			}
+			sheet.styleKeyframes.push_back(std::move(keyframes));
+		};
+
+		//parser.enable_packrat_parsing(); // Enable packrat parsing.
+		if (parser.parse(str))
+			return sheet;
+		return {};
+	}
+
+	std::optional<InlineStyle> ParseInlineStyle(std::string_view str)
+	{
+		auto grammar = R"(
+			PropertyList	<- Property? (';' _ Property)*
+			Property		<- <IDENT> w ':' w <Value>
+			~Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
+			~IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
+			~TransformList	<- <CALL+>
+			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
+			~SizeList		<- < CNUM (',' w CNUM){3} >
+			~COLOR			<- < ('#' NUM) / CALL >
+			~CNUM			<- < NUM (IDENT / '%')? >
+			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
+			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~_				<- [ \t\r\n]*
+			~w				<- [ ]*
+		)";
+		using namespace peg;
+		using namespace std;
+		parser parser;
+		InlineStyle sheet;
+
+		parser.log = [](size_t line, size_t col, const string& msg)
+		{
+			cerr << line << ":" << col << ": " << msg << "\n";
+		};
+
+		auto ok = parser.load_grammar(grammar);
+		if (!ok)
+			return {};
+
+		parser["Property"] = [](SemanticValues& vs)
+		{
+			auto name = vs.token();
+			auto value = vs.token(1);
+			return make_pair(name, value);
+		};
+		using property_list_t = vector<pair<string_view, string_view>>;
+		parser["PropertyList"] = [&](SemanticValues& vs)
+		{
+			property_list_t pairs;
+			for (auto& p : vs)
+				pairs.push_back(any_move<pair<string_view, string_view>>(p));
+
+			for (auto& pair : pairs)
+			{
+				const char* errorMsg;
+				ParseErrorType errorType;
+				if (!ParseProperty(sheet.storage, pair.first, pair.second, sheet.rule, errorMsg, errorType))
+				{
+					throw parse_error(errorMsg);
+				}
+			}
+		};
+
+		//parser.enable_packrat_parsing(); // Enable packrat parsing.
+		if (parser.parse(str))
+			return sheet;
+		return {};
+	}
+
+	std::optional<StyleSheet> ParseCSSFile(std::string path)
+	{
+		std::ifstream ifs(path);
+		std::string content((std::istreambuf_iterator<char>(ifs)),
+			(std::istreambuf_iterator<char>()));
+		return ParseCSS(content);
 	}
 }
 
