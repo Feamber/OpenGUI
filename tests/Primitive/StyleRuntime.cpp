@@ -2,7 +2,6 @@
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Style/StyleHelpers.h"
 #include "OpenGUI/VisualElement.h"
-
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include <iostream>
 

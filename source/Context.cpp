@@ -78,8 +78,11 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 	if (!root)
 		return false;
 	PointerDownEvent event;
+	//todo: what is mouse up is missing?
+	pointerDownCount++;
 	event.pointerType = "mouse";
-	event.buttonPrimary = button;
+	event.button = button;
+	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
 	event.position = Vector2f(x, y);
 	inputImpl->ScreenToClient(window, x, y);
@@ -104,6 +107,7 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 
 bool OGUI::Context::OnMouseUp(WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
+	pointerDownCount--;
 	//std::cout << "OnMouseUp: " << x << "," << y << std::endl;
 	return false;
 }

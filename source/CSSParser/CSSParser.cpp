@@ -1073,8 +1073,8 @@ namespace OGUI
 	std::optional<InlineStyle> ParseInlineStyle(std::string_view str)
 	{
 		auto grammar = R"(
-			PropertyList	<- Property? (_ ';' _ Property)* _ ';'?
-			Property		<- <IDENT> w ':' w <ValueList> _
+			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
+			Property			<- <IDENT> w ':' w <ValueList> _
 			~ValueList			<- Value (w ',' w Value)*
 			~Value				<- CNUM / HEX / CALL / IDENT
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
@@ -1082,8 +1082,8 @@ namespace OGUI
 			~CNUM				<- NUM (IDENT / '%')?
 			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
-			~_				<- [ \t\r\n]*
-			~w				<- [ ]*
+			~_					<- [ \t\r\n]*
+			~w					<- [ ]*
 		)";
 		using namespace peg;
 		using namespace std;
@@ -1141,28 +1141,17 @@ namespace OGUI
 namespace OGUI
 {
 	template<class T>
-	std::enable_if_t<!std::is_enum_v<T>, StyleProperty>
+	std::enable_if_t<!std::is_enum_v<T>, VariantHandle>
 		AddPropertyImpl(StyleSheetStorage& sheet, StylePropertyId id, const T& value)
 	{
-		auto handle = sheet.Push<T>(value);
-		return {id, false, handle};
+		return sheet.Push<T>(value);
 	}
 
 	template<class T>
-	std::enable_if_t<std::is_enum_v<T>, StyleProperty>
+	std::enable_if_t<std::is_enum_v<T>, VariantHandle>
 		AddPropertyImpl(StyleSheetStorage& sheet, StylePropertyId id, const T& value)
 	{
-		auto handle = sheet.Push<int>((int)value);
-		return {id, false, handle};
-	}
-
-	template<class T>
-	bool ParseValue(StylePropertyId id, std::string_view str, T& value)
-	{
-		if (id == StylePropertyId::translation)
-			return FromTranslation(str, value);
-		else
-			return FromString(str, value);
+		return sheet.Push<int>((int)value);
 	}
 }
 
@@ -1242,7 +1231,18 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		return false;
 	}
 
-	if(keyword != StyleKeyword::None)
+#define INTERNALPROP(idd) \
+	if(id == StylePropertyId::idd) \
+	{ \
+		errorMsg = "this property is internal use only!"; \
+		errorType = ParseErrorType::InvalidProperty; \
+		return false; \
+	} 
+
+	//disable property like this
+	//DISABLEPROP(color);
+
+	if (keyword != StyleKeyword::None)
 	{
 		rule.properties.push_back(StyleProperty{id, true, (int)keyword});
 		return true;
@@ -1254,7 +1254,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		type value; \
 		if (ParseValue(str, value)) \
 		{ \
-			rule.properties.push_back(AddPropertyImpl(sheet, id, value)); \
+			rule.properties.push_back({id, false, AddPropertyImpl(sheet, id, value)}); \
 			return true; \
 		} \
 		else \

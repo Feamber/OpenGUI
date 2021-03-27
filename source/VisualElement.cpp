@@ -2,7 +2,7 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGui/Xml/XmlFactoryTool.h"
-#include "OpenGUI/Animation/StyleAnimation.h"
+#include "OpenGUI/Animation/AnimStyle.h"
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {

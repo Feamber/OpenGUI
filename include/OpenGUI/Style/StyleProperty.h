@@ -24,10 +24,15 @@ namespace OGUI
 
 	enum class StylePropertyId : uint32_t
 	{
-#define	STYLEPROP(name, index, ...)\
-		name = index,
+#define	STYLEPROP(name, ...)\
+		name,
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef	STYLEPROP
+
+#define	ANIMPROP(name, ...)\
+		name,
+#include "OpenGUI/Animation/AnimPropertiesDef.h"
+#undef	ANIMPROP
 		Num,
 	};
 

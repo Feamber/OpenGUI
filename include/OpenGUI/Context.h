@@ -54,5 +54,8 @@ namespace OGUI
 		std::unique_ptr<FileInterface>   fileImpl;
 		std::unique_ptr<IOThread>        ioThread;
 		bool initialized = false;
+
+	public:
+		int pointerDownCount = 0;
 	};
 }

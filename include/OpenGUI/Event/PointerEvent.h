@@ -15,7 +15,7 @@ namespace OGUI
         bool isAbsolute = true;
         bool isDoubleClick = false;
         EGestureEvent gestureType = EGestureEvent::None;
-        EMouseKey buttonPrimary;
+        EMouseKey button;
         Vector2f position = Vector2f::vector_zero();
         Vector2f deltaPosition = Vector2f::vector_zero();
         Vector2f wheelOrGestureDelta= Vector2f::vector_zero();

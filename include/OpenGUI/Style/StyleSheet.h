@@ -8,22 +8,19 @@
 #include "OpenGUI/Style/StyleRule.h"
 #include "StyleSelector.h"
 #include "yoga/Yoga.h"
+#include "OpenGUI/Animation/AnimTypes.h"
 
 namespace OGUI
 {
 	struct ITexture;
-	struct Picture
-	{
-		std::string path;
-		int loadingStatus;
-		std::shared_ptr<ITexture> texture;
-	};
+	struct AnimTimingFunction;
 	using StyleSheetStorage = VariantStorage<
 		float,
 		Color4f,
 		int,
 		YGValue,
-		Picture,
+		std::string,
+		AnimTimingFunction,
 		Vector2f
 		>;
 

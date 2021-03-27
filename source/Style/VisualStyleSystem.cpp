@@ -10,7 +10,6 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 	int originStyleSheetCount = matchingContext.styleSheetStack.size();
 	for (auto& ss : ess)
 		matchingContext.styleSheetStack.push_back(ss);
-	int originCustomPropCount = element->_style.GetCustomPropCount();
 	{
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
@@ -243,6 +242,12 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		matchHash = append_hash(matchHash, record.complexSelector->specificity);
 	}
 	VisualElement* parent = element->GetHierachyParent();
+	matchHash = append_hash(matchHash, (size_t)parent);
+	/* TODO 
+	* inherite should not apply to shared style
+	* shared style = { override mask + style }
+	* final style = parent style + shared style * override mask + animated rule + inline rule + procedure rule
+	*/
 	auto iter = styleCache.find(matchHash);
 	if (iter != styleCache.end())
 		element->SetSharedStyle(iter->second.get());
@@ -255,7 +260,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		{
 			auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
 			resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, parentStyle);
-			//resolvedStyle.ApplyCustomProperties(record.sheet, rule.customProperties);
+			//TODO: resolvedStyle.ApplyCustomProperties(record.sheet, rule.customProperties);
 		}
 		auto pair = styleCache.emplace(matchHash, new Style{std::move(resolvedStyle)});
 		//check(pair.second);
