@@ -129,9 +129,6 @@ namespace OGUI
 #pragma endregion
 
 #pragma region Transform
-		Vector2f _localPosition = Vector2f::vector_zero();
-		float _localRotation = 0.f;
-		Vector2f _localScale = Vector2f::vector_one();
 		Vector2f _worldPosition;
 		float4x4 _worldTransform;
 		void UpdateWorldTransform();

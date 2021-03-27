@@ -8,6 +8,7 @@
 #include "OpenGUI/Style/StyleSheet.h"
 namespace OGUI
 {
+
 	struct StyleSheet;
 	struct Style
 	{
@@ -23,11 +24,12 @@ namespace OGUI
 		
 		int GetCustomPropCount() { return customProps.size(); }
 		static Style Create(Style* parent, bool isShared);
-		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
-		bool ApplyGlobalKeyword(const StyleProperty& props);
+		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent);
+		bool ApplyGlobalKeyword(const StyleProperty& props, const Style* parent);
 		void ApplyCustomProperties(const StyleSheetStorage& sheet, const gsl::span<CustomStyleProperty>& props);
 		void ApplyInitialKeyword(StylePropertyId propId);
 		void ApplyUnsetKeyword(StylePropertyId propId);
+		void ApplyInheritKeyword(StylePropertyId propId, const Style* parent);
 		void InheritData(Style& parent);
 		size_t GetInheritedHash();
 #define	STYLEPROP(name, index, inherit, type, ...)\

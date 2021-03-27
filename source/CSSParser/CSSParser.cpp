@@ -2,6 +2,7 @@
 #include "peglib.h"
 #include <fstream>
 #include <regex>
+#include "OpenGUI/Core/Math.h"
 
 namespace OGUI
 {
@@ -22,13 +23,13 @@ namespace OGUI
 			SelectorPart	<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
 			PropertyList	<- Property? (';' _ Property)* _
 			Property		<- IDENT w ':' w Value
-			Value			<- KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT _
-			TransformList	<- <CALL+>
-			KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
-			SizeList		<- < CNUM (',' w CNUM){3} >
-			COLOR			<- < ('#' NUM) / CALL >
-			CNUM			<- < NUM (IDENT / '%')? >
+			Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
 			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
+			~TransformList	<- <CALL+>
+			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
+			~SizeList		<- < CNUM (',' w CNUM){3} >
+			~COLOR			<- < ('#' NUM) / CALL >
+			~CNUM			<- < NUM (IDENT / '%')? >
 			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~_				<- [ \t\r\n]*
@@ -52,18 +53,8 @@ namespace OGUI
 		{
 			return vs.token(0);
 		};
-		auto forward = [](SemanticValues& vs)
-		{
-			return vs[0];
-		};
-		
-		parser["TransformList"] = token;
-		parser["KEYWORD"] = token;
-		parser["SizeList"] = token;
-		parser["COLOR"] = token;
-		parser["CNUM"] = token;
 		parser["IDENT"] = token;
-		parser["Value"] = forward;
+		parser["Value"] = token;
 		parser["Property"] = [](SemanticValues& vs)
 		{
 			auto name = any_move<string_view>(vs[0]);
@@ -154,15 +145,15 @@ namespace OGUI
 		auto grammar = R"(
 			PropertyList	<- Property? (';' _ Property)*
 			Property		<- IDENT w ':' w Value
-			Value			<- KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT _
-			TransformList	<- <CALL+>
-			KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
-			SizeList		<- < CNUM (',' w CNUM){3} >
-			COLOR			<- < ('#' NUM) / CALL >
-			CNUM			<- < NUM (IDENT / '%')? >
+			Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
 			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
-			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~TransformList	<- <CALL+>
+			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
+			~SizeList		<- < CNUM (',' w CNUM){3} >
+			~COLOR			<- < ('#' NUM) / CALL >
+			~CNUM			<- < NUM (IDENT / '%')? >
 			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
+			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			~_				<- [ \t\r\n]*
 			~w				<- [ ]*
 		)";
@@ -184,18 +175,8 @@ namespace OGUI
 		{
 			return vs.token(0);
 		};
-		auto forward = [](SemanticValues& vs)
-		{
-			return vs[0];
-		};
-
-		parser["TransformList"] = token;
-		parser["KEYWORD"] = token;
-		parser["SizeList"] = token;
-		parser["COLOR"] = token;
-		parser["CNUM"] = token;
 		parser["IDENT"] = token;
-		parser["Value"] = forward;
+		parser["Value"] = token;
 		parser["Property"] = [](SemanticValues& vs)
 		{
 			auto name = any_move<string_view>(vs[0]);
@@ -315,6 +296,13 @@ void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV)
 
 namespace OGUI
 {
+	template<class T>
+	bool FromString(std::string_view str, T& value)
+	{
+		std::cerr << "value type [" << typeid(T).name() << "] is not supported!\n";
+		return false;
+	}
+
 	bool FromString(std::string_view str, float& value)
 	{
 		try
@@ -326,6 +314,62 @@ namespace OGUI
 		{
 			return false;
 		}
+	}
+
+	bool FromString(std::string_view str, int& value)
+	{
+		try
+		{
+			value = std::stoi(std::string{str.begin(), str.end()});
+			return true;
+		}
+		catch (std::exception)
+		{
+			return false;
+		}
+	}
+
+	bool FromString(std::string_view str, YGValue& value)
+	{
+		if (str == "auto")
+		{
+			value = YGValueAuto;
+			return true;
+		}
+		if (str == "none")
+		{
+			value = YGValueUndefined;
+			return true;
+		}
+		std::regex zero("0(\\.0+)?");
+		if (std::regex_match(str.begin(), str.end(), zero))
+		{
+			value = YGValueZero;
+			return true;
+		}
+		float comp;
+		std::string numstr;
+		YGUnit unit;
+		if (ends_with(str, "%"))
+		{
+			numstr = str.substr(0, str.length() - 1);
+			unit = YGUnitPercent;
+		}
+		else if (ends_with(str, "px"))
+		{
+			numstr = str.substr(0, str.length() - 2);
+			unit = YGUnitPoint;
+		}
+		else
+			return false;
+
+		if (FromString(numstr, comp))
+		{
+			value = YGValue{comp, unit};
+			return true;
+		}
+		else
+			return false;
 	}
 
 	bool FromColorName(std::string_view str, Color4f& value)
@@ -497,6 +541,173 @@ namespace OGUI
 		}
 		return false;
 	}
+
+	float FromAngle(std::string_view str)
+	{
+		using namespace std;
+		float value;
+		int angleType;
+		string_view anglestr;
+		if (ends_with(str, "deg"))
+		{
+			anglestr = str.substr(0, str.length() - 3);
+			angleType = 0;
+		}
+		else if (ends_with(str, "rad"))
+		{
+			anglestr = str.substr(0, str.length() - 3);
+			angleType = 1;
+		}
+		else if (ends_with(str, "grad"))
+		{
+			anglestr = str.substr(0, str.length() - 4);
+			angleType = 2;
+		}
+		else if (ends_with(str, "turn"))
+		{
+			anglestr = str.substr(0, str.length() - 4);
+			angleType = 3;
+		}
+		else if (ends_with(str, "%"))
+		{
+			throw peg::parse_error("hue can not be percent value.");
+		}
+		else
+		{
+			anglestr = str.substr(0, str.length() - 3);
+			angleType = 0;
+		}
+		if (!FromString(anglestr, value))
+			throw peg::parse_error("invalid number.");
+		if (angleType == 1)
+			value = value / math::PI;// rad2deg(value);
+		else if (angleType == 2)
+			value = value * 0.9;// grad2deg(value);
+		else if (angleType == 3)
+			value = value * 360;// turn2deg(value);
+		return value;
+	}
+
+	float FromTranslationComponent(std::string_view str)
+	{
+		if (ends_with(str, "%"))
+			throw peg::parse_error("percentage in translation is not supported.");
+		if (ends_with(str, "px"))
+			str = str.substr(0, str.length() - 2);
+		std::regex zero("0(\\.0+)?");
+		if (std::regex_match(str.begin(), str.end(), zero))
+			return 0.f;
+		float value;
+		if (!FromString(str, value))
+			throw peg::parse_error("invalid number.");
+		return value;
+	}
+
+	bool FromTranslation(std::string_view str, Vector2f& t)
+	{
+		std::vector<std::string_view> tokens;
+		std::split(str, tokens, ",");
+		try
+		{
+			t.X = FromTranslationComponent(tokens[0]);
+			t.Y = FromTranslationComponent(tokens[1]);
+			return true;
+		}
+		catch (peg::parse_error error)
+		{
+			std::cerr << error.what() << "\n";
+			return false;
+		}
+	}
+
+	bool FromString(std::string_view str, Vector2f& t)
+	{
+		std::vector<std::string_view> tokens;
+		std::split(str, tokens, ",");
+		return FromString(tokens[0], t.X) && FromString(tokens[1], t.Y);
+	}
+
+	bool FromString(std::string_view str, Vector2f& t, float& r, Vector2f& s)
+	{
+		auto grammar = R"(
+			TransformList	<- Transform (w Transform)*
+			Transform		<- Translate / TranslateX / TranslateY / Scale / ScaleX / ScaleY / Rotate
+			Translate		<- 'translate' _ '(' _ LENGTH _ ',' _ LENGTH _ ')'
+			TranslateX		<- 'translateX' _ '(' _ LENGTH _ ')'
+			TranslateY		<- 'translateX' _ '(' _ LENGTH _ ')'
+			Scale			<- 'translate' _ '(' _ NUM _ ',' _ NUM _ ')'
+			ScaleX			<- 'translate' _ '(' _ NUM _ ')'
+			ScaleY			<- 'translate' _ '(' _ NUM _ ')'
+			Rotate			<- 'rotate' _ '(' _ ANGLE _ ')'
+			NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			LENGTH			<- < ( NUM ('px' / '%') ) > / '0'
+			ANGLE			<- < NUM ('deg' / 'rad' / 'grad' / 'turn')? >
+			~_				<- [ ]*
+			~w				<- [ ]+
+		)";
+
+
+		using namespace peg;
+		using namespace std;
+
+		parser parser;
+
+		parser.log = [](size_t line, size_t col, const string& msg)
+		{
+			cerr << line << ":" << col << ": " << msg << "\n";
+		};
+
+		auto ok = parser.load_grammar(grammar);
+		if (!ok)
+			return false;
+
+		parser["NUM"] = [](SemanticValues& vs)
+		{
+			float value = 0;
+			if(!FromString(vs.token(), value))
+				throw peg::parse_error("invalid number.");
+			return value;
+		};
+
+		parser["LENGTH"] = [](SemanticValues& vs)
+		{
+			return FromTranslationComponent(vs.token());
+		};
+
+		parser["ANGLE"] = [](SemanticValues& vs)
+		{
+			return FromAngle(vs.token()) / 180 * math::PI;
+		};
+		using tt = std::tuple<Vector2f, float, Vector2f>;
+#define ARG(n) any_move<float>(vs[n])
+		parser["Rotate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), ARG(0), Vector2f::vector_one()); };
+		parser["ScaleY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0, Vector2f{ARG(0), 1}); };
+		parser["ScaleX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0, Vector2f{1, ARG(0)}); };
+		parser["Scale"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0, Vector2f{ARG(0), ARG(0)}); };
+		parser["TranslateY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), 0}, 0, Vector2f::vector_one()); };
+		parser["TranslateX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{0, ARG(0)}, 0, Vector2f::vector_one()); };
+		parser["Translate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), ARG(1)}, 0, Vector2f::vector_one()); };
+#undef ARG
+		parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
+		parser["TransformList"] = [](SemanticValues& vs)
+		{ 
+			tt finalM = any_move<tt>(vs[0]);
+			for (int i = 1; i < vs.size(); ++i)
+			{
+				tt M = any_move<tt>(vs[i]);
+				std::get<0>(finalM) += std::get<0>(M);
+				std::get<1>(finalM) += std::get<1>(M);
+				std::get<2>(finalM) *= std::get<2>(M);
+			}
+			return finalM;
+		};
+		tt value;
+		if (!parser.parse(str, value))
+			return false;
+		std::tie(t, r, s) = value;
+		return true;
+	}
+
 	bool FromString(std::string_view str, Color4f& value)
 	{
 		
@@ -525,17 +736,20 @@ namespace OGUI
 
 		auto ok = parser.load_grammar(grammar);
 		if (!ok)
-			return {};
+			return false;
+
 		auto token = [](SemanticValues& vs)
 		{
 			return vs.token(0);
 		};
+
 		parser["CNUM"] = token;
 
 		parser["FUNC"] = [](SemanticValues& vs)
 		{
 			return vs.choice() / 2;
 		};
+
 		auto CALL = [](SemanticValues& vs)
 		{
 			size_t type = any_move<size_t>(vs[0]);
@@ -567,49 +781,7 @@ namespace OGUI
 				throw parse_error("too many parameter for color function.");
 			auto first = any_move<string_view>(vs[1]);
 			if (type == 1)
-			{
-				int angleType;
-				string_view anglestr;
-				if (ends_with(first, "deg"))
-				{
-					anglestr = first.substr(0, first.length() - 3);
-					angleType = 0;
-				}
-				else if (ends_with(first, "rad"))
-				{
-					anglestr = first.substr(0, first.length() - 3);
-					angleType = 1;
-				}
-				else if (ends_with(first, "grad"))
-				{
-					anglestr = first.substr(0, first.length() - 4);
-					angleType = 2;
-				}
-				else if (ends_with(first, "turn"))
-				{
-					anglestr = first.substr(0, first.length() - 4);
-					angleType = 3;
-				}
-				else if (ends_with(first, "%"))
-				{
-					throw parse_error("hue can not be percent value.");
-				}
-				else
-				{
-					anglestr = first.substr(0, first.length() - 3);
-					angleType = 0;
-				}
-				float value;
-				if(!FromString(anglestr, value))
-					throw parse_error("invalid number.");
-				if (angleType == 1)
-					value = value / math::PI;// rad2deg(value);
-				else if (angleType == 2)
-					value = value * 0.9;// grad2deg(value);
-				else if (angleType == 3)
-					value = value * 360;// turn2deg(value);
-				color.X = value;
-			}
+				color.X = FromAngle(first);
 			else
 				color.X = ParseCNUM(first, false);
 			auto second = any_move<string_view>(vs[2]);
@@ -692,60 +864,6 @@ namespace OGUI
 		parser["Color"] = forward;
 
 		return parser.parse(str, value);
-	}
-	bool FromString(std::string_view str, int& value)
-	{
-		try
-		{
-			value = std::stoi(std::string{str.begin(), str.end()});
-			return true;
-		}
-		catch (std::exception)
-		{
-			return false;
-		}
-	}
-	bool FromString(std::string_view str, YGValue& value)
-	{
-		if (str == "auto")
-		{
-			value = YGValueAuto;
-			return true;
-		}
-		if (str == "none")
-		{
-			value = YGValueUndefined;
-			return true;
-		}
-		std::regex zero("0(\\.0+)?");
-		if (std::regex_match(str.begin(), str.end(), zero))
-		{
-			value = YGValueZero;
-			return true;
-		}
-		float comp;
-		std::string numstr;
-		YGUnit unit;
-		if (ends_with(str, "%"))
-		{
-			numstr = str.substr(0, str.length() - 1);
-			unit = YGUnitPercent;
-		}
-		else if (ends_with(str, "px"))
-		{
-			numstr = str.substr(0, str.length() - 2);
-			unit = YGUnitPoint;
-		}
-		else
-			return false;
-
-		if (FromString(numstr, comp))
-		{
-			value = YGValue{comp, unit};
-			return true;
-		}
-		else
-			return false;
 	}
 
 	bool FromString(std::string_view str, YGValue& left, YGValue& top, YGValue& right, YGValue& bottom)
@@ -994,14 +1112,41 @@ namespace OGUI
 		auto handle = sheet.Push<int>((int)value);
 		return {id, false, handle};
 	}
+
+	template<class T>
+	bool ParseValue(StylePropertyId id, std::string_view str, T& value)
+	{
+		if (id == StylePropertyId::translation)
+			return FromTranslation(str, value);
+		else
+			return FromString(str, value);
+	}
 }
+
 
 bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType)
 {
+	StyleKeyword keyword = StyleKeyword::None;
+	//keywords
+	if (str == "inherit")
+		keyword = StyleKeyword::Inherit;
+	else if (str == "unset")
+		keyword = StyleKeyword::Unset;
+	else if (str == "initial")
+		keyword = StyleKeyword::Initial;
+
 	//shorthands
 #define SHORTHAND(mm, mm2, smm) \
 	if (name == smm) \
 	{ \
+		if(keyword != StyleKeyword::None) \
+		{ \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, true, (int)keyword}); \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, true, (int)keyword}); \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, true, (int)keyword}); \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, true, (int)keyword}); \
+			return true; \
+		} \
 		YGValue left, top, right, bottom; \
 		if(!FromString(str, left, top, right, bottom)) \
 		{ \
@@ -1009,10 +1154,10 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 			errorType = ParseErrorType::InvalidValue; \
 			return false; \
 		} \
-		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Left##mm2, false, sheet.Push(left)}); \
-		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Top##mm2, false, sheet.Push(top)}); \
-		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Right##mm2, false, sheet.Push(right)}); \
-		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Bottom##mm2, false, sheet.Push(bottom)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, false, sheet.Push(left)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, false, sheet.Push(top)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, false, sheet.Push(right)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, false, sheet.Push(bottom)}); \
 		return true; \
 	}
 	SHORTHAND(margin, , "margin")
@@ -1025,7 +1170,27 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	errorType = ParseErrorType::InvalidProperty;
 	return false;
 	}
+#undef SHORTHAND
 
+	if (name == "transform")
+	{
+		if (keyword != StyleKeyword::None)
+		{
+			rule.properties.push_back(StyleProperty{StylePropertyId::translation, true, (int)keyword});
+			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, true, (int)keyword});
+			rule.properties.push_back(StyleProperty{StylePropertyId::scale , true, (int)keyword});
+		}
+		else
+		{
+			Vector2f t, s; float r;
+			if(!FromString(str, t, r, s))
+				return false;
+			rule.properties.push_back(StyleProperty{StylePropertyId::translation, false, sheet.Push(t)});
+			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, false, sheet.Push(r)});
+			rule.properties.push_back(StyleProperty{StylePropertyId::scale , false, sheet.Push(s)});
+		}
+		return true;
+	}
 	auto id = PropertyNameToId(name);
 	if (id == StylePropertyId::Num)
 	{
@@ -1034,11 +1199,17 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		return false;
 	}
 
-#define STYLEPROP(idd, index, inherit, type, ...) \
+	if(keyword != StyleKeyword::None)
+	{
+		rule.properties.push_back(StyleProperty{id, true, (int)keyword});
+		return true;
+	}
+
+#define PARSEPROP(idd, type, ParseValue) \
 	if(id == StylePropertyId::idd) \
 	{ \
 		type value; \
-		if (FromString(str, value)) \
+		if (ParseValue(str, value)) \
 		{ \
 			rule.properties.push_back(AddPropertyImpl(sheet, id, value)); \
 			return true; \
@@ -1050,6 +1221,9 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 			return false; \
 		} \
 	}
+
+	PARSEPROP(translation, Vector2f, FromTranslation);
+#define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef STYLEPROP
 	return true;

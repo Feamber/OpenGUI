@@ -18,5 +18,6 @@
 :focus {
     border-top-right-radius:0px;
     border-bottom-right-radius:0px;
+    transform: rotate(90deg);
     color:rgb(73, 214, 125)
 }

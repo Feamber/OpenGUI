@@ -23,7 +23,8 @@ namespace OGUI
 		Color4f,
 		int,
 		YGValue,
-		Picture
+		Picture,
+		Vector2f
 		>;
 
 	struct StyleSheet

@@ -55,7 +55,7 @@ namespace __matrix
 		return DirectX::XMMatrixMultiply(a, b);
 	}
 	
-	FORCEINLINE MatrixRegister make_transform
+	FORCEINLINE MatrixRegister make_transform_trs
 	(
 		const Vector3f translation,
 		const Vector3f scale,
@@ -71,6 +71,15 @@ namespace __matrix
 			__vector::load_aligned(quaternion.data_view()),
 			__vector::load_float3_w0(translation.data_view())
 		);
+	}
+
+	FORCEINLINE MatrixRegister make_transform_t
+	(
+		const Vector3f translation
+	)
+	{
+		using namespace DirectX;
+		return XMMatrixTranslationFromVector(__vector::load_float3_w0(translation.data_view()));
 	}
 
 	FORCEINLINE MatrixRegister look_at

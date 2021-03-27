@@ -43,4 +43,7 @@ STYLEPROP(	borderTopLeftRadius,		37,				NonInherited,			YGValue,			"border-top-l
 STYLEPROP(	borderTopRightRadius,		38,				NonInherited,			YGValue,			"border-top-right-radius",		YGValueZero					)
 STYLEPROP(	borderBottomRightRadius,	39,				NonInherited,			YGValue,			"border-bottom-right-radius",	YGValueZero					)
 STYLEPROP(	borderBottomLeftRadius,		40,				NonInherited,			YGValue,			"border-bottom-left-radius",	YGValueZero					)
+STYLEPROP(	translation,				41,				NonInherited,			Vector2f,			"translation",					Vector2f::vector_zero()		)
+STYLEPROP(	rotation,					42,				NonInherited,			float,				"rotation",						0							)
+STYLEPROP(	scale,						43,				NonInherited,			Vector2f,			"scale",						Vector2f::vector_one()		)
 //End draw props

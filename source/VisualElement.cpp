@@ -29,7 +29,9 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ct
 	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
-	PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
+	BoxParams params2{rect, uv, _style.color, nullptr, transform};
+	PrimitiveDraw::DrawBox(Ctx.prims, params2);
+	//PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
@@ -136,9 +138,9 @@ void OGUI::VisualElement::ApplySharedStyle(float time)
 	else if (_sharedStyle)
 		_style = *_sharedStyle;
 	if (_inlineStyle)
-		_style.ApplyProperties(_inlineStyle->storage, _inlineStyle->rule.properties);
+		_style.ApplyProperties(_inlineStyle->storage, _inlineStyle->rule.properties, nullptr);
 	if (_procedureStyle)
-		_style.ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties);
+		_style.ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties, nullptr);
 	//TODO: check layout dirty, check transform dirty
 	_inheritedStylesHash = _style.GetInheritedHash();
 	SyncYogaStyle();
@@ -151,26 +153,15 @@ void OGUI::VisualElement::CalculateLayout()
 	YGNodeSetHasNewLayout(_ygnode, false);
 }
 
-OGUI::float4x4 make_transform(OGUI::Vector2f pos2d, float rot2d, OGUI::Vector2f scale2d)
-{
-	using namespace OGUI;
-	Vector3f pos{pos2d.X, pos2d.Y, 0};
-	//TODO: rotate pivot is left bottom now
-	Quaternion rot = math::quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
-	Vector3f scale{scale2d.X, scale2d.Y, 1};
-	return math::make_transform(pos, scale, rot);
-}
-
 void OGUI::VisualElement::UpdateWorldTransform()
 {
 	using namespace math;
 	auto layout = GetLayout();
 	auto parent = GetHierachyParent();
-	auto localMat = ::make_transform(layout.min + _localPosition, _localRotation, _localScale);
+	auto layoutMat = make_transform_t(Vector3f{layout.min.X, layout.min.Y, 0});
+	_worldTransform = math::make_transform_2d(layout.min + _style.translation, _style.rotation, _style.scale);
 	if (parent)
-		_worldTransform = math::multiply(parent->_worldTransform, localMat);
-	else
-		_worldTransform = localMat;
+		_worldTransform = multiply(parent->_worldTransform, _worldTransform);
 }
 
 OGUI::Rect OGUI::VisualElement::GetLayout()
