@@ -55,7 +55,8 @@ namespace OGUI
 		float duration;
 		float time = 0;
 		void reset() { time = 0; }
-		void forward(float deltaTime) { time += deltaTime; }
+		void forward(float deltaTime) { time = std::clamp(time + deltaTime, 0.f, duration); }
+		void reverse() { time = duration - time; }
 		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
 	};
 
@@ -144,7 +145,6 @@ namespace OGUI
 		uint32_t _triggerPseudoMask = 0;
 		uint32_t _dependencyPseudoMask = 0;
 		uint32_t _pseudoMask = 0;
-		int _inheritedStylesHash = 0;
 		std::unique_ptr<InlineStyle> _inlineStyle;
 		std::unique_ptr<InlineStyle> _procedureStyle;
 

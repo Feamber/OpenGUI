@@ -120,6 +120,12 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 {
 	if (style == _sharedStyle)
 		return;
+	if (style == _prevSharedStyle)
+	{
+		_interpolation.reverse();
+		std::swap(_sharedStyle, _prevSharedStyle);
+		return;
+	}
 	_prevSharedStyle = _sharedStyle;
 	_sharedStyle = style;
 	_interpolation.reset();
@@ -132,8 +138,8 @@ void OGUI::VisualElement::ApplySharedStyle(float time)
 		_interpolation.forward(time);
 		float alpha = _interpolation.alpha();
 		_style = Lerp(*_prevSharedStyle, *_sharedStyle, alpha);
-		if (alpha == 1.f)
-			_prevSharedStyle = nullptr;
+		//if (alpha == 1.f)
+		//	_prevSharedStyle = nullptr;
 	}
 	else if (_sharedStyle)
 		_style = *_sharedStyle;
@@ -142,7 +148,6 @@ void OGUI::VisualElement::ApplySharedStyle(float time)
 	if (_procedureStyle)
 		_style.ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties, nullptr);
 	//TODO: check layout dirty, check transform dirty
-	_inheritedStylesHash = _style.GetInheritedHash();
 	SyncYogaStyle();
 }
 
