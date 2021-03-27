@@ -907,15 +907,13 @@ namespace OGUI
 			Selector			<- SelectorPart+
 			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
 			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
-			Property			<- <IDENT> w ':' w <Value> _
-			~Value				<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> 
-			~IDENT				<- < [a-zA-Z] [a-zA-Z0-9-]* >
-			~TransformList		<- <CALL+>
-			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
-			~SizeList			<- < CNUM (',' w CNUM){3} >
-			~COLOR				<- < ('#' NUM) / CALL >
-			~CNUM				<- < NUM (IDENT / '%')? >
+			Property			<- <IDENT> w ':' w <ValueList> _
 			~KeyframeSelector	<- ( NUM  '%') / 'from' / 'to'
+			~ValueList			<- Value (w ',' w Value)*
+			~Value				<- CNUM / HEX / CALL / IDENT
+			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
+			~HEX				<- ('#' NUM) 
+			~CNUM				<- NUM (IDENT / '%')?
 			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~_					<- [ \t\r\n]*
@@ -994,7 +992,7 @@ namespace OGUI
 		parser["StyleRule"] = [&](SemanticValues& vs)
 		{
 			StyleRule rule;
-			auto& list = any_move<property_list_t>(vs[1]);
+			auto list = any_move<property_list_t>(vs[1]);
 			for (auto& pair : list)
 			{
 				const char* errorMsg;
@@ -1006,7 +1004,7 @@ namespace OGUI
 			}
 			int ruleIndex = sheet.styleRules.size();
 			sheet.styleRules.push_back(std::move(rule));
-			auto& selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
+			auto selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
 			for (auto& sel : selectorList)
 			{
 				sel.ruleIndex = ruleIndex;
@@ -1035,7 +1033,7 @@ namespace OGUI
 				curve.keys.push_back(k);
 			}
 			StyleRule frame;
-			auto& list = any_move<property_list_t>(vs[0]);
+			auto list = any_move<property_list_t>(vs[0]);
 			for (auto& pair : list)
 			{
 				const char* errorMsg;
@@ -1076,16 +1074,14 @@ namespace OGUI
 	{
 		auto grammar = R"(
 			PropertyList	<- Property? (_ ';' _ Property)* _ ';'?
-			Property		<- <IDENT> w ':' w <Value> _
-			~Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT>
-			~IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
-			~TransformList	<- <CALL+>
-			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
-			~SizeList		<- < CNUM (',' w CNUM){3} >
-			~COLOR			<- < ('#' NUM) / CALL >
-			~CNUM			<- < NUM (IDENT / '%')? >
-			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
-			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			Property		<- <IDENT> w ':' w <ValueList> _
+			~ValueList			<- Value (w ',' w Value)*
+			~Value				<- CNUM / HEX / CALL / IDENT
+			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
+			~HEX				<- ('#' NUM) 
+			~CNUM				<- NUM (IDENT / '%')?
+			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~_				<- [ \t\r\n]*
 			~w				<- [ ]*
 		)";
