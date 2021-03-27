@@ -243,8 +243,6 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		matchHash = append_hash(matchHash, record.complexSelector->specificity);
 	}
 	VisualElement* parent = element->GetHierachyParent();
-	if (parent)
-		matchHash = append_hash(matchHash, parent->_inheritedStylesHash);
 	auto iter = styleCache.find(matchHash);
 	if (iter != styleCache.end())
 		element->SetSharedStyle(iter->second.get());
