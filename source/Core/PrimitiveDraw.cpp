@@ -31,7 +31,7 @@ namespace OGUI
             return;
 
         const uint32_t vcount = list.vertices.size();
-        const uint32_t icount = list.indices.size();
+        //const uint32_t icount = list.indices.size();
         
         const Vector2f RU = params.rect.max;
         const Vector2f RB = Vector2f(params.rect.max.X, params.rect.min.Y);
@@ -70,7 +70,7 @@ namespace OGUI
     void PrimitiveDraw::DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount)
 	{
 		const uint32_t vcount = list.vertices.size();
-		const uint32_t icount = list.indices.size();
+		//const uint32_t icount = list.indices.size();
 
         Vector2f uvCenter = (params.uv.min + params.uv.max) / 2;
         Vector2f uvSizeHalf = (params.uv.max - params.uv.min) / 2;
@@ -97,7 +97,7 @@ namespace OGUI
     void PrimitiveDraw::DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount /* = 10 */)
 	{
 		const uint32_t vcount = list.vertices.size();
-		const uint32_t icount = list.indices.size();
+		//const uint32_t icount = list.indices.size();
 
 		Vector2f uvCenter = (params.uv.min + params.uv.max) / 2;
 		Vector2f uvSizeHalf = (params.uv.max - params.uv.min) / 2;
@@ -115,7 +115,8 @@ namespace OGUI
 			list.vertices.emplace_back(Vertex{ params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color });
 
 			// add index 
-            if (i == 0) continue;
+            if (i == 0) 
+                continue;
 			list.indices.emplace_back(vcount);
 			list.indices.emplace_back(vcount + i);
 			list.indices.emplace_back(vcount + i + 1);
@@ -176,7 +177,6 @@ namespace OGUI
         FanParams fans[4];
         int fanCount = 0;
         BoxParams boxes[5];
-        //TODO: transform doesnt affect radius
         float radius[4];
         std::memcpy(radius, params.radius, sizeof(radius));
         auto size = prect.max - prect.min;
@@ -267,8 +267,8 @@ namespace OGUI
     void PrimitiveDraw::DrawRoundBox(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount /* = 10 */)
 	{
         float radius = params.radius[0];
-		const uint32_t vcount = list.vertices.size();
-		const uint32_t icount = list.indices.size();
+		//const uint32_t vcount = list.vertices.size();
+		//const uint32_t icount = list.indices.size();
 
         // calculate info 
         Vector2f uvSize = params.uv.max - params.uv.min;

@@ -357,8 +357,8 @@ struct WGPURenderer : RenderInterface
 extern void InstallInput();
 window::Handle hWnd;
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
-	if (hWnd = window::create()) {
-		if ((device = webgpu::create(hWnd))) {
+	if (hWnd = window::create();hWnd) {
+		if (device = webgpu::create(hWnd);device) {
 			queue = wgpuDeviceGetDefaultQueue(device);
 			swapchain = webgpu::createSwapChain(device);
 			createPipelineAndBuffers();

@@ -13,8 +13,9 @@ namespace OGUI
 	class IOThread;
 
 	using WindowHandle = int;
-	struct Context
+	class Context
 	{
+	public:
 		//Initialize
 		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*);
 
