@@ -6,7 +6,7 @@
 
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 {
-	const auto& ess = element->GetStyleSheets();
+	const std::vector<StyleSheet*>& ess = element->GetStyleSheets();
 	int originStyleSheetCount = matchingContext.styleSheetStack.size();
 	for (auto& ss : ess)
 		matchingContext.styleSheetStack.push_back(ss);

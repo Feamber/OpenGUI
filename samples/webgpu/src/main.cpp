@@ -275,8 +275,13 @@ void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
  * Draws using the above pipeline and buffers.
  */
 static bool redraw() {
+
+	static std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
 	auto& ctx = OGUI::Context::Get();
-	ctx.Update(0, 0.f);
+	std::chrono::time_point now = std::chrono::high_resolution_clock::now();
+	float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
+	prev = now;
+	ctx.Update(0, deltaTime);
 	ctx.Render(0);
 	/*PrimitiveDraw::BoxParams box = {};
 	box.uv = {Vector2f(0.f, 0.f), Vector2f(1.f, 1.f)};

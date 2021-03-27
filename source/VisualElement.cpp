@@ -2,6 +2,7 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGui/Xml/XmlFactoryTool.h"
+#include "OpenGUI/Animation/StyleAnimation.h"
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {
@@ -117,19 +118,35 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 {
 	if (style == _sharedStyle)
 		return;
+	_prevSharedStyle = _sharedStyle;
 	_sharedStyle = style;
-	_style = *style;
+	_interpolation.reset();
+}
+
+void OGUI::VisualElement::ApplySharedStyle(float time)
+{
+	if (_prevSharedStyle && _sharedStyle)
+	{
+		_interpolation.forward(time);
+		float alpha = _interpolation.alpha();
+		_style = Lerp(*_prevSharedStyle, *_sharedStyle, alpha);
+		if (alpha == 1.f)
+			_prevSharedStyle = nullptr;
+	}
+	else if (_sharedStyle)
+		_style = *_sharedStyle;
 	if (_inlineStyle)
 		_style.ApplyProperties(_inlineStyle->storage, _inlineStyle->rule.properties);
-	if(_procedureStyle)
-		style->ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties);
-
+	if (_procedureStyle)
+		_style.ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties);
+	//TODO: check layout dirty, check transform dirty
 	_inheritedStylesHash = _style.GetInheritedHash();
 	SyncYogaStyle();
 }
 
 void OGUI::VisualElement::CalculateLayout()
 {
+	//TODO: mark transform dirty
 	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
 	YGNodeSetHasNewLayout(_ygnode, false);
 }

@@ -9,12 +9,14 @@
 .Child {
     width:200px;
     height:100px;
-    margin-right:10px;
+    margin:10px;
     border-top-right-radius:100px;
     border-bottom-right-radius:50px;
     color:rgb(41, 133, 182)
 }
 
 :focus {
-    color:rgb(184, 57, 57)
+    border-top-right-radius:0px;
+    border-bottom-right-radius:0px;
+    color:rgb(73, 214, 125)
 }

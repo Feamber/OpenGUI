@@ -50,6 +50,15 @@ namespace OGUI
 
 	struct Matrix4x4f{};
 
+	struct Interpolation
+	{
+		float duration;
+		float time = 0;
+		void reset() { time = 0; }
+		void forward(float deltaTime) { time += deltaTime; }
+		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
+	};
+
 	class VisualElement : public std::enable_shared_from_this<VisualElement>
 	{
 	public:
@@ -143,7 +152,9 @@ namespace OGUI
 		std::unique_ptr<InlineStyle> _procedureStyle;
 
 		Style _style;
+		Style* _prevSharedStyle = nullptr;
 		Style* _sharedStyle = nullptr;
+		Interpolation _interpolation = {0.5};
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
@@ -151,6 +162,7 @@ namespace OGUI
 		void SetPseudoMask(uint32_t mask);
 		void CalculateLayout();
 		void SetSharedStyle(Style* style);
+		void ApplySharedStyle(float deltaTime);
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
 #pragma endregion

@@ -22,13 +22,15 @@ namespace OGUI
 			SelectorPart	<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
 			PropertyList	<- Property? (';' _ Property)* _
 			Property		<- IDENT w ':' w Value
-			Value			<- SizeList / SIZE / COLOR / IDENT / NUM _
-			SizeList		<- <SIZE (',' w SIZE){3}> _
-			SIZE			<- (<NUM ('px' / '%')>) / <'0'>
-			NUM				<- < ([0-9]*"."[0-9]+) / ([0-9]+) >
-			COLOR			<- (< IDENT w '(' w CNUM ( w ',' w CNUM)* w ')' >) / (<'#' NUM>)
-			CNUM			<- NUM (IDENT / '%')?
+			Value			<- KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT _
+			TransformList	<- <CALL+>
+			KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
+			SizeList		<- < CNUM (',' w CNUM){3} >
+			COLOR			<- < ('#' NUM) / CALL >
+			CNUM			<- < NUM (IDENT / '%')? >
 			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
+			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~_				<- [ \t\r\n]*
 			~w				<- [ ]*
 		)";
@@ -55,11 +57,12 @@ namespace OGUI
 			return vs[0];
 		};
 		
-		parser["SIZE"] = token;
-		parser["COLOR"] = token;
-		parser["NUM"] = token;
-		parser["IDENT"] = token;
+		parser["TransformList"] = token;
+		parser["KEYWORD"] = token;
 		parser["SizeList"] = token;
+		parser["COLOR"] = token;
+		parser["CNUM"] = token;
+		parser["IDENT"] = token;
 		parser["Value"] = forward;
 		parser["Property"] = [](SemanticValues& vs)
 		{
@@ -151,13 +154,15 @@ namespace OGUI
 		auto grammar = R"(
 			PropertyList	<- Property? (';' _ Property)*
 			Property		<- IDENT w ':' w Value
-			Value			<- SizeList / SIZE / COLOR / IDENT / NUM _
-			SizeList		<- <SIZE (',' w SIZE){3}> _
-			SIZE			<- (<NUM ('px' / '%')>) / <'0'>
-			NUM				<- < ([0-9]*"."[0-9]+) / ([0-9]+) >
-			COLOR			<- (IDENT '(' < CNUM (',' CNUM)* > ')') / (<'#' NUM>)
-			CNUM			<- NUM (IDENT / '%')
+			Value			<- KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT _
+			TransformList	<- <CALL+>
+			KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
+			SizeList		<- < CNUM (',' w CNUM){3} >
+			COLOR			<- < ('#' NUM) / CALL >
+			CNUM			<- < NUM (IDENT / '%')? >
 			IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
+			~NUM			<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~CALL			<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~_				<- [ \t\r\n]*
 			~w				<- [ ]*
 		)";
@@ -184,11 +189,12 @@ namespace OGUI
 			return vs[0];
 		};
 
-		parser["SIZE"] = token;
-		parser["COLOR"] = token;
-		parser["NUM"] = token;
-		parser["IDENT"] = token;
+		parser["TransformList"] = token;
+		parser["KEYWORD"] = token;
 		parser["SizeList"] = token;
+		parser["COLOR"] = token;
+		parser["CNUM"] = token;
+		parser["IDENT"] = token;
 		parser["Value"] = forward;
 		parser["Property"] = [](SemanticValues& vs)
 		{
@@ -745,7 +751,7 @@ namespace OGUI
 	bool FromString(std::string_view str, YGValue& left, YGValue& top, YGValue& right, YGValue& bottom)
 	{
 		std::vector<std::string_view> tokens;
-		std::split(std::string{str.begin(), str.end()}, tokens, ",");
+		std::split(str, tokens, ",");
 		if (tokens.size() == 1)
 		{
 			if (!FromString(tokens[0], left))
@@ -992,14 +998,6 @@ namespace OGUI
 
 bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType)
 {
-	auto id = PropertyNameToId(name);
-	if (id == StylePropertyId::Num)
-	{
-		errorMsg = "custom style property is not support yet!";
-		errorType = ParseErrorType::InvalidProperty;
-		return false;
-	}
-
 	//shorthands
 #define SHORTHAND(mm, mm2, smm) \
 	if (name == smm) \
@@ -1011,10 +1009,11 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 			errorType = ParseErrorType::InvalidValue; \
 			return false; \
 		} \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, false, sheet.Push(left)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, false, sheet.Push(top)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, false, sheet.Push(right)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, false, sheet.Push(bottom)}); \
+		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Left##mm2, false, sheet.Push(left)}); \
+		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Top##mm2, false, sheet.Push(top)}); \
+		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Right##mm2, false, sheet.Push(right)}); \
+		rule.properties.push_back(StyleProperty{(int)StylePropertyId::mm##Bottom##mm2, false, sheet.Push(bottom)}); \
+		return true; \
 	}
 	SHORTHAND(margin, , "margin")
 	else SHORTHAND(border, Width, "border-width")
@@ -1025,6 +1024,14 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	errorMsg = "border-radius is unimplemented!";
 	errorType = ParseErrorType::InvalidProperty;
 	return false;
+	}
+
+	auto id = PropertyNameToId(name);
+	if (id == StylePropertyId::Num)
+	{
+		errorMsg = "custom style property is not support yet!";
+		errorType = ParseErrorType::InvalidProperty;
+		return false;
 	}
 
 #define STYLEPROP(idd, index, inherit, type, ...) \

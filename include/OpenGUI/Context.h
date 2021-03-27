@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "OpenGUI/Style/VisualStyleSystem.h"
+#include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Event/PointerEvent.h"
 
@@ -21,6 +22,7 @@ namespace OGUI
 
 		//Systems
 		VisualStyleSystem styleSystem;
+		VisualAnimationSystem animSystem;
 
 		//Global States
 		float _deltaTime;
