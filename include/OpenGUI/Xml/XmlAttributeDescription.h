@@ -1,11 +1,8 @@
 #pragma once
 #include <string>
 #include <string_view>
-#include <xercesc/dom/DOMElement.hpp>
 #include "OpenGUI/Xml/XmlTypeRestriction.h"
-#include "nameof/nameof.hpp"
 
-using namespace XERCES_CPP_NAMESPACE;
 namespace OGUI
 {
 	/*
@@ -20,17 +17,12 @@ namespace OGUI
 	}
 	*/
 
+	struct XmlElement;
+
 	enum class XmlAttributeUse
 	{
 		Optional,	// 可选
 		Required,	// 必须使用
-	};
-
-	class XmlGenericAttributeNames
-	{
-	public:
-		inline static const std::string name = "name";
-		inline static const std::string path = "path";
 	};
 
 	class XmlAttributeDescription
@@ -53,7 +45,7 @@ namespace OGUI
 			use(use)
 		{}
 
-		bool GetValueString(std::string& out, const DOMElement& element);
+		bool GetValueString(std::string& out, const XmlElement& element);
 	};
 
 	template<class T>
@@ -65,7 +57,7 @@ namespace OGUI
 			XmlAttributeDescription(name, type, type_namespace, default_value_string, use),
 			default_value(default_value) {}
 
-		virtual T GetValue(const DOMElement& element) = 0;
+		virtual T GetValue(const XmlElement& element) = 0;
 	};
 
 	class XmlStringAttributeDescription : public TypeXmlAttributeDescription<std::string>
@@ -83,7 +75,7 @@ namespace OGUI
 		{
 		}
 
-		std::string GetValue(const DOMElement& element) override;
+		std::string GetValue(const XmlElement& element) override;
 	};
 
 	class XmlFloatAttributeDescription : public TypeXmlAttributeDescription<float>
@@ -101,7 +93,7 @@ namespace OGUI
 		{
 		}
 
-		float GetValue(const DOMElement& element) override;
+		float GetValue(const XmlElement& element) override;
 	};
 
 	class XmlDoubleAttributeDescription : public TypeXmlAttributeDescription<double>
@@ -119,7 +111,7 @@ namespace OGUI
 		{
 		}
 
-		double GetValue(const DOMElement& element) override;
+		double GetValue(const XmlElement& element) override;
 	};
 
 	class XmlIntAttributeDescription : public TypeXmlAttributeDescription<int>
@@ -137,7 +129,7 @@ namespace OGUI
 		{
 		}
 
-		int GetValue(const DOMElement& element) override;
+		int GetValue(const XmlElement& element) override;
 	};
 
 	class XmlLongAttributeDescription : public TypeXmlAttributeDescription<long>
@@ -155,7 +147,7 @@ namespace OGUI
 		{
 		}
 
-		long GetValue(const DOMElement& element) override;
+		long GetValue(const XmlElement& element) override;
 	};
 
 	class XmlBoolAttributeDescription : public TypeXmlAttributeDescription<bool>
@@ -173,7 +165,7 @@ namespace OGUI
 		{
 		}
 
-		bool GetValue(const DOMElement& element) override;
+		bool GetValue(const XmlElement& element) override;
 	};
 	
 	template<class E>
@@ -202,7 +194,7 @@ namespace OGUI
 			}
 		}
 
-		bool GetValue(const DOMElement& element) override
+		bool GetValue(const XmlElement& element) override
 		{
 			std::string out;
 			if (XmlAttributeDescription::GetValueString(out, element))

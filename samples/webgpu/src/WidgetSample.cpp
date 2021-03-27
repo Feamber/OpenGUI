@@ -37,7 +37,7 @@ void WidgetSample::Initialize()
     styleSheet.Initialize();
 
     auto asset = XmlAsset::LoadXmlFile("test.xml");
-    ve = XmlAsset::Instantiate(asset->id);
+    ve = XmlAsset::Instantiate(asset.lock()->id);
     ve->_styleSheets.push_back(&styleSheet);
     ve->_pseudoMask |= (int)PseudoStates::Root;
 

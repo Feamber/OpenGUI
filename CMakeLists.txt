@@ -72,19 +72,8 @@ target_include_directories(OpenGUI
     include
     include/External
     ${PLATFORM_INCLUDES}
-    ${XercesC_INCLUDE_DIR}
 )
 target_link_libraries(OpenGUI PUBLIC Yoga)
-
-
-### xerces-c
-if(WIN32)
-set(XercesC_INCLUDE_DIR "thirdparty/xerces-c/include")
-set(XercesC_LIBRARY "${PROJECT_SOURCE_DIR}/thirdparty/xerces-c/lib/xerces-c_4D.lib")
-set(XercesC_DLL "${PROJECT_SOURCE_DIR}/thirdparty/xerces-c/bin/xerces-c_4_0D.dll")
-target_include_directories(OpenGUI PUBLIC ${XercesC_INCLUDE_DIR})
-target_link_libraries(OpenGUI PUBLIC ${XercesC_LIBRARY})
-endif(WIN32)
 
 link_libraries(OpenGUI)
 if(OPENGUI_SAMPLES)

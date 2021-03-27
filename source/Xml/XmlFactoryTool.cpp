@@ -1,12 +1,12 @@
-#include <iostream>
 #include "OpenGUI/Xml/XmlFactoryTool.h"
+#include <iostream>
 
 namespace OGUI
 {
-    VisualElement *XmlTemplateElementFactory::Create(const DOMElement &asset, CreationContext &context)
+    VisualElement *XmlTemplateElementFactory::Create(const XmlElement &asset, CreationContext &context)
     {
         auto new_asset = XmlAsset::LoadXmlFile(_traits.path.GetValue(asset));
-        if(new_asset != nullptr)
+        if(!new_asset.expired())
         {
             std::string name = _traits.name.GetValue(asset);
             if(!name.empty())
@@ -15,7 +15,7 @@ namespace OGUI
                 auto result = templates_alias.find(name);
                 if(result == templates_alias.end())
                 {
-                    templates_alias[name] = &new_asset->root;
+                    templates_alias[name] = &new_asset.lock()->root;
                     return nullptr;
                 }
                 std::cerr << "重复的<Template>别名 name: " << name << std::endl;
@@ -27,7 +27,7 @@ namespace OGUI
         return nullptr;
     }
 
-    VisualElement *TemplateContainer::Factory::Create(const DOMElement &asset, CreationContext &context)
+    VisualElement *TemplateContainer::Factory::Create(const XmlElement &asset, CreationContext &context)
     {
         auto& templates_alias = context.stack_template.front().templates_alias;
         std::string template_name = _traits.template_name.GetValue(asset);
@@ -57,7 +57,7 @@ namespace OGUI
         return nullptr;
     }
 
-    bool TemplateContainer::Traits::InitAttribute(VisualElement &new_element, const DOMElement &asset, CreationContext& context)
+    bool TemplateContainer::Traits::InitAttribute(VisualElement &new_element, const XmlElement &asset, CreationContext& context)
     {
         return VisualElement::Traits::InitAttribute(new_element, asset, context);
     }

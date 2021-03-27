@@ -4,9 +4,9 @@
 #include <list>
 #include <iostream>
 #include <set>
-#include "XmlTool.h"
-#include "XmlAttributeDescription.h"
-#include "XmlChildElementDescription.h"
+#include "OpenGUI/Xml/XmlAttributeDescription.h"
+#include "OpenGUI/Xml/XmlChildElementDescription.h"
+#include "OpenGUI/Xml/XmlAsset.h"
 
 namespace OGUI
 {
@@ -15,33 +15,21 @@ namespace OGUI
     // 实例化 XmlAsset 过程中的上下文
     struct CreationContext
     {
-        struct AttributeOverrid
-        {
-            std::string name;
-            std::string value;
-            bool operator<(const struct AttributeOverrid& right)const
-            {
-                return name < right.name;
-            }
-
-            AttributeOverrid(const std::string &name, const std::string &value) : name(name), value(value) {}
-        };
-
         struct Template
         {
-            DOMElement &xml_root;
+            XmlElement &xml_root;
             class TemplateContainer& template_container;
 
             // key = element-name
             // 当前模板需要覆盖的属性
-            std::map<std::string, std::set<AttributeOverrid>> attribute_overrides;
+            std::map<std::string_view , std::set<XmlAttribute>> attribute_overrides;
 
             // <engine:Template path="/Assets/Portrait.xml" name="Portrait"/>
             // key = name
             // value = path指向的模板root节点
-            std::map<std::string, DOMElement*> templates_alias;
+            std::map<std::string, XmlElement*> templates_alias;
 
-            Template(DOMElement &xml_root, class TemplateContainer& template_container) :
+            Template(XmlElement &xml_root, class TemplateContainer& template_container) :
                     xml_root(xml_root),
                     template_container(template_container)
             {}
@@ -56,7 +44,7 @@ namespace OGUI
         std::list<Template> stack_template = {};
 
         // 解析<Instance>时缓存
-        DOMElement const* instance_asset;
+        XmlElement const * instance_asset;
 
         // 生成过程中生成的所有VisualElement
         std::list<std::shared_ptr<VisualElement>> all;
@@ -85,7 +73,7 @@ namespace OGUI
 
         // 子类需要在这将自定义XML属性解析到C++类属性上
         // 注意先调用父类
-        bool InitAttribute(VisualElement& new_element, const DOMElement& Asset, CreationContext& context) {return true;};
+        bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) {return true;};
 
         // GenXmlAttrs.h
         void GetAllAttr(std::vector<XmlAttributeDescription*>& result) {};
@@ -113,7 +101,7 @@ namespace OGUI
 
         // 创建新 VisualElement
         // 有些XML元素不会生成 VisualElement 只是用来辅助生成 XML schema，比如 <Root> <Template>
-        virtual VisualElement* Create(const DOMElement& asset, CreationContext& context) = 0;
+        virtual VisualElement* Create(const XmlElement& asset, CreationContext& context) = 0;
     };
 
     // 每种 VisualElement 都应该有个对应的 XmlFactory
@@ -124,7 +112,7 @@ namespace OGUI
         static_assert(std::is_base_of_v<XmlTraits, TTraits>);
 
     public:
-        VisualElement* Create(const DOMElement& asset, CreationContext& context) override
+        VisualElement* Create(const XmlElement& asset, CreationContext& context) override
         {
             VisualElement* new_element = context.New<TCreatedType>();
             if(!_traits.InitAttribute(*new_element, asset, context))
