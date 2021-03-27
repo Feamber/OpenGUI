@@ -124,6 +124,54 @@ namespace OGUI
 		}
     }
 
+    // Draw Round Box 2:
+    // radius of rounded corner:
+    //     lt: left top
+    //     rt: right top
+    //     rb: right bottom
+    //     lb: left bottom
+    // 
+    // whole box:
+    //     (0,y)       (x,y)
+    //     (0,0)       (x,0)
+    // 
+    // split into:
+    //             -------------------------------------------------   (x,y)
+    //             |       |            top bar                | rt|
+    //             |   lt  <-----------------------^---------------|
+    //             |       |                       |               |
+    //             |-------|         center        |               |
+    //   left bar  |       |                       |    right bar  |
+    //             |-------v----------------------->               |
+    //             |                   |           |---------------|
+    //             |                   |           |               |
+    //             |                   |           |               |
+    //             |        lb         |bottom bar |       rb      |
+    //             |                   |           |               |
+    //             |                   |           |               |
+    //     (0,0)   -------------------------------------------------
+    // 
+    // cordinates:
+    //     top bar: 
+    //         (lt,0)      (x-rt,0)
+    //         (lt,y-rt)   (x-rt,y-rt)
+    // 
+    //     left bar:
+    //         (0,y-lt)    (lt,y-lt)
+    //         (0,lb)      (lt,lb)
+    // 
+    //     bottom bar:
+    //         (lb,lb)     (x-rb,lb)
+    //         (lb,0)      (x-rb,0)
+    // 
+    //     right bar:
+    //         (x-rb,y-rt) (x,y-rt)
+    //         (x-rb,rb)   (x,rb)
+    // 
+    //     center:
+    //         (lt,y-rt)   (x-rb,y-rt)
+    //         (lt,lb)     (x-rb,lb)
+    //
     void PrimitiveDraw::DrawRoundBox2(PrimDrawList& list, const PrimitiveDraw::RoundBoxParams& params, int32_t sampleCount)
     {
         auto prect = optionalTransform(params.rect, params.transform);
