@@ -1,83 +1,124 @@
-#include <stdio.h>
-#include <string>
+#include <atomic>
+#include <memory>
 #include <thread>
 #include <iostream>
+#include <mutex>
+#include <stdlib.h>
+#include <vector>
+#include <filesystem>
+#include <chrono>
 
-using ThreadId = void*;
-struct ThreadTask
+struct MemoryResource
 {
-    virtual void Run() = 0;
-};
-struct ThreadInterface
-{
-    virtual ThreadId CreateAndRun(ThreadTask&) = 0;
-    virtual void WaitUntilComplete(const ThreadId thread) = 0;
-    virtual void Destroy(ThreadId) = 0;
+    void* data = nullptr;
+    size_t size_in_byte = 0;
 };
 
-template<typename T>
-struct AsyncHandle
+MemoryResource load_file(const char* url)
 {
-    bool Okay() const
+    MemoryResource result = {};
+    FILE* f = fopen(url, "rb");
+    fseek(f, 0l, SEEK_END);
+    result.size_in_byte = ftell(f);
+    result.data = malloc(result.size_in_byte);
+    rewind(f);
+    fread(result.data, 1, result.size_in_byte, f);
+    return result;
+}
+
+struct AsyncFile
+{
+    friend struct AsyncFileLoader;
+
+protected:
+    void __initialize(MemoryResource resource)
     {
-        return initialized;
+        memory_resource = resource;
+        is_ready = true;
     }
-    void Initialize(T&& v)
+    MemoryResource memory_resource;
+    std::atomic_bool is_ready = false;
+};  
+
+struct AsyncFileLoader
+{
+    void loadTextureAsync(const char* path,
+        const std::function<void(std::shared_ptr<AsyncFile>)>& completeCallback = [](std::shared_ptr<AsyncFile> tex) {})
     {
-        value = v;
-        initialized = true;
+        FileLoaderTask task;
+        task.path = path;
+        task.file = NULL;
+        task.complete_callback = completeCallback;
+        load_queue_mutex.lock();
+        load_queue.push_back(task);
+        load_queue_mutex.unlock();
     }
-    T& Get() const
+    AsyncFileLoader()
+        :is_running(true)
     {
-        return value;
+        loader_thread = std::thread(&AsyncFileLoader::loaderThreadFunction, this);
     }
-    T& Get()
+    ~AsyncFileLoader()
     {
-        return value;
+        is_running = false;
+        if(loader_thread.joinable())
+            loader_thread.join();
     }
 protected:
-    T value;
-    bool initialized = false;
-};
+    void loaderThreadFunction()
+    {
+        while(is_running)
+        {
+            load_queue_mutex.lock();
+            std::vector<FileLoaderTask> tasks = load_queue;
+            load_queue.clear();
+            load_queue_mutex.unlock();
 
-struct ThreadImplementationDefault : public ThreadInterface
-{
-    virtual ThreadId CreateAndRun(ThreadTask& task)
-    {
-        auto thread = new std::thread(&ThreadTask::Run, &task);
-        return thread;
-    }    
-    virtual void Destroy(ThreadId thread)
-    {
-        std::thread* t = (std::thread*)thread;
-        delete t;
-    }
-    virtual void WaitUntilComplete(const ThreadId thread)
-    {
-        std::thread* t = (std::thread*)thread;
-        t->join();
-    }
-};
+            for (FileLoaderTask& task : tasks) {
+                task.file = std::make_shared<AsyncFile>();
+                task.file->__initialize(load_file(task.path));
+                assert(task.file != NULL && "Load Error!");
+                std::cout << task.file->memory_resource.size_in_byte << std::endl;
 
-struct FileLoadTask : public ThreadTask
-{
-    virtual void Run() override
-    {
-        file.Initialize("123456");
+                complete_queue_mutex.lock();
+                complete_queue.push_back(task);
+                complete_queue_mutex.unlock();
+            }
+            {
+                using namespace std::chrono_literals;
+                std::this_thread::sleep_for(1ms);
+            }
+        }
     }
-    std::string filename;
-    AsyncHandle<std::string> file;
+    struct FileLoaderTask 
+    {
+		const char* path;
+		std::shared_ptr<AsyncFile> file;
+		std::function<void(std::shared_ptr<AsyncFile>)> complete_callback;
+	};
+    std::atomic_bool is_running;
+    std::thread loader_thread;
+	std::vector<FileLoaderTask> load_queue;
+	std::mutex load_queue_mutex;
+	std::vector<FileLoaderTask> complete_queue;
+	std::mutex complete_queue_mutex;
 };
 
 int main(void)
 {
-    ThreadImplementationDefault impl;
-    FileLoadTask tsk;
-    impl.CreateAndRun(tsk);
-    while(!tsk.file.Okay())
+    auto pth = std::filesystem::current_path();
+    auto filePth = pth/"cmake_install.cmake";
+    AsyncFileLoader loader;
+    std::shared_ptr<AsyncFile> file;
+    loader.loadTextureAsync(filePth.c_str(), 
+        [&](std::shared_ptr<AsyncFile> loaded){
+            file = loaded;
+    });
+
     {
-        
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1500ms);
     }
-    std::cout << tsk.file.Get() << std::endl;
+
     return 0;
 }
