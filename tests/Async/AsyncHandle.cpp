@@ -11,7 +11,7 @@
 struct MemoryResource
 {
     void* data = nullptr;
-    size_t size_in_bytes = 0;
+    size_t size_in_byte = 0;
 };
 
 MemoryResource load_file(const char* url)
@@ -19,46 +19,57 @@ MemoryResource load_file(const char* url)
     MemoryResource result = {};
     FILE* f = fopen(url, "rb");
     fseek(f, 0l, SEEK_END);
-    result.size_in_bytes = ftell(f);
-    result.data = malloc(result.size_in_bytes);
+    result.size_in_byte = ftell(f);
+    result.data = malloc(result.size_in_byte);
     rewind(f);
-    fread(result.data, 1, result.size_in_bytes, f);
+    fread(result.data, 1, result.size_in_byte, f);
+    fclose(f);
     return result;
 }
 
 struct AsyncFile
 {
-    friend struct AsyncFileLoader;
-
-protected:
-    void __initialize(MemoryResource resource)
+    friend struct IOThread;
+    virtual ~AsyncFile() {}
+    virtual void finalize() = 0;
+    virtual void initialize(const char* path) = 0;
+    virtual size_t size() const = 0;
+    virtual bool valid() const
     {
-        memory_resource = resource;
+        return is_ready;
+    }
+protected:
+    inline void __initialize(const char* path)
+    {
+        this->initialize(path);
         is_ready = true;
     }
-    MemoryResource memory_resource;
     std::atomic_bool is_ready = false;
 };  
 
-struct AsyncFileLoader
+struct IOThread
 {
-    void loadTextureAsync(const char* path,
+    template<typename T = AsyncFile>
+    std::shared_ptr<T> Load(const char* path,
         const std::function<void(std::shared_ptr<AsyncFile>)>& completeCallback = [](std::shared_ptr<AsyncFile> tex) {})
     {
         FileLoaderTask task;
         task.path = path;
-        task.file = NULL;
+        task.file = std::shared_ptr<T>(new T(), [](T* file){
+            file->finalize();
+        });
         task.complete_callback = completeCallback;
         load_queue_mutex.lock();
         load_queue.push_back(task);
         load_queue_mutex.unlock();
+        return std::static_pointer_cast<T>(task.file);
     }
-    AsyncFileLoader()
+    IOThread()
         :is_running(true)
     {
-        loader_thread = std::thread(&AsyncFileLoader::loaderThreadFunction, this);
+        loader_thread = std::thread(&IOThread::loaderThreadFunction, this);
     }
-    ~AsyncFileLoader()
+    ~IOThread()
     {
         is_running = false;
         if(loader_thread.joinable())
@@ -75,14 +86,9 @@ protected:
             load_queue_mutex.unlock();
 
             for (FileLoaderTask& task : tasks) {
-                task.file = std::make_shared<AsyncFile>();
-                task.file->__initialize(load_file(task.path));
+                task.file->__initialize(task.path);
                 assert(task.file != NULL && "Load Error!");
-                std::cout << task.file->memory_resource.size_in_bytes << std::endl;
-
-                complete_queue_mutex.lock();
-                complete_queue.push_back(task);
-                complete_queue_mutex.unlock();
+                task.complete_callback(task.file);
             }
             {
                 using namespace std::chrono_literals;
@@ -100,25 +106,71 @@ protected:
     std::thread loader_thread;
 	std::vector<FileLoaderTask> load_queue;
 	std::mutex load_queue_mutex;
-	std::vector<FileLoaderTask> complete_queue;
-	std::mutex complete_queue_mutex;
+};
+
+struct AsyncTexture final : public AsyncFile
+{
+    void initialize(const char* path) final
+    {
+        memory_resource = load_file(path);
+    }
+    void finalize() final
+    {
+        free(memory_resource.data);
+        is_ready = false;
+        std::cout << "free texture" << std::endl;
+    }
+    size_t size() const final {return memory_resource.size_in_byte;}
+    const void* data() const {return memory_resource.data;}
+    void* data() {return memory_resource.data;}
+
+    MemoryResource memory_resource;
+};  
+
+#include <unordered_map>
+struct FileManager 
+{
+    template<typename T>
+    std::shared_ptr<T> Require(const std::string& url)
+    {
+        if(files.find(url) == files.end())
+        {
+            files[url] = loader.Load<AsyncTexture>(url.c_str());
+        } 
+        return std::static_pointer_cast<T>(files[url].lock());
+    }
+protected:
+    IOThread loader;
+    std::unordered_map<std::string, std::weak_ptr<AsyncFile>> files;
 };
 
 int main(void)
 {
+    FileManager manager;
     auto pth = std::filesystem::current_path();
-    auto filePth = pth/"cmake_install.cmake";
-    AsyncFileLoader loader;
-    std::shared_ptr<AsyncFile> file;
-    loader.loadTextureAsync(filePth.c_str(), 
-        [&](std::shared_ptr<AsyncFile> loaded){
-            file = loaded;
-    });
-
+    auto filePth = (pth/"cmake_install.cmake").string();
+    
+    /*
+    IOThread loader;
+    std::shared_ptr<AsyncTexture> file = 
+        loader.Load<AsyncTexture>(filePth.c_str(), 
+            [&](std::shared_ptr<AsyncFile> loaded){
+                
+        });
+    while(!file->valid())
     {
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1500ms);
+
     }
+    std::cout << file->size() << "\n";
+    */
+    
+    auto holder = manager.Require<AsyncTexture>(filePth.c_str());
+    while(!holder->valid())
+    {
+
+    }
+    std::cout << holder->size() << std::endl;
+    
 
     return 0;
 }
