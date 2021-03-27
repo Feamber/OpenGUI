@@ -19,8 +19,8 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view pseudoClass)
 		{"disabled", PseudoStates::Disabled, false},
 		{"focus", PseudoStates::Focus, false},
 		{"root", PseudoStates::Root, false},
-		{"active", PseudoStates::Active, true},
-		{"disabled", PseudoStates::Disabled, true}
+		{"inactive", PseudoStates::Active, true},
+		{"enabled", PseudoStates::Disabled, true}
 	};
 	bool founded = false;
 	for (auto& state : map)
@@ -45,7 +45,7 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view pseudoClass)
 template<class T>
 int bitcount(const T& value)
 {
-	std::bitset<sizeof(T)> bitset(value);
+	std::bitset<sizeof(T)*8> bitset(value);
 	return (int)bitset.count();
 }
 

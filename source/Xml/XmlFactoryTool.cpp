@@ -1,5 +1,6 @@
 #include "OpenGUI/Xml/XmlFactoryTool.h"
-#include <iostream>
+#include "OpenGUI/CSSParser/CSSParser.h"
+#include <fstream>
 
 namespace OGUI
 {
@@ -64,6 +65,21 @@ namespace OGUI
     TemplateContainer::TemplateContainer()
     {
         
+    }
+    VisualElement* XmlStyleElementFactory::Create(const XmlElement& asset, CreationContext& context)
+    {
+        //todo: cache css file
+        auto value = ParseCSSFile(_traits.path.GetValue(asset));
+        if (!value)
+            return nullptr;//todo: log error
+        auto target = context.stack.front();
+        if (!target)
+            return nullptr;//todo: log error
+        auto sheet = new StyleSheet{value.value()};
+        sheet->Initialize();
+        target->_styleSheets.push_back(sheet);
+        // <Style> 这个元素没有实际控件
+        return nullptr;
     }
 }
 

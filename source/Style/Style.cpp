@@ -40,11 +40,11 @@ ApplyProperty(T& field, const StyleProperty& prop, const StyleSheetStorage& shee
 
 }
 
-void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props)
+void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent)
 {
 	for (auto& prop : props)
 	{
-		if (ApplyGlobalKeyword(prop))
+		if (ApplyGlobalKeyword(prop, parent))
 			continue;
 #define STYLEPROP(name, index, inherit, type, ...)\
 		if(prop.id == StylePropertyId::name) \
@@ -57,7 +57,7 @@ void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::spa
 	}
 }
 
-bool OGUI::Style::ApplyGlobalKeyword(const StyleProperty& prop)
+bool OGUI::Style::ApplyGlobalKeyword(const StyleProperty& prop, const Style* parent)
 {
 	if (prop.keyword)
 	{
@@ -69,6 +69,11 @@ bool OGUI::Style::ApplyGlobalKeyword(const StyleProperty& prop)
 		if (prop.value.index == (int)StyleKeyword::Unset)
 		{
 			ApplyUnsetKeyword(prop.id);
+			return true;
+		}
+		if (prop.value.index == (int)StyleKeyword::Inherit && parent)
+		{
+			ApplyInheritKeyword(prop.id, parent);
 			return true;
 		}
 	}
@@ -113,6 +118,19 @@ void OGUI::Style::ApplyUnsetKeyword(StylePropertyId propId)
 		if(propId == StylePropertyId::name) \
 		{ \
 			name = InitialStyle.name; \
+			return; \
+		}
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#undef	STYLEPROP
+}
+
+void OGUI::Style::ApplyInheritKeyword(StylePropertyId propId, const Style* parent)
+{
+#define STYLEPROP(name, index, inherit, ...)\
+	if constexpr(inherit != Inherited) \
+		if(propId == StylePropertyId::name) \
+		{ \
+			name = parent->name; \
 			return; \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"

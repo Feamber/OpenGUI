@@ -1,14 +1,32 @@
-*:root {
-    width:300px;
-    height:300px;
+#TestElement {
+    width: 450px;
+    height:450px;
     justify-content:center;
     align-items:center;
-    color:rgba(0.6, 0.6, 0.6, 1)
+    color:rgb(184, 57, 116)
 }
 
 .Child {
-    width:100px;
+    width:200px;
     height:100px;
-    margin-right:10px;
-    color:rgba(1, 1, 1, 1)
+    margin:10px;
+    border-top-right-radius:100px;
+    border-bottom-right-radius:50px;
+    color:rgb(41, 133, 182)
+}
+
+:focus {
+    border-top-right-radius:0px;
+    border-bottom-right-radius:0px;
+    transform: rotate(90deg);
+    color:rgb(73, 214, 125)
+}
+
+@keyframes testanim {
+    from,   50%   {
+        width: 100px;
+    }
+    to {
+        width: 150px;
+    }
 }

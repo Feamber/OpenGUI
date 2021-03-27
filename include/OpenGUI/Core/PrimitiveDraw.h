@@ -1,10 +1,64 @@
 #pragma once
-#include "Primitive.h"
+#include "Types.h"
+#include "OpenGUI/Interface/Interfaces.h"
 #include <optional>
 
 namespace OGUI
 {
-	struct ITexture;
+	struct PrimDraw
+    {
+        uint32_t vertex_offset;
+        uint32_t index_offset;
+        uint32_t element_count; // number of indices
+        TextureHandle texture;
+        void*    p_next;
+    };
+
+    struct PersistantPrimDraw
+    {
+        PersistantPrimitiveHandle primitive;
+        TextureHandle texture;
+        void*    p_next;
+    };
+
+    using VertexList = std::vector<Vertex>;
+    using IndexList = std::vector<uint16_t>;
+    struct BatchedPrimDrawSpan {
+        PrimDraw* start;
+        uint64_t count;
+    };
+    struct OGUI_API PrimDrawList
+    {
+        inline void ValidateAndBatch()
+        {
+            const size_t ic = indices.size();
+            command_list.emplace_back(
+                PrimDraw{0, 0,
+                (uint32_t)ic,
+                nullptr, nullptr}
+            );
+            const size_t i_aligned = (ic / 4) * 4 + 4;
+            indices.resize(
+                i_aligned
+            );
+            // batch not implemented now.
+            //std::sort(command_list.begin(), command_list.end(),
+            //    [](const PrimDraw& a, const PrimDraw& b){
+            //        return a.texture.value < b.texture.value;
+            //    });
+        }
+
+        VertexList vertices;
+        IndexList  indices;
+        std::vector<PrimDraw> command_list;
+		int beginCount;
+    };
+
+    struct OGUI_API PersistantPrimDrawList 
+    {
+        std::vector<PersistantPrimDraw> command_list;
+    };
+	
 	namespace PrimitiveDraw
 	{
 		struct DrawContext
@@ -18,11 +72,9 @@ namespace OGUI
 			Rect rect;
 			Rect uv;
 			Color4f color;
-			ITexture* texture;
-			std::optional<float4x4> transform;
+			TextureInterface* texture;
 
 			static BoxParams MakeSolid(const Rect rect, const Color4f color);
-			static BoxParams MakeSolid(const Rect rect, const Color4f color, const float4x4& transform);
 			//Radius
 			//SVG
 			//Material
@@ -40,7 +92,7 @@ namespace OGUI
 			Vector2f pos;
 			Rect uv;
 			Color4f color;
-			ITexture* texture;
+			TextureInterface* texture;
 			float radius;
 		};
 		struct FanParams
@@ -48,7 +100,7 @@ namespace OGUI
 			Vector2f pos;
 			Rect uv;
 			Color4f color;
-			ITexture* texture;
+			TextureInterface* texture;
 			float radius;
 			float degree;
 			float beginDegree;
@@ -58,23 +110,26 @@ namespace OGUI
 			Rect rect;
 			Rect uv;
 			Color4f color;
-			ITexture* texture;
-			float radius;
+			TextureInterface* texture;
+			float radius[4];
 		};
 		struct LineParams
 		{
 			std::vector<Vector2f> points;
 			Rect uv;
 			Color4f color;
-			ITexture* texture;
+			TextureInterface* texture;
 			float thinkness;
 		};
 
 		// Call from DrawList.
+		OGUI_API void BeginDraw(PrimDrawList& list);
+		OGUI_API void EndDraw(PrimDrawList& list, const float4x4& transform);
 		OGUI_API void DrawBox(PrimDrawList& list, const BoxParams& params);
 		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 20);
 		OGUI_API void DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);
 		OGUI_API void DrawRoundBox(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount = 10);
+		OGUI_API void DrawRoundBox2(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount = 10);
 		OGUI_API void DrawLines(PrimDrawList& list, const LineParams& params, bool bAnitAliasing = false, bool bClosed = false);
 		
 		OGUI_API void DrawCheckBox0(PrimDrawList& context, const CheckBox0Params& params);

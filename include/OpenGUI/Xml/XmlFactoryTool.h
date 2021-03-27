@@ -60,11 +60,7 @@ namespace OGUI
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 		}
 
-		VisualElement* Create(const XmlElement& asset, CreationContext& context) override
-		{
-			// <Style> 这个元素没有实际控件
-			return nullptr;
-		}
+		VisualElement* Create(const XmlElement& asset, CreationContext& context) override;
 	};
 
 	// template -------------------------

@@ -2,6 +2,7 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGui/Xml/XmlFactoryTool.h"
+#include "OpenGUI/Animation/StyleAnimation.h"
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {
@@ -15,15 +16,22 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ct
 {
 	using namespace PrimitiveDraw;
 	auto rectPixelPos = GetRect();
-	Rect rect = rectPixelPosToScreenPos(rectPixelPos, Ctx.resolution);
+	Rect rect = GetRect();
+	//Rect rect = rectPixelPosToScreenPos(rectPixelPos, Ctx.resolution);
 
 	auto transform = _worldTransform;
-	transform.M[3][0] /= Ctx.resolution.X;
-	transform.M[3][1] /= Ctx.resolution.Y;
+	//transform.M[3][0] /= Ctx.resolution.X;
+	//transform.M[3][1] /= Ctx.resolution.Y;
 
-	//TODO: Apply Transform
-	PrimitiveDraw::DrawBox(Ctx.prims,
-		BoxParams::MakeSolid(rect, _style.color, transform));
+	BeginDraw(Ctx.prims);
+	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
+	RoundBoxParams params {rect, uv, _style.color, nullptr};
+	params.radius[0] = _style.borderTopLeftRadius.value;// / Ctx.resolution.Y;
+	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
+	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
+	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
+	PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
+	EndDraw(Ctx.prims, transform);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
@@ -112,30 +120,39 @@ void OGUI::VisualElement::SetSharedStyle(Style* style)
 {
 	if (style == _sharedStyle)
 		return;
+	if (style == _prevSharedStyle)
+		_interpolation.reverse();
+	else
+		_interpolation.reset();
+	_prevSharedStyle = _sharedStyle;
 	_sharedStyle = style;
-	_style = *style;
-	if (_inlineSheet)
-		_style.ApplyProperties(_inlineSheet->storage, _inlineRule.properties);
-	style->ApplyProperties(_procedureSheet, _procedureRule.properties);
+}
 
-	_inheritedStylesHash = _style.GetInheritedHash();
+void OGUI::VisualElement::ApplySharedStyle(float time)
+{
+	if (_prevSharedStyle && _sharedStyle)
+	{
+		_interpolation.forward(time);
+		float alpha = _interpolation.alpha();
+		_style = Lerp(*_prevSharedStyle, *_sharedStyle, alpha);
+		//if (alpha == 1.f)
+		//	_prevSharedStyle = nullptr;
+	}
+	else if (_sharedStyle)
+		_style = *_sharedStyle;
+	if (_inlineStyle)
+		_style.ApplyProperties(_inlineStyle->storage, _inlineStyle->rule.properties, nullptr);
+	if (_procedureStyle)
+		_style.ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties, nullptr);
+	//TODO: check layout dirty, check transform dirty
 	SyncYogaStyle();
 }
 
 void OGUI::VisualElement::CalculateLayout()
 {
+	//TODO: mark transform dirty
 	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
 	YGNodeSetHasNewLayout(_ygnode, false);
-}
-
-OGUI::float4x4 make_transform(OGUI::Vector2f pos2d, float rot2d, OGUI::Vector2f scale2d)
-{
-	using namespace OGUI;
-	Vector3f pos{pos2d.X, pos2d.Y, 0};
-	//TODO: rotate pivot is left bottom now
-	Quaternion rot = math::quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
-	Vector3f scale{scale2d.X, scale2d.Y, 1};
-	return math::make_transform(pos, scale, rot);
 }
 
 void OGUI::VisualElement::UpdateWorldTransform()
@@ -143,11 +160,18 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	using namespace math;
 	auto layout = GetLayout();
 	auto parent = GetHierachyParent();
-	auto localMat = ::make_transform(layout.min + _localPosition, _localRotation, _localScale);
 	if (parent)
-		_worldTransform = math::multiply(parent->_worldTransform, localMat);
+	{
+		auto playout = parent->GetLayout();
+		auto offset = (layout.min + layout.max)/2 -(playout.max - playout.min) / 2;
+		_worldTransform = math::make_transform_2d(offset + _style.translation, _style.rotation, _style.scale);
+		_worldTransform = multiply(_worldTransform, parent->_worldTransform);
+	}
 	else
-		_worldTransform = localMat;
+	{
+		auto offset = -(layout.max - layout.min) / 2;
+		_worldTransform = math::make_transform_2d(_style.translation, _style.rotation, _style.scale);
+	}
 }
 
 OGUI::Rect OGUI::VisualElement::GetLayout()
@@ -167,8 +191,8 @@ OGUI::Rect OGUI::VisualElement::GetRect()
 	Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
 	return
 	{
-		LB,
-		WH,
+		- WH / 2,
+		WH / 2,
 	};
 }
 
@@ -276,7 +300,7 @@ bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element
 
     new_element._name = name.GetValue(asset);
     new_element._path = path.GetValue(asset);
-    // TODO style
+	new_element.InitInlineStyle(style.GetValue(asset));
 	std::split(class_tag.GetValue(asset), new_element._styleClasses, ",");
 
     auto _slot_name = slot_name.GetValue(asset);
@@ -305,6 +329,14 @@ bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element
 
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
-	auto layout = GetLayout();
-	return layout.IntersectPoint(point);
+	auto rect = GetRect();
+	return rect.IntersectPoint(point);
+}
+
+#include "OpenGUI/CSSParser/CSSParser.h"
+void OGUI::VisualElement::InitInlineStyle(std::string_view str)
+{
+	auto res = ParseInlineStyle(str);
+	if(res)
+		_inlineStyle = std::make_unique<InlineStyle>(std::move(res.value()));
 }

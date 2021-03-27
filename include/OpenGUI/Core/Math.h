@@ -23,7 +23,17 @@ namespace math
 	)
 	{
 		float4x4 res;
-		__matrix::store_aligned(res.data_view(), __matrix::make_transform(translation, scale, quaternion));
+		__matrix::store_aligned(res.data_view(), __matrix::make_transform_trs(translation, scale, quaternion));
+		return res;
+	}
+
+	FORCEINLINE float4x4 make_transform_t
+	(
+		const Vector3f translation
+	)
+	{
+		float4x4 res;
+		__matrix::store_aligned(res.data_view(), __matrix::make_transform_t(translation));
 		return res;
 	}
 
@@ -170,6 +180,18 @@ namespace math
 		Quaternion res;
 		__vector::store_aligned(res.data_view(), __quaternion::quaternion_from_axis(__vector::load_float3_w0(axis.data_view()), angle));
 		return res;
+	}
+
+	FORCEINLINE float4x4 make_transform_2d
+	(
+		Vector2f pos2d, float rot2d, Vector2f scale2d
+	)
+	{
+		Vector3f pos{pos2d.X, pos2d.Y, 0};
+		//TODO: rotate pivot is left bottom now
+		Quaternion rot = quaternion_from_axis(Vector3f{0.f,0.f,1.f}, rot2d);
+		Vector3f scale{scale2d.X, scale2d.Y, 1};
+		return make_transform(pos, scale, rot);
 	}
 }
 }

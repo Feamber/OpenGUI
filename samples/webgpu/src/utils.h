@@ -1,7 +1,8 @@
 #pragma once
-#include "img/stb_image.h"
+#include "OpenGUI/Core/Types.h"
+#include "stb_image.h"
 #include "webgpu.h"
-#include "OpenGUI/Interface/RenderInterface.h"
+#include "OpenGUI/Interface/Interfaces.h"
 
 // 0 ~ 1 => -1 ~ 1
 static char const triangle_vert_wgsl[] = R"(
@@ -12,7 +13,9 @@ static char const triangle_vert_wgsl[] = R"(
 	[[location(1)]] var<out> vUV : vec2<f32>;
 	[[builtin(position)]] var<out> Position : vec4<f32>;
 	[[stage(vertex)]] fn main() -> void {
-		Position = vec4<f32>(vec3<f32>((aPos * 2.0) - vec2<f32>(1.0, 1.0), 1.0), 1.0);
+        const resolution : vec2<f32> = vec2<f32>(800.0, 450.0);
+        var pos : vec2<f32> = aPos / resolution;
+		Position = vec4<f32>(vec3<f32>(pos*2.0, 1.0), 1.0);
 		vCol = aCol;
         vUV = aUV;
 	}
@@ -96,7 +99,7 @@ inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
     }
 }
 
-struct WGPU_OGUI_Texture : public OGUI::ITexture
+struct WGPU_OGUI_Texture : public OGUI::TextureInterface
 {
     WGPUTexture texture;
     WGPUTextureView texture_view;
@@ -111,8 +114,10 @@ struct WGPU_OGUI_Texture : public OGUI::ITexture
     }
 };
 
-inline static WGPU_OGUI_Texture* createTexture(WGPUDevice device, WGPUQueue queue,
-    const OGUI::BitMap& bitmap)
+inline static WGPU_OGUI_Texture* createTexture(
+    WGPUDevice device, WGPUQueue queue,
+    const OGUI::BitMap& bitmap
+)
 {
     WGPU_OGUI_Texture* result = new WGPU_OGUI_Texture();
 
@@ -155,5 +160,16 @@ inline static WGPU_OGUI_Texture* createTexture(WGPUDevice device, WGPUQueue queu
 
 inline static void createBitMapFromJPG(const char* filename, OGUI::BitMap& bm)
 {
-    
+    int x, y, n;
+    auto data = stbi_load(filename, &x, &y, &n, STBI_rgb_alpha);
+    bm.bytes = data;
+    bm.bytes_size = x * y * n * sizeof(*data);
+    bm.format = OGUI::PF_R8G8B8A8;
+    bm.height = y;
+    bm.width = x;
+}
+
+inline static void freeBitMap(OGUI::BitMap& bm)
+{
+    stbi_image_free(bm.bytes);
 }

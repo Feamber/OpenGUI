@@ -1,7 +1,10 @@
-﻿#include "OpenGUI/Interface/RenderInterface.h"
-#include "OpenGUI/Interface/InputInterface.h"
-#include "OpenGUI/Interface/SystemInterface.h"
-#include "OpenGUI/Interface/FileInterface.h"
+﻿#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Interface/Interfaces.h"
+#include "OpenGUI/Core/AsyncFile.h"
+#include "OpenGUI/Core/IOThread.h"
+#include "OpenGUI/Context.h"
+
+#include <stdlib.h>
 
 namespace OGUI
 {
@@ -58,4 +61,42 @@ size_t FileInterface::Length(const FileHandle file)
     Seek( file, (long)current_position, SEEK_SET);
     return length;
 }
+
+MemoryResource FileInterface::Load(const char* path)
+{
+    MemoryResource result = {};
+    FileHandle f = this->Open(path);
+    this->Seek(f, 0l, SEEK_END);
+    result.size_in_bytes = this->Tell(f);
+    result.data = (uint8_t*)::malloc(result.size_in_bytes);
+    this->Seek(f, 0l, SEEK_SET);
+    this->Read(result.data, result.size_in_bytes, f);
+    this->Close(f);
+    return result;
+}
+
+// Async File
+OGUI::AsyncFile::~AsyncFile()
+{
+    
+}
+
+bool AsyncFile::valid() const
+{
+    return is_ready;
+}
+
+IOThread::IOThread()
+    :is_running(true)
+{
+    loader_thread = std::thread(&IOThread::loaderThreadFunction, this);
+}
+
+IOThread::~IOThread()   
+{
+    is_running = false;
+    if(loader_thread.joinable())
+        loader_thread.join();
+}
+
 }

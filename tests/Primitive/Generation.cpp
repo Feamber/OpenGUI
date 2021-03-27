@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "OpenGUI/Core/Primitive.h"
+#include "OpenGUI/Core/Types.h"
 
 TEST_CASE( "Vertex", "[vertex]" ) {
     OGUI::Vertex v = {};

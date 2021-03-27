@@ -17,17 +17,6 @@ namespace OGUI
             path.push_back(parent);
     }
 
-    enum class EventRoutePhase : int
-    {
-        None = 0,
-        TrickleDown = 1,
-        Reach = 2,
-        Broadcast = 4,
-        BubbleUp = 8,
-        All = TrickleDown | Reach | Broadcast | BubbleUp,
-        NoBroadcast = TrickleDown | Reach | BubbleUp,
-    };
-
     EventRoutePhase NextPhase(EventRoutePhase current, int mask)
     {
         int value = (int)current;
@@ -43,7 +32,7 @@ namespace OGUI
         EventRoutePhase& currentPhase = event.currentPhase;
         std::vector<VisualElement*> routePath;
         if (currentPhase == EventRoutePhase::None)
-            currentPhase = phaseMask & (phaseMask - 1);
+            currentPhase = (EventRoutePhase)(phaseMask & (phaseMask - 1));
         if (currentPhase == EventRoutePhase::TrickleDown)
         {
             BuildRoutePath(target, routePath);

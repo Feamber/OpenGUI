@@ -1,0 +1,65 @@
+#pragma once
+#include "OpenGUI/Core/Types.h"
+#include <string_view>
+
+namespace OGUI
+{
+    using FileHandle = void*;
+	using WindowHandle = int;
+	
+    struct SystemInterface
+	{
+		virtual ~SystemInterface();
+		virtual void log(std::string_view str) = 0;
+	};
+
+    struct InputInterface
+	{
+		virtual ~InputInterface();
+		virtual bool UseSystemGesture() = 0;
+
+		virtual bool IsKeyDown(EKeyCode key_code) = 0;
+		virtual bool IsKeyDown(EMouseKey key_code) = 0;
+		virtual bool SetCursorPos(int32 x, int32 y) = 0;
+		virtual bool SetCursor(EMouseCursor cursor) = 0;
+		virtual bool GetCursorPos(int32& x, int32& y) = 0;
+		virtual bool IsKeyToggled(EMouseKey key_code) = 0;
+		virtual void ClientToScreen(WindowHandle window, int& x, int& y) = 0;
+		virtual void ScreenToClient(WindowHandle window, int& x, int& y) = 0;
+		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) = 0;
+	};
+    
+    struct FileInterface
+	{
+		virtual ~FileInterface();
+		virtual FileHandle Open(const char* path);
+		virtual void Close(FileHandle file);
+		virtual size_t Read(void* buffer, size_t size, FileHandle file);
+		virtual int Seek(FileHandle stream, size_t offset, int fromwhere);
+		virtual size_t Tell(const FileHandle file);
+		virtual size_t Length(const FileHandle file);
+		virtual MemoryResource Load(const char* path);
+	};
+
+	struct TextureInterface {};
+    struct PersistantPrimitiveInterface {};
+    using TextureHandle = Handle<TextureInterface>;
+    using PersistantPrimitiveHandle = Handle<PersistantPrimitiveInterface>;
+	struct RenderInterface
+	{
+		virtual ~RenderInterface();
+		virtual PersistantPrimitiveHandle RegisterPrimitive(
+            Vertex* vertices, uint32_t num_vertices,
+            uint16_t* indices, uint32_t num_indices) = 0;
+        virtual void ReleasePrimitive(PersistantPrimitiveHandle primitive) = 0;
+
+        virtual void RenderPrimitives(const struct PrimDrawList&) = 0;
+        virtual void RenderPrimitives(const struct PersistantPrimDrawList&) = 0;
+
+        virtual TextureHandle RegisterTexture(const BitMap&) = 0;
+        virtual void ReleaseTexture(TextureHandle) = 0;
+
+        virtual void SetScissor(const Scissor scissor) = 0;
+        virtual void ResetScissor() = 0;
+	};
+}

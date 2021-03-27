@@ -3,6 +3,7 @@
 #include <string>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/Style.h"
+#include "OpenGUI/Core/Types.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
@@ -47,7 +48,15 @@ namespace OGUI
 
 	struct Matrix4x4f{};
 
-	struct StyleSheet;
+	struct Interpolation
+	{
+		float duration;
+		float time = 0;
+		void reset() { time = 0; }
+		void forward(float deltaTime) { time = std::clamp(time + deltaTime, 0.f, duration); }
+		void reverse() { time = duration - time; }
+		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
+	};
 
 	class VisualElement : public std::enable_shared_from_this<VisualElement>
 	{
@@ -109,6 +118,7 @@ namespace OGUI
 		void RemoveChild(VisualElement* child);
 
 		std::vector<std::shared_ptr<VisualElement>> _children;
+		
 		std::weak_ptr<VisualElement> _physical_parent;
 		//There could be some node between logical parent and this widget for layout
 		std::weak_ptr<VisualElement> _logical_parent;
@@ -118,9 +128,6 @@ namespace OGUI
 #pragma endregion
 
 #pragma region Transform
-		Vector2f _localPosition = Vector2f::vector_zero();
-		float _localRotation = 0.f;
-		Vector2f _localScale = Vector2f::vector_one();
 		Vector2f _worldPosition;
 		float4x4 _worldTransform;
 		void UpdateWorldTransform();
@@ -136,20 +143,21 @@ namespace OGUI
 		uint32_t _triggerPseudoMask = 0;
 		uint32_t _dependencyPseudoMask = 0;
 		uint32_t _pseudoMask = 0;
-		int _inheritedStylesHash = 0;
-		StyleRule _inlineRule;
-		StyleSheet* _inlineSheet = nullptr;
-		StyleSheetStorage _procedureSheet;
-		StyleRule _procedureRule;
+		std::unique_ptr<InlineStyle> _inlineStyle;
+		std::unique_ptr<InlineStyle> _procedureStyle;
 
 		Style _style;
+		Style* _prevSharedStyle = nullptr;
 		Style* _sharedStyle = nullptr;
+		Interpolation _interpolation = {0.5};
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
+		void InitInlineStyle(std::string_view str);
 		void SetPseudoMask(uint32_t mask);
 		void CalculateLayout();
 		void SetSharedStyle(Style* style);
+		void ApplySharedStyle(float deltaTime);
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
 #pragma endregion
