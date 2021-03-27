@@ -7,7 +7,7 @@ namespace OGUI
     class IOThread;
     struct AsyncFile
     {
-        friend struct IOThread;
+        friend class IOThread;
         virtual ~AsyncFile();
         virtual void Finalize() = 0;
         virtual void Initialize(const char* path) = 0;

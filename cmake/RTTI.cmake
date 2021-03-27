@@ -1,5 +1,6 @@
-if(MSVC)
+if(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR")
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti")
 endif()

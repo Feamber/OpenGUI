@@ -994,7 +994,7 @@ namespace OGUI
 		parser["StyleRule"] = [&](SemanticValues& vs)
 		{
 			StyleRule rule;
-			auto& list = any_move<property_list_t>(vs[1]);
+			auto list = any_move<property_list_t>(vs[1]);
 			for (auto& pair : list)
 			{
 				const char* errorMsg;
@@ -1006,7 +1006,7 @@ namespace OGUI
 			}
 			int ruleIndex = sheet.styleRules.size();
 			sheet.styleRules.push_back(std::move(rule));
-			auto& selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
+			auto selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
 			for (auto& sel : selectorList)
 			{
 				sel.ruleIndex = ruleIndex;
@@ -1035,7 +1035,7 @@ namespace OGUI
 				curve.keys.push_back(k);
 			}
 			StyleRule frame;
-			auto& list = any_move<property_list_t>(vs[0]);
+			auto list = any_move<property_list_t>(vs[0]);
 			for (auto& pair : list)
 			{
 				const char* errorMsg;

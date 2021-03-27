@@ -31,7 +31,7 @@ MemoryResource load_file(const char* url)
 
 struct AsyncFile
 {
-    friend struct IOThread;
+    friend class IOThread;
     virtual ~AsyncFile() {}
     virtual void finalize() = 0;
     virtual void initialize(const char* path) = 0;
@@ -49,7 +49,7 @@ protected:
     std::atomic_bool is_ready = false;
 };  
 
-struct IOThread
+class IOThread
 {
     template<typename T = AsyncFile>
     std::shared_ptr<T> Load(const char* path,
