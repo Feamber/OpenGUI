@@ -36,9 +36,13 @@ namespace OGUI
 			if(auto picked = PickRecursive(child.get(), point))
 				return picked;
 		auto invTransform = math::inverse(element->_worldTransform);
-		Vector4f dummy = {point.X, point.Y, 0.f, 0.f};
-		dummy = math::multiply(dummy, invTransform);
-		Vector2f localPoint = {dummy.X, dummy.Y};
+		Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
+		const Vector4f result = math::multiply(dummy, invTransform);
+		Vector2f localPoint = {result.X, result.Y};
+
+		std::cout << "OnMouseDown: " << localPoint.X << "," << localPoint.Y << std::endl;
+		std::cout << "Name: " << element->_name << std::endl;
+		std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
 		if (element->Intersect(localPoint))
 			return element;
 		else return nullptr;
@@ -75,7 +79,9 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 	event.gestureType = EGestureEvent::None;
 	event.position = Vector2f(x, y);
 	inputImpl->ScreenToClient(window, x, y);
-	auto picked = PickRecursive(root, Vector2f(x, y));
+	auto point = Vector2f(x, 450.f-y) - Vector2f(800.f, 450.f) / 2;
+	auto picked = PickRecursive(root, point);
+	std::cout << std::endl;
 	if (picked)
 	{
 		if (picked != currentFocus.lock().get())
@@ -89,26 +95,24 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 		currentFocus = picked->shared_from_this();
 		RouteEvent(picked, event);
 	}
-
-	std::cout << "OnMouseDown: " << x << "," << y << std::endl;
 	return false;
 }
 
 bool OGUI::Context::OnMouseUp(WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
-	std::cout << "OnMouseUp: " << x << "," << y << std::endl;
+	//std::cout << "OnMouseUp: " << x << "," << y << std::endl;
 	return false;
 }
 
 bool OGUI::Context::OnMouseDoubleClick(WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
-	std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
+	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
 	return false;
 }
 
 bool OGUI::Context::OnMouseMove(bool relative, int32 x, int32 y)
 {
-	std::cout << "OnMouseMove: " << x << "," << y << std::endl;
+	//std::cout << "OnMouseMove: " << x << "," << y << std::endl;
 	return false;
 }
 

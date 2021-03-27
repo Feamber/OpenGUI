@@ -3,24 +3,25 @@
 
 namespace OGUI
 {
-    const Vector2f optionalTransform(Vector2f p, const std::optional<float4x4>& transform)
+    const Vector2f Transform(Vector2f p, const float4x4& transform)
     {
-        const bool bUseTransform = transform.has_value();
-        if (!bUseTransform)
-            return p;
-        else
-        {
-            const Vector4f dummy = Vector4f(p.X, p.Y, 0.f, 1.f);
-            const Vector4f result = math::multiply(dummy, transform.value());
-            p.X = result.X;
-            p.Y = result.Y;
-            return p;
-        }
+        const Vector4f dummy = Vector4f(p.X, p.Y, 0.f, 1.f);
+        const Vector4f result = math::multiply(dummy, transform);
+        p.X = result.X;
+        p.Y = result.Y;
+        return p;
     }
 
-    const Rect optionalTransform(Rect p, const std::optional<float4x4>& transform)
+    OGUI_API void PrimitiveDraw::BeginDraw(PrimDrawList& list)
     {
-        return {optionalTransform(p.min, transform), optionalTransform(p.max, transform)};
+        list.beginCount = list.vertices.size();
+    }
+
+    OGUI_API void PrimitiveDraw::EndDraw(PrimDrawList& list, const float4x4& transform)
+    {
+        int count = list.vertices.size();
+        for (int i = list.beginCount; i < count; ++i)
+            list.vertices[i].position = Transform(list.vertices[i].position, transform);
     }
 
     void PrimitiveDraw::DrawBox(PrimDrawList& list, const BoxParams& params)
@@ -28,10 +29,10 @@ namespace OGUI
         const uint32_t vcount = list.vertices.size();
         const uint32_t icount = list.indices.size();
         
-        const Vector2f RU = optionalTransform(params.rect.max, params.transform);
-        const Vector2f RB = optionalTransform(Vector2f(params.rect.max.X, params.rect.min.Y), params.transform);
-        const Vector2f LU = optionalTransform(Vector2f(params.rect.min.X, params.rect.max.Y), params.transform);
-        const Vector2f LB = optionalTransform(params.rect.min, params.transform);
+        const Vector2f RU = params.rect.max;
+        const Vector2f RB = Vector2f(params.rect.max.X, params.rect.min.Y);
+        const Vector2f LU = Vector2f(params.rect.min.X, params.rect.max.Y);
+        const Vector2f LB = params.rect.min;
 
         const Vector2f RUUV = params.uv.max;
         const Vector2f RBUV = Vector2f(params.uv.max.X, params.uv.min.Y);
@@ -60,13 +61,6 @@ namespace OGUI
     {
         Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
         return { rect, uv, color, nullptr };
-    }
-
-    PrimitiveDraw::BoxParams PrimitiveDraw::BoxParams::MakeSolid(const Rect rect,
-        const Color4f color, const float4x4& transform)
-    {
-        Rect uv = { Vector2f::vector_zero(), Vector2f::vector_one() };
-        return { rect, uv, color, nullptr, transform };
     }
 
     void PrimitiveDraw::DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount)
@@ -174,7 +168,7 @@ namespace OGUI
     //
     void PrimitiveDraw::DrawRoundBox2(PrimDrawList& list, const PrimitiveDraw::RoundBoxParams& params, int32_t sampleCount)
     {
-        auto prect = optionalTransform(params.rect, params.transform);
+        auto prect = params.rect;
         FanParams fans[4];
         int fanCount = 0;
         BoxParams boxes[5];

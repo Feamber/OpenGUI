@@ -15,7 +15,7 @@ static char const triangle_vert_wgsl[] = R"(
 	[[stage(vertex)]] fn main() -> void {
         const resolution : vec2<f32> = vec2<f32>(800.0, 450.0);
         var pos : vec2<f32> = aPos / resolution;
-		Position = vec4<f32>(vec3<f32>((pos * 2.0) - vec2<f32>(1.0, 1.0), 1.0), 1.0);
+		Position = vec4<f32>(vec3<f32>(pos*2.0, 1.0), 1.0);
 		vCol = aCol;
         vUV = aUV;
 	}

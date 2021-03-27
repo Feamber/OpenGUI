@@ -51,6 +51,7 @@ namespace OGUI
         VertexList vertices;
         IndexList  indices;
         std::vector<PrimDraw> command_list;
+		int beginCount;
     };
 
     struct OGUI_API PersistantPrimDrawList 
@@ -72,10 +73,8 @@ namespace OGUI
 			Rect uv;
 			Color4f color;
 			TextureInterface* texture;
-			std::optional<float4x4> transform;
 
 			static BoxParams MakeSolid(const Rect rect, const Color4f color);
-			static BoxParams MakeSolid(const Rect rect, const Color4f color, const float4x4& transform);
 			//Radius
 			//SVG
 			//Material
@@ -112,7 +111,6 @@ namespace OGUI
 			Rect uv;
 			Color4f color;
 			TextureInterface* texture;
-			std::optional<float4x4> transform;
 			float radius[4];
 		};
 		struct LineParams
@@ -125,6 +123,8 @@ namespace OGUI
 		};
 
 		// Call from DrawList.
+		OGUI_API void BeginDraw(PrimDrawList& list);
+		OGUI_API void EndDraw(PrimDrawList& list, const float4x4& transform);
 		OGUI_API void DrawBox(PrimDrawList& list, const BoxParams& params);
 		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 20);
 		OGUI_API void DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);

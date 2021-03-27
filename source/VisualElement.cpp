@@ -23,15 +23,15 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ct
 	//transform.M[3][0] /= Ctx.resolution.X;
 	//transform.M[3][1] /= Ctx.resolution.Y;
 
+	BeginDraw(Ctx.prims);
 	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-	RoundBoxParams params {rect, uv, _style.color, nullptr, transform};
+	RoundBoxParams params {rect, uv, _style.color, nullptr};
 	params.radius[0] = _style.borderTopLeftRadius.value;// / Ctx.resolution.Y;
 	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
-	BoxParams params2{rect, uv, _style.color, nullptr, transform};
-	PrimitiveDraw::DrawBox(Ctx.prims, params2);
-	//PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
+	PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
+	EndDraw(Ctx.prims, transform);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
@@ -158,10 +158,18 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	using namespace math;
 	auto layout = GetLayout();
 	auto parent = GetHierachyParent();
-	auto layoutMat = make_transform_t(Vector3f{layout.min.X, layout.min.Y, 0});
-	_worldTransform = math::make_transform_2d(layout.min + _style.translation, _style.rotation, _style.scale);
 	if (parent)
-		_worldTransform = multiply(parent->_worldTransform, _worldTransform);
+	{
+		auto playout = parent->GetLayout();
+		auto offset = (layout.min + layout.max)/2 -(playout.max - playout.min) / 2;
+		_worldTransform = math::make_transform_2d(offset + _style.translation, _style.rotation, _style.scale);
+		_worldTransform = multiply(_worldTransform, parent->_worldTransform);
+	}
+	else
+	{
+		auto offset = -(layout.max - layout.min) / 2;
+		_worldTransform = math::make_transform_2d(_style.translation, _style.rotation, _style.scale);
+	}
 }
 
 OGUI::Rect OGUI::VisualElement::GetLayout()
@@ -181,8 +189,8 @@ OGUI::Rect OGUI::VisualElement::GetRect()
 	Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
 	return
 	{
-		LB,
-		WH,
+		- WH / 2,
+		WH / 2,
 	};
 }
 
@@ -319,8 +327,8 @@ bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element
 
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
-	auto layout = GetLayout();
-	return layout.IntersectPoint(point);
+	auto rect = GetRect();
+	return rect.IntersectPoint(point);
 }
 
 #include "OpenGUI/CSSParser/CSSParser.h"
