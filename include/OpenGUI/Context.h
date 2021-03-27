@@ -8,6 +8,7 @@
 
 namespace OGUI
 {
+	class VisualElement;
 	class VisualWindow;
 	class IOThread;
 

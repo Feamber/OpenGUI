@@ -3,10 +3,12 @@
 #include <thread>
 #include <iostream>
 #include <mutex>
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <filesystem>
 #include <chrono>
+#include <cassert>
+#include <functional>
 
 struct MemoryResource
 {
@@ -110,7 +112,8 @@ int main(void)
     auto filePth = pth/"cmake_install.cmake";
     AsyncFileLoader loader;
     std::shared_ptr<AsyncFile> file;
-    loader.loadTextureAsync(filePth.c_str(), 
+    auto cpath = filePth.string();
+    loader.loadTextureAsync(cpath.c_str(),
         [&](std::shared_ptr<AsyncFile> loaded){
             file = loaded;
     });

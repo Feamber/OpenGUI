@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGUI/Core/Types.h"
+#include <atomic>
 
 namespace OGUI
 {

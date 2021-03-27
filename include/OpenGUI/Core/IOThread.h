@@ -5,6 +5,8 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <memory>
+#include <functional>
 
 namespace OGUI
 {

@@ -897,25 +897,25 @@ namespace OGUI
 	std::optional<StyleSheet> ParseCSS(std::string_view str)
 	{
 		auto grammar = R"(
-			Stylesheet			<- StyleRule*
+			Stylesheet			<- (StyleRule / Keyframes)*
 			StyleRule			<- SelectorList _ '{' _ PropertyList _ '}' _
 			Keyframes			<- '@keyframes' w <IDENT> _ '{' _ KeyframeBlock* _ '}' _
-			KeyframeBlock		<- <KeyframeSelector (w ',' w KeyframeSelector w)*> _ '{' _ PropertyList _ '}' _
+			KeyframeBlock		<- <KeyframeSelector> (w ',' w <KeyframeSelector> w)* _ '{' _ PropertyList _ '}' _
 			SelectorList		<- ComplexSelector (',' w ComplexSelector)* _
 			ComplexSelector		<- Selector ComplexPart*
 			ComplexPart			<- ([ ]+ Selector) / (w '>' w Selector)
 			Selector			<- SelectorPart+
 			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
-			PropertyList		<- Property? (';' _ Property)*
-			Property			<- <IDENT> w ':' w <Value>
-			~Value				<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
+			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
+			Property			<- <IDENT> w ':' w <Value> _
+			~Value				<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> 
 			~IDENT				<- < [a-zA-Z] [a-zA-Z0-9-]* >
 			~TransformList		<- <CALL+>
 			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
 			~SizeList			<- < CNUM (',' w CNUM){3} >
 			~COLOR				<- < ('#' NUM) / CALL >
 			~CNUM				<- < NUM (IDENT / '%')? >
-			~KeyframeSelector	<- (< NUM > %') / 'from' / 'to'
+			~KeyframeSelector	<- ( NUM  '%') / 'from' / 'to'
 			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~_					<- [ \t\r\n]*
@@ -1015,11 +1015,8 @@ namespace OGUI
 		};
 		parser["KeyframeBlock"] = [&](SemanticValues& vs)
 		{
-			auto keyStr = vs.token();
-			std::vector<std::string_view> keys;
-			std::split(keyStr, keys, ",");
 			AnimationCurve curve;
-			for (auto& key : keys)
+			for (auto& key : vs.tokens)
 			{
 				AnimationCurve::Key k;
 				if (key == "from")
@@ -1078,9 +1075,9 @@ namespace OGUI
 	std::optional<InlineStyle> ParseInlineStyle(std::string_view str)
 	{
 		auto grammar = R"(
-			PropertyList	<- Property? (';' _ Property)*
-			Property		<- <IDENT> w ':' w <Value>
-			~Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT> _
+			PropertyList	<- Property? (_ ';' _ Property)* _ ';'?
+			Property		<- <IDENT> w ':' w <Value> _
+			~Value			<- <KEYWORD / SizeList / CNUM / TransformList / COLOR / IDENT>
 			~IDENT			<- < [a-zA-Z] [a-zA-Z0-9-]* >
 			~TransformList	<- <CALL+>
 			~KEYWORD			<- <'none' | 'inherid' | 'initial' | 'unset'>
