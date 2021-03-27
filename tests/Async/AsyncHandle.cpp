@@ -11,7 +11,7 @@
 struct MemoryResource
 {
     void* data = nullptr;
-    size_t size_in_byte = 0;
+    size_t size_in_bytes = 0;
 };
 
 MemoryResource load_file(const char* url)
@@ -19,10 +19,10 @@ MemoryResource load_file(const char* url)
     MemoryResource result = {};
     FILE* f = fopen(url, "rb");
     fseek(f, 0l, SEEK_END);
-    result.size_in_byte = ftell(f);
-    result.data = malloc(result.size_in_byte);
+    result.size_in_bytes = ftell(f);
+    result.data = malloc(result.size_in_bytes);
     rewind(f);
-    fread(result.data, 1, result.size_in_byte, f);
+    fread(result.data, 1, result.size_in_bytes, f);
     return result;
 }
 
@@ -78,7 +78,7 @@ protected:
                 task.file = std::make_shared<AsyncFile>();
                 task.file->__initialize(load_file(task.path));
                 assert(task.file != NULL && "Load Error!");
-                std::cout << task.file->memory_resource.size_in_byte << std::endl;
+                std::cout << task.file->memory_resource.size_in_bytes << std::endl;
 
                 complete_queue_mutex.lock();
                 complete_queue.push_back(task);

@@ -1,9 +1,11 @@
 #include "OpenGUI/Context.h"
 #include <iostream>
+#include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Event/EventRouter.h"
 #include "OpenGUI/Window/VisualWindow.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Core/IOThread.h"
 
 void OGUI::Context::Initialize(
 	InputInterface* I, SystemInterface* S,
@@ -15,6 +17,8 @@ void OGUI::Context::Initialize(
 	systemImpl.reset(S);
 	renderImpl.reset(R);
 	fileImpl.reset(F);
+	ioThread = std::make_unique<OGUI::IOThread>();
+
 	initialized = true;
 }
 

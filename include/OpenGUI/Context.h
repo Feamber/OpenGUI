@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
@@ -8,6 +9,7 @@
 namespace OGUI
 {
 	class VisualWindow;
+	class IOThread;
 
 	using WindowHandle = int;
 	struct Context
@@ -49,6 +51,7 @@ namespace OGUI
 		std::unique_ptr<SystemInterface> systemImpl;
 		std::unique_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<FileInterface>   fileImpl;
+		std::unique_ptr<IOThread>        ioThread;
 		bool initialized = false;
 	};
 }

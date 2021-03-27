@@ -12,6 +12,12 @@ namespace OGUI
         T* value;
     };
     
+	struct MemoryResource
+	{
+		uint8_t* data = nullptr;
+		size_t size_in_bytes = 0;
+	};
+
     struct Scissor
     {
         int x, y;
