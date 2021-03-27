@@ -26,6 +26,10 @@ namespace OGUI
 
     void PrimitiveDraw::DrawBox(PrimDrawList& list, const BoxParams& params)
     {
+        Vector2f side_len = params.rect.max - params.rect.min;
+        if (!side_len.X || !side_len.Y)
+            return;
+
         const uint32_t vcount = list.vertices.size();
         const uint32_t icount = list.indices.size();
         
