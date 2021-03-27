@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <xercesc/dom/DOMElement.hpp>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGUI/Core/Types.h"
@@ -13,7 +12,6 @@
 #include "OpenGUI/Xml/XmlChildElementDescription.h"
 #include "OpenGUI/Event/EventHandler.h"
 
-using namespace XERCES_CPP_NAMESPACE;
 namespace OGUI
 {
 	namespace PrimitiveDraw
@@ -98,7 +96,7 @@ namespace OGUI
             ATTR(XmlStringAttributeDescription, slot, "", XmlAttributeUse::Optional)
 #include "OpenGUI/Xml/GenXmlAttrsDesc.h"
 
-            bool InitAttribute(VisualElement& new_element, const DOMElement& asset, CreationContext& context);
+            bool InitAttribute(VisualElement& new_element, const XmlElement& asset, CreationContext& context);
 		};
 
 		class Factory : public XmlFactory<VisualElement, Traits>

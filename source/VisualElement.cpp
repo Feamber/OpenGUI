@@ -294,7 +294,7 @@ namespace std
 	}
 }
 
-bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element, const DOMElement &asset, CreationContext& context)
+bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element, const XmlElement &asset, CreationContext& context)
 {
     if(!XmlTraits::InitAttribute(new_element, asset, context)) return false;
 

@@ -22,7 +22,7 @@ namespace OGUI
 	class XmlRootElementFactory : public XmlFactory<VisualElement, XmlRootElementTraits> 
 	{
 	public:
-		inline static const std::string element_name = "Root";
+		inline static const std::string_view element_name = "Root";
 
 		XmlRootElementFactory()
 		{
@@ -31,7 +31,7 @@ namespace OGUI
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 		}
 
-		VisualElement* Create(const DOMElement& asset, CreationContext& context) override
+		VisualElement* Create(const XmlElement& asset, CreationContext& context) override
 		{
 			// <Root> 这个元素没有实际控件
 			return nullptr;
@@ -60,7 +60,7 @@ namespace OGUI
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 		}
 
-		VisualElement* Create(const DOMElement& asset, CreationContext& context) override;
+		VisualElement* Create(const XmlElement& asset, CreationContext& context) override;
 	};
 
 	// template -------------------------
@@ -86,7 +86,7 @@ namespace OGUI
 			xml_qualified_name = xml_namespace + '.' + xml_name;
 		}
 
-		VisualElement* Create(const DOMElement& asset, CreationContext& context) override;
+		VisualElement* Create(const XmlElement& asset, CreationContext& context) override;
 	};
 
 	// AttributeOverrides -----------------------------------------
@@ -117,7 +117,7 @@ namespace OGUI
 			any_attribute = true;
 		}
 
-		VisualElement* Create(const DOMElement& asset, CreationContext& context) override
+		VisualElement* Create(const XmlElement& asset, CreationContext& context) override
         {
             // <AttributeOverrides> 这个元素没有实际控件
             return nullptr;
@@ -142,7 +142,7 @@ namespace OGUI
 			ATTR(XmlStringAttributeDescription, template_name, "", XmlAttributeUse::Required)
 #include "OpenGUI/Xml/GenXmlAttrsDesc.h"
 
-            bool InitAttribute(VisualElement& new_element, const DOMElement& asset, CreationContext& context);
+            bool InitAttribute(VisualElement& new_element, const XmlElement& asset, CreationContext& context);
         };
 
         class Factory : public XmlFactory<VisualElement, Traits>
@@ -155,7 +155,7 @@ namespace OGUI
                 xml_qualified_name = xml_namespace + '.' + xml_name;
             }
 
-            VisualElement* Create(const DOMElement& asset, CreationContext& context) override;
+            VisualElement* Create(const XmlElement& asset, CreationContext& context) override;
         };
     };
 }

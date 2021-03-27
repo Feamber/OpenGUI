@@ -371,7 +371,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				ctx.desktops->_pseudoMask |= (int)PseudoStates::Root;
 
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-				auto ve = XmlAsset::Instantiate(asset->id);
+				auto ve = XmlAsset::Instantiate(asset.lock()->id);
 				ve->_name = "TestElement";
 				ctx.desktops->PushChild(ve.get());
 			}
