@@ -16,13 +16,17 @@
 }
 
 .Child:focus {
-    animation-name:testanim;
+    animation-name:rotateanim;
     animation-duration: 0.5s;
-    animation-yield-mode:keep;
+    animation-yield-mode:stop;
+    animation-resume-mode:reset;
+    animation-name:shapeanim;
+    animation-duration: 0.5s;
+    animation-yield-mode:goback;
     animation-resume-mode:reset;
 }
 
-@keyframes testanim {
+@keyframes rotateanim {
     10% {
         color:rgb(26, 11, 92);
         transform: scale(1.2, 1.2) rotate(10deg);
@@ -39,7 +43,11 @@
     80% {
         transform:  scale(1.2, 1.2) rotate(0deg);
     }
+}
+
+@keyframes shapeanim {
     to {
+        transform:  scale(1.2, 1.2) rotate(0deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         color:rgb(73, 214, 125);
