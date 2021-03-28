@@ -33,19 +33,19 @@
 @keyframes rotateanim {
     10% {
         color:rgb(26, 11, 92);
-        transform: scale(1.2, 1.2) rotate(10deg);
+        transform: rotate(10deg);
     }
     30% {
-        transform: scale(1.2, 1.2)  rotate(-10deg); 
+        transform: rotate(-10deg); 
     }
     50% {
-        transform:  scale(1.2, 1.2) rotate(10deg);
+        transform:  rotate(10deg);
     }
     70% {
-        transform:  scale(1.2, 1.2) rotate(-10deg);
+        transform:  rotate(-10deg);
     }
     80% {
-        transform:  scale(1.2, 1.2) rotate(0deg);
+        transform:  rotate(0deg);
     }
     to {
         transform:  scale(1.2, 1.2);

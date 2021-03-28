@@ -455,87 +455,6 @@ namespace OGUI
 		return FromString(tokens[0], t.X) && FromString(tokens[1], t.Y);
 	}
 
-	bool FromString(std::string_view str, Vector2f& t, float& r, Vector2f& s)
-	{
-		auto grammar = R"(
-			TransformList	<- Transform (w Transform)*
-			Transform		<- Translate / TranslateX / TranslateY / Scale / ScaleX / ScaleY / Rotate
-			Translate		<- 'translate' _ '(' _ LENGTH _ ',' _ LENGTH _ ')'
-			TranslateX		<- 'translateX' _ '(' _ LENGTH _ ')'
-			TranslateY		<- 'translateY' _ '(' _ LENGTH _ ')'
-			Scale			<- 'scale' _ '(' _ NUM _ ',' _ NUM _ ')'
-			ScaleX			<- 'scaleX' _ '(' _ NUM _ ')'
-			ScaleY			<- 'scaleY' _ '(' _ NUM _ ')'
-			Rotate			<- 'rotate' _ '(' _ ANGLE _ ')'
-			NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
-			LENGTH			<- < ( NUM ('px' / '%') ) > / '0'
-			ANGLE			<- < NUM ('deg' / 'rad' / 'grad' / 'turn')? >
-			~_				<- [ ]*
-			~w				<- [ ]+
-		)";
-
-
-		using namespace peg;
-		using namespace std;
-
-		parser parser;
-
-		parser.log = [](size_t line, size_t col, const string& msg)
-		{
-			cerr << line << ":" << col << ": " << msg << "\n";
-		};
-
-		auto ok = parser.load_grammar(grammar);
-		if (!ok)
-			return false;
-
-		parser["NUM"] = [](SemanticValues& vs)
-		{
-			float value = 0;
-			if (!FromString(vs.token(), value))
-				throw peg::parse_error("invalid number.");
-			return value;
-		};
-
-		parser["LENGTH"] = [](SemanticValues& vs)
-		{
-			return FromTranslationComponent(vs.token());
-		};
-
-		parser["ANGLE"] = [](SemanticValues& vs)
-		{
-			return FromAngle(vs.token()) / 180 * math::PI;
-		};
-		using tt = std::tuple<Vector2f, float, Vector2f>;
-#define ARG(n) any_move<float>(vs[n])
-		parser["Rotate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), ARG(0), Vector2f::vector_one()); };
-		parser["ScaleY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{ARG(0), 1}); };
-		parser["ScaleX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{1, ARG(0)}); };
-		parser["Scale"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{ARG(0), ARG(1)}); };
-		parser["TranslateX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), 0}, 0.f, Vector2f::vector_one()); };
-		parser["TranslateY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{0, ARG(0)}, 0.f, Vector2f::vector_one()); };
-		parser["Translate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), ARG(1)}, 0.f, Vector2f::vector_one()); };
-#undef ARG
-		parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
-		parser["TransformList"] = [](SemanticValues& vs)
-		{
-			tt finalM = any_move<tt>(vs[0]);
-			for (int i = 1; i < vs.size(); ++i)
-			{
-				tt M = any_move<tt>(vs[i]);
-				std::get<0>(finalM) += std::get<0>(M);
-				std::get<1>(finalM) += std::get<1>(M);
-				std::get<2>(finalM) *= std::get<2>(M);
-			}
-			return finalM;
-		};
-		tt value;
-		if (!parser.parse(str, value))
-			return false;
-		std::tie(t, r, s) = value;
-		return true;
-	}
-
 	bool FromString(std::string_view str, Color4f& value)
 	{
 
@@ -1329,6 +1248,105 @@ namespace OGUI
 		else return false;
 		return true;
 	}
+
+	bool FromTransform(std::string_view str, StyleSheetStorage& sheet, StyleRule& rule)
+	{
+		auto grammar = R"(
+			TransformList	<- Transform (w Transform)*
+			Transform		<- Translate / TranslateX / TranslateY / Scale / ScaleX / ScaleY / Rotate
+			Translate		<- 'translate' _ '(' _ LENGTH _ ',' _ LENGTH _ ')'
+			TranslateX		<- 'translateX' _ '(' _ LENGTH _ ')'
+			TranslateY		<- 'translateY' _ '(' _ LENGTH _ ')'
+			Scale			<- 'scale' _ '(' _ NUM _ ',' _ NUM _ ')'
+			ScaleX			<- 'scaleX' _ '(' _ NUM _ ')'
+			ScaleY			<- 'scaleY' _ '(' _ NUM _ ')'
+			Rotate			<- 'rotate' _ '(' _ ANGLE _ ')'
+			NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
+			LENGTH			<- < ( NUM ('px' / '%') ) > / '0'
+			ANGLE			<- < NUM ('deg' / 'rad' / 'grad' / 'turn')? >
+			~_				<- [ ]*
+			~w				<- [ ]+
+		)";
+
+
+		using namespace peg;
+		using namespace std;
+
+		parser parser;
+
+		parser.log = [](size_t line, size_t col, const string& msg)
+		{
+			cerr << line << ":" << col << ": " << msg << "\n";
+		};
+
+		auto ok = parser.load_grammar(grammar);
+		if (!ok)
+			return false;
+
+		parser["NUM"] = [](SemanticValues& vs)
+		{
+			float value = 0;
+			if (!FromString(vs.token(), value))
+				throw peg::parse_error("invalid number.");
+			return value;
+		};
+
+		parser["LENGTH"] = [](SemanticValues& vs)
+		{
+			return FromTranslationComponent(vs.token());
+		};
+
+		parser["ANGLE"] = [](SemanticValues& vs)
+		{
+			return FromAngle(vs.token()) / 180 * math::PI;
+		};
+		struct optionalTransform
+		{
+			std::optional<Vector2f> t;
+			std::optional<float> r;
+			std::optional<Vector2f> s;
+		};
+		using tt = optionalTransform;
+#define ARG(n) any_move<float>(vs[n])
+		parser["Rotate"] = [](SemanticValues& vs) -> tt		{ return {{},						ARG(0),	{}}; };
+		parser["ScaleX"] = [](SemanticValues& vs) -> tt		{ return {{},						{},		Vector2f{ARG(0), 1}}; };
+		parser["ScaleY"] = [](SemanticValues& vs) -> tt		{ return {{},						{},		Vector2f{1, ARG(0)}}; };
+		parser["Scale"] = [](SemanticValues& vs) -> tt		{ return {{},						{},		Vector2f{ARG(0), ARG(1)}}; };
+		parser["TranslateX"] = [](SemanticValues& vs) -> tt { return {Vector2f{ARG(0), 0},		{},		{}}; };
+		parser["TranslateY"] = [](SemanticValues& vs) -> tt { return {Vector2f{0, ARG(0)},		{},		{}}; };
+		parser["Translate"] = [](SemanticValues& vs) -> tt	{ return {Vector2f{ARG(0), ARG(1)}, {},		{}}; };
+#undef ARG
+		parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
+		static auto merge = [](auto& a, const auto& b)
+		{
+			if (!b.has_value()) return;
+			if (a.has_value())
+				a = a.value() + b.value();
+			else a = b.value();
+		};
+		parser["TransformList"] = [](SemanticValues& vs)
+		{
+			tt finalM = any_move<tt>(vs[0]);
+			for (int i = 1; i < vs.size(); ++i)
+			{
+				tt M = any_move<tt>(vs[i]);
+				merge(finalM.t, M.t);
+				merge(finalM.r, M.r);
+				merge(finalM.s, M.s);
+			}
+			return finalM;
+		};
+		tt value;
+		if (!parser.parse(str, value))
+			return false;
+		if (value.t.has_value())
+			rule.properties.push_back(StyleProperty{StylePropertyId::translation, false, sheet.Push<Vector2f>(value.t.value())});
+		if (value.r.has_value())
+			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, false, sheet.Push<float>(value.r.value())});
+		if (value.s.has_value())
+			rule.properties.push_back(StyleProperty{StylePropertyId::scale, false, sheet.Push<Vector2f>(value.s.value())});
+		return true;
+	}
 }
 
 namespace OGUI
@@ -1398,12 +1416,8 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		}
 		else
 		{
-			Vector2f t, s; float r;
-			if(!FromString(str, t, r, s))
+			if(!FromTransform(str, sheet, rule))
 				goto fail;
-			rule.properties.push_back(StyleProperty{StylePropertyId::translation, false, sheet.Push(t)});
-			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, false, sheet.Push(r)});
-			rule.properties.push_back(StyleProperty{StylePropertyId::scale , false, sheet.Push(s)});
 		}
 		return true;
 	}
