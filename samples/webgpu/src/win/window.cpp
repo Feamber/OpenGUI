@@ -747,14 +747,14 @@ namespace OGUI
 			return ret;
 		}
 
-		virtual void ClientToScreen(WindowHandle window, int& x, int& y) 
+		virtual void ClientToScreen(WindowHandle window, int& x, int& y) override 
 		{
 			POINT p{x, y};
 			::ClientToScreen((HWND)hWnd, &p);
 			x = p.x; y = p.y;
 		};
 
-		virtual void ScreenToClient(WindowHandle window, int& x, int& y)
+		virtual void ScreenToClient(WindowHandle window, int& x, int& y) override
 		{
 			POINT p{x, y};
 			::ScreenToClient((HWND)hWnd, &p);
