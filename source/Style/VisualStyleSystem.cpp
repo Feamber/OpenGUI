@@ -9,9 +9,13 @@
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 {
 	const std::vector<StyleSheet*>& ess = element->GetStyleSheets();
-	int originStyleSheetCount = matchingContext.styleSheetStack.size();
+	auto& sstack = matchingContext.styleSheetStack;
+	int originStyleSheetCount = sstack.size();
 	for (auto& ss : ess)
-		matchingContext.styleSheetStack.push_back(ss);
+	{
+		if(std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
+			sstack.push_back(ss);
+	}
 	{
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
@@ -23,10 +27,10 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 	element->Traverse([this](VisualElement* element) { 
 		Traverse(element); 
 	});
-	int styleSheetCount = matchingContext.styleSheetStack.size();
-	auto start = matchingContext.styleSheetStack.begin();
+	int styleSheetCount = sstack.size();
+	auto start = sstack.begin();
 	if (styleSheetCount > originStyleSheetCount) //pop
-		matchingContext.styleSheetStack.erase(start + originStyleSheetCount, start + styleSheetCount);
+		sstack.erase(start + originStyleSheetCount, start + styleSheetCount);
 }
 
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
