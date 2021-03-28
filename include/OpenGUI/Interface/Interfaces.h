@@ -27,7 +27,8 @@ namespace OGUI
 		virtual void ClientToScreen(WindowHandle window, int& x, int& y) = 0;
 		virtual void ScreenToClient(WindowHandle window, int& x, int& y) = 0;
 		virtual OGUI::Vector2f GetDpiScale() = 0;
-		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) = 0;
+		//virtual OGUI::Vector4f GetWindowMaxRect() = 0;
+ 		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) = 0;
 	};
     
     struct FileInterface

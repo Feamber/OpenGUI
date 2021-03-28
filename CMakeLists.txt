@@ -5,7 +5,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/") 
-include(RTTI) 
 
 if(UNIX)
     set(PLATFORM_INCLUDES ${PLATFORM_INCLUDES} include/Platform/Unix)
@@ -45,7 +44,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OPENGUI_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<
 link_directories(${OPENGUI_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:Release>$<$<CONFIG:MinSizeRel>:Release>)
 
 project(OpenGUI)
+
 add_subdirectory(thirdparty)
+
+include(RTTI) 
 include(Download) 
 set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 

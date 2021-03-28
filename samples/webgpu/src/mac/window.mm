@@ -1,8 +1,11 @@
 #include "window.h"
-
 #import <CoreVideo/CoreVideo.h>
-
 #include "glue.h"
+
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Event/PointerEvent.h"
+#include <memory>
 
 /**
  * Default window width.
@@ -264,8 +267,65 @@ void window::loop(window::Handle wHnd, window::Redraw func) {
 	}
 }
 
+#import <CoreGraphics/CoreGraphics.h>
+
+extern window::Handle hWnd;
+namespace OGUI
+{
+	struct MacOSInput : public InputInterface
+	{
+		virtual bool UseSystemGesture() override
+		{
+			return false;
+		}
+		virtual bool IsKeyDown(EKeyCode key_code) override
+		{
+			return false;
+		}
+		virtual bool IsKeyDown(EMouseKey key_code) override
+		{
+			return false;
+		}
+		virtual bool SetCursorPos(int32 x, int32 y) override
+		{
+			return false;
+		}
+		virtual bool SetCursor(EMouseCursor cursor) override
+		{
+			return false;
+		}
+		virtual bool GetCursorPos(int32& x, int32& y) override
+		{
+			NSPoint mouseLoc = {}; 
+			mouseLoc = [NSEvent mouseLocation]; 
+			NSLog(@"Mouse location："); 
+			NSLog(@"x =％d", mouseLoc.x); 
+			NSLog(@"y =％d", mouseLoc.y);
+			return false;
+		}
+		virtual bool IsKeyToggled(EMouseKey key_code) override
+		{
+			return false;
+		}
+		virtual void SetHighPrecisionMouseMode(int window, bool Enable) override
+		{
+			assert(window == 0);
+			//not implemented
+		}
+
+		virtual void ClientToScreen(WindowHandle window, int& x, int& y) override
+		{
+			
+		};
+
+		virtual void ScreenToClient(WindowHandle window, int& x, int& y) override
+		{
+			
+		};
+	};
+}
 void InstallInput()
 {
-	//auto& ctx = OGUI::Context::Get();
-	//ctx.inputImpl = std::make_unique<OGUI::WindowsInput>();
+	auto& ctx = OGUI::Context::Get();
+	ctx.inputImpl = std::make_unique<OGUI::MacOSInput>();
 }

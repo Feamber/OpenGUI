@@ -89,9 +89,19 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 	inputImpl->ScreenToClient(window, x, y); // client space
 
 	auto dpiScale = inputImpl->GetDpiScale();
-	float width = 800.0f * dpiScale.X;
-	float height = 450.0f * dpiScale.Y;
+	x /= dpiScale.X;
+	y /= dpiScale.Y;
+	//printf("ClientSpace: (%d, %d)\n", x, y);
+
+	printf("DpiScale: (%.2f, %.2f)\n", dpiScale.X, dpiScale.Y);
+	//auto windowMaxRect = inputImpl->GetWindowMaxRect();
+	//Vector2f windowRelativeSize = { (windowMaxRect.Z - windowMaxRect.X) / dpiScale.X, (windowMaxRect.W - windowMaxRect.Y) / dpiScale.Y };
+	//printf("WindowMax: (%.2f, %.2f)\n", windowRelativeSize.X, windowRelativeSize.Y);
+
+	float width = 800.0f;
+	float height = 450.0f;
 	auto point = Vector2f(x, height - y) - Vector2f(width, height) / 2; // center of the window
+	//printf("WindowCenter: (%.2f, %.2f)\n", point.X, point.Y);
 
 	auto picked = PickRecursive(root, point);
 	std::cout << std::endl;

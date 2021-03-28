@@ -724,6 +724,18 @@ namespace OGUI
 			assert(window == 0);
 			//not implemented
 		}
+		//virtual OGUI::Vector4f GetWindowMaxRect() override
+		//{
+		//	HMONITOR monitor = MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY);
+		//	if (monitor)
+		//	{
+		//		MONITORINFOEXW monitorInfo = {};
+		//		monitorInfo.cbSize = sizeof(MONITORINFOEXW);
+		//		GetMonitorInfoW(monitor, &monitorInfo);
+		//		return { (float)monitorInfo.rcMonitor.left, (float)monitorInfo.rcMonitor.top, (float)monitorInfo.rcMonitor.right, (float)monitorInfo.rcMonitor.bottom };
+		//	}
+		//	return { 0.0f, 0.0f, 0.0f, 0.0f };
+		//}
 		virtual OGUI::Vector2f GetDpiScale() override
 		{
 			HDC hdc = ::GetDC(NULL); // get the device context to get the dpi info
@@ -747,14 +759,14 @@ namespace OGUI
 			return ret;
 		}
 
-		virtual void ClientToScreen(WindowHandle window, int& x, int& y) 
+		virtual void ClientToScreen(WindowHandle window, int& x, int& y) override 
 		{
 			POINT p{x, y};
 			::ClientToScreen((HWND)hWnd, &p);
 			x = p.x; y = p.y;
 		};
 
-		virtual void ScreenToClient(WindowHandle window, int& x, int& y)
+		virtual void ScreenToClient(WindowHandle window, int& x, int& y) override
 		{
 			POINT p{x, y};
 			::ScreenToClient((HWND)hWnd, &p);
