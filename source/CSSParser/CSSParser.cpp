@@ -87,6 +87,24 @@ void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV)
 
 namespace OGUI
 {
+	bool CheckAnimationProps(gsl::span<StyleProperty> props)
+	{
+		int counts[(int)StylePropertyId::NumAnim] = {};
+		for (auto& prop : props)
+		{
+			if ((int)prop.id < (int)StylePropertyId::NumStyle)
+				continue;
+			counts[(int)prop.id - (int)StylePropertyId::NumStyle - 1]++;
+		}
+		for(int i=0;i < (int)StylePropertyId::NumAnim;++i)
+			if (counts[i] > counts[0])
+			{
+				auto id = (StylePropertyId)(i + (int)StylePropertyId::NumStyle + 1);
+				std::cerr << "property [" << PropertyIdToName(id) << "] got more count than [animation-name]!\n";
+				return false;
+			}
+		return true;
+	}
 	template<class T>
 	std::remove_cv_t<T> any_move(std::any& any)
 	{
@@ -1138,10 +1156,10 @@ namespace OGUI
 				const char* errorMsg;
 				ParseErrorType errorType;
 				if (!ParseProperty(sheet.storage, pair.first, pair.second, rule, errorMsg, errorType))
-				{
 					throw parse_error(errorMsg);
-				}
 			}
+			if (!CheckAnimationProps(rule.properties))
+				throw parse_error("invalid animation properties!");
 			int ruleIndex = sheet.styleRules.size();
 			sheet.styleRules.push_back(std::move(rule));
 			auto selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
@@ -1178,7 +1196,7 @@ namespace OGUI
 			{
 				const char* errorMsg;
 				ParseErrorType errorType;
-				if (!ParseProperty(sheet.storage, pair.first, pair.second, frame, errorMsg, errorType))
+				if (!ParseProperty(sheet.storage, pair.first, pair.second, frame, errorMsg, errorType, false))
 				{
 					throw parse_error(errorMsg);
 				}
@@ -1263,6 +1281,8 @@ namespace OGUI
 					throw parse_error(errorMsg);
 				}
 			}
+			if (!CheckAnimationProps(sheet.rule.properties))
+				throw parse_error("invalid animation properties!");
 		};
 
 		//parser.enable_packrat_parsing(); // Enable packrat parsing.
@@ -1313,7 +1333,7 @@ namespace OGUI
 }
 
 
-bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType)
+bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType, bool withAnim)
 {
 	StyleKeyword keyword = StyleKeyword::None;
 	//keywords
@@ -1381,6 +1401,12 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	if (id == StylePropertyId::Num)
 	{
 		errorMsg = "custom style property is not support yet!";
+		errorType = ParseErrorType::InvalidProperty;
+		return false;
+	}
+	if (!withAnim && (int)id >= (int)StylePropertyId::NumStyle)
+	{
+		errorMsg = "canimation properties in keyframe blocks is not allowed!";
 		errorType = ParseErrorType::InvalidProperty;
 		return false;
 	}

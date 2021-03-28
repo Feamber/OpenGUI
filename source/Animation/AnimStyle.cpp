@@ -31,10 +31,10 @@ void OGUI::AnimationStyle::ApplyProperties(std::vector<OGUI::AnimationStyle>& se
 {
 	std::vector<std::string> names;
 	std::vector<std::vector<OGUI::StyleProperty>> rules;
-	int counts[100] = {};
+	int counts[(int)StylePropertyId::NumAnim] = {};
 	auto Index = [&](StylePropertyId id)
 	{
-		int i = counts[(int)id]++;
+		int i = counts[(int)id - (int)StylePropertyId::NumStyle]++;
 		if (i >= rules.size())
 		{
 			names.resize(i + 1);
