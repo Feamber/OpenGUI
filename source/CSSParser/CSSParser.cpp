@@ -904,6 +904,95 @@ namespace OGUI
 		}
 		return false;
 	}
+
+	bool FromString(std::string_view str, EAnimDirection& value)
+	{
+		if (str == "normal")
+		{
+			value = EAnimDirection::Normal;
+			return true;
+		}
+		else if (str == "reverse")
+		{
+			value = EAnimDirection::Reverse;
+			return true;
+		}
+		else if (str == "alternate")
+		{
+			value = EAnimDirection::Alternate;
+			return true;
+		}
+		else if (str == "alternate-reverse")
+		{
+			value = EAnimDirection::AlternateReverse;
+			return true;
+		}
+
+		return false;
+	}
+
+	bool FromString(std::string_view str, EAnimResumeMode& value)
+	{
+		if (str == "reset")
+		{
+			value = EAnimResumeMode::Reset;
+			return true;
+		}
+		else if (str == "resume")
+		{
+			value = EAnimResumeMode::Resume;
+			return true;
+		}
+
+		return false;
+	}
+
+	bool FromString(std::string_view str, EAnimYieldMode& value)
+	{
+		if (str == "stop")
+		{
+			value = EAnimYieldMode::Stop;
+			return true;
+		}
+		else if (str == "reverse")
+		{
+			value = EAnimYieldMode::Reverse;
+			return true;
+		}
+		else if (str == "keep")
+		{
+			value = EAnimYieldMode::Keep;
+			return true;
+		}
+
+		return false;
+	}
+
+	bool FromString(std::string_view str, EAnimFillMode& value)
+	{
+		if (str == "forwards")
+		{
+			value = EAnimFillMode::Forwards;
+			return true;
+		}
+		else if (str == "backwards")
+		{
+			value = EAnimFillMode::Backwards;
+			return true;
+		}
+		else if (str == "none")
+		{
+			value = EAnimFillMode::None;
+			return true;
+		}
+		else if (str == "both")
+		{
+			value = EAnimFillMode::Both;
+			return true;
+		}
+
+		return false;
+	}
 }
 
 namespace OGUI

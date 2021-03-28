@@ -24,13 +24,28 @@ namespace OGUI
 		} type;
 	};
 
+	//when animation is already atived
+	enum class EAnimResumeMode
+	{
+		Reset,
+		Resume
+	};
+
+	//when rule is deatived
+	enum class EAnimYieldMode
+	{
+		Stop, // stop 
+		Reverse, // reverse and stop
+		Keep // play until end
+	};
+
 	inline constexpr AnimTimingFunction AnimLinearFuncion{};
 
 	enum class EAnimFillMode
 	{
 		None,
 		Forwards = 1,
-		Backwords = 2,
-		Both = Forwards | Backwords,
+		Backwards = 2,
+		Both = Forwards | Backwards,
 	};
 }

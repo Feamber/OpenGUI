@@ -16,17 +16,15 @@
 }
 
 :focus {
-    border-top-right-radius:0px;
-    border-bottom-right-radius:0px;
-    transform: rotate(90deg);
-    color:rgb(73, 214, 125)
+    animation-name:testanim;
+    animation-yield-mode:reverse;
 }
 
 @keyframes testanim {
-    from,   50%   {
-        width: 100px;
-    }
     to {
-        width: 150px;
+        border-top-right-radius:0px;
+        border-bottom-right-radius:0px;
+        transform: rotate(90deg);
+        color:rgb(73, 214, 125)
     }
 }

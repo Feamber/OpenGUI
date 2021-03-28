@@ -37,14 +37,16 @@ void OGUI::AnimationStyle::ApplyProperties(std::vector<OGUI::AnimationStyle>& se
 		int i = counts[(int)id]++;
 		if (i >= rules.size())
 		{
-			names.resize(i);
-			rules.resize(i);
+			names.resize(i + 1);
+			rules.resize(i + 1);
 		}
 		return i;
 	};
 
 	for (auto& prop : props)
 	{
+		if ((int)prop.id < (int)StylePropertyId::NumStyle)
+			continue;
 		int i = Index(prop.id);
 		std::vector<OGUI::StyleProperty>& rule = rules[i];
 		rule.push_back(prop);
@@ -218,10 +220,10 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	auto sheet = anim.sheet;
 	auto keyframes = anim.keyframes;
 	int keyId = anim.keyframes->curve.keys.size() - 1;
-	float time = ctx.Time - anim.animDelay;
+	float time = ctx.time - anim.animDelay;
 	if (time < 0)
 	{
-		if (test(anim.animFillMode, EAnimFillMode::Backwords))
+		if (test(anim.animFillMode, EAnimFillMode::Backwards))
 		{
 			//apply first frame
 			auto& nextKey = keyframes->curve.keys[0];
@@ -231,7 +233,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	}
 
 	float iteration = 0.f;
-	iteration = ctx.Time / anim.animDuration;
+	iteration = ctx.time / anim.animDuration;
 	bool reversed = ShouldReverse(anim.animDirections, iteration);
 	float percentage = iteration - int(iteration);
 	percentage = reversed ? 1 - percentage : percentage;

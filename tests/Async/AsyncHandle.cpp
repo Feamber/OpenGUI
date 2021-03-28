@@ -51,6 +51,7 @@ protected:
 
 class IOThread
 {
+public:
     template<typename T = AsyncFile>
     std::shared_ptr<T> Load(const char* path,
         const std::function<void(std::shared_ptr<AsyncFile>)>& completeCallback = [](std::shared_ptr<AsyncFile> tex) {})

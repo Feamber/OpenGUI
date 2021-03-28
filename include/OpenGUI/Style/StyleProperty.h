@@ -29,12 +29,14 @@ namespace OGUI
 		name,
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef	STYLEPROP
-
+		NumStyle,
 #define	ANIMPROP(name, ...)\
 		name,
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
 #undef	ANIMPROP
-		Num,
+		_End,
+		NumAnim = _End - NumStyle,
+		Num = _End - 1,
 	};
 
 	struct StyleProperty

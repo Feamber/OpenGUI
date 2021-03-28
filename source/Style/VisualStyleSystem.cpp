@@ -304,7 +304,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 	}
 	/*
 	* anim style = 
-	*	shared anim style + inline/procedure anim rule
+	*	 yielding rule + shared anim style + inline/procedure anim rule
 	* animated rule =
 	*	anim style + anim context
 	* final style =
@@ -328,26 +328,50 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		if (parentStyle)
 			element->_style.MergeStyle(*parentStyle, inheritMask);
 		ctxs.resize(anims.size());
-		std::swap(element->_animContext, ctxs);
-		std::swap(element->_animStyles, anims);
 		//Inherit Context
-		for (auto&& [i, anim] : ipair(element->_animStyles))
+		std::vector<bool> dynbitset;
+		dynbitset.resize(element->_animContext.size());
+		for (auto&& [i, anim] : ipair(anims))
 		{
 			bool founded = false;
-			for (auto&& [j, oldAnim]: ipair(anims))
+			for (auto&& [j, oldAnim]: ipair(element->_animStyles))
 			{
 				if (oldAnim.animName == anim.animName)
 				{
 					anim.keyframes = oldAnim.keyframes;
 					anim.sheet = oldAnim.sheet;
-					element->_animContext[i] = ctxs[j];
+					if (anim.animResumeMode == EAnimResumeMode::Resume)
+					{
+						ctxs[i] = element->_animContext[j];
+						ctxs[i].Reversed = false;
+						ctxs[i].Yielding = false;
+					}
 					founded = true;
+					dynbitset[j] = true;
 					break;
 				}
 			}
 			if (!founded)
 				anim.ResolveReference(matchingContext.styleSheetStack);
 		}
+		std::vector<AnimationStyle> yieldingAnims;
+		std::vector<AnimRunContext> yieldingCtxs;
+		for (auto&& [i, value] : ipair(dynbitset))
+		{
+			if (!value && element->_animStyles[i].animYieldMode != EAnimYieldMode::Stop)
+			{
+				yieldingAnims.emplace_back(std::move(element->_animStyles[i]));
+				auto& ctx = yieldingCtxs.emplace_back(std::move(ctxs[i]));
+				ctx.Yielding = true;
+				ctx.Reversed = element->_animStyles[i].animYieldMode == EAnimYieldMode::Reverse;
+			}
+		}
+		yieldingAnims.reserve(yieldingAnims.size() + anims.size());
+		std::move(anims.begin(), anims.end(), std::back_inserter(yieldingAnims));
+		yieldingCtxs.reserve(yieldingCtxs.size() + ctxs.size());
+		std::move(ctxs.begin(), ctxs.end(), std::back_inserter(yieldingCtxs));
+		std::swap(element->_animContext, yieldingCtxs);
+		std::swap(element->_animStyles, yieldingAnims);
 
 		element->_sharedStyle = sharedStyle;
 		element->_style.MergeStyle(*sharedStyle, overrideMask);

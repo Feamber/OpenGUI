@@ -6,7 +6,9 @@ namespace OGUI
 {
 	struct AnimRunContext
 	{
-		float Time = 0.f;
+		float time = 0.f;
+		bool Reversed = false;
+		bool Yielding = false;
 	};
 
 	struct AnimationStyle
