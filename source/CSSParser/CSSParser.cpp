@@ -462,7 +462,7 @@ namespace OGUI
 			Transform		<- Translate / TranslateX / TranslateY / Scale / ScaleX / ScaleY / Rotate
 			Translate		<- 'translate' _ '(' _ LENGTH _ ',' _ LENGTH _ ')'
 			TranslateX		<- 'translateX' _ '(' _ LENGTH _ ')'
-			TranslateY		<- 'translateX' _ '(' _ LENGTH _ ')'
+			TranslateY		<- 'translateY' _ '(' _ LENGTH _ ')'
 			Scale			<- 'scale' _ '(' _ NUM _ ',' _ NUM _ ')'
 			ScaleX			<- 'scaleX' _ '(' _ NUM _ ')'
 			ScaleY			<- 'scaleY' _ '(' _ NUM _ ')'
@@ -512,8 +512,8 @@ namespace OGUI
 		parser["ScaleY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{ARG(0), 1}); };
 		parser["ScaleX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{1, ARG(0)}); };
 		parser["Scale"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{ARG(0), ARG(1)}); };
-		parser["TranslateY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), 0}, 0.f, Vector2f::vector_one()); };
-		parser["TranslateX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{0, ARG(0)}, 0.f, Vector2f::vector_one()); };
+		parser["TranslateX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), 0}, 0.f, Vector2f::vector_one()); };
+		parser["TranslateY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{0, ARG(0)}, 0.f, Vector2f::vector_one()); };
 		parser["Translate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), ARG(1)}, 0.f, Vector2f::vector_one()); };
 #undef ARG
 		parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
@@ -1317,6 +1317,18 @@ namespace OGUI
 		}
 		return true;
 	}
+
+	bool FromString(std::string_view str, StyleKeyword& value)
+	{
+		if (str == "inherit")
+			value = StyleKeyword::Inherit;
+		else if (str == "unset")
+			value = StyleKeyword::Unset;
+		else if (str == "initial")
+			value = StyleKeyword::Initial;
+		else return false;
+		return true;
+	}
 }
 
 namespace OGUI
@@ -1341,12 +1353,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 {
 	StyleKeyword keyword = StyleKeyword::None;
 	//keywords
-	if (str == "inherit")
-		keyword = StyleKeyword::Inherit;
-	else if (str == "unset")
-		keyword = StyleKeyword::Unset;
-	else if (str == "initial")
-		keyword = StyleKeyword::Initial;
+	FromString(str, keyword);
 
 	//shorthands
 #define SHORTHAND(mm, mm2, smm) \
@@ -1434,13 +1441,21 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 #define PARSEANIMPROP(idd, type, ParseValue) \
 	if (id == StylePropertyId::idd) \
 	{ \
-		std::vector<type> values; \
-		if (ParseValue(str, values)) \
+		std::vector<std::string_view> tokens; \
+		std::split(str, tokens, ", "); \
+		for (auto& token : tokens) \
 		{ \
-			for(auto& value : values) \
-				rule.properties.push_back({id, false, AddPropertyImpl(sheet, id, value)}); \
-			return true; \
+			if(FromString(token, keyword)) \
+				rule.properties.push_back(StyleProperty{StylePropertyId::scale , true, (int)keyword}); \
+			else \
+			{ \
+				type value; \
+				if (ParseValue(token, value)) \
+					rule.properties.push_back({id, false, AddPropertyImpl(sheet, id, value)}); \
+				else return false; \
+			} \
 		} \
+		return true; \
 	}
 
 #define PARSEPROP(idd, type, ParseValue) \

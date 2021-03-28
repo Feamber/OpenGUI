@@ -108,6 +108,7 @@ namespace OGUI
 			|| prop.value.index == (int)StyleKeyword::Initial)
 		{
 			GetInitialProperty<T>(field, prop.id);
+			return;
 		}
 		assert(false);
 	}
@@ -292,7 +293,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	}
 
 	float iteration = 0.f;
-	iteration = ctx.time / anim.animDuration;
+	iteration = time / anim.animDuration;
 	bool reversed = ShouldReverse(anim.animDirections, iteration);
 	float percentage = 0.f;
 	if (iteration > int(iteration))
@@ -302,7 +303,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	percentage = reversed ? 1 - percentage : percentage;
 	if (anim.animIterCount > 0)
 	{
-		if (iteration >= anim.animIterCount)
+		if (iteration >= anim.animIterCount && !ctx.Goingback)
 		{
 			if (test(anim.animFillMode, EAnimFillMode::Forwards))
 			{

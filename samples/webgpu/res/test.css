@@ -18,10 +18,14 @@
 .Child:focus {
     animation-name:rotateanim;
     animation-duration: 0.5s;
+    animation-delay: 0s;
+    animation-fill-mode: both;
     animation-yield-mode:stop;
     animation-resume-mode:reset;
     animation-name:shapeanim;
     animation-duration: 0.5s;
+    animation-delay: -0.5s;
+    animation-fill-mode: none;
     animation-yield-mode:goback;
     animation-resume-mode:reset;
 }
@@ -43,11 +47,17 @@
     80% {
         transform:  scale(1.2, 1.2) rotate(0deg);
     }
+    to {
+        transform:  scale(1.2, 1.2);
+        border-top-right-radius:0px;
+        border-bottom-right-radius:0px;
+        color:rgb(73, 214, 125);
+    }
 }
 
 @keyframes shapeanim {
     to {
-        transform:  scale(1.2, 1.2) rotate(0deg);
+        transform:  scale(1.2, 1.2) rotate(360deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         color:rgb(73, 214, 125);

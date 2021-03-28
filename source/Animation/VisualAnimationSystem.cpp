@@ -32,7 +32,7 @@ void OGUI::VisualAnimationSystem::Traverse(VisualElement* element)
 		if (anim.animPlayState != EAnimPlayState::Paused)
 		{
 			if(ctx.Goingback)
-				ctx.time = std::max(0.f, ctx.time - cachedCtx->_deltaTime);
+				ctx.time = std::max(anim.animDelay, ctx.time - cachedCtx->_deltaTime);
 			else
 				ctx.time = std::min(cachedCtx->_deltaTime + ctx.time, maxTime);
 		}

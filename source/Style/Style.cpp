@@ -89,14 +89,17 @@ namespace OGUI
 		if (prop.value.index == (int)StyleKeyword::Initial)
 		{
 			GetInitialProperty<T>(field, prop.id);
+			return;
 		}
 		if (prop.value.index == (int)StyleKeyword::Unset)
 		{
 			GetUnsetProperty<T>(field, prop.id);
+			return;
 		}
 		if (prop.value.index == (int)StyleKeyword::Inherit && parent)
 		{
 			GetInheritProperty<T>(field, prop.id, parent);
+			return;
 		}
 		assert(false);
 	}
