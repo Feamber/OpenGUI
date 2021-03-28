@@ -343,7 +343,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 					if (anim.animResumeMode == EAnimResumeMode::Resume)
 					{
 						ctxs[i] = element->_animContext[j];
-						ctxs[i].Reversed = false;
+						ctxs[i].Goingback = false;
 						ctxs[i].Yielding = false;
 					}
 					founded = true;
@@ -363,7 +363,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 				yieldingAnims.emplace_back(std::move(element->_animStyles[i]));
 				auto& ctx = yieldingCtxs.emplace_back(std::move(element->_animContext[i]));
 				ctx.Yielding = true;
-				ctx.Reversed = element->_animStyles[i].animYieldMode == EAnimYieldMode::Reverse;
+				ctx.Goingback = element->_animStyles[i].animYieldMode == EAnimYieldMode::Goback;
 			}
 		}
 		yieldingAnims.reserve(yieldingAnims.size() + anims.size());

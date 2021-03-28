@@ -31,7 +31,7 @@ void OGUI::VisualAnimationSystem::Traverse(VisualElement* element)
 		float maxTime = anim.animDuration * anim.animIterCount + anim.animDelay;
 		if (anim.animPlayState != EAnimPlayState::Paused)
 		{
-			if(ctx.Reversed)
+			if(ctx.Goingback)
 				ctx.time = std::max(0.f, ctx.time - cachedCtx->_deltaTime);
 			else
 				ctx.time = std::min(cachedCtx->_deltaTime + ctx.time, maxTime);
@@ -39,9 +39,9 @@ void OGUI::VisualAnimationSystem::Traverse(VisualElement* element)
 		if (ctx.Yielding)
 		{
 			bool shouldStop = false;
-			if (!ctx.Reversed && anim.animIterCount > 0 && ctx.time >= maxTime)
+			if (!ctx.Goingback && anim.animIterCount > 0 && ctx.time >= maxTime)
 				shouldStop = true;
-			else if(ctx.Reversed && ctx.time <= anim.animDelay)
+			else if(ctx.Goingback && ctx.time <= anim.animDelay)
 				shouldStop = true;
 			if (shouldStop)
 				toStop.emplace_back(i);

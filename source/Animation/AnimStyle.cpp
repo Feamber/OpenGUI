@@ -215,6 +215,40 @@ bool test(T a, T b)
 	return ((int)a & (int)b) == (int)b;
 }
 
+namespace OGUI
+{
+	void GetTimingFunction(AnimTimingFunction& field, StyleSheetStorage& sheet, gsl::span<StyleProperty> props)
+	{
+		for(auto& prop : props)
+			if (prop.id == StylePropertyId::animTimingFunction)
+			{
+				if (prop.keyword) 
+					GetGlobalProperty<AnimTimingFunction>(field, prop);
+				else 
+					GetProperty<AnimTimingFunction>(field, prop, sheet);
+				return;
+			}
+	}
+
+	struct AppliedProperty
+	{
+		StylePropertyId id;
+		float percentage;
+		bool operator<(const AppliedProperty& other) { return (int)id < (int)other.id; }
+	};
+}
+
+
+
+bool operator<(OGUI::StylePropertyId a, OGUI::StylePropertyId b)
+{
+	return (int)a < (int)b;
+}
+bool operator>(OGUI::StylePropertyId a, OGUI::StylePropertyId b)
+{
+	return (int)a > (int)b;
+}
+
 void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContext& ctx, const Style* parent)
 {
 	auto sheet = anim.sheet;
@@ -255,18 +289,44 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 		}
 		iteration = std::clamp(iteration, 0.f, anim.animIterCount);
 	}
-	percentage = ApplyTimingFunction(anim.animTimingFunction, percentage);
-	percentage = std::clamp(percentage, 0.f, 1.f);
 
-	std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
+	std::vector<AppliedProperty> appliedProperties;
+	std::vector<AppliedProperty> appliedProperties2;
+	auto& ap = appliedProperties;
+	auto& ap2 = appliedProperties2;
+	int an = 0, an2 = 0;
 	int i = 0, count = keyframes->curve.keys.size();
+	auto merge = [&](gsl::span<StyleProperty> fp, float p)
+	{
+		int l = 0, r = 0, ln = ap.size(), rn = fp.size();
+		ap2.resize(ln + rn); an2 = 0;
+		while (l < ln && r < rn)
+		{
+			if (ap[l].id < fp[r].id) //inherit
+				ap2[an2++] = ap[l++];
+			else if (ap[l].id < fp[r].id) //new
+				ap2[an2++] = {fp[r++].id, p};
+			else //override
+				ap2[an2++] = {fp[(l++, r++)].id, p};
+		}
+		while (l < ln) //inherit
+			ap2[an2++] = ap[l++];
+		while (r < rn) //new
+			ap2[an2++] = {fp[r++].id, p};
+		std::swap(an2, an);
+		std::swap(ap, ap2);
+	};
 	for (i = 0; i < count ; ++i)
 	{
 		auto& key = keyframes->curve.keys[i];
 		if (key.percentage > percentage)
 			break;
 		if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
-			ApplyProperties(sheet->storage, keyframes->frames[key.frameIndex].properties, parent); //accelerate
+		{
+			auto& fp = keyframes->frames[key.frameIndex].properties;
+			ApplyProperties(sheet->storage, fp, parent); //accelerate
+			merge(fp, key.percentage);
+		}
 	}
 	for (;i < count; ++i)
 	{
@@ -274,8 +334,51 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 		float alpha = percentage / key.percentage;
 		if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
 		{
-			LerpProperties(sheet->storage, keyframes->frames[key.frameIndex].properties, parent, alpha, overrideMask);
-			GetOverrideMask(keyframes->frames[key.frameIndex].properties, overrideMask, inheritMask);
+			auto& fp = keyframes->frames[key.frameIndex].properties;
+			auto timeFunction = anim.animTimingFunction;
+			GetTimingFunction(timeFunction, sheet->storage, fp);
+			float p = key.percentage;
+			int l = 0, r = 0, ln = ap.size(), rn = fp.size();
+			ap2.resize(ln + rn); an2 = 0;
+			while (l < ln && r < rn)
+			{
+				if (ap[l].id < fp[r].id)
+					ap2[an2++] = ap[l++];
+				else if (ap[l].id < fp[r].id)
+				{
+					float alpha = percentage / p;
+
+					alpha = ApplyTimingFunction(timeFunction, alpha);
+					alpha = std::clamp(alpha, 0.f, 1.f);
+					LerpProperties(sheet->storage, {&fp[r], 1}, parent, alpha);
+					ap2[an2++] = {fp[r++].id, p};
+				}
+				else
+				{
+					float alpha = (percentage - ap[l].percentage) / (p - ap[l].percentage);
+					alpha = ApplyTimingFunction(timeFunction, alpha);
+					alpha = std::clamp(alpha, 0.f, 1.f);
+					LerpProperties(sheet->storage, {&fp[r], 1}, parent, alpha);
+					ap2[an2++] = {fp[(l++, r++)].id, p};
+				}
+			}
+			while (l < ln)
+				ap2[an2++] = ap[l++];
+			while (r < rn)
+			{
+				float alpha = percentage / p;
+				alpha = ApplyTimingFunction(timeFunction, alpha);
+				alpha = std::clamp(alpha, 0.f, 1.f);
+				LerpProperties(sheet->storage, {&fp[r], 1}, parent, alpha);
+				ap2[an2++] = {fp[r++].id, p};
+			}
+			std::swap(an2, an);
+			std::swap(ap, ap2);
+		}
+		else
+		{
+			auto& fp = keyframes->frames[key.frameIndex].properties;
+			merge(fp, key.percentage);
 		}
 	}
 }

@@ -35,7 +35,7 @@ namespace OGUI
 	enum class EAnimYieldMode
 	{
 		Stop, // stop 
-		Reverse, // reverse and stop
+		Goback, // reverse and stop
 		Keep // play until end
 	};
 

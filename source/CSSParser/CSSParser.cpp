@@ -1007,9 +1007,9 @@ namespace OGUI
 			value = EAnimYieldMode::Stop;
 			return true;
 		}
-		else if (str == "reverse")
+		else if (str == "goback")
 		{
-			value = EAnimYieldMode::Reverse;
+			value = EAnimYieldMode::Goback;
 			return true;
 		}
 		else if (str == "keep")
@@ -1201,6 +1201,10 @@ namespace OGUI
 					throw parse_error(errorMsg);
 				}
 			}
+			std::sort(frame.properties.begin(), frame.properties.end(), [](const StyleProperty& a, const StyleProperty& b)
+				{
+					return (int)a.id < (int)b.id;
+				});
 			return std::make_pair(curve, frame);
 		};
 		parser["Keyframes"] = [&](SemanticValues& vs)
@@ -1376,7 +1380,6 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	return false;
 	}
 #undef SHORTHAND
-	//TODO: animation shorthand
 
 	if (name == "transform")
 	{
@@ -1397,6 +1400,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		}
 		return true;
 	}
+
 	auto id = PropertyNameToId(name);
 	if (id == StylePropertyId::Num)
 	{
@@ -1404,7 +1408,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		errorType = ParseErrorType::InvalidProperty;
 		return false;
 	}
-	if (!withAnim && (int)id >= (int)StylePropertyId::NumStyle)
+	if (!withAnim && (int)id >= (int)StylePropertyId::NumStyle && id != StylePropertyId::animTimingFunction)
 	{
 		errorMsg = "canimation properties in keyframe blocks is not allowed!";
 		errorType = ParseErrorType::InvalidProperty;
@@ -1449,15 +1453,23 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 			return true; \
 		} \
 	}
-
-	PARSEANIMPROP(animDuration, float, FromTime);
+	if (withAnim)
+	{
+		PARSEANIMPROP(animDuration, float, FromTime);
+		PARSEANIMPROP(animDelay, float, FromTime);
+#define ANIMPROP(idd, index, type, ...) PARSEANIMPROP(idd, type, FromString) {}
+#include "OpenGUI/Animation/AnimPropertiesDef.h"
+#undef ANIMPROP
+	}
+	else
+	{
+		PARSEPROP(animTimingFunction, AnimTimingFunction, FromString);
+	}
+	
 	PARSEPROP(translation, Vector2f, FromTranslation);
 #define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef STYLEPROP
-#define ANIMPROP(idd, index, type, ...) PARSEANIMPROP(idd, type, FromString) {}
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef ANIMPROP
 	fail:
 	errorMsg = "failed to parse style value!"; 
 	errorType = ParseErrorType::InvalidValue; 

@@ -7,7 +7,7 @@ namespace OGUI
 	struct AnimRunContext
 	{
 		float time = 0.f;
-		bool Reversed = false;
+		bool Goingback = false;
 		bool Yielding = false;
 	};
 

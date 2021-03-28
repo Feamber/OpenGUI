@@ -28,6 +28,6 @@
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         transform: scale(1.2, 1.2) rotate(180deg);
-        color:rgb(73, 214, 125)
+        color:rgb(73, 214, 125);
     }
 }
