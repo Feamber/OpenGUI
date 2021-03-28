@@ -344,12 +344,16 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 				{
 					anim.keyframes = oldAnim.keyframes;
 					anim.sheet = oldAnim.sheet;
-					if (anim.animResumeMode == EAnimResumeMode::Resume)
+					ctxs[i] = element->_animContext[j];
+					if (anim.animResumeMode == EAnimResumeMode::Reset)
 					{
-						ctxs[i] = element->_animContext[j];
-						ctxs[i].Goingback = false;
-						ctxs[i].Yielding = false;
+						if(element->_animContext[j].Yielding)
+							ctxs[i].time = 0.f;
+						else if(!(anim == oldAnim))
+							ctxs[i].time = 0.f;
 					}
+					ctxs[i].Goingback = false;
+					ctxs[i].Yielding = false;
 					founded = true;
 					dynbitset[j] = true;
 					break;

@@ -12,22 +12,36 @@
     margin:10px;
     border-top-right-radius:20px;
     border-bottom-right-radius:50px;
-    color:rgb(41, 133, 182)
+    color:rgb(41, 133, 182);
 }
 
 .Child:focus {
     animation-name:testanim;
     animation-duration: 0.5s;
+    animation-yield-mode:keep;
+    animation-resume-mode:reset;
 }
 
 @keyframes testanim {
+    10% {
+        color:rgb(26, 11, 92);
+        transform: scale(1.2, 1.2) rotate(10deg);
+    }
+    30% {
+        transform: scale(1.2, 1.2)  rotate(-10deg); 
+    }
     50% {
-        color:rgb(26, 11, 92)
+        transform:  scale(1.2, 1.2) rotate(10deg);
+    }
+    70% {
+        transform:  scale(1.2, 1.2) rotate(-10deg);
+    }
+    80% {
+        transform:  scale(1.2, 1.2) rotate(0deg);
     }
     to {
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
-        transform: scale(1.2, 1.2) rotate(180deg);
         color:rgb(73, 214, 125);
     }
 }

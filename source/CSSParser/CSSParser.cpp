@@ -467,7 +467,7 @@ namespace OGUI
 			ScaleX			<- 'scaleX' _ '(' _ NUM _ ')'
 			ScaleY			<- 'scaleY' _ '(' _ NUM _ ')'
 			Rotate			<- 'rotate' _ '(' _ ANGLE _ ')'
-			NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
 			LENGTH			<- < ( NUM ('px' / '%') ) > / '0'
 			ANGLE			<- < NUM ('deg' / 'rad' / 'grad' / 'turn')? >
 			~_				<- [ ]*
@@ -544,7 +544,7 @@ namespace OGUI
 			CALL	<- FUNC '(' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ (',' _ CNUM _)? ')'
 			CALLS	<- FUNC '(' _ CNUM __ CNUM __ CNUM _ ('/' _ CNUM _)? ')'
 			FUNC	<- <'rgba' / 'rgb' / 'hsl' / 'hsla'>
-			NUM		<- < ([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+) >
+			NUM		<- < ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+)) >
 			CNUM	<- < NUM ('deg' / 'rad' / 'grad' / 'turn' / '%')? >
 			HEX		<- '#' < [0-9a-fA-F] >
 			IDENT	<- < [a-zA-Z] [a-zA-Z0-9-]* >
@@ -1071,7 +1071,7 @@ namespace OGUI
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
 			~HEX				<- ('#' NUM) 
 			~CNUM				<- NUM (IDENT / '%')?
-			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
 			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~blockcomment		<- '/*' (!'*/' .)* '*/'
 			~_					<- ([ \t\r\n] / blockcomment)*
@@ -1243,7 +1243,7 @@ namespace OGUI
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
 			~HEX				<- ('#' NUM) 
 			~CNUM				<- NUM (IDENT / '%')?
-			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
+			~NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
 			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~blockcomment		<- '/*' (!'*/' .)* '*/'
 			~_					<- ([ \t\r\n] / blockcomment)*
@@ -1402,7 +1402,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	}
 
 	auto id = PropertyNameToId(name);
-	if (id == StylePropertyId::Num)
+	if (id == StylePropertyId::_End)
 	{
 		errorMsg = "custom style property is not support yet!";
 		errorType = ParseErrorType::InvalidProperty;

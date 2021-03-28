@@ -22,6 +22,7 @@ namespace OGUI
 		static void ApplyProperties(std::vector<OGUI::AnimationStyle>& self, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
 		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
 		void ResolveReference(const gsl::span<StyleSheet*>& sheets);
+		bool operator==(const AnimationStyle& other);
 #define	ANIMPROP(name, index, type, ...)\
 		type name;
 #include "OpenGUI/Animation/AnimPropertiesDef.h"

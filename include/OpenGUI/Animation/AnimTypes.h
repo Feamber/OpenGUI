@@ -22,6 +22,7 @@ namespace OGUI
 		{
 			Linear
 		} type;
+		bool operator==(const AnimTimingFunction& other) { return type == other.type; }
 	};
 
 	//when animation is already atived

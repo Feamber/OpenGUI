@@ -181,6 +181,15 @@ void OGUI::AnimationStyle::ResolveReference(const gsl::span<StyleSheet*>& sheets
 	assert(false);
 }
 
+bool OGUI::AnimationStyle::operator==(const AnimationStyle& other)
+{
+#define ANIMPROP(name, index, type, ...)\
+	if(!(name == other.name)) return false;
+#include "OpenGUI/Animation/AnimPropertiesDef.h"
+#undef	ANIMPROP
+	return true;
+}
+
 namespace OGUI
 {
 	float ApplyTimingFunction(AnimTimingFunction function, float percentage)
@@ -254,6 +263,19 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	auto sheet = anim.sheet;
 	auto keyframes = anim.keyframes;
 	float time = ctx.time - anim.animDelay;
+	auto applyToLast = [&]()
+	{
+		int count = keyframes->frames.size();
+		for (int i = 0; i < count; ++i)
+		{
+			auto& key = keyframes->curve.keys[i];
+			if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
+			{
+				auto& fp = keyframes->frames[key.frameIndex].properties;
+				ApplyProperties(sheet->storage, fp, parent); //accelerate
+			}
+		}
+	};
 	if (time <= 0)
 	{
 		if (test(anim.animFillMode, EAnimFillMode::Backwards))
@@ -261,7 +283,10 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			//apply first frame
 			bool reversed = anim.animDirections == EAnimDirection::Reverse || anim.animDirections == EAnimDirection::AlternateReverse;
 			auto& lastKey = keyframes->curve.keys.back();
-			ApplyProperties(sheet->storage, keyframes->frames[reversed ? lastKey.frameIndex : 0].properties, parent);
+			if (reversed)
+				applyToLast();
+			else
+				ApplyProperties(sheet->storage, keyframes->frames[0].properties, parent);
 		}
 		return;
 	}
@@ -283,7 +308,10 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			{
 				//apply last frame
 				auto& lastKey = keyframes->curve.keys.back();
-				ApplyProperties(sheet->storage, keyframes->frames[reversed ? 0 : lastKey.frameIndex].properties, parent);
+				if (reversed)
+					ApplyProperties(sheet->storage, keyframes->frames[0].properties, parent);
+				else
+					applyToLast();
 			}
 			return;
 		}
@@ -304,7 +332,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 		{
 			if (ap[l].id < fp[r].id) //inherit
 				ap2[an2++] = ap[l++];
-			else if (ap[l].id < fp[r].id) //new
+			else if (ap[l].id > fp[r].id) //new
 				ap2[an2++] = {fp[r++].id, p};
 			else //override
 				ap2[an2++] = {fp[(l++, r++)].id, p};
@@ -344,7 +372,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			{
 				if (ap[l].id < fp[r].id)
 					ap2[an2++] = ap[l++];
-				else if (ap[l].id < fp[r].id)
+				else if (ap[l].id > fp[r].id)
 				{
 					float alpha = percentage / p;
 
