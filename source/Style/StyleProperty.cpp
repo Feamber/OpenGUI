@@ -39,3 +39,14 @@ std::string_view OGUI::PropertyIdToName(StylePropertyId id)
 	else
 		return "unknown";
 }
+
+std::bitset<96> OGUI::GetInheritMask()
+{
+	std::bitset<96> res;
+#define STYLEPROP(id, index, inherit, ...) \
+	if constexpr(inherit == Inheritance::Inherited) \
+		res.set((int)StylePropertyId::id); 
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#undef STYLEPROP
+	return res;
+}

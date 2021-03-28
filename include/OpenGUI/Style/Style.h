@@ -7,18 +7,18 @@
 #include "OpenGUI/Style/StyleSheet.h"
 namespace OGUI
 {
+	struct AnimationStyle;
+	struct AnimRunContext;
 	struct Style
 	{
 		bool isShared;
 
 		static const Style& GetInitialStyle();
 		static Style Create(Style* parent, bool isShared);
+		void MergeStyle(const Style& other, std::bitset<96> mask);
 		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent);
-		bool ApplyGlobalKeyword(const StyleProperty& props, const Style* parent);
-		void ApplyCustomProperties(const StyleSheetStorage& sheet, const gsl::span<CustomStyleProperty>& props);
-		void ApplyInitialKeyword(StylePropertyId propId);
-		void ApplyUnsetKeyword(StylePropertyId propId);
-		void ApplyInheritKeyword(StylePropertyId propId, const Style* parent);
+		void ApplyAnimation(const AnimationStyle& anim, const AnimRunContext& ctx, const Style* parent);
+		void LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent, float alpha);
 		void InheritData(Style& parent);
 #define	STYLEPROP(name, index, inherit, type, ...)\
 		type name;

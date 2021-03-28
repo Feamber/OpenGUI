@@ -4,18 +4,22 @@
 
 namespace OGUI
 {
+	struct AnimRunContext
+	{
+		float Time = 0.f;
+	};
+
 	struct AnimationStyle
 	{
 		bool isShared;
+		StyleSheet* sheet;
+		StyleKeyframes* keyframes;
 
 		static AnimationStyle Create(bool isShared);
 		static const AnimationStyle& GetInitialStyle();
-		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const AnimationStyle* parent);
-		bool ApplyGlobalKeyword(const StyleProperty& props, const AnimationStyle* parent);
-		void ApplyInitialKeyword(StylePropertyId propId);
-		void ApplyUnsetKeyword(StylePropertyId propId);
-		void ApplyInheritKeyword(StylePropertyId propId, const AnimationStyle* parent);
-
+		static void ApplyProperties(std::vector<OGUI::AnimationStyle>& self, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
+		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
+		void ResolveReference(const gsl::span<StyleSheet*>& sheets);
 #define	ANIMPROP(name, index, type, ...)\
 		type name;
 #include "OpenGUI/Animation/AnimPropertiesDef.h"

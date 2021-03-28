@@ -11,6 +11,7 @@
 #include "OpenGUI/Xml/XmlAttributeDescription.h"
 #include "OpenGUI/Xml/XmlChildElementDescription.h"
 #include "OpenGUI/Event/EventHandler.h"
+#include "Animation/AnimStyle.h"
 
 namespace OGUI
 {
@@ -143,23 +144,29 @@ namespace OGUI
 		uint32_t _triggerPseudoMask = 0;
 		uint32_t _dependencyPseudoMask = 0;
 		uint32_t _pseudoMask = 0;
+
+		//TODO: should we merge these two
 		std::unique_ptr<InlineStyle> _inlineStyle;
 		std::unique_ptr<InlineStyle> _procedureStyle;
 
 		Style _style;
-		Style* _prevSharedStyle = nullptr;
 		Style* _sharedStyle = nullptr;
-		Interpolation _interpolation = {0.5};
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
 		void InitInlineStyle(std::string_view str);
 		void SetPseudoMask(uint32_t mask);
 		void CalculateLayout();
-		void SetSharedStyle(Style* style);
-		void ApplySharedStyle(float deltaTime);
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
+#pragma endregion
+
+#pragma region Animation
+	public:
+		std::vector<AnimationStyle> _animStyles;
+		std::vector<AnimRunContext> _animContext;
+
+		void UpdateAnimList();
 #pragma endregion
 
 #pragma region Event

@@ -6,8 +6,8 @@ namespace OGUI
 	{
 		Normal = 1,
 		Reverse = 2,
-		Alternate = 4,
-		Default = Normal,
+		Alternate = 3,
+		AlternateReverse = 4
 	};
 
 	enum class EAnimPlayState
@@ -29,8 +29,8 @@ namespace OGUI
 	enum class EAnimFillMode
 	{
 		None,
-		Forwards,
-		Backwords,
-		Both,
+		Forwards = 1,
+		Backwords = 2,
+		Both = Forwards | Backwords,
 	};
 }

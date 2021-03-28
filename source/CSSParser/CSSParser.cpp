@@ -100,6 +100,13 @@ namespace OGUI
 		return false;
 	}
 
+	template<class T>
+	bool FromString(std::string_view str, std::string& value)
+	{
+		value = {str.begin(), str.end()};
+		return true;
+	}
+
 	bool FromString(std::string_view str, float& value)
 	{
 		try
@@ -167,6 +174,13 @@ namespace OGUI
 		}
 		else
 			return false;
+	}
+
+	bool FromString(std::string_view str, AnimTimingFunction& TimingFunction)
+	{
+		//TODO
+		TimingFunction = AnimLinearFuncion;
+		return true;
 	}
 
 	bool FromColorName(std::string_view str, Color4f& value)
@@ -1136,6 +1150,21 @@ namespace OGUI
 			(std::istreambuf_iterator<char>()));
 		return ParseCSS(content);
 	}
+
+	template<class T>
+	bool FromString(std::string_view str, std::vector<T>& values)
+	{
+		std::vector<std::string_view> tokens;
+		std::split(str, tokens, ", ");
+		for (auto& token : tokens)
+		{
+			T value;
+			if (!FromString(token, value))
+				return false;
+			values.push_back(std::move(value));
+		}
+		return true;
+	}
 }
 
 namespace OGUI
@@ -1203,6 +1232,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	return false;
 	}
 #undef SHORTHAND
+	//TODO: animation shorthand
 
 	if (name == "transform")
 	{
@@ -1240,12 +1270,23 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	} 
 
 	//disable property like this
-	//DISABLEPROP(color);
+	//INTERNALPROP(color);
 
 	if (keyword != StyleKeyword::None)
 	{
 		rule.properties.push_back(StyleProperty{id, true, (int)keyword});
 		return true;
+	}
+#define PARSEANIMPROP(idd, type, ParseValue) \
+	if (id == StylePropertyId::idd) \
+	{ \
+		std::vector<type> values; \
+		if (ParseValue(str, values)) \
+		{ \
+			for(auto& value : values) \
+				rule.properties.push_back({id, false, AddPropertyImpl(sheet, id, value)}); \
+			return true; \
+		} \
 	}
 
 #define PARSEPROP(idd, type, ParseValue) \
@@ -1257,17 +1298,17 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 			rule.properties.push_back({id, false, AddPropertyImpl(sheet, id, value)}); \
 			return true; \
 		} \
-		else \
-		{ \
-			errorMsg = "failed to parse style value!"; \
-			errorType = ParseErrorType::InvalidValue; \
-			return false; \
-		} \
 	}
 
 	PARSEPROP(translation, Vector2f, FromTranslation);
 #define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef STYLEPROP
-	return true;
+#define ANIMPROP(idd, index, type, ...) PARSEANIMPROP(idd, type, FromString) {}
+#include "OpenGUI/Animation/AnimPropertiesDef.h"
+#undef ANIMPROP
+	fail:
+	errorMsg = "failed to parse style value!"; 
+	errorType = ParseErrorType::InvalidValue; 
+	return false; 
 }

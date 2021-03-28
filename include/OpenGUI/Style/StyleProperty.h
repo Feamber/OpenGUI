@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <string_view>
+#include <bitset>
 #include "OpenGUI/Style/VariantStorage.h"
 
 namespace OGUI
@@ -52,4 +53,5 @@ namespace OGUI
 	};
 	StylePropertyId PropertyNameToId(std::string_view name);
 	std::string_view PropertyIdToName(StylePropertyId id);
+	std::bitset<96> GetInheritMask();
 }

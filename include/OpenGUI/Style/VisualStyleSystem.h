@@ -23,13 +23,22 @@ namespace OGUI
 
 	class VisualStyleSystem : public VisualSystemBase
 	{
-		std::unordered_map<size_t, std::unique_ptr<Style>> styleCache;
+		struct CachedStyle
+		{
+			std::bitset<96> overrideMask;
+			std::bitset<96> inheritMask;
+			//use ptr to avoid reallocate
+			std::unique_ptr<Style> style; 
+			std::unique_ptr<std::vector<AnimationStyle>> animStyles;
+		};
+		using StyleCache = std::unordered_map<size_t, CachedStyle>;
+		StyleCache styleCache;
 		StyleMatchingContext matchingContext;
 
 		void Traverse(VisualElement* element);
 
 		static void FindMatches(StyleMatchingContext& context, std::vector<SelectorMatchRecord>& matchedSelectors);
-		static void ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors, std::unordered_map<size_t, std::unique_ptr<Style>>& styleCache);
+		void ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors);
 
 	public:
 		virtual void Update(VisualElement* Tree);

@@ -1,8 +1,10 @@
 #include <algorithm>
+#include <bitset>
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style/StyleSelector.h"
+#include "OpenGUI/Utilities/ipair.hpp"
 
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 {
@@ -15,7 +17,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		std::vector<SelectorMatchRecord> result;
 		FindMatches(matchingContext, result);
 		if(result.size() > 0)
-			ApplyMatchedRules(element, result, styleCache);
+			ApplyMatchedRules(element, result);
 		matchingContext.currentElement = nullptr;
 	}
 	element->Traverse([this](VisualElement* element) { 
@@ -230,41 +232,132 @@ namespace OGUI
 	}
 }
 
-void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors, std::unordered_map<size_t, std::unique_ptr<Style>>& styleCache)
+namespace OGUI
+{
+	void GetOverrideMask(const gsl::span<StyleProperty>& props, std::bitset<96>& ovr, std::bitset<96>& iht)
+	{
+		for (auto& prop : props)
+		{
+			if (prop.keyword)
+			{
+				ovr.set((int)prop.id, false);
+				if (prop.value.index == (int)StyleKeyword::Inherit)
+					iht.set((int)prop.id);
+				if (prop.value.index == (int)StyleKeyword::Initial)
+					iht.set((int)prop.id, false);
+				continue;
+			}
+			else
+			{
+				ovr.set((int)prop.id, true);
+				iht.set((int)prop.id, false);
+			}
+		}
+	}
+}
+
+void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors)
 {
 	std::sort(matchedSelectors.begin(), matchedSelectors.end(), [](const SelectorMatchRecord& a, const SelectorMatchRecord& b) { return cmp(a, b) < 0; });
 	size_t matchHash = hash(element->GetFullTypeName());
 
 	for (auto& record : matchedSelectors)
 	{
-		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-		matchHash = append_hash(matchHash, hash(rule));
+		matchHash = append_hash(matchHash, (size_t)record.sheet);
+		matchHash = append_hash(matchHash, (size_t)record.complexSelector->ruleIndex);
 		matchHash = append_hash(matchHash, record.complexSelector->specificity);
 	}
 	VisualElement* parent = element->GetHierachyParent();
-	matchHash = append_hash(matchHash, (size_t)parent);
-	/* TODO 
-	* inherite should not apply to shared style
-	* shared style = { override mask + style }
-	* final style = parent style + shared style * override mask + animated rule + inline rule + procedure rule
-	*/
+	auto parentStyle = parent ? &parent->_style : nullptr;
+	Style* sharedStyle = nullptr;
+	std::vector<AnimationStyle>* sharedAnim = nullptr;
 	auto iter = styleCache.find(matchHash);
+	std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
 	if (iter != styleCache.end())
-		element->SetSharedStyle(iter->second.get());
+	{
+		sharedStyle = iter->second.style.get();
+		sharedAnim = iter->second.animStyles.get();
+		overrideMask = iter->second.overrideMask;
+		inheritMask = iter->second.inheritMask;
+	}
 	else
 	{
-		auto parentStyle = parent ? &parent->_style : nullptr;
-
-		Style resolvedStyle = Style::Create(parentStyle, true);
+		Style resolvedStyle = Style::Create(nullptr, true);
+		std::vector<AnimationStyle> animStyles;
 		for (auto& record : matchedSelectors)
 		{
 			auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-			resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, parentStyle);
-			//TODO: resolvedStyle.ApplyCustomProperties(record.sheet, rule.customProperties);
+			GetOverrideMask(rule.properties, overrideMask, inheritMask);
+			resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, nullptr);
+			AnimationStyle::ApplyProperties(animStyles, record.sheet->storage, rule.properties);
 		}
-		auto pair = styleCache.emplace(matchHash, new Style{std::move(resolvedStyle)});
+		CachedStyle cs{
+			overrideMask,
+			inheritMask,
+			std::make_unique<Style>(std::move(resolvedStyle)),
+			std::make_unique<std::vector<AnimationStyle>>(std::move(animStyles))
+		};
+		auto pair = styleCache.emplace(matchHash, std::move(cs));
 		//check(pair.second);
-		element->SetSharedStyle(pair.first->second.get());
+		sharedStyle = pair.first->second.style.get();
+		sharedAnim = pair.first->second.animStyles.get();
+	}
+	/*
+	* anim style = 
+	*	shared anim style + inline/procedure anim rule
+	* animated rule =
+	*	anim style + anim context
+	* final style =
+	*	initial style +
+	*	parent style * inherit mask +
+	*	shared style * override mask +
+	*	animated rule +
+	*	inline/procedure rule +
+	*
+	* animated rule and inline rule could change frequently
+	* so they are not cached
+	*/
+	{
+		std::vector<AnimationStyle> anims = *sharedAnim;
+		std::vector<AnimRunContext> ctxs;
+		if (element->_inlineStyle)
+			AnimationStyle::ApplyProperties(anims, element->_inlineStyle->storage, element->_inlineStyle->rule.properties);
+		if (element->_procedureStyle)
+			AnimationStyle::ApplyProperties(anims, element->_procedureStyle->storage, element->_procedureStyle->rule.properties);
+		element->_style = Style::Create(nullptr, true);
+		if (parentStyle)
+			element->_style.MergeStyle(*parentStyle, inheritMask);
+		ctxs.resize(anims.size());
+		std::swap(element->_animContext, ctxs);
+		std::swap(element->_animStyles, anims);
+		//Inherit Context
+		for (auto&& [i, anim] : ipair(element->_animStyles))
+		{
+			bool founded = false;
+			for (auto&& [j, oldAnim]: ipair(anims))
+			{
+				if (oldAnim.animName == anim.animName)
+				{
+					anim.keyframes = oldAnim.keyframes;
+					anim.sheet = oldAnim.sheet;
+					element->_animContext[i] = ctxs[j];
+					founded = true;
+					break;
+				}
+			}
+			if (!founded)
+				anim.ResolveReference(matchingContext.styleSheetStack);
+		}
 
+		element->_sharedStyle = sharedStyle;
+		element->_style.MergeStyle(*sharedStyle, overrideMask);
+		for (auto&& [i, anim] : ipair(element->_animStyles))
+			element->_style.ApplyAnimation(anim, element->_animContext[i], parentStyle);
+		if (element->_inlineStyle)
+			element->_style.ApplyProperties(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parentStyle);
+		if (element->_procedureStyle)
+			element->_style.ApplyProperties(element->_procedureStyle->storage, element->_procedureStyle->rule.properties, parentStyle);
+		//TODO: check layout dirty, check transform dirty
+		element->SyncYogaStyle();
 	}
 }

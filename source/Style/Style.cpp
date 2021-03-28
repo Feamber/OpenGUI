@@ -11,6 +11,17 @@ OGUI::Style OGUI::Style::Create(Style* parent, bool isShared)
 	return style;
 }
 
+void OGUI::Style::MergeStyle(const Style& other, std::bitset<96> mask)
+{
+#define STYLEPROP(name, index, inherit, ...)\
+	if (mask.test((int)StylePropertyId::name)) \
+	{ \
+		name = other.name; \
+	}
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#undef	STYLEPROP
+}
+
 void OGUI::Style::InheritData(Style& parent)
 {
 #define STYLEPROP(name, index, inherit, ...)\
@@ -24,20 +35,85 @@ void OGUI::Style::InheritData(Style& parent)
 
 namespace OGUI
 {
+	template<class T>
+	void Assign(T& field, const T& value)
+	{
+		field = value;
+	}
+	template<class T, class Y>
+	void Assign(T& field, const Y& value)
+	{ }
+	template<class T>
+	void GetInitialProperty(T& field, StylePropertyId propId)
+	{
+		auto& InitialStyle = Style::GetInitialStyle();
+#define STYLEPROP(name, ...)\
+		if(propId == StylePropertyId::name) \
+		{ \
+			Assign(field, InitialStyle.name); \
+		}
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#undef	STYLEPROP
+	}
 
-template<class T>
-std::enable_if_t<!std::is_enum_v<T>, void> 
-ApplyProperty(T& field, const StyleProperty& prop, const StyleSheetStorage& sheet)
-{
-	field = sheet.Get<T>(prop.value);
-}
+	template<class T>
+	void GetUnsetProperty(T& field, StylePropertyId propId)
+	{
+		auto& InitialStyle = Style::GetInitialStyle();
+#define STYLEPROP(name, index, inherit, ...)\
+	if constexpr(inherit != Inherited) \
+		if(propId == StylePropertyId::name) \
+		{ \
+			Assign(field, InitialStyle.name); \
+		}
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#undef	STYLEPROP
+	}
 
-template<class T>
-std::enable_if_t<std::is_enum_v<T>, void>
-ApplyProperty(T& field, const StyleProperty& prop, const StyleSheetStorage& sheet)
-{
-	field = (T)sheet.Get<int>(prop.value);
-}
+	template<class T>
+	void GetInheritProperty(T& field, StylePropertyId propId, const Style* parent)
+	{
+#define STYLEPROP(name, index, inherit, ...)\
+		if constexpr(inherit != Inherited) \
+			if(propId == StylePropertyId::name) \
+			{ \
+				Assign(field, parent->name); \
+			}
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#undef	STYLEPROP
+	}
+
+	template<class T>
+	void GetGlobalProperty(T& field, const StyleProperty& prop, const Style* parent)
+	{
+		if (prop.value.index == (int)StyleKeyword::Initial)
+		{
+			GetInitialProperty<T>(field, prop.id);
+		}
+		if (prop.value.index == (int)StyleKeyword::Unset)
+		{
+			GetUnsetProperty<T>(field, prop.id);
+		}
+		if (prop.value.index == (int)StyleKeyword::Inherit && parent)
+		{
+			GetInheritProperty<T>(field, prop.id, parent);
+		}
+		assert(false);
+	}
+
+	template<class T>
+	std::enable_if_t<!std::is_enum_v<T>, void>
+		GetProperty(T& field, const StyleProperty& prop, const StyleSheetStorage& sheet)
+	{
+		field = sheet.Get<T>(prop.value);
+	}
+
+	template<class T>
+	std::enable_if_t<std::is_enum_v<T>, void>
+		GetProperty(T& field, const StyleProperty& prop, const StyleSheetStorage& sheet)
+	{
+		field = (T)sheet.Get<int>(prop.value);
+	}
 
 }
 
@@ -45,40 +121,18 @@ void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::spa
 {
 	for (auto& prop : props)
 	{
-		if (ApplyGlobalKeyword(prop, parent))
-			continue;
 #define STYLEPROP(name, index, inherit, type, ...)\
 		if(prop.id == StylePropertyId::name) \
 		{ \
-			ApplyProperty<type>(name, prop, sheet); \
+			if(prop.keyword) \
+				GetGlobalProperty<type>(name, prop, parent); \
+			else \
+				GetProperty<type>(name, prop, sheet); \
 			continue; \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef	STYLEPROP
 	}
-}
-
-bool OGUI::Style::ApplyGlobalKeyword(const StyleProperty& prop, const Style* parent)
-{
-	if (prop.keyword)
-	{
-		if (prop.value.index == (int)StyleKeyword::Initial)
-		{
-			ApplyInitialKeyword(prop.id);
-			return true;
-		}
-		if (prop.value.index == (int)StyleKeyword::Unset)
-		{
-			ApplyUnsetKeyword(prop.id);
-			return true;
-		}
-		if (prop.value.index == (int)StyleKeyword::Inherit && parent)
-		{
-			ApplyInheritKeyword(prop.id, parent);
-			return true;
-		}
-	}
-	return false;
 }
 
 const OGUI::Style& OGUI::Style::GetInitialStyle()
@@ -96,46 +150,6 @@ const OGUI::Style& OGUI::Style::GetInitialStyle()
 	};
 	static InitialStyle initStyle;
 	return initStyle.style;
-}
-
-void OGUI::Style::ApplyInitialKeyword(StylePropertyId propId)
-{
-	auto& InitialStyle = GetInitialStyle();
-#define STYLEPROP(name, ...)\
-	if(propId == StylePropertyId::name) \
-	{ \
-		name = InitialStyle.name; \
-		return; \
-	}
-#include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
-}
-
-void OGUI::Style::ApplyUnsetKeyword(StylePropertyId propId)
-{
-	auto& InitialStyle = GetInitialStyle();
-#define STYLEPROP(name, index, inherit, ...)\
-	if constexpr(inherit != Inherited) \
-		if(propId == StylePropertyId::name) \
-		{ \
-			name = InitialStyle.name; \
-			return; \
-		}
-#include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
-}
-
-void OGUI::Style::ApplyInheritKeyword(StylePropertyId propId, const Style* parent)
-{
-#define STYLEPROP(name, index, inherit, ...)\
-	if constexpr(inherit != Inherited) \
-		if(propId == StylePropertyId::name) \
-		{ \
-			name = parent->name; \
-			return; \
-		}
-#include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 }
 
 namespace OGUI
@@ -206,4 +220,26 @@ OGUI::Style OGUI::Lerp(const Style& a, const Style& b, float alpha)
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef STYLEPROP
 	return result;
+}
+
+
+
+void OGUI::Style::LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent, float alpha)
+{
+	for (auto& prop : props)
+	{
+#define STYLEPROP(name, index, inherit, type, ...)\
+		if(prop.id == StylePropertyId::name) \
+		{ \
+			type value = name; \
+			if(prop.keyword) \
+				GetGlobalProperty<type>(value, prop, parent); \
+			else \
+				GetProperty<type>(value, prop, sheet); \
+			name = Lerp(name, value, alpha); \
+			continue; \
+		}
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#undef	STYLEPROP
+	}
 }

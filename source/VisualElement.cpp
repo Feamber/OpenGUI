@@ -116,38 +116,6 @@ void OGUI::VisualElement::RemoveChild(VisualElement* child)
 	}
 }
 
-void OGUI::VisualElement::SetSharedStyle(Style* style)
-{
-	if (style == _sharedStyle)
-		return;
-	if (style == _prevSharedStyle)
-		_interpolation.reverse();
-	else
-		_interpolation.reset();
-	_prevSharedStyle = _sharedStyle;
-	_sharedStyle = style;
-}
-
-void OGUI::VisualElement::ApplySharedStyle(float time)
-{
-	if (_prevSharedStyle && _sharedStyle)
-	{
-		_interpolation.forward(time);
-		float alpha = _interpolation.alpha();
-		_style = Lerp(*_prevSharedStyle, *_sharedStyle, alpha);
-		//if (alpha == 1.f)
-		//	_prevSharedStyle = nullptr;
-	}
-	else if (_sharedStyle)
-		_style = *_sharedStyle;
-	if (_inlineStyle)
-		_style.ApplyProperties(_inlineStyle->storage, _inlineStyle->rule.properties, nullptr);
-	if (_procedureStyle)
-		_style.ApplyProperties(_procedureStyle->storage, _procedureStyle->rule.properties, nullptr);
-	//TODO: check layout dirty, check transform dirty
-	SyncYogaStyle();
-}
-
 void OGUI::VisualElement::CalculateLayout()
 {
 	//TODO: mark transform dirty

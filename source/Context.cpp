@@ -57,8 +57,8 @@ void OGUI::Context::Update(WindowHandle window, float dt)
 {
 	auto root = desktops.get();
 	_deltaTime = dt;
-	styleSystem.Update(root);
 	animSystem.Update(root);
+	styleSystem.Update(root);
 	root->CalculateLayout();
 	TransformRec(root);
 }
