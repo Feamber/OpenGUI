@@ -84,9 +84,15 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 	event.button = button;
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
-	event.position = Vector2f(x, y);
-	inputImpl->ScreenToClient(window, x, y);
-	auto point = Vector2f(x, 450.f-y) - Vector2f(800.f, 450.f) / 2;
+
+	event.position = Vector2f(x, y); // screen space
+	inputImpl->ScreenToClient(window, x, y); // client space
+
+	auto dpiScale = inputImpl->GetDpiScale();
+	float width = 800.0f * dpiScale.X;
+	float height = 450.0f * dpiScale.Y;
+	auto point = Vector2f(x, height - y) - Vector2f(width, height) / 2; // center of the window
+
 	auto picked = PickRecursive(root, point);
 	std::cout << std::endl;
 	if (picked)

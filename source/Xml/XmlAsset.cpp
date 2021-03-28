@@ -1,9 +1,8 @@
-#include "OpenGUI/Xml/XmlAsset.h"
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include "OpenGUI/Xml/XmlFactoryRegistry.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
+#include "OpenGUI/Xml/XmlAsset.h"
 #include "tinyxml2/tinyxml2.h"
 
 namespace XmlTool
@@ -89,7 +88,8 @@ namespace OGUI {
     }
 
     std::string_view RegisterString(XmlAsset &asset, std::string_view string) {
-        return asset.all_string.insert({string.begin(), string.end()}).first->data();
+        return asset.all_string.insert(
+            std::string(string.begin(), string.end())).first->data();
     }
 
     std::string_view FindNamespace(std::map<std::string_view , std::string> &namespace_map, std::string_view key) {
@@ -198,11 +198,13 @@ namespace OGUI {
 
     std::shared_ptr<VisualElement> XmlAsset::Instantiate(XmlAssetID asset_id) {
         auto result = all_xml_asset.find(asset_id);
-        if (result == all_xml_asset.end()) return nullptr;
+        if (result == all_xml_asset.end()) 
+            return nullptr;
 
         CreationContext new_context{};
         auto new_template = ParseTemplate(result->second->root, new_context);
-        if (new_template) return new_template->shared_from_this();
+        if (new_template) 
+            return new_template->shared_from_this();
         return nullptr;
     }
 
@@ -278,7 +280,8 @@ namespace OGUI {
         {
             if (auto new_element = ParseElement(child, context))
                 new_template->PushChild(new_element);
-            if (context.is_error) break;
+            if (context.is_error)
+                break;
         }
         context.stack_template.pop_front();
 

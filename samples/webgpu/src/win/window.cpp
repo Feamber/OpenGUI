@@ -16,6 +16,9 @@
 #pragma comment(lib, "shcore.lib")
 #endif
 
+// for test purpose
+#define LOG(...) std::printf(__VA_ARGS__);
+
 //****************************************************************************/
 
 /*
@@ -503,6 +506,7 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 		}
 		else
 		{
+			// pass in the screen space point
 			return ctx.OnMouseDown(0, MouseButton, CursorPoint.x, CursorPoint.y);
 		}
 		return 0;
@@ -719,6 +723,28 @@ namespace OGUI
 		{
 			assert(window == 0);
 			//not implemented
+		}
+		virtual OGUI::Vector2f GetDpiScale() override
+		{
+			HDC hdc = ::GetDC(NULL); // get the device context to get the dpi info
+			OGUI::Vector2f ret = {};
+			const float dpi = 96.0f;
+			if (hdc)
+			{
+				ret.X = ::GetDeviceCaps(hdc, LOGPIXELSX) / dpi;
+				ret.Y = ::GetDeviceCaps(hdc, LOGPIXELSY) / dpi;
+				::ReleaseDC(NULL, hdc);
+			}
+			else
+			{
+#if(WINVER >= 0x0605)
+				float systemDpi = ::GetDpiForSystem() / 96.0f;
+				ret = { systemDpi, systemDpi };
+#else
+				ret = { 1.0f, 1.0f };
+#endif
+			}
+			return ret;
 		}
 
 		virtual void ClientToScreen(WindowHandle window, int& x, int& y) 
