@@ -395,8 +395,8 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 		}
 	#ifndef __EMSCRIPTEN__
 	#ifdef __APPLE__
-		if(wHnd) 
-			window::destroy(wHnd);
+		if(hWnd) 
+			window::destroy(hWnd);
 	#endif
 	#endif
 	}
