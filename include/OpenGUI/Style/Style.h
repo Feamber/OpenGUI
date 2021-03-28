@@ -18,7 +18,8 @@ namespace OGUI
 		void MergeStyle(const Style& other, std::bitset<96> mask);
 		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent);
 		void ApplyAnimation(const AnimationStyle& anim, const AnimRunContext& ctx, const Style* parent);
-		void LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent, float alpha);
+		void LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, 
+			const Style* parent, float alpha, std::bitset<96> mask);
 		void InheritData(Style& parent);
 #define	STYLEPROP(name, index, inherit, type, ...)\
 		type name;

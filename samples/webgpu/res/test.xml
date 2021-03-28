@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <engine:Root xmlns:engine="OGUI">
     <engine:Style path="res/test.css"/>
-    <engine:VisualElement name="Child1" style="height:300px" class_tag="Child"/> 
+    <engine:VisualElement name="Child1" style="height:200px" class_tag="Child"/> 
     <engine:VisualElement name="Child2" class_tag="Child"/> 
 </engine:Root>

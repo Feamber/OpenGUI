@@ -100,7 +100,6 @@ namespace OGUI
 		return false;
 	}
 
-	template<class T>
 	bool FromString(std::string_view str, std::string& value)
 	{
 		value = {str.begin(), str.end()};
@@ -446,9 +445,9 @@ namespace OGUI
 			Translate		<- 'translate' _ '(' _ LENGTH _ ',' _ LENGTH _ ')'
 			TranslateX		<- 'translateX' _ '(' _ LENGTH _ ')'
 			TranslateY		<- 'translateX' _ '(' _ LENGTH _ ')'
-			Scale			<- 'translate' _ '(' _ NUM _ ',' _ NUM _ ')'
-			ScaleX			<- 'translate' _ '(' _ NUM _ ')'
-			ScaleY			<- 'translate' _ '(' _ NUM _ ')'
+			Scale			<- 'scale' _ '(' _ NUM _ ',' _ NUM _ ')'
+			ScaleX			<- 'scaleX' _ '(' _ NUM _ ')'
+			ScaleY			<- 'scaleY' _ '(' _ NUM _ ')'
 			Rotate			<- 'rotate' _ '(' _ ANGLE _ ')'
 			NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			LENGTH			<- < ( NUM ('px' / '%') ) > / '0'
@@ -492,12 +491,12 @@ namespace OGUI
 		using tt = std::tuple<Vector2f, float, Vector2f>;
 #define ARG(n) any_move<float>(vs[n])
 		parser["Rotate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), ARG(0), Vector2f::vector_one()); };
-		parser["ScaleY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0, Vector2f{ARG(0), 1}); };
-		parser["ScaleX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0, Vector2f{1, ARG(0)}); };
-		parser["Scale"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0, Vector2f{ARG(0), ARG(0)}); };
-		parser["TranslateY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), 0}, 0, Vector2f::vector_one()); };
-		parser["TranslateX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{0, ARG(0)}, 0, Vector2f::vector_one()); };
-		parser["Translate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), ARG(1)}, 0, Vector2f::vector_one()); };
+		parser["ScaleY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{ARG(0), 1}); };
+		parser["ScaleX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{1, ARG(0)}); };
+		parser["Scale"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f::vector_zero(), 0.f, Vector2f{ARG(0), ARG(1)}); };
+		parser["TranslateY"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), 0}, 0.f, Vector2f::vector_one()); };
+		parser["TranslateX"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{0, ARG(0)}, 0.f, Vector2f::vector_one()); };
+		parser["Translate"] = [](SemanticValues& vs) { return std::make_tuple(Vector2f{ARG(0), ARG(1)}, 0.f, Vector2f::vector_one()); };
 #undef ARG
 		parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
 		parser["TransformList"] = [](SemanticValues& vs)
@@ -723,6 +722,42 @@ namespace OGUI
 		}
 		else
 			return false;
+	}
+
+	bool FromTime(std::string_view str, float& value)
+	{
+		std::string_view valuestr;
+		float scale = 1;
+		if (std::ends_with(str, "s"))
+		{
+			scale = 1;
+			valuestr = str.substr(0, str.length() - 1);
+		}
+		else if (std::ends_with(str, "ms"))
+		{
+			scale = 1000;
+			valuestr = str.substr(0, str.length() - 2);
+		}
+		else
+			return false;
+		if (!FromString(valuestr, value))
+			return false;
+		value /= scale;
+		return true;
+	}
+
+	bool FromTime(std::string_view str, std::vector<float>& values)
+	{
+		std::vector<std::string_view> tokens;
+		std::split(str, tokens, ", ");
+		for (auto& token : tokens)
+		{
+			float value;
+			if (!FromString(token, value))
+				return false;
+			values.push_back(std::move(value));
+		}
+		return true;
 	}
 
 	bool FromString(std::string_view str, YGPositionType& value)
@@ -1000,7 +1035,7 @@ namespace OGUI
 	std::optional<StyleSheet> ParseCSS(std::string_view str)
 	{
 		auto grammar = R"(
-			Stylesheet			<- (StyleRule / Keyframes)*
+			Stylesheet			<- _ (StyleRule / Keyframes)*
 			StyleRule			<- SelectorList _ '{' _ PropertyList _ '}' _
 			Keyframes			<- '@keyframes' w <IDENT> _ '{' _ KeyframeBlock* _ '}' _
 			KeyframeBlock		<- <KeyframeSelector> (w ',' w <KeyframeSelector> w)* _ '{' _ PropertyList _ '}' _
@@ -1012,14 +1047,16 @@ namespace OGUI
 			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
 			Property			<- <IDENT> w ':' w <ValueList> _
 			~KeyframeSelector	<- ( NUM  '%') / 'from' / 'to'
-			~ValueList			<- Value (w ',' w Value)*
+			~ValueList			<- Value (Spliter Value)*
+			~Spliter			<- (w ',' w) / [ ]+
 			~Value				<- CNUM / HEX / CALL / IDENT
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
 			~HEX				<- ('#' NUM) 
 			~CNUM				<- NUM (IDENT / '%')?
 			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
-			~_					<- [ \t\r\n]*
+			~blockcomment		<- '/*' (!'*/' .)* '*/'
+			~_					<- ([ \t\r\n] / blockcomment)*
 			~w					<- [ ]*
 		)";
 		using namespace peg;
@@ -1178,14 +1215,16 @@ namespace OGUI
 		auto grammar = R"(
 			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
 			Property			<- <IDENT> w ':' w <ValueList> _
-			~ValueList			<- Value (w ',' w Value)*
+			~ValueList			<- Value (Spliter Value)*
+			~Spliter			<- (w ',' w) / [ ]+
 			~Value				<- CNUM / HEX / CALL / IDENT
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
 			~HEX				<- ('#' NUM) 
 			~CNUM				<- NUM (IDENT / '%')?
 			~NUM				<- ([0-9]*"."[0-9]+) / ([0-9]+)
 			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
-			~_					<- [ \t\r\n]*
+			~blockcomment		<- '/*' (!'*/' .)* '*/'
+			~_					<- ([ \t\r\n] / blockcomment)*
 			~w					<- [ ]*
 		)";
 		using namespace peg;
@@ -1299,11 +1338,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		} \
 		YGValue left, top, right, bottom; \
 		if(!FromString(str, left, top, right, bottom)) \
-		{ \
-			errorMsg = "failed to parse style value!"; \
-			errorType = ParseErrorType::InvalidValue; \
-			return false; \
-		} \
+			goto fail;\
 		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, false, sheet.Push(left)}); \
 		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, false, sheet.Push(top)}); \
 		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, false, sheet.Push(right)}); \
@@ -1335,7 +1370,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		{
 			Vector2f t, s; float r;
 			if(!FromString(str, t, r, s))
-				return false;
+				goto fail;
 			rule.properties.push_back(StyleProperty{StylePropertyId::translation, false, sheet.Push(t)});
 			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, false, sheet.Push(r)});
 			rule.properties.push_back(StyleProperty{StylePropertyId::scale , false, sheet.Push(s)});
@@ -1389,6 +1424,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		} \
 	}
 
+	PARSEANIMPROP(animDuration, float, FromTime);
 	PARSEPROP(translation, Vector2f, FromTranslation);
 #define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
 #include "OpenGUI/Style/StylePropertiesDef.h"

@@ -34,7 +34,7 @@ void OGUI::VisualAnimationSystem::Traverse(VisualElement* element)
 			if(ctx.Reversed)
 				ctx.time = std::max(0.f, ctx.time - cachedCtx->_deltaTime);
 			else
-				ctx.time = std::min(cachedCtx->_deltaTime, maxTime);
+				ctx.time = std::min(cachedCtx->_deltaTime + ctx.time, maxTime);
 		}
 		if (ctx.Yielding)
 		{
@@ -47,8 +47,11 @@ void OGUI::VisualAnimationSystem::Traverse(VisualElement* element)
 				toStop.emplace_back(i);
 		}
 	}
-	remove_indices(element->_animStyles, toStop.begin(), toStop.end());
-	remove_indices(element->_animContext, toStop.begin(), toStop.end());
+	if (toStop.size() > 0)
+	{
+		remove_indices(element->_animStyles, toStop.begin(), toStop.end());
+		remove_indices(element->_animContext, toStop.begin(), toStop.end());
+	}
 	element->Traverse([this](VisualElement* next) { Traverse(next); });
 }
 

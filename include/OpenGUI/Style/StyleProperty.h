@@ -2,6 +2,7 @@
 #include <string>
 #include <string_view>
 #include <bitset>
+#include <gsl/span>
 #include "OpenGUI/Style/VariantStorage.h"
 
 namespace OGUI
@@ -56,4 +57,6 @@ namespace OGUI
 	StylePropertyId PropertyNameToId(std::string_view name);
 	std::string_view PropertyIdToName(StylePropertyId id);
 	std::bitset<96> GetInheritMask();
+
+	void GetOverrideMask(const gsl::span<StyleProperty>& props, std::bitset<96>& ovr, std::bitset<96>& iht);
 }

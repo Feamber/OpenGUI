@@ -356,12 +356,12 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		}
 		std::vector<AnimationStyle> yieldingAnims;
 		std::vector<AnimRunContext> yieldingCtxs;
-		for (auto&& [i, value] : ipair(dynbitset))
+		for (int i=0; i< dynbitset.size(); ++i)
 		{
-			if (!value && element->_animStyles[i].animYieldMode != EAnimYieldMode::Stop)
+			if (!dynbitset[i] && element->_animStyles[i].animYieldMode != EAnimYieldMode::Stop)
 			{
 				yieldingAnims.emplace_back(std::move(element->_animStyles[i]));
-				auto& ctx = yieldingCtxs.emplace_back(std::move(ctxs[i]));
+				auto& ctx = yieldingCtxs.emplace_back(std::move(element->_animContext[i]));
 				ctx.Yielding = true;
 				ctx.Reversed = element->_animStyles[i].animYieldMode == EAnimYieldMode::Reverse;
 			}

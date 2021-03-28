@@ -219,15 +219,15 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 {
 	auto sheet = anim.sheet;
 	auto keyframes = anim.keyframes;
-	int keyId = anim.keyframes->curve.keys.size() - 1;
 	float time = ctx.time - anim.animDelay;
-	if (time < 0)
+	if (time <= 0)
 	{
 		if (test(anim.animFillMode, EAnimFillMode::Backwards))
 		{
 			//apply first frame
-			auto& nextKey = keyframes->curve.keys[0];
-			ApplyProperties(sheet->storage, keyframes->frames[nextKey.frameIndex].properties, parent);
+			bool reversed = anim.animDirections == EAnimDirection::Reverse || anim.animDirections == EAnimDirection::AlternateReverse;
+			auto& lastKey = keyframes->curve.keys.back();
+			ApplyProperties(sheet->storage, keyframes->frames[reversed ? lastKey.frameIndex : 0].properties, parent);
 		}
 		return;
 	}
@@ -235,7 +235,11 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	float iteration = 0.f;
 	iteration = ctx.time / anim.animDuration;
 	bool reversed = ShouldReverse(anim.animDirections, iteration);
-	float percentage = iteration - int(iteration);
+	float percentage = 0.f;
+	if (iteration > int(iteration))
+		percentage = iteration - int(iteration);
+	else
+		percentage = iteration;
 	percentage = reversed ? 1 - percentage : percentage;
 	if (anim.animIterCount > 0)
 	{
@@ -244,8 +248,8 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			if (test(anim.animFillMode, EAnimFillMode::Forwards))
 			{
 				//apply last frame
-				auto& nextKey = keyframes->curve.keys[keyId];
-				ApplyProperties(sheet->storage, keyframes->frames[reversed ? 0 : nextKey.frameIndex].properties, parent);
+				auto& lastKey = keyframes->curve.keys.back();
+				ApplyProperties(sheet->storage, keyframes->frames[reversed ? 0 : lastKey.frameIndex].properties, parent);
 			}
 			return;
 		}
@@ -253,29 +257,25 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	}
 	percentage = ApplyTimingFunction(anim.animTimingFunction, percentage);
 	percentage = std::clamp(percentage, 0.f, 1.f);
-	for (auto&& [i, key] : ipair(keyframes->curve.keys))
+
+	std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
+	int i = 0, count = keyframes->curve.keys.size();
+	for (i = 0; i < count ; ++i)
 	{
-		if (key.percentage >= percentage)
-		{
-			keyId = i;
+		auto& key = keyframes->curve.keys[i];
+		if (key.percentage > percentage)
 			break;
+		if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
+			ApplyProperties(sheet->storage, keyframes->frames[key.frameIndex].properties, parent); //accelerate
+	}
+	for (;i < count; ++i)
+	{
+		auto& key = keyframes->curve.keys[i];
+		float alpha = percentage / key.percentage;
+		if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
+		{
+			LerpProperties(sheet->storage, keyframes->frames[key.frameIndex].properties, parent, alpha, overrideMask);
+			GetOverrideMask(keyframes->frames[key.frameIndex].properties, overrideMask, inheritMask);
 		}
-	}
-	auto& nextKey = keyframes->curve.keys[keyId];
-	percentage = std::clamp(percentage, 0.f, nextKey.percentage);
-	if (equal(percentage, nextKey.percentage))
-		ApplyProperties(sheet->storage, keyframes->frames[nextKey.frameIndex].properties, parent);
-	else if (keyId > 1)
-	{
-		float alpha = percentage / nextKey.percentage;
-		auto& key = keyframes->curve.keys[keyId - 1]; 
-		ApplyProperties(sheet->storage, keyframes->frames[key.frameIndex].properties, parent);
-		if (nextKey.frameIndex != key.frameIndex)
-			LerpProperties(sheet->storage, keyframes->frames[nextKey.frameIndex].properties, parent, alpha);
-	}
-	else
-	{
-		float alpha = percentage / nextKey.percentage;
-		LerpProperties(sheet->storage, keyframes->frames[nextKey.frameIndex].properties, parent, alpha);
 	}
 }

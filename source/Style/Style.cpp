@@ -224,10 +224,12 @@ OGUI::Style OGUI::Lerp(const Style& a, const Style& b, float alpha)
 
 
 
-void OGUI::Style::LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent, float alpha)
+void OGUI::Style::LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent, float alpha, std::bitset<96> mask)
 {
 	for (auto& prop : props)
 	{
+		if (mask.test((int)prop.id))
+			continue;
 #define STYLEPROP(name, index, inherit, type, ...)\
 		if(prop.id == StylePropertyId::name) \
 		{ \
