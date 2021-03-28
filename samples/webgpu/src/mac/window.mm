@@ -263,3 +263,9 @@ void window::loop(window::Handle wHnd, window::Redraw func) {
 		impl::wait();
 	}
 }
+
+void InstallInput()
+{
+	//auto& ctx = OGUI::Context::Get();
+	//ctx.inputImpl = std::make_unique<OGUI::WindowsInput>();
+}
