@@ -370,7 +370,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		{
 			auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
 			GetOverrideMask(rule.properties, overrideMask, inheritMask);
-			resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, nullptr);
+			resolvedStyle.ApplyPropertiesFast(record.sheet->storage, rule.properties, nullptr);
 			AnimationStyle::ApplyProperties(animStyles, record.sheet->storage, rule.properties);
 		}
 		CachedStyle cs{
@@ -487,7 +487,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 				element->_preAnimatedStyle.MergeStyle(*parentStyle, inheritMask);
 			element->_preAnimatedStyle.MergeStyle(*sharedStyle, overrideMask);
 			if (element->_inlineStyle)
-				element->_preAnimatedStyle.ApplyProperties(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parentStyle);
+				element->_preAnimatedStyle.ApplyPropertiesFast(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parentStyle);
 			if (element->_procedureStyle)
 				element->_preAnimatedStyle.ApplyProperties(element->_procedureStyle->storage, element->_procedureStyle->rule.properties, parentStyle);
 			styleDirty = true;

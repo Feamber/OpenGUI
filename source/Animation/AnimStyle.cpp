@@ -244,13 +244,13 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			if (i < 1 || keyframes->keys[i - 1].frameIndex != key.frameIndex) //diff frame
 			{
 				auto& fp = sheet->styleRules[key.frameIndex].properties;
-				ApplyProperties(sheet->storage, fp, parent); //accelerate
+				ApplyPropertiesFast(sheet->storage, fp, parent); //accelerate
 			}
 		}
 	};
 	auto applyFirst = [&]()
 	{
-		ApplyProperties(sheet->storage, sheet->styleRules[keyframes->keys[0].frameIndex].properties, parent);
+		ApplyPropertiesFast(sheet->storage, sheet->styleRules[keyframes->keys[0].frameIndex].properties, parent);
 	};
 	if (time <= 0)
 	{
@@ -327,7 +327,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 		if (i < 1 || keyframes->keys[i - 1].frameIndex != key.frameIndex) //diff frame
 		{
 			auto& fp = sheet->styleRules[key.frameIndex].properties;
-			ApplyProperties(sheet->storage, fp, parent); //accelerate
+			ApplyPropertiesFast(sheet->storage, fp, parent); //accelerate
 			merge(fp, key.percentage);
 		}
 	}
@@ -353,7 +353,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 
 					alpha = ApplyTimingFunction(timeFunction, alpha);
 					alpha = std::clamp(alpha, 0.f, 1.f);
-					LerpProperties(sheet->storage, {&fp[r], 1}, parent, alpha);
+					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
 					ap2[an2++] = {fp[r++].id, p};
 				}
 				else
@@ -361,7 +361,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 					float alpha = (percentage - ap[l].percentage) / (p - ap[l].percentage);
 					alpha = ApplyTimingFunction(timeFunction, alpha);
 					alpha = std::clamp(alpha, 0.f, 1.f);
-					LerpProperties(sheet->storage, {&fp[r], 1}, parent, alpha);
+					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
 					ap2[an2++] = {fp[(l++, r++)].id, p};
 				}
 			}
@@ -372,7 +372,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 				float alpha = percentage / p;
 				alpha = ApplyTimingFunction(timeFunction, alpha);
 				alpha = std::clamp(alpha, 0.f, 1.f);
-				LerpProperties(sheet->storage, {&fp[r], 1}, parent, alpha);
+				LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
 				ap2[an2++] = {fp[r++].id, p};
 			}
 			std::swap(an2, an);

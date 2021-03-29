@@ -30,6 +30,7 @@ namespace OGUI
 		name,
 #include "OpenGUI/Style/StylePropertiesDef.h"
 		NumStyle,
+		__ = NumStyle - 1,
 #define	ANIMPROP(name, ...)\
 		name,
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
@@ -61,6 +62,7 @@ namespace OGUI
 	};
 	StylePropertyId PropertyNameToId(std::string_view name);
 	std::string_view PropertyIdToName(StylePropertyId id);
+	int PropertyNameToOrder(std::string_view name);
 	std::bitset<96> GetInheritMask();
 
 	void GetOverrideMask(const gsl::span<StyleProperty>& props, std::bitset<96>& ovr, std::bitset<96>& iht);

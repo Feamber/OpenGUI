@@ -1033,6 +1033,25 @@ namespace OGUI
 		return {};
 	}
 
+	using property_list_t = std::vector<std::pair<std::string_view, std::string_view>>;
+	void sort(property_list_t& list)
+	{
+		struct prop
+		{
+			int order;
+			std::string_view name;
+			std::string_view value;
+		};
+		std::vector<prop> ordered;
+		ordered.reserve(list.size());
+		for (auto& pair : list)
+			ordered.push_back({PropertyNameToOrder(pair.first), pair.first, pair.second});
+		auto firstAnim = std::stable_partition(ordered.begin(), ordered.end(), [](const prop& p) { return p.order < (int)StylePropertyId::NumStyle; });
+		std::sort(ordered.begin(), firstAnim, [](const prop& p1, const prop& p2) { return p1.order < p2.order; });
+		for (auto&& [i, p] : ipair(ordered))
+			list[i] = {p.name, p.value};
+	}
+
 	std::optional<StyleSheet> ParseCSS(std::string_view str)
 	{
 		auto grammar = R"(
@@ -1080,7 +1099,6 @@ namespace OGUI
 			auto value = vs.token(1);
 			return make_pair(name, value);
 		};
-		using property_list_t = vector<pair<string_view, string_view>>;
 		parser["PropertyList"] = [&](SemanticValues& vs)
 		{
 			property_list_t pairs;
@@ -1134,7 +1152,7 @@ namespace OGUI
 		{
 			StyleRule rule;
 			auto list = any_move<property_list_t>(vs[1]);
-
+			sort(list);
 			int animIndexBegin = 0;
 			int animIndexEnd = 0;
 			for (auto& pair : list)
@@ -1184,6 +1202,7 @@ namespace OGUI
 			}
 			StyleRule frame;
 			auto list = any_move<property_list_t>(vs[0]);
+			sort(list);
 			for (auto& pair : list)
 			{
 				const char* errorMsg;
@@ -1261,16 +1280,16 @@ namespace OGUI
 			auto value = vs.token(1);
 			return make_pair(name, value);
 		};
-		using property_list_t = vector<pair<string_view, string_view>>;
 		parser["PropertyList"] = [&](SemanticValues& vs)
 		{
-			property_list_t pairs;
+			property_list_t list;
 			for (auto& p : vs)
-				pairs.push_back(any_move<pair<string_view, string_view>>(p));
+				list.push_back(any_move<pair<string_view, string_view>>(p));
 
+			sort(list);
 			int animIndexBegin = 0;
 			int animIndexEnd = 0;
-			for (auto& pair : pairs)
+			for (auto& pair : list)
 			{
 				const char* errorMsg;
 				ParseErrorType errorType;
@@ -1456,32 +1475,30 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 #define SHORTHAND(mm, mm2, smm) \
 	if (name == smm) \
 	{ \
-		if(keyword != StyleKeyword::None) \
-		{ \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, (int)keyword}); \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, (int)keyword}); \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, (int)keyword}); \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, (int)keyword}); \
-			return true; \
-		} \
-		YGValue left, top, right, bottom; \
-		if(!FromString(str, left, top, right, bottom)) \
-			goto fail;\
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, sheet.Push(left)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, sheet.Push(top)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, sheet.Push(right)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, sheet.Push(bottom)}); \
-		return true; \
+		props = {StylePropertyId::mm##Left##mm2, StylePropertyId::mm##Top##mm2, StylePropertyId::mm##Right##mm2, StylePropertyId::mm##Bottom##mm2}; \
+		goto parse_edges; \
 	}
+
+	std::array<StylePropertyId, 4> props;
 	SHORTHAND(margin, , "margin")
 	else SHORTHAND(border, Width, "border-width")
 	else SHORTHAND(padding, , "padding")
 	else if (name == "border-radius")
 	{
-	//TODO: implement this
-	errorMsg = "border-radius is unimplemented!";
-	errorType = ParseErrorType::InvalidProperty;
-	return false;
+		props = {StylePropertyId::borderTopLeftRadius, StylePropertyId::borderTopRightRadius, StylePropertyId::borderBottomRightRadius, StylePropertyId::borderBottomLeftRadius};
+		parse_edges:
+		if(keyword != StyleKeyword::None) 
+		{
+			for (int i = 0; i < 4; ++i)
+				rule.properties.push_back(StyleProperty{props[i], (int)keyword});
+			return true; 
+		} 
+		YGValue values[4]; 
+		if(!FromString(str, values[0], values[1], values[2], values[3]))
+			goto fail;
+		for (int i=0;i<4;++i)
+			rule.properties.push_back(StyleProperty{props[i], sheet.Push(values[i])});
+		return true; 
 	}
 #undef SHORTHAND
 
@@ -1501,7 +1518,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		return true;
 	}
 
-	if (id == StylePropertyId::_End)
+	if ((int)id >= (int)StylePropertyId::_End)
 	{
 		errorMsg = "custom style property is not support yet!";
 		errorType = ParseErrorType::InvalidProperty;

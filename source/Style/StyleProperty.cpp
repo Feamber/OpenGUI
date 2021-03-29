@@ -16,7 +16,30 @@ OGUI::StylePropertyId OGUI::PropertyNameToId(std::string_view name)
 	if (iter != name2id.end())
 		return iter->second;
 	else
-		return StylePropertyId::Num;
+		return StylePropertyId::_End;
+}
+
+int OGUI::PropertyNameToOrder(std::string_view name)
+{
+	static std::unordered_map<std::string_view, StylePropertyId> name2id =
+	{
+#define STYLEPROP(id, index, inherit, type, name, ...) \
+		{name, StylePropertyId::id},
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#define	ANIMPROP(id, index, type, name, ...)\
+		{name, StylePropertyId::id},
+#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		{"transform", StylePropertyId::translation},
+		{"margin", StylePropertyId::marginLeft},
+		{"border-width", StylePropertyId::paddingLeft},
+		{"padding", StylePropertyId::borderLeftWidth},
+		{"border-radius", StylePropertyId::borderTopLeftRadius},
+	};
+	auto iter = name2id.find(name);
+	if (iter != name2id.end())
+		return (int)iter->second;
+	else
+		return (int)StylePropertyId::_End;
 }
 
 std::string_view OGUI::PropertyIdToName(StylePropertyId id)
@@ -30,7 +53,7 @@ std::string_view OGUI::PropertyIdToName(StylePropertyId id)
 		name,
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
 	};
-	if (id < StylePropertyId::Num)
+	if (id < StylePropertyId::_End)
 		return id2name[(uint8_t)id];
 	else
 		return "unknown";
