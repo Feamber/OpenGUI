@@ -11,8 +11,21 @@ namespace OGUI
 	class VisualElement;
 	class VisualWindow;
 	class IOThread;
+	class Context;
 
-	using WindowHandle = int;
+	using WindowHandle = void*;
+	class WindowContext
+	{
+		friend class Context;
+	public:
+		inline float GetWindowX() const { return X; }
+		inline float GetWindowY() const { return Y; }
+		inline WindowHandle GetWindowHandle() const { return window; }
+	protected:
+		float X; float Y;
+		WindowHandle window;
+	};
+
 	class Context
 	{
 	public:
@@ -32,21 +45,20 @@ namespace OGUI
 		float _deltaTime;
 	
 		//APIs
-		void Update(WindowHandle window, float dt);
-		void Render(WindowHandle window);
+		void Update(const WindowHandle window, float dt);
+		void Render(const WindowHandle window);
 
 		//Message Handling
 		//reference : UE4 Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h
-		bool OnMouseDown(WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseUp(WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseDoubleClick(WindowHandle window, EMouseKey button, int32 x, int32 y);
+		bool OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y);
+		bool OnMouseUp(const WindowHandle window, EMouseKey button, int32 x, int32 y);
+		bool OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y);
 		bool OnMouseMove(bool relative, int32 x, int32 y);
 		bool OnMouseMoveHP(bool relative, float x, float y);
 		bool OnMouseWheel(float delta);
-
+			
 		static Context& Get();
 		std::weak_ptr<VisualElement> _elementUnderCursor;
-
 	public:
 		//Hooks
 		std::unique_ptr<InputInterface>  inputImpl;
@@ -54,9 +66,12 @@ namespace OGUI
 		std::unique_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<FileInterface>   fileImpl;
 		std::unique_ptr<IOThread>        ioThread;
+		//Update Per Frame
+		std::vector<WindowContext>       windowContexts; 
 		bool initialized = false;
-
-	public:
 		int pointerDownCount = 0;
+	protected:
+		const WindowContext& GetWindowContext(const WindowHandle window) const;
+		WindowContext& GetOrRegisterWindowContext(const WindowHandle window);
 	};
 }

@@ -8,20 +8,6 @@
 #include <memory>
 
 /**
- * Default window width.
- */
-#ifndef WINDOW_WIN_W
-#define WINDOW_WIN_W 800
-#endif
-
-/**
- * Default window height.
- */
-#ifndef WINDOW_WIN_H
-#define WINDOW_WIN_H 450
-#endif
-
-/**
  * Default window title.
  */
 #ifndef WINDOW_WIN_NAME

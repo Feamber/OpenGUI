@@ -22,20 +22,6 @@
 //****************************************************************************/
 
 /*
- * Default window width (in pixels at 96 DPI; scaled for other sizes).
- */
-#ifndef WINDOW_WIN_W
-#define WINDOW_WIN_W 800
-#endif
-
-/*
- * Default window height (in pixels at 96 DPI; scaled for other sizes).
- */
-#ifndef WINDOW_WIN_H
-#define WINDOW_WIN_H 450
-#endif
-
-/*
  * Default window title.
  */
 #ifndef WINDOW_WIN_NAME
@@ -498,16 +484,16 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 
 		if (bMouseUp)
 		{
-			return ctx.OnMouseUp(0, MouseButton, CursorPoint.x, CursorPoint.y) ? 0 : 1;
+			return ctx.OnMouseUp(hWnd, MouseButton, CursorPoint.x, CursorPoint.y) ? 0 : 1;
 		}
 		else if (bDoubleClick)
 		{
-			return ctx.OnMouseDoubleClick(0, MouseButton, CursorPoint.x, CursorPoint.y);
+			return ctx.OnMouseDoubleClick(hWnd, MouseButton, CursorPoint.x, CursorPoint.y);
 		}
 		else
 		{
 			// pass in the screen space point
-			return ctx.OnMouseDown(0, MouseButton, CursorPoint.x, CursorPoint.y);
+			return ctx.OnMouseDown(hWnd, MouseButton, CursorPoint.x, CursorPoint.y);
 		}
 		return 0;
 	}
@@ -719,7 +705,7 @@ namespace OGUI
 		{
 			return false;
 		}
-		virtual void SetHighPrecisionMouseMode(int window, bool Enable) override
+		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) override
 		{
 			assert(window == 0);
 			//not implemented
@@ -772,6 +758,12 @@ namespace OGUI
 			::ScreenToClient((HWND)hWnd, &p);
 			x = p.x; y = p.y;
 		};
+
+		virtual void GetWindowProperties(WindowHandle window, float& width, float& height) override
+		{
+			width = WINDOW_WIN_W;
+			height = WINDOW_WIN_H;
+		}
 	};
 }
 

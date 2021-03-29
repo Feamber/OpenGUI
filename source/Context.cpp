@@ -53,9 +53,13 @@ namespace OGUI
 	}
 }
 
-void OGUI::Context::Update(WindowHandle window, float dt)
+void OGUI::Context::Update(const WindowHandle window, float dt)
 {
 	auto root = desktops.get();
+	// Update Window
+	auto& wctx = GetOrRegisterWindowContext(window);
+	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
+	//
 	_deltaTime = dt;
 	animSystem.Update(root);
 	styleSystem.Update(root);
@@ -63,16 +67,17 @@ void OGUI::Context::Update(WindowHandle window, float dt)
 	TransformRec(root);
 }
 
-void OGUI::Context::Render(WindowHandle window)
+void OGUI::Context::Render(const WindowHandle window)
 {
 	auto root = desktops.get();
 	PrimitiveDraw::DrawContext ctx;
-	ctx.resolution = Vector2f(800.f, 450.f);
+	const auto& wctx = GetWindowContext(window);
+	ctx.resolution = Vector2f(wctx.X, wctx.Y);
 	RenderRec(root, ctx);
 	renderImpl->RenderPrimitives(ctx.prims);
 }
 
-bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
 	auto root = desktops.get();
 	if (!root)
@@ -98,8 +103,10 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 	//Vector2f windowRelativeSize = { (windowMaxRect.Z - windowMaxRect.X) / dpiScale.X, (windowMaxRect.W - windowMaxRect.Y) / dpiScale.Y };
 	//printf("WindowMax: (%.2f, %.2f)\n", windowRelativeSize.X, windowRelativeSize.Y);
 
-	float width = 800.0f;
-	float height = 450.0f;
+	const auto& wctx = GetWindowContext(window);
+	const float width = wctx.X;
+	const float height = wctx.Y;
+
 	auto point = Vector2f(x, height - y) - Vector2f(width, height) / 2; // center of the window
 	//printf("WindowCenter: (%.2f, %.2f)\n", point.X, point.Y);
 
@@ -121,14 +128,14 @@ bool OGUI::Context::OnMouseDown(WindowHandle window, EMouseKey button, int32 x, 
 	return false;
 }
 
-bool OGUI::Context::OnMouseUp(WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseUp(const WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
 	pointerDownCount--;
 	//std::cout << "OnMouseUp: " << x << "," << y << std::endl;
 	return false;
 }
 
-bool OGUI::Context::OnMouseDoubleClick(WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
 	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
 	return false;
@@ -155,3 +162,31 @@ OGUI::Context& OGUI::Context::Get()
 	static Context ctx;
 	return ctx;
 }
+
+static const OGUI::WindowContext NULL_WINDOW_CONTEXT = OGUI::WindowContext();
+OGUI::WindowContext& OGUI::Context::GetOrRegisterWindowContext(const OGUI::WindowHandle window)
+{
+	for(auto&& ctx : windowContexts)
+	{
+		if(ctx.window == window)
+			return ctx;
+	}
+	WindowContext newOne = WindowContext();
+	newOne.window = window;
+	newOne.X = 0;
+	newOne.Y = 0;
+	windowContexts.emplace_back(newOne);
+	return windowContexts[windowContexts.size() - 1];
+}
+
+const OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHandle window) const
+{
+	for(const auto& ctx : windowContexts)
+	{
+		if(ctx.window == window)
+			return ctx;
+	}
+	// warn("window context not found")
+	return NULL_WINDOW_CONTEXT;
+}
+

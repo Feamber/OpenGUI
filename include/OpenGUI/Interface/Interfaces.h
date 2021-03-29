@@ -5,7 +5,7 @@
 namespace OGUI
 {
     using FileHandle = void*;
-	using WindowHandle = int;
+	using WindowHandle = void*;
 	
     struct SystemInterface
 	{
@@ -26,6 +26,7 @@ namespace OGUI
 		virtual bool IsKeyToggled(EMouseKey key_code) = 0;
 		virtual void ClientToScreen(WindowHandle window, int& x, int& y) = 0;
 		virtual void ScreenToClient(WindowHandle window, int& x, int& y) = 0;
+		virtual void GetWindowProperties(WindowHandle window, float& width, float& height) = 0;
 		virtual OGUI::Vector2f GetDpiScale() = 0;
 		//virtual OGUI::Vector4f GetWindowMaxRect() = 0;
  		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) = 0;
