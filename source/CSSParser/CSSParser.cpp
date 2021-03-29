@@ -27,6 +27,12 @@ namespace std
 		if (ending.size() > value.size()) return false;
 		return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 	}
+
+	inline bool starts_with(std::string_view const& value, std::string_view const& starting)
+	{
+		if (starting.size() > value.size()) return false;
+		return std::equal(starting.begin(), starting.end(), value.begin());
+	}
 }
 
 
@@ -948,6 +954,17 @@ namespace OGUI
 
 		return false;
 	}
+
+	bool FromUrl(std::string_view str, std::string& value)
+	{
+		if (std::starts_with(str, "url(\"") && std::ends_with(str, "\")"))
+		{
+			auto valuestr = str.substr(5, str.length() - 2);
+			value = {valuestr.begin(), valuestr.end()};
+			return true;
+		}
+		return false;
+	}
 }
 
 namespace OGUI
@@ -1555,7 +1572,8 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	{
 		PARSEPROP(animTimingFunction, AnimTimingFunction, FromString);
 	}
-	
+
+	PARSEPROP(backgroundImage, std::string, FromUrl);
 	PARSEPROP(translation, Vector2f, FromTranslation);
 #define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
 #include "OpenGUI/Style/StylePropertiesDef.h"

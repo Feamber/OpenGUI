@@ -3,7 +3,7 @@
     height:550px;
     justify-content:center;
     align-items:center;
-    color:rgb(184, 57, 116)
+    background-color:rgb(184, 57, 116)
 }
 
 .Child {
@@ -12,7 +12,7 @@
     margin:10px;
     border-top-right-radius:20px;
     border-bottom-right-radius:50px;
-    color:rgb(41, 133, 182);
+    background-color:rgb(41, 133, 182);
 }
 
 /*negative delay hack*/
@@ -31,7 +31,7 @@
 
 @keyframes rotateanim {
     10% {
-        color:rgb(26, 11, 92);
+        background-color:rgb(26, 11, 92);
         transform: rotate(10deg);
     }
     30% {
@@ -50,7 +50,7 @@
         transform:  scale(1.2, 1.2);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
-        color:rgb(73, 214, 125);
+        background-color:rgb(73, 214, 125);
     }
 }
 
@@ -59,7 +59,7 @@
         transform:  scale(1.2, 1.2) rotate(360deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
-        color:rgb(73, 214, 125);
+        background-color:rgb(73, 214, 125);
     }
 }
 
@@ -77,7 +77,7 @@
 
 @keyframes rotateanim2 {
     10% {
-        color:rgb(26, 11, 92);
+        background-color:rgb(26, 11, 92);
         transform: rotate(10deg);
     }
     30% {
@@ -93,7 +93,7 @@
         transform:  rotate(0deg);
     }
     to {
-        color:rgb(73, 214, 125);
+        background-color:rgb(73, 214, 125);
         transform:  scale(1.2, 1.2);
     }
 }
@@ -103,7 +103,7 @@
         transform:  scale(1.2, 1.2) rotate(360deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
-        color:rgb(73, 214, 125);
+        background-color:rgb(73, 214, 125);
     }
 }
 

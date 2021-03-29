@@ -12,7 +12,6 @@
 
 namespace OGUI
 {
-	struct ITexture;
 	struct AnimTimingFunction;
 	using StyleSheetStorage = VariantStorage<
 		float,

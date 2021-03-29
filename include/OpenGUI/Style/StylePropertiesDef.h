@@ -37,7 +37,7 @@ STYLEPROP(	wrap,						33,				NonInherited,			YGWrap,				"wrap",							YGWrapNoWr
 STYLEPROP(	display,					34,				NonInherited,			YGDisplay,			"display",						YGDisplayFlex				)
 //End Yoga props																														
 //Begin draw props																														
-STYLEPROP(	color,						35,				Inherited,				Color4f,			"color",						Color4f(1.f,1.f,1.f,1.f)	)
+STYLEPROP(	backgroundColor,			35,				Inherited,				Color4f,			"background-color",				Color4f(1.f,1.f,1.f,1.f)	)
 STYLEPROP(	fontSize,					36,				Inherited,				float,				"font-size",					0.f							)
 STYLEPROP(	borderTopLeftRadius,		37,				NonInherited,			YGValue,			"border-top-left-radius",		YGValueZero					)
 STYLEPROP(	borderTopRightRadius,		38,				NonInherited,			YGValue,			"border-top-right-radius",		YGValueZero					)
@@ -46,4 +46,5 @@ STYLEPROP(	borderBottomLeftRadius,		40,				NonInherited,			YGValue,			"border-bo
 STYLEPROP(	translation,				41,				NonInherited,			Vector2f,			"translation",					Vector2f::vector_zero()		)
 STYLEPROP(	rotation,					42,				NonInherited,			float,				"rotation",						0							)
 STYLEPROP(	scale,						43,				NonInherited,			Vector2f,			"scale",						Vector2f::vector_one()		)
+STYLEPROP(	backgroundImage,			44,				NonInherited,			std::string,		"background-image",				""							)
 //End draw props

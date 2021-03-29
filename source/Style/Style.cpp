@@ -190,17 +190,31 @@ size_t HashBuffer(const char* p, size_t s)
 namespace OGUI
 {
 	template<class T>
-	std::enable_if_t<!std::is_enum_v<T>, T>
-		Lerp(const T& a, const T& b, float alpha)
+	T LerpF(const T& a, const T& b, float alpha)
 	{
 		return a * (1 - alpha) + b * alpha;
 	}
 
 	template<class T>
-	std::enable_if_t<std::is_enum_v<T>, T>
+	std::enable_if_t<std::is_arithmetic_v<T>, T>
+		Lerp(const T& a, const T& b, float alpha)
+	{
+		return LerpF(a, b, alpha);
+	}
+
+	template<class T>
+	std::enable_if_t<!std::is_arithmetic_v<T>, T>
 		Lerp(const T& a, const T& b, float alpha)
 	{
 		return b;
+	}
+	Vector2f Lerp(const Vector2f& a, const Vector2f& b, float alpha)
+	{
+		return LerpF(a, b, alpha);
+	}
+	Color4f Lerp(const Color4f& a, const Color4f& b, float alpha)
+	{
+		return LerpF(a, b, alpha);
 	}
 
 	YGValue Lerp(const YGValue& a, const YGValue& b, float alpha)

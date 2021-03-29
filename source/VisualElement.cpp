@@ -3,6 +3,7 @@
 #include "OpenGUI/Style/Style.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Animation/AnimStyle.h"
+#include "OpenGUI/Context.h"
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {
@@ -24,10 +25,22 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(
 	auto transform = _worldTransform;
 	//transform.M[3][0] /= Ctx.resolution.X;
 	//transform.M[3][1] /= Ctx.resolution.Y;
-
+	//if (!_style.backgroundImage.empty())
+	//{
+	//	//start new load
+	//	if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != _style.backgroundImage)
+	//		backgroundImageResource = Context::Get().fileSystem.Require<AsyncTexture>(_style.backgroundImage);
+	//}
+	//else //release old texture
+	//	backgroundImageResource = nullptr;
+	
 	BeginDraw(Ctx.prims);
 	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-	RoundBoxParams params {rect, uv, _style.color, nullptr};
+	RoundBoxParams params {rect, uv, _style.backgroundColor, nullptr};
+	//if (backgroundImageResource && backgroundImageResource->valid())
+	//{
+	//	//params.texture = backgroundImageResource->data();
+	//}
 	params.radius[0] = _style.borderTopLeftRadius.value;// / Ctx.resolution.Y;
 	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;

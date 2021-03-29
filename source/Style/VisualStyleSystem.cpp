@@ -365,6 +365,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 			element->_style.MergeStyle(*parentStyle, inheritMask);
 		ctxs.resize(anims.size());
 		//Inherit Context
+		//TODO: check animation dirty state
 		std::vector<bool> dynbitset;
 		dynbitset.resize(element->_animContext.size());
 		for (auto&& [i, anim] : ipair(anims))
@@ -411,12 +412,20 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 				ctx.Goingback = element->_animStyles[i].animYieldMode == EAnimYieldMode::Goback;
 			}
 		}
-		yieldingAnims.reserve(yieldingAnims.size() + anims.size());
-		std::move(anims.begin(), anims.end(), std::back_inserter(yieldingAnims));
-		yieldingCtxs.reserve(yieldingCtxs.size() + ctxs.size());
-		std::move(ctxs.begin(), ctxs.end(), std::back_inserter(yieldingCtxs));
-		std::swap(element->_animContext, yieldingCtxs);
-		std::swap(element->_animStyles, yieldingAnims);
+		if (yieldingAnims.size() > 0)
+		{
+			yieldingAnims.reserve(yieldingAnims.size() + anims.size());
+			std::move(anims.begin(), anims.end(), std::back_inserter(yieldingAnims));
+			yieldingCtxs.reserve(yieldingCtxs.size() + ctxs.size());
+			std::move(ctxs.begin(), ctxs.end(), std::back_inserter(yieldingCtxs));
+			std::swap(element->_animContext, yieldingCtxs);
+			std::swap(element->_animStyles, yieldingAnims);
+		}
+		else
+		{
+			std::swap(element->_animContext, ctxs);
+			std::swap(element->_animStyles, anims);
+		}
 
 		element->_sharedStyle = sharedStyle;
 		element->_style.MergeStyle(*sharedStyle, overrideMask);

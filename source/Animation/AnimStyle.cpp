@@ -141,25 +141,6 @@ void OGUI::AnimationStyle::ApplyProperties(const StyleSheetStorage& sheet, const
 	}
 }
 
-namespace OGUI
-{
-
-	template<class T>
-	std::enable_if_t<!std::is_enum_v<T>, void>
-		LerpProperty(T& field, const StyleProperty& prop, const StyleSheetStorage& sheet, float alpha)
-	{
-		field = sheet.Get<T>(prop.value);
-	}
-
-	template<class T>
-	std::enable_if_t<std::is_enum_v<T>, void>
-		LerpProperty(T& field, const StyleProperty& prop, const StyleSheetStorage& sheet, float alpha)
-	{
-		field = (T)sheet.Get<int>(prop.value);
-	}
-
-}
-
 void OGUI::AnimationStyle::ResolveReference(const gsl::span<StyleSheet*>& sheets)
 {
 	for (auto& s : sheets)
