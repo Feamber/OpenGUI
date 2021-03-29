@@ -124,7 +124,7 @@ namespace OGUI
 
 		// Call from DrawList.
 		OGUI_API void BeginDraw(PrimDrawList& list);
-		OGUI_API void EndDraw(PrimDrawList& list, const float4x4& transform);
+		OGUI_API void EndDraw(PrimDrawList& list, const float4x4& transform, Vector2f resolution);
 		OGUI_API void DrawBox(PrimDrawList& list, const BoxParams& params);
 		OGUI_API void DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 20);
 		OGUI_API void DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);

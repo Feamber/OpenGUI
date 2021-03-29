@@ -17,11 +17,15 @@ namespace OGUI
         list.beginCount = list.vertices.size();
     }
 
-    OGUI_API void PrimitiveDraw::EndDraw(PrimDrawList& list, const float4x4& transform)
+    OGUI_API void PrimitiveDraw::EndDraw(PrimDrawList& list,
+        const float4x4& transform, Vector2f resolution)
     {
         int count = list.vertices.size();
         for (int i = list.beginCount; i < count; ++i)
+        {
             list.vertices[i].position = Transform(list.vertices[i].position, transform);
+            list.vertices[i].position /= resolution;
+        }
     }
 
     void PrimitiveDraw::DrawBox(PrimDrawList& list, const BoxParams& params)
