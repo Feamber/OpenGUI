@@ -11,7 +11,7 @@
 namespace webgpu {
 WGPUDevice create(window::Handle window, WGPUBackendType type = WGPUBackendType_Force32);
 
-WGPUSwapChain createSwapChain(WGPUDevice device);
+WGPUSwapChain createSwapChain(WGPUDevice device, float width, float height);
 
 /**
  * See \c #createSwapChain();

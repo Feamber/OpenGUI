@@ -6,6 +6,20 @@
 
 #include "defines.h"
 
+/**
+ * Default window width.
+ */
+#ifndef WINDOW_WIN_W
+#define WINDOW_WIN_W 1280
+#endif
+
+/**
+ * Default window height.
+ */
+#ifndef WINDOW_WIN_H
+#define WINDOW_WIN_H 720
+#endif
+
 namespace window {
 /**
  * \typedef Handle

@@ -208,7 +208,7 @@ WGPUDevice webgpu::create(window::Handle window, WGPUBackendType type) {
 	return impl::device;
 }
 
-WGPUSwapChain webgpu::createSwapChain(WGPUDevice device) {
+WGPUSwapChain webgpu::createSwapChain(WGPUDevice device, float width, float height) {
 	WGPUSwapChainDescriptor swapDesc = {};
 	/*
 	 * Currently failing (probably because the nextInChain needs setting up, and
@@ -225,7 +225,7 @@ WGPUSwapChain webgpu::createSwapChain(WGPUDevice device) {
 	/*
 	 * Currently failing on hi-DPI (with Vulkan).
 	 */
-	wgpuSwapChainConfigure(swapchain, impl::swapPref, WGPUTextureUsage_OutputAttachment, 800, 450);
+	wgpuSwapChainConfigure(swapchain, impl::swapPref, WGPUTextureUsage_OutputAttachment, width, height);
 	return swapchain;
 }
 
