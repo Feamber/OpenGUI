@@ -3,6 +3,7 @@
 #include <fstream>
 #include <regex>
 #include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Utilities/ipair.hpp"
 
 
 
@@ -87,24 +88,6 @@ void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV)
 
 namespace OGUI
 {
-	bool CheckAnimationProps(gsl::span<StyleProperty> props)
-	{
-		int counts[(int)StylePropertyId::NumAnim] = {};
-		for (auto& prop : props)
-		{
-			if ((int)prop.id < (int)StylePropertyId::NumStyle)
-				continue;
-			counts[(int)prop.id - (int)StylePropertyId::NumStyle - 1]++;
-		}
-		for(int i=0;i < (int)StylePropertyId::NumAnim;++i)
-			if (counts[i] > counts[0])
-			{
-				auto id = (StylePropertyId)(i + (int)StylePropertyId::NumStyle + 1);
-				std::cerr << "property [" << PropertyIdToName(id) << "] got more count than [animation-name]!\n";
-				return false;
-			}
-		return true;
-	}
 	template<class T>
 	std::remove_cv_t<T> any_move(std::any& any)
 	{
@@ -1070,15 +1053,21 @@ namespace OGUI
 		{
 			StyleRule rule;
 			auto list = any_move<property_list_t>(vs[1]);
+
+			int animIndexBegin = 0;
+			int animIndexEnd = 0;
 			for (auto& pair : list)
 			{
 				const char* errorMsg;
 				ParseErrorType errorType;
-				if (!ParseProperty(sheet.storage, pair.first, pair.second, rule, errorMsg, errorType))
+				if (pair.first == "animation-name")
+				{
+					animIndexBegin = animIndexEnd;
+					animIndexEnd = animIndexBegin + std::count(pair.second.begin(), pair.second.end(), ',') + 1;
+				}
+				if (!ParseProperty(sheet.storage, pair.first, pair.second, rule, errorMsg, errorType, animIndexBegin, animIndexEnd))
 					throw parse_error(errorMsg);
 			}
-			if (!CheckAnimationProps(rule.properties))
-				throw parse_error("invalid animation properties!");
 			int ruleIndex = sheet.styleRules.size();
 			sheet.styleRules.push_back(std::move(rule));
 			auto selectorList = any_move<vector<StyleComplexSelector>>(vs[0]);
@@ -1195,17 +1184,22 @@ namespace OGUI
 			for (auto& p : vs)
 				pairs.push_back(any_move<pair<string_view, string_view>>(p));
 
+			int animIndexBegin = 0;
+			int animIndexEnd = 0;
 			for (auto& pair : pairs)
 			{
 				const char* errorMsg;
 				ParseErrorType errorType;
-				if (!ParseProperty(sheet.storage, pair.first, pair.second, sheet.rule, errorMsg, errorType))
+				if (pair.first == "animation-name")
+				{
+					animIndexBegin = animIndexEnd;
+					animIndexEnd = std::count(str.begin(), str.end(), ',') + 1;
+				}
+				if (!ParseProperty(sheet.storage, pair.first, pair.second, sheet.rule, errorMsg, errorType, animIndexBegin, animIndexEnd))
 				{
 					throw parse_error(errorMsg);
 				}
 			}
-			if (!CheckAnimationProps(sheet.rule.properties))
-				throw parse_error("invalid animation properties!");
 		};
 
 		//parser.enable_packrat_parsing(); // Enable packrat parsing.
@@ -1340,11 +1334,11 @@ namespace OGUI
 		if (!parser.parse(str, value))
 			return false;
 		if (value.t.has_value())
-			rule.properties.push_back(StyleProperty{StylePropertyId::translation, false, sheet.Push<Vector2f>(value.t.value())});
+			rule.properties.push_back(StyleProperty{StylePropertyId::translation, sheet.Push<Vector2f>(value.t.value())});
 		if (value.r.has_value())
-			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, false, sheet.Push<float>(value.r.value())});
+			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, sheet.Push<float>(value.r.value())});
 		if (value.s.has_value())
-			rule.properties.push_back(StyleProperty{StylePropertyId::scale, false, sheet.Push<Vector2f>(value.s.value())});
+			rule.properties.push_back(StyleProperty{StylePropertyId::scale, sheet.Push<Vector2f>(value.s.value())});
 		return true;
 	}
 }
@@ -1367,7 +1361,7 @@ namespace OGUI
 }
 
 
-bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType, bool withAnim)
+bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType, int animIndex, int animEndIndex)
 {
 	StyleKeyword keyword = StyleKeyword::None;
 	//keywords
@@ -1379,19 +1373,19 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	{ \
 		if(keyword != StyleKeyword::None) \
 		{ \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, true, (int)keyword}); \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, true, (int)keyword}); \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, true, (int)keyword}); \
-			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, true, (int)keyword}); \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, (int)keyword}); \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, (int)keyword}); \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, (int)keyword}); \
+			rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, (int)keyword}); \
 			return true; \
 		} \
 		YGValue left, top, right, bottom; \
 		if(!FromString(str, left, top, right, bottom)) \
 			goto fail;\
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, false, sheet.Push(left)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, false, sheet.Push(top)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, false, sheet.Push(right)}); \
-		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, false, sheet.Push(bottom)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Left##mm2, sheet.Push(left)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Top##mm2, sheet.Push(top)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Right##mm2, sheet.Push(right)}); \
+		rule.properties.push_back(StyleProperty{StylePropertyId::mm##Bottom##mm2, sheet.Push(bottom)}); \
 		return true; \
 	}
 	SHORTHAND(margin, , "margin")
@@ -1410,9 +1404,9 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	{
 		if (keyword != StyleKeyword::None)
 		{
-			rule.properties.push_back(StyleProperty{StylePropertyId::translation, true, (int)keyword});
-			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, true, (int)keyword});
-			rule.properties.push_back(StyleProperty{StylePropertyId::scale , true, (int)keyword});
+			rule.properties.push_back(StyleProperty{StylePropertyId::translation, (int)keyword});
+			rule.properties.push_back(StyleProperty{StylePropertyId::rotation, (int)keyword});
+			rule.properties.push_back(StyleProperty{StylePropertyId::scale, (int)keyword});
 		}
 		else
 		{
@@ -1429,7 +1423,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		errorType = ParseErrorType::InvalidProperty;
 		return false;
 	}
-	if (!withAnim && (int)id >= (int)StylePropertyId::NumStyle && id != StylePropertyId::animTimingFunction)
+	if (animIndex < 0 && (int)id >= (int)StylePropertyId::NumStyle && id != StylePropertyId::animTimingFunction)
 	{
 		errorMsg = "canimation properties in keyframe blocks is not allowed!";
 		errorType = ParseErrorType::InvalidProperty;
@@ -1449,23 +1443,26 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 
 	if (keyword != StyleKeyword::None)
 	{
-		rule.properties.push_back(StyleProperty{id, true, (int)keyword});
+		rule.properties.push_back(StyleProperty{id, (int)keyword});
 		return true;
 	}
+
 #define PARSEANIMPROP(idd, type, ParseValue) \
 	if (id == StylePropertyId::idd) \
 	{ \
 		std::vector<std::string_view> tokens; \
 		std::split(str, tokens, ", "); \
-		for (auto& token : tokens) \
+		if(tokens.size() > animEndIndex - animIndex) \
+			goto animFail; \
+		for (auto&& [i, token] : ipair(tokens)) \
 		{ \
 			if(FromString(token, keyword)) \
-				rule.properties.push_back(StyleProperty{StylePropertyId::scale , true, (int)keyword}); \
+				rule.properties.push_back(StyleProperty{id, (int)keyword, animIndex + i}); \
 			else \
 			{ \
 				type value; \
 				if (ParseValue(token, value)) \
-					rule.properties.push_back({id, false, AddPropertyImpl(sheet, id, value)}); \
+					rule.properties.push_back({id, AddPropertyImpl(sheet, id, value), animIndex + i}); \
 				else return false; \
 			} \
 		} \
@@ -1478,11 +1475,11 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		type value; \
 		if (ParseValue(str, value)) \
 		{ \
-			rule.properties.push_back({id, false, AddPropertyImpl(sheet, id, value)}); \
+			rule.properties.push_back({id, AddPropertyImpl(sheet, id, value)}); \
 			return true; \
 		} \
 	}
-	if (withAnim)
+	if (animIndex >= 0)
 	{
 		PARSEANIMPROP(animDuration, float, FromTime);
 		PARSEANIMPROP(animDelay, float, FromTime);
@@ -1499,8 +1496,12 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 #define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #undef STYLEPROP
-	fail:
-	errorMsg = "failed to parse style value!"; 
+fail:
+	errorMsg = "failed to parse style property value!"; 
 	errorType = ParseErrorType::InvalidValue; 
-	return false; 
+	return false;
+animFail:
+	errorMsg = "animation property count doesnt match!";
+	errorType = ParseErrorType::InvalidValue;
+	return false;
 }

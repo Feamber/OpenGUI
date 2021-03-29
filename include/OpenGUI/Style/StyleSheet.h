@@ -71,5 +71,5 @@ namespace OGUI
 		InvalidProperty,
 		InvalidValue
 	};
-	bool ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType, bool withAnim = true);
+	bool ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType, int animIndex = -1, int animEndIndex = -1);
 }
