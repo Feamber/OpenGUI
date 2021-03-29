@@ -1569,7 +1569,6 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		PARSEANIMPROP(animDelay, float, FromTime);
 #define ANIMPROP(idd, index, type, ...) PARSEANIMPROP(idd, type, FromString) {}
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef ANIMPROP
 	}
 	else
 	{
@@ -1580,7 +1579,6 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	PARSEPROP(translation, Vector2f, FromTranslation);
 #define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef STYLEPROP
 fail:
 	errorMsg = "failed to parse style property value!"; 
 	errorType = ParseErrorType::InvalidValue; 

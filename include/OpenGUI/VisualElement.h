@@ -152,7 +152,9 @@ namespace OGUI
 		
 		std::string backgroundImageUrl;
 
+		bool _procedureStyleDirty = false;
 		Style _style;
+		Style _preAnimatedStyle;
 		Style* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
@@ -168,6 +170,7 @@ namespace OGUI
 	public:
 		std::vector<AnimationStyle> _animStyles;
 		std::vector<AnimRunContext> _animContext;
+		bool _prevEvaluating = false;
 
 		void UpdateAnimList();
 #pragma endregion

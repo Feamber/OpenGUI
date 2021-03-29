@@ -9,3 +9,4 @@ ANIMPROP(animTimingFunction,	6,		AnimTimingFunction,		"animation-timing-function
 ANIMPROP(animFillMode,			7,		EAnimFillMode,			"animation-fill-mode",			EAnimFillMode::Forwards)
 ANIMPROP(animYieldMode,			8,		EAnimYieldMode,			"animation-yield-mode",			EAnimYieldMode::Goback)
 ANIMPROP(animResumeMode,		9,		EAnimResumeMode,		"animation-resume-mode",		EAnimResumeMode::Resume)
+#undef ANIMPROP

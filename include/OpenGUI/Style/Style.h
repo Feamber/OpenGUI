@@ -24,7 +24,6 @@ namespace OGUI
 #define	STYLEPROP(name, index, inherit, type, ...)\
 		type name;
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 	};
 
 	Style Lerp(const Style& a, const Style& b, float alpha);

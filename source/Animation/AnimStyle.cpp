@@ -19,7 +19,6 @@ const OGUI::AnimationStyle& OGUI::AnimationStyle::GetInitialStyle()
 #define ANIMPROP(name, index, type, id, def)\
 			style.name = def;
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef	ANIMPROP
 		}
 		AnimationStyle style;
 	};
@@ -92,7 +91,6 @@ namespace OGUI
 			Assign(field, InitialStyle.name); \
 		}
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef	ANIMPROP
 	}
 
 	template<class T>
@@ -137,7 +135,6 @@ void OGUI::AnimationStyle::ApplyProperties(const StyleSheetStorage& sheet, const
 			continue; \
 		}
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef	ANIMPROP
 	}
 }
 
@@ -162,7 +159,6 @@ bool OGUI::AnimationStyle::operator==(const AnimationStyle& other)
 #define ANIMPROP(name, index, type, ...)\
 	if(!(name == other.name)) return false;
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef	ANIMPROP
 	return true;
 }
 
@@ -281,7 +277,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	percentage = reversed ? 1 - percentage : percentage;
 	if (anim.animIterCount > 0)
 	{
-		if (iteration >= anim.animIterCount && !ctx.Goingback)
+		if (iteration >= anim.animIterCount && !ctx.goingback)
 		{
 			if (test(anim.animFillMode, EAnimFillMode::Forwards))
 			{

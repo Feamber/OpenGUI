@@ -39,7 +39,6 @@ namespace OGUI
 			return detail::AddPropertyImpl<type>(sheet, id, value); \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 		assert(false);
 		return {};
 	}

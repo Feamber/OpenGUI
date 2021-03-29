@@ -19,7 +19,6 @@ void OGUI::Style::MergeStyle(const Style& other, std::bitset<96> mask)
 		name = other.name; \
 	}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 }
 
 void OGUI::Style::InheritData(Style& parent)
@@ -30,7 +29,6 @@ void OGUI::Style::InheritData(Style& parent)
 		name = parent.name; \
 	}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 }
 
 namespace OGUI
@@ -53,7 +51,6 @@ namespace OGUI
 			Assign(field, InitialStyle.name); \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 	}
 
 	template<class T>
@@ -67,7 +64,6 @@ namespace OGUI
 			Assign(field, InitialStyle.name); \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 	}
 
 	template<class T>
@@ -80,7 +76,6 @@ namespace OGUI
 				Assign(field, parent->name); \
 			}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 	}
 
 	template<class T>
@@ -134,7 +129,6 @@ void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::spa
 			continue; \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 	}
 }
 
@@ -147,7 +141,6 @@ const OGUI::Style& OGUI::Style::GetInitialStyle()
 #define STYLEPROP(name, index, inherit, type, id, def)\
 			style.name = def;
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 		}
 		Style style;
 	};
@@ -164,7 +157,6 @@ namespace OGUI
 	if constexpr(inherit == Inherited) \
 		size+=sizeof(type);
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 		return size;
 	}
 }
@@ -235,7 +227,6 @@ OGUI::Style OGUI::Lerp(const Style& a, const Style& b, float alpha)
 #define STYLEPROP(name, ...) \
 	result.name = Lerp(a.name, b.name, alpha);
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef STYLEPROP
 	return result;
 }
 
@@ -257,6 +248,5 @@ void OGUI::Style::LerpProperties(const StyleSheetStorage& sheet, const gsl::span
 			continue; \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef	STYLEPROP
 	}
 }

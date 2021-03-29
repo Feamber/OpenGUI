@@ -7,8 +7,9 @@ namespace OGUI
 	struct AnimRunContext
 	{
 		float time = 0.f;
-		bool Goingback = false;
-		bool Yielding = false;
+		bool goingback = false;
+		bool yielding = false;
+		bool evaluating = true;
 	};
 
 	struct AnimationStyle
@@ -26,6 +27,5 @@ namespace OGUI
 #define	ANIMPROP(name, index, type, ...)\
 		type name;
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef	ANIMPROP
 	};
 }

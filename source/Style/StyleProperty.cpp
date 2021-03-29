@@ -8,11 +8,9 @@ OGUI::StylePropertyId OGUI::PropertyNameToId(std::string_view name)
 #define STYLEPROP(id, index, inherit, type, name, ...) \
 		{name, StylePropertyId::id},
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef STYLEPROP
 #define	ANIMPROP(id, index, type, name, ...)\
 		{name, StylePropertyId::id},
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef	ANIMPROP
 	};
 	auto iter = name2id.find(name);
 	if (iter != name2id.end())
@@ -28,11 +26,9 @@ std::string_view OGUI::PropertyIdToName(StylePropertyId id)
 #define STYLEPROP(id, index, inherit, type, name, ...) \
 		name,
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef STYLEPROP
 #define	ANIMPROP(id, index, type, name, ...)\
 		name,
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
-#undef	ANIMPROP
 	};
 	if (id < StylePropertyId::Num)
 		return id2name[(uint8_t)id];
@@ -47,6 +43,5 @@ std::bitset<96> OGUI::GetInheritMask()
 	if constexpr(inherit == Inheritance::Inherited) \
 		res.set((int)StylePropertyId::id); 
 #include "OpenGUI/Style/StylePropertiesDef.h"
-#undef STYLEPROP
 	return res;
 }
