@@ -12,12 +12,14 @@ OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f 
 	return result;
 }
 
-void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx)
+void OGUI::VisualElement::DrawBackgroundPrimitive(
+	PrimitiveDraw::DrawContext& Ctx)
 {
 	using namespace PrimitiveDraw;
-	auto rectPixelPos = GetRect();
+	//auto rectPixelPos = GetRect();
 	Rect rect = GetRect();
-	//Rect rect = rectPixelPosToScreenPos(rectPixelPos, Ctx.resolution);
+	//Rect rect_origin = GetRect();
+	//Rect rect = rectPixelPosToScreenPos(rect_origin, Ctx.resolution);
 
 	auto transform = _worldTransform;
 	//transform.M[3][0] /= Ctx.resolution.X;
@@ -31,7 +33,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ct
 	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
 	PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
-	EndDraw(Ctx.prims, transform);
+	EndDraw(Ctx.prims, transform, Ctx.resolution);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimitiveDraw::DrawContext & Ctx)
