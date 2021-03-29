@@ -1364,6 +1364,7 @@ namespace OGUI
 bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view str, StyleRule& rule, const char*& errorMsg, ParseErrorType& errorType, int animIndex, int animEndIndex)
 {
 	StyleKeyword keyword = StyleKeyword::None;
+	auto id = PropertyNameToId(name);
 	//keywords
 	FromString(str, keyword);
 
@@ -1416,7 +1417,6 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 		return true;
 	}
 
-	auto id = PropertyNameToId(name);
 	if (id == StylePropertyId::_End)
 	{
 		errorMsg = "custom style property is not support yet!";
