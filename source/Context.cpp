@@ -98,7 +98,7 @@ bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int
 	y /= dpiScale.Y;
 	//printf("ClientSpace: (%d, %d)\n", x, y);
 
-	printf("DpiScale: (%.2f, %.2f)\n", dpiScale.X, dpiScale.Y);
+	//printf("DpiScale: (%.2f, %.2f)\n", dpiScale.X, dpiScale.Y);
 	//auto windowMaxRect = inputImpl->GetWindowMaxRect();
 	//Vector2f windowRelativeSize = { (windowMaxRect.Z - windowMaxRect.X) / dpiScale.X, (windowMaxRect.W - windowMaxRect.Y) / dpiScale.Y };
 	//printf("WindowMax: (%.2f, %.2f)\n", windowRelativeSize.X, windowRelativeSize.Y);

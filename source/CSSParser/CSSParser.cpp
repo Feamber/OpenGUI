@@ -1158,12 +1158,15 @@ namespace OGUI
 				sheet.styleSelectors.push_back(sel);
 			}
 		};
+		using Key = StyleKeyframes::Key;
+		using AnimationCurve = std::vector<Key>;
 		parser["KeyframeBlock"] = [&](SemanticValues& vs)
 		{
+			
 			AnimationCurve curve;
 			for (auto& key : vs.tokens)
 			{
-				AnimationCurve::Key k;
+				Key k;
 				if (key == "from")
 					k.percentage = 0.f;
 				else if (key == "to")
@@ -1177,7 +1180,7 @@ namespace OGUI
 				else
 					throw parse_error("invalid keyframe selector");
 
-				curve.keys.push_back(k);
+				curve.push_back(k);
 			}
 			StyleRule frame;
 			auto list = any_move<property_list_t>(vs[0]);
@@ -1194,7 +1197,9 @@ namespace OGUI
 				{
 					return (int)a.id < (int)b.id;
 				});
-			return std::make_pair(curve, frame);
+			size_t ruleIndex = sheet.styleRules.size();
+			sheet.styleRules.push_back(std::move(frame));
+			return std::make_pair(curve, ruleIndex);
 		};
 		parser["Keyframes"] = [&](SemanticValues& vs)
 		{
@@ -1203,13 +1208,11 @@ namespace OGUI
 			keyframes.name = {name.begin(), name.end()};
 			for (auto& p : vs)
 			{
-				auto pair = any_move<std::pair<AnimationCurve, StyleRule>>(p);
-				int frameIndex = keyframes.frames.size();
-				keyframes.frames.push_back(std::move(pair.second));
-				for(auto& k : pair.first.keys)
+				auto pair = any_move<std::pair<AnimationCurve, size_t>>(p);
+				for(auto& k : pair.first)
 				{
-					k.frameIndex = frameIndex;
-					keyframes.curve.keys.push_back(k);
+					k.frameIndex = pair.second;
+					keyframes.keys.push_back(k);
 				}
 			}
 			sheet.styleKeyframes.push_back(std::move(keyframes));

@@ -23,21 +23,15 @@ namespace OGUI
 		Vector2f
 		>;
 
-	struct AnimationCurve
+	struct StyleKeyframes
 	{
 		struct Key
 		{
 			float percentage;
 			int frameIndex;
 		};
-		std::vector<Key> keys;
-	};
-
-	struct StyleKeyframes
-	{
 		std::string name;
-		AnimationCurve curve;
-		std::vector<StyleRule> frames;
+		std::vector<Key> keys;
 	};
 
 	struct StyleSheet

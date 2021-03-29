@@ -241,16 +241,20 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	float time = ctx.time - anim.animDelay;
 	auto applyToLast = [&]()
 	{
-		int count = keyframes->frames.size();
+		int count = keyframes->keys.size();
 		for (int i = 0; i < count; ++i)
 		{
-			auto& key = keyframes->curve.keys[i];
-			if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
+			auto& key = keyframes->keys[i];
+			if (i < 1 || keyframes->keys[i - 1].frameIndex != key.frameIndex) //diff frame
 			{
-				auto& fp = keyframes->frames[key.frameIndex].properties;
+				auto& fp = sheet->styleRules[key.frameIndex].properties;
 				ApplyProperties(sheet->storage, fp, parent); //accelerate
 			}
 		}
+	};
+	auto applyFirst = [&]()
+	{
+		ApplyProperties(sheet->storage, sheet->styleRules[keyframes->keys[0].frameIndex].properties, parent);
 	};
 	if (time <= 0)
 	{
@@ -258,11 +262,10 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 		{
 			//apply first frame
 			bool reversed = anim.animDirections == EAnimDirection::Reverse || anim.animDirections == EAnimDirection::AlternateReverse;
-			auto& lastKey = keyframes->curve.keys.back();
 			if (reversed)
 				applyToLast();
 			else
-				ApplyProperties(sheet->storage, keyframes->frames[0].properties, parent);
+				applyFirst();
 		}
 		return;
 	}
@@ -283,9 +286,9 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			if (test(anim.animFillMode, EAnimFillMode::Forwards))
 			{
 				//apply last frame
-				auto& lastKey = keyframes->curve.keys.back();
+				auto& lastKey = keyframes->keys.back();
 				if (reversed)
-					ApplyProperties(sheet->storage, keyframes->frames[0].properties, parent);
+					applyFirst();
 				else
 					applyToLast();
 			}
@@ -299,7 +302,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	auto& ap = appliedProperties;
 	auto& ap2 = appliedProperties2;
 	int an = 0, an2 = 0;
-	int i = 0, count = keyframes->curve.keys.size();
+	int i = 0, count = keyframes->keys.size();
 	auto merge = [&](gsl::span<StyleProperty> fp, float p)
 	{
 		int l = 0, r = 0, ln = ap.size(), rn = fp.size();
@@ -322,23 +325,23 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 	};
 	for (i = 0; i < count ; ++i)
 	{
-		auto& key = keyframes->curve.keys[i];
+		auto& key = keyframes->keys[i];
 		if (key.percentage > percentage)
 			break;
-		if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
+		if (i < 1 || keyframes->keys[i - 1].frameIndex != key.frameIndex) //diff frame
 		{
-			auto& fp = keyframes->frames[key.frameIndex].properties;
+			auto& fp = sheet->styleRules[key.frameIndex].properties;
 			ApplyProperties(sheet->storage, fp, parent); //accelerate
 			merge(fp, key.percentage);
 		}
 	}
 	for (;i < count; ++i)
 	{
-		auto& key = keyframes->curve.keys[i];
+		auto& key = keyframes->keys[i];
 		float alpha = percentage / key.percentage;
-		if (i < 1 || keyframes->curve.keys[i - 1].frameIndex != key.frameIndex) //diff frame
+		if (i < 1 || keyframes->keys[i - 1].frameIndex != key.frameIndex) //diff frame
 		{
-			auto& fp = keyframes->frames[key.frameIndex].properties;
+			auto& fp = sheet->styleRules[key.frameIndex].properties;
 			auto timeFunction = anim.animTimingFunction;
 			GetTimingFunction(timeFunction, sheet->storage, fp);
 			float p = key.percentage;
@@ -381,7 +384,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 		}
 		else
 		{
-			auto& fp = keyframes->frames[key.frameIndex].properties;
+			auto& fp = sheet->styleRules[key.frameIndex].properties;
 			merge(fp, key.percentage);
 		}
 	}

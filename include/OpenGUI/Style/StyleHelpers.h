@@ -10,7 +10,7 @@ namespace OGUI
 			AddPropertyImpl(StyleSheetStorage& sheet, StylePropertyId id, const Y& value)
 		{
 			auto handle = sheet.Push<T>(value);
-			return {id, false, handle};
+			return {id, handle};
 		}
 
 		template<class T, class Y>
@@ -18,7 +18,7 @@ namespace OGUI
 			AddPropertyImpl(StyleSheetStorage& sheet, StylePropertyId id, const Y& value)
 		{
 			auto handle = sheet.Push<int>(value);
-			return {id, false, handle};
+			return {id, handle};
 		}
 
 		template<class T, class Y>
