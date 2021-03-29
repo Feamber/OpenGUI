@@ -27,6 +27,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 	element->Traverse([this](VisualElement* element) { 
 		Traverse(element); 
 	});
+	element->_styleDirty = false;
 	int styleSheetCount = sstack.size();
 	auto start = sstack.begin();
 	if (styleSheetCount > originStyleSheetCount) //pop
@@ -291,6 +292,50 @@ namespace OGUI
 			}
 		}
 	}
+
+	struct YogaStyle
+	{
+#define YOGAPROP(name, index, inherited, type, ...) \
+		type name;
+#include "OpenGUI/Style/StylePropertiesDef.h"
+
+		YogaStyle(const Style& style)
+		{
+#define YOGAPROP(name, ...) \
+			name = style.name;
+#include "OpenGUI/Style/StylePropertiesDef.h"
+		}
+		bool operator==(const Style& style)
+		{
+#define YOGAPROP(name, ...) \
+			if(!(name == style.name)) \
+				return false;
+#include "OpenGUI/Style/StylePropertiesDef.h"
+			return true;
+		}
+	};
+
+	struct TRSStyle
+	{
+#define TRSPROP(name, index, inherited, type, ...) \
+		type name;
+#include "OpenGUI/Style/StylePropertiesDef.h"
+
+		TRSStyle(const Style& style)
+		{
+#define TRSPROP(name, ...) \
+			name = style.name;
+#include "OpenGUI/Style/StylePropertiesDef.h"
+		}
+		bool operator==(const Style& style)
+		{
+#define TRSPROP(name, ...) \
+			if(!(name == style.name)) \
+				return false;
+#include "OpenGUI/Style/StylePropertiesDef.h"
+			return true;
+		}
+	};
 }
 
 void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors)
@@ -341,7 +386,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 	}
 	/*
 	* anim style = 
-	*	 yielding rule + shared anim style + inline/procedure anim rule
+	*	 yielding + shared + inline/procedure
 	* animated rule =
 	*	anim style + anim context
 	* final style =
@@ -357,6 +402,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 	{
 		bool sharedDirty = element->_sharedStyle != sharedStyle;
 		bool procedureDirty = element->_procedureStyleDirty;
+		bool parentDirty = parent ? parent->_styleDirty : false;
 		element->_sharedStyle = sharedStyle;
 		if (procedureDirty || sharedDirty)
 		{
@@ -382,10 +428,11 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 						ctxs[i] = element->_animContext[j];
 						if (anim.animResumeMode == EAnimResumeMode::Reset && element->_animContext[j].yielding)
 						{
+							//Play from begining
 							ctxs[i].time = 0;
 						}
 						else
-						{
+						{	//Sync iteration
 							auto& oldCtx = element->_animContext[j];
 							float iter = (oldCtx.time - oldAnim.animDelay) / oldAnim.animDuration;
 							if (((int)anim.animDirections % 2) != ((int)oldAnim.animDirections % 2))
@@ -431,7 +478,9 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 			}
 		}
 		bool styleDirty = false;
-		if (sharedDirty || procedureDirty)
+		YogaStyle yogaStyle = element->_style;
+		TRSStyle trsStyle = element->_style;
+		if (sharedDirty || procedureDirty || parentDirty)
 		{
 			element->_preAnimatedStyle = Style::Create(nullptr, true);
 			if (parentStyle)
@@ -442,12 +491,13 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 			if (element->_procedureStyle)
 				element->_preAnimatedStyle.ApplyProperties(element->_procedureStyle->storage, element->_procedureStyle->rule.properties, parentStyle);
 			styleDirty = true;
-			element->_style = element->_preAnimatedStyle;
 		}
 		bool animationEvaling = false;
 		for (auto& ctx : element->_animContext)
 			animationEvaling |= ctx.evaluating;
-		if(element->_animContext.size() == 0 && element->_prevEvaluating)
+		if (element->_animContext.size() == 0 && element->_prevEvaluating)
+			styleDirty = true;
+		if(styleDirty)
 			element->_style = element->_preAnimatedStyle;
 		if(animationEvaling)
 		{
@@ -459,8 +509,12 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 		element->_prevEvaluating = animationEvaling;
 		if (styleDirty)
 		{
-			//TODO: check layout dirty, check transform dirty
-			element->SyncYogaStyle();
+			element->_styleDirty = styleDirty; //todo: check identity?
+			if (!(yogaStyle == element->_style))
+				element->SyncYogaStyle();
+			if (!(trsStyle == element->_style))
+				element->_transformDirty = true;
+			//todo: shape dirty?
 		}
 	}
 }

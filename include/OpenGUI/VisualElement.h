@@ -152,7 +152,10 @@ namespace OGUI
 		
 		std::string backgroundImageUrl;
 
+		bool _styleDirty = false;
+		bool _transformDirty = false;
 		bool _procedureStyleDirty = false;
+		Rect _prevLayout;
 		Style _style;
 		Style _preAnimatedStyle;
 		Style* _sharedStyle = nullptr;

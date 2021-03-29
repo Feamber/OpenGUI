@@ -43,7 +43,8 @@ namespace OGUI
 		VisualAnimationSystem animSystem;
 
 		//Global States
-		float _deltaTime;
+		float _deltaTime = 0.f;
+		bool _layoutDirty = true;
 	
 		//APIs
 		void Update(const WindowHandle window, float dt);

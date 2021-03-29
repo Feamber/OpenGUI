@@ -31,8 +31,10 @@ namespace OGUI
 	}
 	void TransformRec(VisualElement* element)
 	{
-		element->UpdateWorldTransform();
-		element->Traverse([&](VisualElement* next) { TransformRec(next); });
+		bool dirty = element->_transformDirty;
+		if(dirty)
+			element->UpdateWorldTransform();
+		element->Traverse([&](VisualElement* next) { if(dirty) next->_transformDirty = true; TransformRec(next); });
 	}
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
@@ -51,6 +53,29 @@ namespace OGUI
 			return element;
 		else return nullptr;
 	}
+	void CacheLayoutRec(VisualElement* element)
+	{
+		element->_prevLayout = element->GetLayout();
+		element->Traverse([&](VisualElement* next) { CacheLayoutRec(next); });
+	}
+	void CheckLayoutRec(VisualElement* element)
+	{
+		if (element->_prevLayout != element->GetLayout())
+			element->_transformDirty = true;
+		else
+			element->Traverse([&](VisualElement* next) { CacheLayoutRec(next); });
+	}
+	void UpdateLayout(VisualElement* element)
+	{
+		auto& ctx = Context::Get();
+		if (ctx._layoutDirty)
+		{
+			CacheLayoutRec(element);
+			element->CalculateLayout();
+			CheckLayoutRec(element);
+			ctx._layoutDirty = false;
+		}
+	}
 }
 
 void OGUI::Context::Update(const WindowHandle window, float dt)
@@ -59,11 +84,10 @@ void OGUI::Context::Update(const WindowHandle window, float dt)
 	// Update Window
 	auto& wctx = GetOrRegisterWindowContext(window);
 	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
-	//
 	_deltaTime = dt;
 	animSystem.Update(root);
 	styleSystem.Update(root);
-	root->CalculateLayout();
+	UpdateLayout(root);
 	TransformRec(root);
 }
 

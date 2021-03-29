@@ -155,6 +155,7 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto offset = -(layout.max - layout.min) / 2;
 		_worldTransform = math::make_transform_2d(_style.translation, _style.rotation, _style.scale);
 	}
+	_transformDirty = false;
 }
 
 OGUI::Rect OGUI::VisualElement::GetLayout()
@@ -183,6 +184,7 @@ void OGUI::VisualElement::SyncYogaStyle()
 {
 	if (!_ygnode)
 		return;
+	Context::Get()._layoutDirty = true;
 	YGNodeStyleSetFlex(_ygnode, _style.flex);
 	YGNodeStyleSetFlexGrow(_ygnode, _style.flexGrow);
 	YGNodeStyleSetFlexShrink(_ygnode, _style.flexShrink);
