@@ -26,7 +26,7 @@ namespace OGUI
     
     struct PointerDownEvent : PointerData 
     {
-        EventRoutePhase currentPhase;
+        EventRoutePhase currentPhase = EventRoutePhase::None;
         static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
     };
     struct PointerMoveEvent : PointerData {};

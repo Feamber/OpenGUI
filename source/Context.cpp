@@ -44,9 +44,9 @@ namespace OGUI
 		const Vector4f result = math::multiply(dummy, invTransform);
 		Vector2f localPoint = {result.X, result.Y};
 
-		std::cout << "OnMouseDown: " << localPoint.X << "," << localPoint.Y << std::endl;
-		std::cout << "Name: " << element->_name << std::endl;
-		std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
+		//std::cout << "OnMouseDown: " << localPoint.X << "," << localPoint.Y << std::endl;
+		//std::cout << "Name: " << element->_name << std::endl;
+		//std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
 		if (element->Intersect(localPoint))
 			return element;
 		else return nullptr;
@@ -111,7 +111,7 @@ bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int
 	//printf("WindowCenter: (%.2f, %.2f)\n", point.X, point.Y);
 
 	auto picked = PickRecursive(root, point);
-	std::cout << std::endl;
+	//std::cout << std::endl;
 	if (picked)
 	{
 		if (picked != currentFocus.lock().get())

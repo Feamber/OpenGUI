@@ -88,11 +88,10 @@ namespace OGUI
 		return match;
 	}
 
-	bool Match(StyleMatchingContext& context, StyleComplexSelector* complexSel)
+	bool Match(VisualElement* current, StyleComplexSelector& complexSel)
 	{
 		//https://speakerdeck.com/constellation/css-jit-just-in-time-compiled-css-selectors-in-webkit
-		auto current = context.currentElement;
-		auto& selectors = complexSel->selectors;
+		auto& selectors = complexSel.selectors;
 		int count = selectors.size();
 		int index = count - 1;
 		VisualElement* saved = nullptr;
@@ -132,8 +131,41 @@ namespace OGUI
 		return false;
 	}
 
+	VisualElement* QueryFirst(VisualElement* root, std::string_view str)
+	{
+		auto selector = ParseSelector(str);
+		if (!selector)
+			return nullptr;
+		return QueryFirst(root, selector.value());
+	}
+	void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result)
+	{
+		auto selector = ParseSelector(str);
+		if (!selector)
+			return;
+		return QueryAll(root, selector.value(), result);
+	}
+
+	VisualElement* QueryFirst(VisualElement* root, StyleComplexSelector& complexSel)
+	{
+		if (Match(root, complexSel))
+			return root;
+		for (auto& child : root->_children)
+			if (auto elem = QueryFirst(child.get(), complexSel))
+				return elem;
+		return false;
+	}
+
+	void QueryAll(VisualElement* root, StyleComplexSelector& complexSel, std::vector<VisualElement*>& result)
+	{
+		if (Match(root, complexSel))
+			result.push_back(root);
+		for (auto& child : root->_children)
+			QueryAll(child.get(), complexSel, result);
+	}
+
 	void Lookup(
-		StyleMatchingContext& context,
+		VisualElement* current,
 		std::vector<SelectorMatchRecord>& matchedSelectors,
 		StyleSheet::SelectorMap& map,
 		std::string_view input,
@@ -145,7 +177,7 @@ namespace OGUI
 			for (auto iter = range.first; iter != range.second; ++iter)
 			{
 				auto& selector = record.sheet->styleSelectors[iter->second];
-				if (Match(context, &selector))
+				if (Match(current, selector))
 				{
 					record.complexSelector = &selector;
 					matchedSelectors.push_back(record);
@@ -165,12 +197,12 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 	{
 		StyleSheet* sheet = context.styleSheetStack[i];
 		SelectorMatchRecord record{sheet, i, nullptr};
-		Lookup(context, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
-		Lookup(context, matchedSelectors, sheet->typeSelectors, "*", record);
+		Lookup(context.currentElement, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
+		Lookup(context.currentElement, matchedSelectors, sheet->typeSelectors, "*", record);
 		if(!element->_name.empty())
-			Lookup(context, matchedSelectors, sheet->nameSelectors, element->_name, record);
+			Lookup(context.currentElement, matchedSelectors, sheet->nameSelectors, element->_name, record);
 		for(auto& cls : element->_styleClasses)
-			Lookup(context, matchedSelectors, sheet->classSelectors, cls, record);
+			Lookup(context.currentElement, matchedSelectors, sheet->classSelectors, cls, record);
 	}
 }
 

@@ -332,6 +332,15 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
 				auto ve = XmlAsset::Instantiate(asset.lock()->id);
+				if(auto child1 = QueryFirst(ve.get(), "#Child1"))
+				{
+					constexpr auto handler = +[](PointerDownEvent& event)
+					{
+						std::cerr << "Oh shit" << std::endl;
+						return true;
+					};
+					child1->_eventHandler.Register<PointerDownEvent, handler>();
+				}
 				ve->_name = "TestElement";
 				ctx.desktops->PushChild(ve.get());
 			}

@@ -13,7 +13,7 @@ namespace OGUI
 
     void BuildRoutePath(VisualElement* target, std::vector<VisualElement*>& path)
     {
-        for (auto parent = target->GetHierachyParent(); parent != nullptr; parent = target->GetHierachyParent())
+        for (auto parent = target->GetHierachyParent(); parent != nullptr; parent = parent->GetHierachyParent())
             path.push_back(parent);
     }
 
@@ -21,7 +21,7 @@ namespace OGUI
     {
         int value = (int)current;
         mask &= ~(value | (value - 1));
-        mask &= mask - 1;
+        mask &= -mask;
         return (EventRoutePhase)mask;
     }
 
@@ -32,7 +32,7 @@ namespace OGUI
         EventRoutePhase& currentPhase = event.currentPhase;
         std::vector<VisualElement*> routePath;
         if (currentPhase == EventRoutePhase::None)
-            currentPhase = (EventRoutePhase)(phaseMask & (phaseMask - 1));
+            currentPhase = (EventRoutePhase)(phaseMask & -phaseMask);
         if (currentPhase == EventRoutePhase::TrickleDown)
         {
             BuildRoutePath(target, routePath);

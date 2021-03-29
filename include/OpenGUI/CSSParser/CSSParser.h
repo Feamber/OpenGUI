@@ -9,4 +9,5 @@ namespace OGUI
 	std::optional<StyleSheet> ParseCSS(std::string_view str);
 	std::optional<InlineStyle> ParseInlineStyle(std::string_view str);
 	std::optional<StyleSheet> ParseCSSFile(std::string path);
+	std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
 }

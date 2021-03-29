@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <cinttypes>
+#include <optional>
 
 namespace OGUI
 {
@@ -55,5 +56,13 @@ namespace OGUI
 
 		void UpdateSpecificity();
 		bool IsSimple() { return selectors.size() == 1; }
-	};
+	}; 
+	class VisualElement;
+
+	std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
+	bool Match(VisualElement* current, StyleComplexSelector& complexSel);
+	VisualElement* QueryFirst(VisualElement* root, std::string_view str);
+	VisualElement* QueryFirst(VisualElement* root, StyleComplexSelector& complexSel);
+	void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result);
+	void QueryAll(VisualElement* root, StyleComplexSelector& complexSel, std::vector<VisualElement*>& result);
 }
