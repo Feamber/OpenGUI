@@ -42,9 +42,15 @@ namespace OGUI
 
 	struct StyleProperty
 	{
-		StylePropertyId id : 31;
-		bool keyword : 1;
+		StylePropertyId id;
 		VariantHandle value;
+		bool keyword : 1;
+		int arrayIndex : 31;
+		StyleProperty(StylePropertyId id, VariantHandle handle, int arrayIndex = -1)
+			: id(id), value(handle), keyword(false), arrayIndex(arrayIndex) {}
+		StyleProperty(StylePropertyId id, int keyword, int arrayIndex = -1)
+			: id(id), value{keyword}, keyword(true), arrayIndex(arrayIndex)
+		{}
 	};
 
 	struct CustomStyleProperty

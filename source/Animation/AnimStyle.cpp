@@ -31,23 +31,17 @@ void OGUI::AnimationStyle::ApplyProperties(std::vector<OGUI::AnimationStyle>& se
 {
 	std::vector<std::string> names;
 	std::vector<std::vector<OGUI::StyleProperty>> rules;
-	int counts[(int)StylePropertyId::NumAnim] = {};
-	auto Index = [&](StylePropertyId id)
-	{
-		int i = counts[(int)id - (int)StylePropertyId::NumStyle]++;
-		if (i >= rules.size())
-		{
-			names.resize(i + 1);
-			rules.resize(i + 1);
-		}
-		return i;
-	};
 
 	for (auto& prop : props)
 	{
 		if ((int)prop.id < (int)StylePropertyId::NumStyle)
 			continue;
-		int i = Index(prop.id);
+		int i = prop.arrayIndex;
+		if (i >= rules.size())
+		{
+			names.resize(i + 1);
+			rules.resize(i + 1);
+		}
 		std::vector<OGUI::StyleProperty>& rule = rules[i];
 		rule.push_back(prop);
 		if (prop.id == StylePropertyId::animName)

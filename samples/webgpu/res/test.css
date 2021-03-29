@@ -15,11 +15,10 @@
     color:rgb(41, 133, 182);
 }
 
-.Child:focus {
+/*negative delay hack*/
+#Child1:focus {
     animation-name:rotateanim;
     animation-duration: 0.5s;
-    animation-delay: 0s;
-    animation-fill-mode: both;
     animation-yield-mode:stop;
     animation-resume-mode:reset;
     animation-name:shapeanim;
@@ -48,7 +47,7 @@
         transform:  rotate(0deg);
     }
     to {
-        transform:  scale(1.2, 1.2);
+        transform:  scale(1.8, 1.8);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         color:rgb(73, 214, 125);
@@ -57,7 +56,51 @@
 
 @keyframes shapeanim {
     to {
-        transform:  scale(1.2, 1.2) rotate(360deg);
+        transform:  scale(1.8, 1.8) rotate(360deg);
+        border-top-right-radius:0px;
+        border-bottom-right-radius:0px;
+        color:rgb(73, 214, 125);
+    }
+}
+
+/*multi animation overload hack*/
+#Child2:focus {
+    animation-name:shapeanim2;
+    animation-duration: 0.5s;
+    animation-yield-mode:goback;
+    animation-resume-mode:reset;
+    animation-name:rotateanim2;
+    animation-duration: 0.5s;
+    animation-yield-mode:stop;
+    animation-resume-mode:reset;
+}
+
+@keyframes rotateanim2 {
+    10% {
+        color:rgb(26, 11, 92);
+        transform: rotate(10deg);
+    }
+    30% {
+        transform: rotate(-10deg); 
+    }
+    50% {
+        transform:  rotate(10deg);
+    }
+    70% {
+        transform:  rotate(-10deg);
+    }
+    80% {
+        transform:  rotate(0deg);
+    }
+    to {
+        color:rgb(73, 214, 125);
+        transform:  scale(1.8, 1.8);
+    }
+}
+
+@keyframes shapeanim2 {
+    to {
+        transform:  scale(1.8, 1.8) rotate(360deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         color:rgb(73, 214, 125);
