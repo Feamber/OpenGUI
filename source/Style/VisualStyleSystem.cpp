@@ -377,12 +377,9 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 					anim.keyframes = oldAnim.keyframes;
 					anim.sheet = oldAnim.sheet;
 					ctxs[i] = element->_animContext[j];
-					if (anim.animResumeMode == EAnimResumeMode::Reset)
+					if (anim.animResumeMode == EAnimResumeMode::Reset && element->_animContext[j].Yielding)
 					{
-						if (element->_animContext[j].Yielding)
-							ctxs[i].time = 0;
-						else if(!(anim == oldAnim))
-							ctxs[i].time = 0;
+						ctxs[i].time = 0;
 					}
 					else
 					{
