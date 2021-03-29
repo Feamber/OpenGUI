@@ -347,10 +347,18 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 					ctxs[i] = element->_animContext[j];
 					if (anim.animResumeMode == EAnimResumeMode::Reset)
 					{
-						if(element->_animContext[j].Yielding)
-							ctxs[i].time = 0.f;
+						if (element->_animContext[j].Yielding)
+							ctxs[i].time = 0;
 						else if(!(anim == oldAnim))
-							ctxs[i].time = 0.f;
+							ctxs[i].time = 0;
+					}
+					else
+					{
+						auto& oldCtx = element->_animContext[j];
+						float iter = (oldCtx.time - oldAnim.animDelay) / oldAnim.animDuration;
+						if (((int)anim.animDirections % 2) != ((int)oldAnim.animDirections % 2))
+							iter = iter + (1 - (iter - (int)iter));
+						ctxs[i].time = iter * anim.animDuration + anim.animDelay;
 					}
 					ctxs[i].Goingback = false;
 					ctxs[i].Yielding = false;
