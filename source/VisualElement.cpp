@@ -104,12 +104,6 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 	//Context.Get().BroadcastDirtyEvent(this, reason);
 }
 
-void OGUI::VisualElement::MoveChild(OGUI::VisualElement* child, OGUI::VisualElement* target)
-{
-	target->PushChild(child);
-    RemoveChild(child);
-}
-
 void OGUI::VisualElement::PushChild(VisualElement* child)
 {
 	InsertChild(child, _children.size());
@@ -126,15 +120,8 @@ void OGUI::VisualElement::RemoveChild(VisualElement* child)
 {
     child->_physical_parent.reset();
     YGNodeRemoveChild(_ygnode, child->_ygnode);
-	auto it = _children.begin();
-	while (it != _children.end())
-	{
-		if (it->get() == child)
-		{
-			_children.erase(it);
-			break;
-		}
-	}
+	auto end = std::remove_if(_children.begin(), _children.end(), [&](const std::shared_ptr<VisualElement>& a){ return a.get() == child; });
+	_children.erase(end, _children.end());
 }
 
 void OGUI::VisualElement::CalculateLayout()

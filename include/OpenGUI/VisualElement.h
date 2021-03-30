@@ -59,6 +59,11 @@ namespace OGUI
 		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
 	};
 
+	class PseudoElement
+	{
+
+	};
+
 	class VisualElement : public std::enable_shared_from_this<VisualElement>
 	{
 	public:
@@ -113,7 +118,6 @@ namespace OGUI
 #pragma endregion
 
 #pragma region Hierachy
-		void MoveChild(VisualElement* child, VisualElement* target);
 		void PushChild(VisualElement* child);
 		void InsertChild(VisualElement* child, int index);
 		void RemoveChild(VisualElement* child);
