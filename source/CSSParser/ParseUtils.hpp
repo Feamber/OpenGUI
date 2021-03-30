@@ -32,6 +32,7 @@ namespace std
 namespace OGUI
 {
 	bool FromString(std::string_view str, std::string& value);
+	bool FromString(std::string_view str, float& value);
 	bool FromString(std::string_view str, int& value);
 	bool FromString(std::string_view str, YGValue& value);
 	bool FromString(std::string_view str, AnimTimingFunction& TimingFunction);
@@ -59,7 +60,7 @@ namespace OGUI
 	bool FromIterationCount(std::string_view str, float& value);
 	bool FromString(std::string_view str, StyleKeyword& value);
 	bool FromTransform(std::string_view str, StyleSheetStorage& sheet, StyleRule& rule);
-	
+
 	template<class T>
 	bool FromString(std::string_view str, T& value)
 	{
