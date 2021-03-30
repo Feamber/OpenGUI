@@ -41,17 +41,17 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(
 	
 	BeginDraw(Ctx.prims);
 	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-	RoundBoxParams params {rect, uv, _style.backgroundColor, nullptr};
+	RoundBoxParams params {rect, uv, _style.backgroundColor };
+	TextureInterface* tex = nullptr;
 	if (backgroundImageResource && backgroundImageResource->valid())
 	{
-		params.texture = backgroundImageResource->Get();
+		tex = backgroundImageResource->Get();
 	}
 	params.radius[0] = _style.borderTopLeftRadius.value;// / Ctx.resolution.Y;
 	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
-	PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
-	Ctx.prims.___test_tex = params.texture; //!!!!!!
+	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, params, 20);
 	EndDraw(Ctx.prims, transform, Ctx.resolution);
 }
 

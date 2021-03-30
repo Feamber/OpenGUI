@@ -28,7 +28,7 @@ namespace OGUI
         }
     }
 
-    void PrimitiveDraw::DrawBox(PrimDrawList& list, const BoxParams& params)
+    void PrimitiveDraw::BoxShape(PrimDrawList& list, const BoxParams& params)
     {
         Vector2f side_len = params.rect.max - params.rect.min;
         if (!side_len.X || !side_len.Y)
@@ -68,10 +68,10 @@ namespace OGUI
     PrimitiveDraw::BoxParams PrimitiveDraw::BoxParams::MakeSolid(const Rect rect, const Color4f color)
     {
         Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-        return { rect, uv, color, nullptr };
+        return { rect, uv, color };
     }
 
-    void PrimitiveDraw::DrawCircle(PrimDrawList& list, const CircleParams& params, int32_t sampleCount)
+    void PrimitiveDraw::CircleShape(PrimDrawList& list, const CircleParams& params, int32_t sampleCount)
 	{
 		const uint32_t vcount = list.vertices.size();
 		//const uint32_t icount = list.indices.size();
@@ -98,7 +98,7 @@ namespace OGUI
         }
     }
 
-    void PrimitiveDraw::DrawFan(PrimDrawList& list, const FanParams& params, int32_t sampleCount /* = 10 */)
+    void PrimitiveDraw::FanShape(PrimDrawList& list, const FanParams& params, int32_t sampleCount /* = 10 */)
 	{
 		const uint32_t vcount = list.vertices.size();
 		//const uint32_t icount = list.indices.size();
@@ -175,7 +175,7 @@ namespace OGUI
     //         (lt,y-rt)   (x-rb,y-rt)
     //         (lt,lb)     (x-rb,lb)
     //
-    void PrimitiveDraw::DrawRoundBox2(PrimDrawList& list, const PrimitiveDraw::RoundBoxParams& params, int32_t sampleCount)
+    void PrimitiveDraw::RoundBoxShape2(PrimDrawList& list, const PrimitiveDraw::RoundBoxParams& params, int32_t sampleCount)
     {
         auto prect = params.rect;
         FanParams fans[4];
@@ -192,13 +192,12 @@ namespace OGUI
             Rect rect = {Vector2f{prect.min.X, prect.min.Y + radius[3]}, Vector2f{prect.min.X + radius[0], prect.max.Y - radius[0]}};
             Rect uv = {Vector2f{params.uv.min.X, params.uv.min.Y + radius[3] * uvS.Y}, Vector2f{params.uv.min.X + radius[3] * uvS.X, params.uv.max.Y - radius[0] * uvS.Y}};
             boxes[fanCount] = {
-                rect, uv, params.color, params.texture
+                rect, uv, params.color
             };
             fans[fanCount++] = {
                 Vector2f(prect.min.X + radius[0], prect.max.Y - radius[0]),
                 Rect{Vector2f(params.uv.min.X, params.uv.max.Y - radius[0] * uvS.Y), Vector2f(params.uv.min.X + radius[0] * uvS.X, params.uv.max.Y)},
                 params.color,
-                params.texture,
                 radius[0],
                 math::PI / 2,
                 math::PI / 2};
@@ -208,14 +207,13 @@ namespace OGUI
             Rect rect = {Vector2f{prect.min.X + radius[0], prect.max.Y - radius[1]}, Vector2f{prect.max.X - radius[1], prect.max.Y}};
             Rect uv = {Vector2f{params.uv.min.X + radius[0] * uvS.X, params.uv.max.Y - radius[1] * uvS.Y}, Vector2f{params.uv.max.X - radius[1] * uvS.X, params.uv.max.Y}};
             boxes[fanCount] = {
-                rect, uv, params.color, params.texture
+                rect, uv, params.color
             };
 
             fans[fanCount++] = {
                 Vector2f(prect.max.X - radius[1], prect.max.Y - radius[1]),
                 Rect{Vector2f(params.uv.max.X - radius[1] * uvS.X, params.uv.max.Y - radius[0] * uvS.Y), Vector2f(params.uv.max.X, params.uv.max.Y)},
                 params.color,
-                params.texture,
                 radius[1],
                 math::PI / 2,
                 0};
@@ -225,14 +223,13 @@ namespace OGUI
             Rect rect = {Vector2f{prect.max.X - radius[2], prect.min.Y + radius[2]}, Vector2f{prect.max.X, prect.max.Y - radius[1]}};
             Rect uv = {Vector2f{params.uv.max.X - radius[2] * uvS.X, params.uv.min.Y + radius[2] * uvS.Y}, Vector2f{params.uv.max.X, params.uv.max.Y - radius[1] * uvS.Y}};
             boxes[fanCount] = {
-                rect, uv, params.color, params.texture
+                rect, uv, params.color
             };
 
             fans[fanCount++] = {
                 Vector2f(prect.max.X - radius[2], prect.min.Y + radius[2]),
                 Rect{Vector2f(params.uv.max.X - radius[2] * uvS.X, params.uv.min.Y), Vector2f(params.uv.max.X, params.uv.min.Y + radius[2] * uvS.Y)},
                 params.color,
-                params.texture,
                 radius[2],
                 math::PI / 2,
                 -math::PI / 2};
@@ -242,14 +239,13 @@ namespace OGUI
             Rect rect = {Vector2f{prect.min.X + radius[3], prect.min.Y}, Vector2f{prect.max.X - radius[2], prect.min.Y + radius[3]}};
             Rect uv = {Vector2f{params.uv.min.X + radius[3] * uvS.X, params.uv.min.Y}, Vector2f{params.uv.max.X - radius[2] * uvS.X, params.uv.min.Y + radius[3] * uvS.Y}};
             boxes[fanCount] = {
-                rect, uv, params.color, params.texture
+                rect, uv, params.color
             };
 
             fans[fanCount++] = {
                 Vector2f(prect.min.X + radius[3], prect.min.Y + radius[3]),
                 Rect{Vector2f(params.uv.min.X, params.uv.min.Y), Vector2f(prect.min.X + radius[3] * uvS.X, params.uv.min.Y + radius[3] * uvS.Y)},
                 params.color,
-                params.texture,
                 radius[3],
                 math::PI / 2,
                 -math::PI};
@@ -258,17 +254,17 @@ namespace OGUI
             Rect rect = {Vector2f{prect.min.X + radius[0], prect.min.Y + radius[3]}, Vector2f{prect.max.X - radius[2], prect.max.Y - radius[1]}};
             Rect uv = {Vector2f{params.uv.min.X + radius[0] * uvS.X, params.uv.min.Y + radius[3] * uvS.Y}, Vector2f{params.uv.max.X - radius[2] * uvS.X, params.uv.max.Y - radius[1] * uvS.Y}};
             boxes[fanCount] = {
-                rect, uv, params.color, params.texture
+                rect, uv, params.color
             };
         }
         for (int i = 0; i < fanCount + 1; i++)
-            DrawBox(list, boxes[i]);
+            BoxShape(list, boxes[i]);
 
         for (int i = 0; i < fanCount; i++)
-            DrawFan(list, fans[i], sampleCount);
+            FanShape(list, fans[i], sampleCount);
     }
     
-    void PrimitiveDraw::DrawRoundBox(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount /* = 10 */)
+    void PrimitiveDraw::RoundBoxShape(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount /* = 10 */)
 	{
         float radius = params.radius[0];
 		//const uint32_t vcount = list.vertices.size();
@@ -296,54 +292,50 @@ namespace OGUI
 		//  6 |  1  | 7 
         
         // draw middle rect(1) 
-        DrawBox(list, {
+        BoxShape(list, {
 			Rect{Vector2f(centerRect.min.X, params.rect.min.Y), Vector2f(centerRect.max.X, params.rect.max.Y)},
 			Rect{Vector2f(centerRectUV.min.X, params.rect.min.Y), Vector2f(centerRectUV.max.X, params.rect.max.Y)},
-            params.color,
-            params.texture });
+            params.color
+        });
 
         // draw border rect(2->3) 
-		DrawBox(list, {
+		BoxShape(list, {
 			Rect{Vector2f(params.rect.min.X, centerRect.min.Y), Vector2f(centerRect.min.X, centerRect.max.Y)},
 			Rect{Vector2f(params.uv.min.X, centerRectUV.min.Y),Vector2f(centerRectUV.min.X, centerRectUV.max.Y)},
-			params.color,
-			params.texture });
-		DrawBox(list, {
+			params.color
+        });
+		BoxShape(list, {
 			Rect{Vector2f(centerRect.max.X, centerRect.min.Y), Vector2f(params.rect.max.X, centerRect.max.Y)},
 			Rect{Vector2f(centerRectUV.max.X, centerRectUV.min.Y), Vector2f(params.rect.max.X, centerRectUV.max.Y)},
-			params.color,
-			params.texture });
+			params.color
+        });
 
         // draw corner fan(4->7) 
-        DrawFan(list, {
+        FanShape(list, {
             Vector2f(centerRect.min.X, centerRect.max.Y),
             Rect{Vector2f(params.uv.min.X, centerRectUV.max.Y), Vector2f(centerRectUV.min.X, params.uv.max.Y)},
             params.color,
-            params.texture,
             radius,
 			math::PI / 2,
             math::PI / 2 });
-		DrawFan(list, {
+		FanShape(list, {
 			Vector2f(centerRect.max.X, centerRect.max.Y),
 			Rect{Vector2f(centerRectUV.max.X, centerRectUV.max.Y), Vector2f(centerRectUV.max.X, centerRectUV.max.Y)},
 			params.color,
-			params.texture,
             radius,
 			math::PI / 2,
 			0 });
-		DrawFan(list, {
+		FanShape(list, {
 			Vector2f(centerRect.min.X, centerRect.min.Y),
 			Rect{Vector2f(params.uv.min.X, params.uv.min.Y), Vector2f(centerRectUV.min.X, centerRectUV.min.Y)},
 			params.color,
-			params.texture,
             radius,
 			math::PI / 2,
 			-math::PI });
-		DrawFan(list, {
+		FanShape(list, {
 			Vector2f(centerRect.max.X, centerRect.min.Y),
 			Rect{Vector2f(centerRectUV.min.X, params.uv.min.Y), Vector2f(params.uv.max.X, centerRectUV.min.Y)},
 			params.color,
-			params.texture,
             radius,
 			math::PI / 2,
 			-math::PI / 2 });

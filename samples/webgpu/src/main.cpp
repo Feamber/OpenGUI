@@ -105,7 +105,7 @@ public:
 			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
 			if(last_cmd.texture != cmd.texture || last_index < 0)
 			{
-				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)last_cmd.texture;
+				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
 				if(!texture)
 					texture = default_ogui_texture;
 				if(!texture->bind_group)
