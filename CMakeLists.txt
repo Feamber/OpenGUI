@@ -73,9 +73,12 @@ target_include_directories(OpenGUI
     PUBLIC 
     include
     include/External
+    include/OpenGui/Core/ostring
     ${PLATFORM_INCLUDES}
 )
 target_link_libraries(OpenGUI PUBLIC Yoga)
+target_link_libraries(OpenGUI PUBLIC fmt)
+target_link_libraries(OpenGUI PUBLIC spdlog)
 
 link_libraries(OpenGUI)
 if(OPENGUI_SAMPLES)

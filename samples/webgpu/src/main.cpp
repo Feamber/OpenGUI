@@ -339,8 +339,11 @@ struct WGPURenderer : RenderInterface
 
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
+#include "olog/olog.h"
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
+	olog::init_log_system();
+
 	if (hWnd = window::create();hWnd) {
 		if (device = webgpu::create(hWnd);device) {
 			queue = wgpuDeviceGetDefaultQueue(device);
@@ -370,7 +373,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				{
 					constexpr auto handler = +[](PointerDownEvent& event)
 					{
-						std::cerr << "Oh shit" << std::endl;
+						olog::info("Oh ♂ shit!");
 						return true;
 					};
 					child1->_eventHandler.Register<PointerDownEvent, handler>();
