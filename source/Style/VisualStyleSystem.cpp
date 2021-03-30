@@ -489,7 +489,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 			if (element->_inlineStyle)
 				element->_preAnimatedStyle.ApplyPropertiesFast(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parentStyle);
 			if (element->_procedureStyle)
-				element->_preAnimatedStyle.ApplyProperties(element->_procedureStyle->storage, element->_procedureStyle->rule.properties, parentStyle);
+				element->_preAnimatedStyle.ApplyPropertiesFast(element->_procedureStyle->storage, element->_procedureStyle->rule.properties, parentStyle);
 			styleDirty = true;
 		}
 		bool animationEvaling = false;
