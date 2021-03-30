@@ -29,7 +29,7 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view str)
 		reversedPseudoMask |= (uint32_t)state;
 }
 
-void OGUI::StyleComplexSelector::AddPseudoElement(std::string_view str)
+void OGUI::StyleComplexSelector::SetPseudoElement(std::string_view str)
 {
 	PseudoElements id = PseudoElements::After;
 	switch (hash_(str))
@@ -40,7 +40,7 @@ void OGUI::StyleComplexSelector::AddPseudoElement(std::string_view str)
 			assert(false);
 			return;
 	}
-	pseudoElemMask |= (uint32_t)id;
+	pseudoElem = id;
 }
 
 template<class T>

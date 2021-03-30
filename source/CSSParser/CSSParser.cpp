@@ -94,7 +94,7 @@ namespace OGUI
 		{
 			StyleComplexSelector complexSelector;
 			if (vs.tokens.size() > 0)
-				complexSelector.AddPseudoElement(vs.token(0));
+				complexSelector.SetPseudoElement(vs.token(0));
 			for (auto& p : vs)
 				complexSelector.selectors.push_back(any_move<StyleSelector>(p));
 			complexSelector.ruleIndex = vs.line_info().first;

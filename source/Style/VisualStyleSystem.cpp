@@ -201,7 +201,10 @@ namespace OGUI
 
 	int cmp(const SelectorMatchRecord& a, const SelectorMatchRecord& b)
 	{
-		int result = cmp(a.complexSelector->specificity, b.complexSelector->specificity);
+		int result = cmp((int)a.complexSelector->pseudoElem, (int)b.complexSelector->pseudoElem);
+		if (result != 0)
+			return result;
+		result = cmp(a.complexSelector->specificity, b.complexSelector->specificity);
 		if (result != 0)
 			return result;
 		result = cmp(a.sheetIndex, b.sheetIndex);
@@ -328,21 +331,21 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		{
 			std::sort(result.begin(), result.end(), [](const SelectorMatchRecord& a, const SelectorMatchRecord& b) { return cmp(a, b) < 0; });
 			auto begin = result.begin();
-			auto end = std::stable_partition(result.begin(), result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElemMask == 0; });
-			if (end != result.end())
+			auto end = std::find_if(result.begin(), result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElem != PseudoElements::None; });
+			if (begin != result.end())
 				ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>(&*begin, end - begin));
 			begin = end;
-			end = std::stable_partition(end, result.end(), [](const SelectorMatchRecord& a) { return (a.complexSelector->pseudoElemMask & (uint32_t)PseudoElements::After) != 0; });
-			if (end != result.end())
-				ApplyMatchedRules(element->GetAfterPseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
-			else
-				element->ReleaseAfterPseudoElement();
-			begin = end;
-			end = std::stable_partition(end, result.end(), [](const SelectorMatchRecord& a) { return (a.complexSelector->pseudoElemMask & (uint32_t)PseudoElements::Before) != 0; });
-			if (end != result.end())
+			end = std::find_if(end, result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElem != PseudoElements::Before; });
+			if (begin != result.end())
 				ApplyMatchedRules(element->GetBeforePseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
 			else
 				element->ReleaseBeforePseudoElement();
+			begin = end;
+			end = std::find_if(end, result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElem != PseudoElements::After; });
+			if (begin != result.end())
+				ApplyMatchedRules(element->GetAfterPseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
+			else
+				element->ReleaseAfterPseudoElement();
 		}
 		matchingContext.currentElement = nullptr;
 	}

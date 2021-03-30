@@ -18,8 +18,9 @@ namespace OGUI
 
 	enum class PseudoElements : uint32_t
 	{
-		Before = 1 << 0,
-		After = 1 << 1
+		None,
+		Before,
+		After
 	};
 
 	enum class StyleSelectorRelationship : uint8_t
@@ -59,11 +60,11 @@ namespace OGUI
 		int ruleIndex;
 		int priority;
 		int specificity;
-		uint32_t pseudoElemMask = 0;
+		PseudoElements pseudoElem = PseudoElements::None;
 
 		void UpdateSpecificity();
 		bool IsSimple() { return selectors.size() == 1; }
-		void AddPseudoElement(std::string_view name);
+		void SetPseudoElement(std::string_view name);
 	}; 
 	class VisualElement;
 
