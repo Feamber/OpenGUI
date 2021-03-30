@@ -57,7 +57,7 @@ namespace OGUI
 		bool OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y);
 		bool OnMouseUp(const WindowHandle window, EMouseKey button, int32 x, int32 y);
 		bool OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseMove(bool relative, int32 x, int32 y);
+		bool OnMouseMove(const WindowHandle window, bool relative, int32 x, int32 y);
 		bool OnMouseMoveHP(bool relative, float x, float y);
 		bool OnMouseWheel(float delta);
 			
