@@ -119,8 +119,10 @@ void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::spa
 {
 	for (auto& prop : props)
 	{
+		switch(prop.id)
+		{
 #define STYLEPROP(name, index, inherit, type, ...)\
-		if(prop.id == StylePropertyId::name) \
+		case StylePropertyId::name: \
 		{ \
 			if(prop.keyword) \
 				GetGlobalProperty<type>(name, prop, parent); \
@@ -129,6 +131,7 @@ void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::spa
 			continue; \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
+		}
 	}
 }
 
@@ -271,9 +274,10 @@ void OGUI::Style::LerpProperties(const StyleSheetStorage& sheet, const gsl::span
 {
 	for (auto& prop : props)
 	{
+		switch (prop.id)
+		{
 #define STYLEPROP(name, index, inherit, type, ...)\
-		if(prop.id == StylePropertyId::name) \
-		{ \
+		case StylePropertyId::name: { \
 			type value = name; \
 			if(prop.keyword) \
 				GetGlobalProperty<type>(value, prop, parent); \
@@ -283,5 +287,6 @@ void OGUI::Style::LerpProperties(const StyleSheetStorage& sheet, const gsl::span
 			continue; \
 		}
 #include "OpenGUI/Style/StylePropertiesDef.h"
+		}
 	}
 }
