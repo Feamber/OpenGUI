@@ -1,13 +1,11 @@
 :root {
-    width: 550px;
-    height:550px;
-    justify-content:center;
-    align-items:center;
-    background-color:rgb(184, 57, 116);
-    animation-name:monan;
-    animation-duration: 1s;
-    animation-iteration-count: infinite;
-    background-image:url(res/test1.png);
+    width: 600px;
+    height:600px;
+    justify-content:flex-start;
+    align-items:flex-start;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    background-color:rgb(184, 57, 116, 0.2);
 }
 
 .Child {
@@ -19,6 +17,10 @@
     align-items:center;
     background-color: initial;
     background-image:url(res/test.jpg);
+}
+
+#Child2 {
+    height:116px;width:180px;background-image:url(res/test3.jpg);
 }
 
 .Child::before {
@@ -40,6 +42,15 @@
     animation-fill-mode: none;
     animation-yield-mode:goback;
     animation-resume-mode:reset;
+}
+
+.Test{
+    width: 20px;
+    height:20px;
+    animation-name:monan;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    background-image:url(res/test1.png);
 }
 
 @keyframes rotateanim {
