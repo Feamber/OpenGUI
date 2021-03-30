@@ -16,6 +16,7 @@ static char const triangle_vert_wgsl[] = R"(
 		Position = vec4<f32>(aPos * 2.0, 1.0, 1.0);
 		vCol = aCol;
         vUV = aUV;
+        vUV.y = 1.0 - vUV.y;
 	}
 )";
 
@@ -31,7 +32,6 @@ static char const triangle_frag_wgsl[] = R"(
 	[[stage(fragment)]] fn main() -> void {
         var alpha : f32 = vCol.a; 
 		fragColor = vCol * textureSample(myTexture, mySampler, vUV);
-        fragColor.a = alpha;
     }
 )";
 

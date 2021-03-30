@@ -35,7 +35,7 @@ namespace OGUI
             command_list.emplace_back(
                 PrimDraw{0, 0,
                 (uint32_t)ic,
-                nullptr, nullptr}
+                ___test_tex, nullptr}
             );
             const size_t i_aligned = (ic / 4) * 4 + 4;
             indices.resize(
@@ -52,6 +52,7 @@ namespace OGUI
         IndexList  indices;
         std::vector<PrimDraw> command_list;
 		int beginCount;
+		TextureHandle ___test_tex;//!!!!!
     };
 
     struct OGUI_API PersistantPrimDrawList 

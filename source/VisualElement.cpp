@@ -51,6 +51,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(
 	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
 	PrimitiveDraw::DrawRoundBox2(Ctx.prims, params);
+	Ctx.prims.___test_tex = params.texture; //!!!!!!
 	EndDraw(Ctx.prims, transform, Ctx.resolution);
 }
 

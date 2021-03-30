@@ -10,12 +10,9 @@ download_and_extract(
     ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
-file(COPY res/test.jpg DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
-file(COPY res/test.jpg DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)
-file(COPY res/test.xml DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
-file(COPY res/test.xml DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)
-file(COPY res/test.css DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
-file(COPY res/test.css DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)
+file(GLOB resources res/*.*)
+file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
+file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
