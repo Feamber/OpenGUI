@@ -67,9 +67,11 @@ namespace OGUI
 		std::unique_ptr<SystemInterface> systemImpl;
 		std::unique_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<FileInterface>   fileImpl;
+		//Components
 		std::unique_ptr<IOThread>        ioThread;
 		//Update Per Frame
 		std::vector<WindowContext>       windowContexts; 
+		//std::vector<AsyncBitmap>         bitmapsToUpload;
 		bool initialized = false;
 		int pointerDownCount = 0;
 	protected:

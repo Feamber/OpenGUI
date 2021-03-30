@@ -4,7 +4,7 @@
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style/StyleSelector.h"
-#include "OpenGUI/Utilities/ipair.hpp"
+#include "OpenGUI/Core/Utilities/ipair.hpp"
 
 void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 {
@@ -154,7 +154,7 @@ namespace OGUI
 		for (auto& child : root->_children)
 			if (auto elem = QueryFirst(child.get(), complexSel))
 				return elem;
-		return false;
+		return nullptr;
 	}
 
 	void QueryAll(VisualElement* root, StyleComplexSelector& complexSel, std::vector<VisualElement*>& result)

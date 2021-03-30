@@ -1,6 +1,6 @@
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Style/Style.h"
-#include "OpenGUI/Utilities/ipair.hpp"
+#include "OpenGUI/Core/Utilities/ipair.hpp"
 #include <algorithm>
 
 OGUI::AnimationStyle OGUI::AnimationStyle::Create(bool isShared)

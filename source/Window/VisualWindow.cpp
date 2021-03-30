@@ -1,4 +1,4 @@
-#include "OpenGUI/Window/VisualWindow.h"
+#include "OpenGUI/VisualWindow.h"
 
 OGUI::VisualWindow::VisualWindow()
 {

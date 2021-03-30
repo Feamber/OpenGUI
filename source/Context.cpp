@@ -3,7 +3,7 @@
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Event/EventRouter.h"
-#include "OpenGUI/Window/VisualWindow.h"
+#include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/IOThread.h"
 

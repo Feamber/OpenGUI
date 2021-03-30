@@ -14,7 +14,7 @@ class OGUI_API IOThread
 {
 public:
     template<typename T = AsyncFile>
-    void Load(const char* path,
+    std::shared_ptr<T> Load(const char* path,
         const std::function<void(std::shared_ptr<AsyncFile>)>& completeCallback = [](std::shared_ptr<AsyncFile> tex) {})
     {
         FileLoaderTask task;
@@ -26,6 +26,7 @@ public:
         load_queue_mutex.lock();
         load_queue.push_back(task);
         load_queue_mutex.unlock();
+        return std::static_pointer_cast<T>(task.file);
     }
     IOThread();
     ~IOThread();

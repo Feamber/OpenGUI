@@ -10,7 +10,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/Xml/XmlAsset.h"
-#include "OpenGUI/Window/VisualWindow.h"
+#include "OpenGUI/VisualWindow.h"
 
 extern void InstallInput();
 window::Handle hWnd;
