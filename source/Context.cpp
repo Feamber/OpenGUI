@@ -197,6 +197,12 @@ OGUI::Context::Context()
 	textureManager = std::make_unique<RenderTextureManager>();
 }
 
+OGUI::Context::~Context()
+{
+	desktops.reset();
+	dialogs.reset();
+}
+
 OGUI::Context& OGUI::Context::Get()
 {
 	static Context ctx;

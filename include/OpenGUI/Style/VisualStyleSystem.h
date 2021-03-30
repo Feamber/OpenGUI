@@ -38,7 +38,7 @@ namespace OGUI
 		void Traverse(VisualElement* element);
 
 		static void FindMatches(StyleMatchingContext& context, std::vector<SelectorMatchRecord>& matchedSelectors);
-		void ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors);
+		void ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors);
 
 	public:
 		virtual void Update(VisualElement* Tree);

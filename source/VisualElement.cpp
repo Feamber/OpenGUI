@@ -320,3 +320,51 @@ void OGUI::VisualElement::InitInlineStyle(std::string_view str)
 	if(res)
 		_inlineStyle = std::make_unique<InlineStyle>(std::move(res.value()));
 }
+
+namespace OGUI
+{
+	VisualElement* CreatePseudoElement()
+	{
+		auto res = new VisualElement();
+		res->_isPseudoElement = true;
+		return res;
+	}
+}
+
+OGUI::VisualElement* OGUI::VisualElement::GetAfterPseudoElement()
+{
+	if (!_beforeElement)
+	{
+		_beforeElement.reset(CreatePseudoElement());
+		InsertChild(_beforeElement.get(), 0);
+	}
+	return _beforeElement.get();
+}
+
+void OGUI::VisualElement::ReleaseAfterPseudoElement()
+{
+	if (_beforeElement)
+	{
+		_beforeElement.reset();
+		RemoveChild(_beforeElement.get());
+	}
+}
+
+OGUI::VisualElement* OGUI::VisualElement::GetBeforePseudoElement()
+{
+	if (!_afterElement)
+	{
+		_afterElement.reset(CreatePseudoElement());
+		PushChild(_afterElement.get());
+	}
+	return _afterElement.get();
+}
+
+void OGUI::VisualElement::ReleaseBeforePseudoElement()
+{
+	if (_afterElement)
+	{
+		_afterElement.reset();
+		RemoveChild(_afterElement.get());
+	}
+}

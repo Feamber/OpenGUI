@@ -1,45 +1,46 @@
 #include "OpenGUI/Style/StyleSelector.h"
+#include "OpenGUI/Core/Utilities/string_hash.hpp"
+#include <cassert>
 #include <array>
 #include <string_view>
 #include <bitset>
 
-void OGUI::StyleSelector::AddPseudoClass(std::string_view pseudoClass)
+void OGUI::StyleSelector::AddPseudoClass(std::string_view str)
 {
-	struct Name2State
+	PseudoStates state = PseudoStates::Active;
+	bool reverse = false;
+	switch (hash_(str))
 	{
-		std::string_view name;
-		PseudoStates state;
-		bool reverse;
-	};
-	static const Name2State map[] =
-	{
-		{"active", PseudoStates::Active, false},
-		{"hover", PseudoStates::Hover, false},
-		{"checked", PseudoStates::Checked, false},
-		{"disabled", PseudoStates::Disabled, false},
-		{"focus", PseudoStates::Focus, false},
-		{"root", PseudoStates::Root, false},
-		{"inactive", PseudoStates::Active, true},
-		{"enabled", PseudoStates::Disabled, true}
-	};
-	bool founded = false;
-	for (auto& state : map)
-	{
-		if (state.name == pseudoClass)
-		{
-			if (!state.reverse)
-				pseudoMask |= (uint32_t)state.state;
-			else
-				reversedPseudoMask |= (uint32_t)state.state;
-			founded = true;
-			break;
-		}
+		casestr("active") state = PseudoStates::Active; break;
+		casestr("hover") state = PseudoStates::Hover; break;
+		casestr("checked") state = PseudoStates::Checked; break;
+		casestr("disabled") state = PseudoStates::Disabled; break;
+		casestr("focus") state = PseudoStates::Focus; break;
+		casestr("root") state = PseudoStates::Root; break;
+		casestr("inactive") state = PseudoStates::Active; reverse = true; break;
+		casestr("enabled") state = PseudoStates::Disabled;  reverse = true; break;
+		default:
+			assert(false);
+			return;
 	}
+	if (!reverse)
+		pseudoMask |= (uint32_t)state;
+	else
+		reversedPseudoMask |= (uint32_t)state;
+}
 
-	if(!founded)
+void OGUI::StyleComplexSelector::AddPseudoElement(std::string_view str)
+{
+	PseudoElements id = PseudoElements::After;
+	switch (hash_(str))
 	{
-		//TODO: log unknown pseudo class
+		casestr("before") id = PseudoElements::Before; break;
+		casestr("after") id = PseudoElements::After; break;
+		default:
+			assert(false);
+			return;
 	}
+	pseudoElemMask |= (uint32_t)id;
 }
 
 template<class T>

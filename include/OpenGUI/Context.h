@@ -32,6 +32,7 @@ namespace OGUI
 	{
 	public:
 		Context();
+		~Context();
 		//Initialize
 		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*,BitmapParserInterface*);
 

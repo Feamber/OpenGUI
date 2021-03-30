@@ -16,12 +16,13 @@ namespace OGUI
 			Keyframes			<- '@keyframes' w <IDENT> _ '{' _ KeyframeBlock* _ '}' _
 			KeyframeBlock		<- <KeyframeSelector> (w ',' w <KeyframeSelector> w)* _ '{' _ PropertyList _ '}' _
 			SelectorList		<- ComplexSelector (',' w ComplexSelector)* _
-			ComplexSelector		<- Selector ComplexPart*
+			ComplexSelector		<- Selector ComplexPart* ('::' <pseudoElement>)?
 			ComplexPart			<- ([ ]+ Selector) / (w '>' w Selector)
 			Selector			<- SelectorPart+
-			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT> / (':' <IDENT>)
+			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT>  / (':' <IDENT>)
 			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
 			Property			<- <IDENT> w ':' w <ValueList> _
+			~pseudoElement		<- 'before'/'after'
 			~KeyframeSelector	<- ( NUM  '%') / 'from' / 'to'
 			~ValueList			<- Value (Spliter Value)*
 			~Spliter			<- (w ',' w) / [ ]+
@@ -92,6 +93,8 @@ namespace OGUI
 		parser["ComplexSelector"] = [](SemanticValues& vs)
 		{
 			StyleComplexSelector complexSelector;
+			if (vs.tokens.size() > 0)
+				complexSelector.AddPseudoElement(vs.token(0));
 			for (auto& p : vs)
 				complexSelector.selectors.push_back(any_move<StyleSelector>(p));
 			complexSelector.ruleIndex = vs.line_info().first;

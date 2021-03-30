@@ -6,34 +6,6 @@
 #include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 
-void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
-{
-	const std::vector<StyleSheet*>& ess = element->GetStyleSheets();
-	auto& sstack = matchingContext.styleSheetStack;
-	int originStyleSheetCount = sstack.size();
-	for (auto& ss : ess)
-	{
-		if(std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
-			sstack.push_back(ss);
-	}
-	{
-		matchingContext.currentElement = element;
-		std::vector<SelectorMatchRecord> result;
-		FindMatches(matchingContext, result);
-		if(result.size() > 0)
-			ApplyMatchedRules(element, result);
-		matchingContext.currentElement = nullptr;
-	}
-	element->Traverse([this](VisualElement* element) { 
-		Traverse(element); 
-	});
-	element->_styleDirty = false;
-	int styleSheetCount = sstack.size();
-	auto start = sstack.begin();
-	if (styleSheetCount > originStyleSheetCount) //pop
-		sstack.erase(start + originStyleSheetCount, start + styleSheetCount);
-}
-
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
@@ -338,9 +310,55 @@ namespace OGUI
 	};
 }
 
-void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vector<SelectorMatchRecord>& matchedSelectors)
+void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 {
-	std::sort(matchedSelectors.begin(), matchedSelectors.end(), [](const SelectorMatchRecord& a, const SelectorMatchRecord& b) { return cmp(a, b) < 0; });
+	const std::vector<StyleSheet*>& ess = element->GetStyleSheets();
+	auto& sstack = matchingContext.styleSheetStack;
+	int originStyleSheetCount = sstack.size();
+	for (auto& ss : ess)
+	{
+		if (std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
+			sstack.push_back(ss);
+	}
+	{
+		matchingContext.currentElement = element;
+		std::vector<SelectorMatchRecord> result;
+		FindMatches(matchingContext, result);
+		if (result.size() > 0)
+		{
+			std::sort(result.begin(), result.end(), [](const SelectorMatchRecord& a, const SelectorMatchRecord& b) { return cmp(a, b) < 0; });
+			auto begin = result.begin();
+			auto end = std::stable_partition(result.begin(), result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElemMask == 0; });
+			if (end != result.end())
+				ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>(&*begin, end - begin));
+			begin = end;
+			end = std::stable_partition(end, result.end(), [](const SelectorMatchRecord& a) { return (a.complexSelector->pseudoElemMask & (uint32_t)PseudoElements::After) != 0; });
+			if (end != result.end())
+				ApplyMatchedRules(element->GetAfterPseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
+			else
+				element->ReleaseAfterPseudoElement();
+			begin = end;
+			end = std::stable_partition(end, result.end(), [](const SelectorMatchRecord& a) { return (a.complexSelector->pseudoElemMask & (uint32_t)PseudoElements::Before) != 0; });
+			if (end != result.end())
+				ApplyMatchedRules(element->GetBeforePseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
+			else
+				element->ReleaseBeforePseudoElement();
+		}
+		matchingContext.currentElement = nullptr;
+	}
+	element->Traverse([this](VisualElement* element)
+		{
+			Traverse(element);
+		});
+	element->_styleDirty = false;
+	int styleSheetCount = sstack.size();
+	auto start = sstack.begin();
+	if (styleSheetCount > originStyleSheetCount) //pop
+		sstack.erase(start + originStyleSheetCount, start + styleSheetCount);
+}
+
+void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors)
+{
 	size_t matchHash = hash(element->GetFullTypeName());
 
 	for (auto& record : matchedSelectors)
@@ -355,7 +373,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 	std::vector<AnimationStyle>* sharedAnim = nullptr;
 	auto iter = styleCache.find(matchHash);
 	std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
-	if (iter != styleCache.end())
+	if (iter != styleCache.end()) //todo: double check identity?
 	{
 		sharedStyle = iter->second.style.get();
 		sharedAnim = iter->second.animStyles.get();

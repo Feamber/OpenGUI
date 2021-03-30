@@ -59,11 +59,6 @@ namespace OGUI
 		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
 	};
 
-	class PseudoElement
-	{
-
-	};
-
 	class VisualElement : public std::enable_shared_from_this<VisualElement>
 	{
 	public:
@@ -178,8 +173,17 @@ namespace OGUI
 		std::vector<AnimationStyle> _animStyles;
 		std::vector<AnimRunContext> _animContext;
 		bool _prevEvaluating = false;
+#pragma endregion
 
-		void UpdateAnimList();
+#pragma region
+	public:
+		bool _isPseudoElement;
+		std::shared_ptr<VisualElement> _beforeElement; //TODO: use weak_ptr?
+		std::shared_ptr<VisualElement> _afterElement;
+		VisualElement* GetBeforePseudoElement();
+		void ReleaseBeforePseudoElement();
+		VisualElement* GetAfterPseudoElement();
+		void ReleaseAfterPseudoElement();
 #pragma endregion
 
 #pragma region Event
