@@ -338,6 +338,8 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 			 */
 		}
 		break;
+	case WM_KEYDOWN:
+		break;
 	case WM_KEYUP:
 		/*
 		 * F11 toggles between fullscreen and windowed mode; ESC exits
@@ -517,7 +519,7 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 				const int posx = Raw->data.mouse.lLastX;
 				const int posy = Raw->data.mouse.lLastY;
 
-				ctx.OnMouseMove(!IsAbsoluteInput, posx, posy);
+				ctx.OnMouseMove(hWnd, !IsAbsoluteInput, posx, posy);
 				return 1;
 			}
 		}
@@ -537,7 +539,7 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 		POINT p;
 		::GetCursorPos(&p);
 		::ScreenToClient(hWnd, &p);
-		ctx.OnMouseMove(true, p.x, p.y);
+		ctx.OnMouseMove(hWnd, true, p.x, p.y);
 
 		return Result ? 0 : 1;
 	}
@@ -668,6 +670,9 @@ extern window::Handle hWnd;
 
 namespace OGUI
 {
+#define HI_BYTE(x) ((0xffff0000 & x) >> 4)
+#define LO_BYTE(x) (0x0000ffff & x)
+
 	struct WindowsInput : public InputInterface
 	{
 		virtual bool UseSystemGesture() override
@@ -676,6 +681,17 @@ namespace OGUI
 		}
 		virtual bool IsKeyDown(EKeyCode key_code) override
 		{
+			SHORT pressed = GetKeyState((int)key_code);
+			if (pressed < 0)
+			{
+				if (HI_BYTE(pressed) == 1)
+				{
+					printf("Key code: %d is pressed!", key_code);
+				}
+				else
+					printf("Key code: %d is release!", key_code);
+				return true;
+			}
 			return false;
 		}
 		virtual bool IsKeyDown(EMouseKey key_code) override
@@ -710,18 +726,7 @@ namespace OGUI
 			assert(window == 0);
 			//not implemented
 		}
-		//virtual OGUI::Vector4f GetWindowMaxRect() override
-		//{
-		//	HMONITOR monitor = MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY);
-		//	if (monitor)
-		//	{
-		//		MONITORINFOEXW monitorInfo = {};
-		//		monitorInfo.cbSize = sizeof(MONITORINFOEXW);
-		//		GetMonitorInfoW(monitor, &monitorInfo);
-		//		return { (float)monitorInfo.rcMonitor.left, (float)monitorInfo.rcMonitor.top, (float)monitorInfo.rcMonitor.right, (float)monitorInfo.rcMonitor.bottom };
-		//	}
-		//	return { 0.0f, 0.0f, 0.0f, 0.0f };
-		//}
+
 		virtual OGUI::Vector2f GetDpiScale() override
 		{
 			HDC hdc = ::GetDC(NULL); // get the device context to get the dpi info
