@@ -30,7 +30,6 @@ static char const triangle_frag_wgsl[] = R"(
     [[binding(1), set(0)]] var<uniform_constant> mySampler : sampler;
 
 	[[stage(fragment)]] fn main() -> void {
-        var alpha : f32 = vCol.a; 
 		fragColor = vCol * textureSample(myTexture, mySampler, vUV);
     }
 )";

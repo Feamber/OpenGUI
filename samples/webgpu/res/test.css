@@ -7,14 +7,13 @@
     animation-name:monan;
     animation-duration: 1s;
     animation-iteration-count: infinite;
+    background-image:url(res/test1.png);
 }
 
 .Child {
     width:100px;
     height:100px;
     margin:10px;
-    border-top-right-radius:20px;
-    border-bottom-right-radius:50px;
     background-color: initial;
     background-image:url(res/test.jpg);
 }
@@ -35,7 +34,7 @@
 
 @keyframes rotateanim {
     10% {
-        background-color:rgb(26, 11, 92);
+        background-color:rgb(141, 141, 141);
         transform: rotate(10deg);
     }
     30% {
@@ -113,19 +112,19 @@
 
 @keyframes monan {
     12.5% {
-        transform: rotate(10deg);
+        transform: rotate(10deg) scale(1.25, 1.25);
     }
     37.5% {
-        transform: rotate(-10deg); 
+        transform: rotate(-10deg) scale(1.75, 1.75); 
     }
     62.5% {
-        transform:  rotate(10deg);
+        transform:  rotate(10deg) scale(0.75, 0.75);
     }
     87.5% {
-        transform:  rotate(-10deg);
+        transform:  rotate(-10deg) scale(0.9, 0.9);
     }
     100% {
-        transform:  rotate(0deg);
+        transform:  rotate(0deg) scale(1.0, 1.0);
     }
 }
 
