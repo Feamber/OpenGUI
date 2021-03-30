@@ -499,7 +499,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, std::vec
 			styleDirty = true;
 		if(styleDirty)
 			element->_style = element->_preAnimatedStyle;
-		if(animationEvaling)
+		if(animationEvaling || styleDirty)
 		{
 			element->_style = element->_preAnimatedStyle;
 			for (auto&& [i, anim] : ipair(element->_animStyles))

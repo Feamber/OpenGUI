@@ -3,7 +3,10 @@
     height:550px;
     justify-content:center;
     align-items:center;
-    background-color:rgb(184, 57, 116)
+    background-color:rgb(184, 57, 116);
+    animation-name:monan;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
 }
 
 .Child {
@@ -12,8 +15,8 @@
     margin:10px;
     border-top-right-radius:20px;
     border-bottom-right-radius:50px;
-    background-color:rgb(41, 133, 182);
-    background-image:url(res/UELogo.png);
+    background-color: initial;
+    background-image:url(res/test.jpg);
 }
 
 /*negative delay hack*/
@@ -105,6 +108,24 @@
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         background-color:rgb(73, 214, 125);
+    }
+}
+
+@keyframes monan {
+    12.5% {
+        transform: rotate(10deg);
+    }
+    37.5% {
+        transform: rotate(-10deg); 
+    }
+    62.5% {
+        transform:  rotate(10deg);
+    }
+    87.5% {
+        transform:  rotate(-10deg);
+    }
+    100% {
+        transform:  rotate(0deg);
     }
 }
 

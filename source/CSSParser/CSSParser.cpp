@@ -965,6 +965,16 @@ namespace OGUI
 		}
 		return false;
 	}
+
+	bool FromIterationCount(std::string_view str, float& value)
+	{
+		if (str == "infinite")
+		{
+			value = -1;
+			return true;
+		}
+		return FromString(str, value);
+	}
 }
 
 namespace OGUI
@@ -1586,6 +1596,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 	{
 		PARSEANIMPROP(animDuration, float, FromTime);
 		PARSEANIMPROP(animDelay, float, FromTime);
+		PARSEANIMPROP(animIterCount, float, FromIterationCount);
 #define ANIMPROP(idd, index, type, ...) PARSEANIMPROP(idd, type, FromString) {}
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
 	}
