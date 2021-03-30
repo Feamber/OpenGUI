@@ -331,6 +331,7 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			merge(fp, key.percentage);
 		}
 	}
+	std::bitset<96> lerped;
 	for (;i < count; ++i)
 	{
 		auto& key = keyframes->keys[i];
@@ -342,41 +343,29 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 			GetTimingFunction(timeFunction, sheet->storage, fp);
 			float p = key.percentage;
 			int l = 0, r = 0, ln = ap.size(), rn = fp.size();
-			ap2.resize(ln + rn); an2 = 0;
-			while (l < ln && r < rn)
+			ap2.resize(ln); an2 = 0;
+			for(; r<rn; ++r)
 			{
-				if (ap[l].id < fp[r].id)
-					ap2[an2++] = ap[l++];
-				else if (ap[l].id > fp[r].id)
-				{
-					float alpha = percentage / p;
-
-					alpha = ApplyTimingFunction(timeFunction, alpha);
-					alpha = std::clamp(alpha, 0.f, 1.f);
-					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
-					ap2[an2++] = {fp[r++].id, p};
-				}
-				else
+				if (lerped.test((int)fp[r].id))
+					continue;
+				while (l < an && ap[l].id < fp[r].id)
+					l++;
+				if(l < an && ap[l].id == fp[r].id)
 				{
 					float alpha = (percentage - ap[l].percentage) / (p - ap[l].percentage);
 					alpha = ApplyTimingFunction(timeFunction, alpha);
 					alpha = std::clamp(alpha, 0.f, 1.f);
 					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
-					ap2[an2++] = {fp[(l++, r++)].id, p};
 				}
+				else
+				{
+					float alpha = percentage / p;
+					alpha = ApplyTimingFunction(timeFunction, alpha);
+					alpha = std::clamp(alpha, 0.f, 1.f);
+					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
+				}
+				lerped.set((int)fp[r].id);
 			}
-			while (l < ln)
-				ap2[an2++] = ap[l++];
-			while (r < rn)
-			{
-				float alpha = percentage / p;
-				alpha = ApplyTimingFunction(timeFunction, alpha);
-				alpha = std::clamp(alpha, 0.f, 1.f);
-				LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
-				ap2[an2++] = {fp[r++].id, p};
-			}
-			std::swap(an2, an);
-			std::swap(ap, ap2);
 		}
 		else
 		{
