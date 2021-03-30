@@ -115,7 +115,7 @@ namespace OGUI
 
 }
 
-void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent)
+void OGUI::Style::ApplyPropertiesFast(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent)
 {
 	for (auto& prop : props)
 	{
@@ -133,23 +133,6 @@ void OGUI::Style::ApplyProperties(const StyleSheetStorage& sheet, const gsl::spa
 #include "OpenGUI/Style/StylePropertiesDef.h"
 		}
 	}
-}
-
-void OGUI::Style::ApplyPropertiesFast(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent)
-{
-	//assume props is sorted
-	auto iter = props.begin();
-#define STYLEPROP(name, index, inherit, type, ...)\
-	if(iter->id == StylePropertyId::name) \
-	{ \
-		if(iter->keyword) \
-			GetGlobalProperty<type>(name, *iter, parent); \
-		else \
-			GetProperty<type>(name, *iter, sheet); \
-		if (++iter == props.end()) \
-			return; \
-	} 
-#include "OpenGUI/Style/StylePropertiesDef.h"
 }
 
 const OGUI::Style& OGUI::Style::GetInitialStyle()
@@ -252,25 +235,6 @@ OGUI::Style OGUI::Lerp(const Style& a, const Style& b, float alpha)
 
 
 void OGUI::Style::LerpPropertiesFast(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent, float alpha)
-{
-	//assume props is sorted
-	auto iter = props.begin();
-#define STYLEPROP(name, index, inherit, type, ...)\
-	if(iter->id == StylePropertyId::name) \
-	{ \
-		type value = name; \
-		if(iter->keyword) \
-			GetGlobalProperty<type>(value, *iter, parent); \
-		else \
-			GetProperty<type>(value, *iter, sheet); \
-		name = Lerp(name, value, alpha); \
-		if (++iter == props.end()) \
-			return; \
-	} 
-#include "OpenGUI/Style/StylePropertiesDef.h"
-}
-
-void OGUI::Style::LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent, float alpha)
 {
 	for (auto& prop : props)
 	{

@@ -957,9 +957,9 @@ namespace OGUI
 
 	bool FromUrl(std::string_view str, std::string& value)
 	{
-		if (std::starts_with(str, "url(\"") && std::ends_with(str, "\")"))
+		if (std::starts_with(str, "url(") && std::ends_with(str, ")"))
 		{
-			auto valuestr = str.substr(5, str.length() - 2);
+			auto valuestr = str.substr(4, str.length() - 5);
 			value = {valuestr.begin(), valuestr.end()};
 			return true;
 		}
@@ -1069,7 +1069,8 @@ namespace OGUI
 			~KeyframeSelector	<- ( NUM  '%') / 'from' / 'to'
 			~ValueList			<- Value (Spliter Value)*
 			~Spliter			<- (w ',' w) / [ ]+
-			~Value				<- CNUM / HEX / CALL / IDENT
+			~Value				<- URL / CNUM / HEX / CALL / IDENT
+			~URL				<- 'url' w '(' (!')' .)* ')'
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
 			~HEX				<- ('#' NUM) 
 			~CNUM				<- NUM (IDENT / '%')?
@@ -1250,7 +1251,8 @@ namespace OGUI
 			Property			<- <IDENT> w ':' w <ValueList> _
 			~ValueList			<- Value (Spliter Value)*
 			~Spliter			<- (w ',' w) / [ ]+
-			~Value				<- CNUM / HEX / CALL / IDENT
+			~Value				<- URL / CNUM / HEX / CALL / IDENT
+			~URL				<- 'url' w '(' (!')' .)* ')'
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
 			~HEX				<- ('#' NUM) 
 			~CNUM				<- NUM (IDENT / '%')?
