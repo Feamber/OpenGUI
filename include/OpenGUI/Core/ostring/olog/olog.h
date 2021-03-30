@@ -9,10 +9,12 @@
 #include <ostring/osv.h>
 #include <ostring/helpers.h>
 
+// TODO: platform independent
 
 _NS_OLOG_START
 
 #include <Windows.h>
+
 struct spdlog_sys
 {
 
@@ -30,6 +32,8 @@ struct spdlog_sys
         logger->set_level(spdlog::level::trace);
         logger->flush_on(spdlog::level::info);
         spdlog::set_default_logger(logger);
+
+        SetConsoleOutputCP(65001);
     }
 
     static void reset_pattern()
