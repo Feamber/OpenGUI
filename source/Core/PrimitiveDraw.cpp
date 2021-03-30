@@ -212,7 +212,7 @@ namespace OGUI
 
             fans[fanCount++] = {
                 Vector2f(prect.max.X - radius[1], prect.max.Y - radius[1]),
-                Rect{Vector2f(params.uv.max.X - radius[1] * uvS.X * 2, params.uv.max.Y - radius[0] * uvS.Y * 2), Vector2f(params.uv.max.X, params.uv.max.Y)},
+                Rect{Vector2f(params.uv.max.X - radius[1] * uvS.X * 2, params.uv.max.Y - radius[0] * uvS.Y * 2), params.uv.max},
                 params.color,
                 radius[1],
                 math::PI / 2,
@@ -244,7 +244,7 @@ namespace OGUI
 
             fans[fanCount++] = {
                 Vector2f(prect.min.X + radius[3], prect.min.Y + radius[3]),
-                Rect{Vector2f(params.uv.min.X, params.uv.min.Y), Vector2f(prect.min.X + radius[3] * uvS.X * 2, params.uv.min.Y + radius[3] * uvS.Y * 2)},
+                Rect{params.uv.min, Vector2f(params.uv.min.X + radius[3] * uvS.X * 2, params.uv.min.Y + radius[3] * uvS.Y * 2)},
                 params.color,
                 radius[3],
                 math::PI / 2,
