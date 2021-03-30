@@ -5,13 +5,6 @@
 
 namespace OGUI 
 {
-    template<typename T>
-    struct Handle
-    {
-        inline Handle(T* v) : value(v) {}
-        T* value;
-    };
-
     struct Scissor
     {
         int x, y;
@@ -242,10 +235,10 @@ namespace OGUI
 		size_t size_in_bytes = 0;
 	};
 
-    struct BitMap
+    struct Bitmap
     {
         uint8_t*    bytes;
-        uint32_t    bytes_size;
+        uint32_t    size_in_bytes;
         uint32_t    width, height;
         PixelFormat format;
     };

@@ -6,18 +6,19 @@
 namespace OGUI
 {
     class IOThread;
-    class TextureInterface;
+    class AsyncRenderTexture;
     class AsyncBitmap;
 
     class RenderTextureManager
     {
     public:
-        std::shared_ptr<TextureInterface> Require(
-            const char* url, bool sync = false,
+        std::shared_ptr<AsyncRenderTexture> Require(
+            const std::string& url, bool sync = false,
             std::shared_ptr<AsyncBitmap>* bmOut = nullptr);
+        void Update();
     protected:
-        std::unordered_map<std::string, std::weak_ptr<TextureInterface>> 
+        std::unordered_map<std::string, std::weak_ptr<AsyncRenderTexture>> 
             render_textures;
-        std::unordered_map<std::string, std::weak_ptr<AsyncBitmap>> loading;        
+        std::unordered_map<std::string, std::shared_ptr<AsyncBitmap>> files;        
     };
 }

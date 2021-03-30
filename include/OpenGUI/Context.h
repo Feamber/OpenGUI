@@ -31,8 +31,9 @@ namespace OGUI
 	class Context
 	{
 	public:
+		Context();
 		//Initialize
-		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*);
+		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*,BitmapParserInterface*);
 
 		//Windows
 		std::shared_ptr<VisualWindow> desktops;
@@ -68,6 +69,7 @@ namespace OGUI
 		std::unique_ptr<SystemInterface> systemImpl;
 		std::unique_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<FileInterface>   fileImpl;
+		std::unique_ptr<BitmapParserInterface>   bmParserImpl;
 		//Components
 		std::unique_ptr<IOThread>        ioThread;
 		std::vector<WindowContext>       windowContexts; // Update Per Frame

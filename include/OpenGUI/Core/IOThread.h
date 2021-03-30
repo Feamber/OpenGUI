@@ -41,10 +41,10 @@ protected:
             load_queue_mutex.unlock();
 
             for (FileLoaderTask& task : tasks) {
-                task.file->__initialize(task.path);
-                
+                task.file->__initialize(task.path.c_str());
                 task.complete_callback(task.file);
             }
+
             {
                 using namespace std::chrono_literals;
                 std::this_thread::sleep_for(1ms);
@@ -53,7 +53,7 @@ protected:
     }
     struct FileLoaderTask 
     {
-		const char* path;
+		std::string path;
 		std::shared_ptr<AsyncFile> file;
 		std::function<void(std::shared_ptr<AsyncFile>)> complete_callback;
 	};

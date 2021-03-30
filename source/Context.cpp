@@ -10,14 +10,22 @@
 
 void OGUI::Context::Initialize(
 	InputInterface* I, SystemInterface* S,
-	RenderInterface* R, FileInterface* F)
+	RenderInterface* R, FileInterface* F,
+	BitmapParserInterface* B)
 {
 	if(initialized)
 		assert(0 && "already initialized!");
 	inputImpl.reset(I);
 	systemImpl.reset(S);
 	renderImpl.reset(R);
-	fileImpl.reset(F);
+	if(F)
+	{
+		fileImpl.reset(F);
+	} else {
+		fileImpl = std::make_unique<FileInterface>();
+	}
+	
+	bmParserImpl.reset(B);
 	ioThread = std::make_unique<OGUI::IOThread>();
 
 	initialized = true;
@@ -82,6 +90,7 @@ namespace OGUI
 void OGUI::Context::Update(const WindowHandle window, float dt)
 {
 	auto root = desktops.get();
+	textureManager->Update();
 	// Update Window
 	auto& wctx = GetOrRegisterWindowContext(window);
 	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
@@ -180,6 +189,12 @@ bool OGUI::Context::OnMouseMoveHP(bool relative, float x, float y)
 bool OGUI::Context::OnMouseWheel(float delta)
 {
 	return false;
+}
+
+OGUI::Context::Context()
+{
+	ioThread = std::make_unique<IOThread>();
+	textureManager = std::make_unique<RenderTextureManager>();
 }
 
 OGUI::Context& OGUI::Context::Get()

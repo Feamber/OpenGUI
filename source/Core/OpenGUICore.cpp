@@ -29,6 +29,11 @@ FileInterface::~FileInterface()
 
 }
 
+BitmapParserInterface::~BitmapParserInterface()
+{
+
+}
+
 FileHandle FileInterface::Open(const char* path)
 {
     return ::fopen(path, "rb");
@@ -103,12 +108,16 @@ IOThread::~IOThread()
 // AsyncBitmap
 void AsyncBitmap::Initialize(const char* path) 
 {
-            
+    auto& ctx = Context::Get();
+    auto f = ctx.fileImpl->Open(path);
+    bm = ctx.bmParserImpl->LoadFromFile(f);
+    ctx.fileImpl->Close(f);
 }
 
 void AsyncBitmap::Finalize() 
 {
-
+    auto& ctx = Context::Get();
+    ctx.bmParserImpl->Free(bm);
 }
 
 }

@@ -148,7 +148,7 @@ namespace OGUI
 		//TODO: should we merge these two
 		std::unique_ptr<InlineStyle> _inlineStyle;
 		std::unique_ptr<InlineStyle> _procedureStyle;
-		std::shared_ptr<struct AsyncTexture> backgroundImageResource;
+		std::shared_ptr<class AsyncRenderTexture> backgroundImageResource;
 		
 		std::string backgroundImageUrl;
 
