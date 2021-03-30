@@ -27,6 +27,30 @@ WGPU_OGUI_Texture* default_ogui_texture;
 using namespace OGUI;
 std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 
+struct BitmapParser final : public OGUI::BitmapParserInterface
+{
+    inline Bitmap LoadFromFile(const FileHandle file)
+    {
+		Bitmap bm = {};
+		int x, y, n;
+		stbi_info_from_file((FILE*)file, &x, &y, &n);
+		bm.format = n == 1 ? PF_R8Uint : OGUI::PF_R8G8B8A8;
+		const auto channels = (n == 1) ? 1 : 4;
+
+		auto data = stbi_load_from_file((FILE*)file, &x, &y, &n, channels);
+		bm.bytes = data;
+		bm.size_in_bytes = x * y * channels * sizeof(*data);
+		bm.height = y;
+		bm.width = x;
+
+		return bm;
+    }
+    inline void Free(Bitmap bm)
+    {
+        stbi_image_free(bm.bytes);
+    }
+};
+
 class OGUIWebGPURenderer : public OGUI::RenderInterface
 {
 public:
@@ -79,9 +103,9 @@ public:
 		for(auto& cmd : list.command_list)
 		{
 			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
-			if(last_cmd.texture.value != cmd.texture.value || last_index < 0)
+			if(last_cmd.texture != cmd.texture || last_index < 0)
 			{
-				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)last_cmd.texture.value;
+				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)last_cmd.texture;
 				if(!texture)
 					texture = default_ogui_texture;
 				if(!texture->bind_group)
@@ -134,7 +158,7 @@ public:
 		
 	}
 
-	TextureHandle RegisterTexture(const BitMap& bitmap)
+	TextureHandle RegisterTexture(const Bitmap& bitmap)
 	{
 		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
 		ogui_textures[t] = *t;
@@ -143,9 +167,9 @@ public:
 
 	void ReleaseTexture(TextureHandle h)
 	{
-		if(h.value)
-			ogui_textures.erase(h.value);
-		ogui_textures[h.value].Release();
+		if(h)
+			ogui_textures.erase(h);
+		ogui_textures[h].Release();
 	}
 
 	void SetScissor(const Scissor scissor)
@@ -246,9 +270,9 @@ static void createPipelineAndBuffers() {
 	wgpuShaderModuleRelease(vertMod);
 
 	memset(white_tex, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
-	BitMap bitmap = {};
+	Bitmap bitmap = {};
 	bitmap.bytes = white_tex;
-	bitmap.bytes_size = 4 * 1024 * 1024;
+	bitmap.size_in_bytes = 4 * 1024 * 1024;
 	bitmap.width = 1024; bitmap.height = 1024;
 	bitmap.format = PF_R8G8B8A8;
 	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
@@ -308,13 +332,19 @@ struct WGPURenderer : RenderInterface
 	};
 	virtual void RenderPrimitives(const struct PersistantPrimDrawList&) {};
 
-	virtual TextureHandle RegisterTexture(const BitMap&) { return nullptr; };
+	virtual TextureHandle RegisterTexture(const Bitmap& bm) 
+	{
+		 return createTexture(device, queue, bm); 
+	};
 	virtual void ReleaseTexture(TextureHandle) {};
 
 	virtual void SetScissor(const Scissor scissor) {};
 	virtual void ResetScissor() {};
 
 };
+
+#include "OpenGUI/Managers/RenderTextureManager.h"
+#include "OpenGUI/Core/AsyncRenderTexture.h"
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 	if (hWnd = window::create();hWnd) {
@@ -327,6 +357,17 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				using namespace OGUI;
 				auto& ctx = Context::Get();
 				ctx.renderImpl = std::make_unique<WGPURenderer>();
+				ctx.bmParserImpl = std::make_unique<BitmapParser>();
+				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
+
+				auto test_tex = ctx.textureManager->Require("res/test.jpg");
+				while(!test_tex->valid())
+				{
+					std::cout << "Wait 4 tex loading..." << std::endl;
+					ctx.textureManager->Update();
+				}
+				std::cout << "Tex loaded!: " << test_tex->Get() << std::endl;
+
 				ctx.desktops = std::make_shared<VisualWindow>();
 				ctx.desktops->_pseudoMask |= (int)PseudoStates::Root;
 

@@ -111,7 +111,7 @@ protected:
 	std::mutex load_queue_mutex;
 };
 
-struct AsyncTexture final : public AsyncFile
+struct AsyncRenderTexture final : public AsyncFile
 {
     void initialize(const char* path) final
     {
@@ -138,7 +138,7 @@ struct FileManager
     {
         if(files.find(url) == files.end())
         {
-            files[url] = loader.Load<AsyncTexture>(url.c_str());
+            files[url] = loader.Load<AsyncRenderTexture>(url.c_str());
         } 
         return std::static_pointer_cast<T>(files[url].lock());
     }
@@ -155,8 +155,8 @@ int main(void)
     
     /*
     IOThread loader;
-    std::shared_ptr<AsyncTexture> file = 
-        loader.Load<AsyncTexture>(filePth.c_str(), 
+    std::shared_ptr<AsyncRenderTexture> file = 
+        loader.Load<AsyncRenderTexture>(filePth.c_str(), 
             [&](std::shared_ptr<AsyncFile> loaded){
                 
         });
@@ -167,7 +167,7 @@ int main(void)
     std::cout << file->size() << "\n";
     */
     
-    auto holder = manager.Require<AsyncTexture>(filePth.c_str());
+    auto holder = manager.Require<AsyncRenderTexture>(filePth.c_str());
     while(!holder->valid())
     {
 

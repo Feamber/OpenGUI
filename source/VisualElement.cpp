@@ -29,7 +29,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(
 	//{
 	//	//start new load
 	//	if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != _style.backgroundImage)
-	//		backgroundImageResource = Context::Get().fileSystem.Require<AsyncTexture>(_style.backgroundImage);
+	//		backgroundImageResource = Context::Get().fileSystem.Require<AsyncRenderTexture>(_style.backgroundImage);
 	//}
 	//else //release old texture
 	//	backgroundImageResource = nullptr;

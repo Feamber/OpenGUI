@@ -44,10 +44,18 @@ namespace OGUI
 		virtual MemoryResource Load(const char* path);
 	};
 
+	struct BitmapParserInterface
+	{
+		virtual ~BitmapParserInterface();
+
+		virtual Bitmap LoadFromFile(const FileHandle file) = 0;
+		virtual void Free(Bitmap bm) = 0;
+	};
+
 	struct TextureInterface {};
-    struct PersistantPrimitiveInterface {};
-    using TextureHandle = Handle<TextureInterface>;
-    using PersistantPrimitiveHandle = Handle<PersistantPrimitiveInterface>;
+	struct PersistantPrimitiveInterface {};
+    using TextureHandle = TextureInterface*;
+    using PersistantPrimitiveHandle = PersistantPrimitiveInterface*;
 	struct RenderInterface
 	{
 		virtual ~RenderInterface();
@@ -59,7 +67,7 @@ namespace OGUI
         virtual void RenderPrimitives(const struct PrimDrawList&) = 0;
         virtual void RenderPrimitives(const struct PersistantPrimDrawList&) = 0;
 
-        virtual TextureHandle RegisterTexture(const BitMap&) = 0;
+        virtual TextureHandle RegisterTexture(const Bitmap&) = 0;
         virtual void ReleaseTexture(TextureHandle) = 0;
 
         virtual void SetScissor(const Scissor scissor) = 0;
