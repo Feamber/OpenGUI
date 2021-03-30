@@ -6,6 +6,7 @@
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/IOThread.h"
+#include "OpenGUI/Managers/RenderTextureManager.h"
 
 void OGUI::Context::Initialize(
 	InputInterface* I, SystemInterface* S,

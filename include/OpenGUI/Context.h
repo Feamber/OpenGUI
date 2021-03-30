@@ -13,6 +13,7 @@ namespace OGUI
 	class VisualWindow;
 	class IOThread;
 	class Context;
+	class RenderTextureManager;
 
 	using WindowHandle = void*;
 	class WindowContext
@@ -69,9 +70,9 @@ namespace OGUI
 		std::unique_ptr<FileInterface>   fileImpl;
 		//Components
 		std::unique_ptr<IOThread>        ioThread;
-		//Update Per Frame
-		std::vector<WindowContext>       windowContexts; 
-		//std::vector<AsyncBitmap>         bitmapsToUpload;
+		std::vector<WindowContext>       windowContexts; // Update Per Frame
+		std::unique_ptr<RenderTextureManager> textureManager;
+		//States
 		bool initialized = false;
 		int pointerDownCount = 0;
 	protected:

@@ -2,6 +2,7 @@
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Core/IOThread.h"
+#include "OpenGUI/Core/AsyncBitmap.h"
 #include "OpenGUI/Context.h"
 
 #include <stdlib.h>
@@ -97,6 +98,17 @@ IOThread::~IOThread()
     is_running = false;
     if(loader_thread.joinable())
         loader_thread.join();
+}
+
+// AsyncBitmap
+void AsyncBitmap::Initialize(const char* path) 
+{
+            
+}
+
+void AsyncBitmap::Finalize() 
+{
+
 }
 
 }

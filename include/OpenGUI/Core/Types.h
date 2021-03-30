@@ -11,12 +11,6 @@ namespace OGUI
         inline Handle(T* v) : value(v) {}
         T* value;
     };
-    
-	struct MemoryResource
-	{
-		uint8_t* data = nullptr;
-		size_t size_in_bytes = 0;
-	};
 
     struct Scissor
     {
@@ -240,6 +234,12 @@ namespace OGUI
 		Swipe,
 		Rotate,
 		LongPress,
+	};
+
+	struct MemoryResource
+	{
+		uint8_t* data = nullptr;
+		size_t size_in_bytes = 0;
 	};
 
     struct BitMap
