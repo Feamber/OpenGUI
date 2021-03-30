@@ -370,7 +370,8 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 		else
 		{
 			auto& fp = sheet->styleRules[key.frameIndex].properties;
-			merge(fp, key.percentage);
+			for(auto& p : fp)
+				lerped.set((int)p.id);
 		}
 	}
 }

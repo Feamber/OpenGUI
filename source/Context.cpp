@@ -107,7 +107,7 @@ void OGUI::Context::Render(const WindowHandle window)
 	PrimitiveDraw::DrawContext ctx;
 	const auto& wctx = GetWindowContext(window);
 	ctx.resolution = Vector2f(wctx.X, wctx.Y);
-	RenderRec(root, ctx);
+	root->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 	renderImpl->RenderPrimitives(ctx.prims);
 }
 

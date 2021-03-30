@@ -292,12 +292,6 @@ static void createPipelineAndBuffers() {
 	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
 }
 
-void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
-{
-	element->DrawBackgroundPrimitive(ctx);
-	element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
-}
-
 /**
  * Draws using the above pipeline and buffers.
  */
@@ -369,7 +363,6 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				std::cout << "Tex loaded!: " << test_tex->Get() << std::endl;
 				*/
 				ctx.desktops = std::make_shared<VisualWindow>();
-				ctx.desktops->_pseudoMask |= (int)PseudoStates::Root;
 
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
 				auto ve = XmlAsset::Instantiate(asset.lock()->id);
@@ -382,7 +375,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 					};
 					child1->_eventHandler.Register<PointerDownEvent, handler>();
 				}
-				ve->_name = "TestElement";
+				ve->_pseudoMask |= (int)PseudoStates::Root;
 				ctx.desktops->PushChild(ve.get());
 			}
 

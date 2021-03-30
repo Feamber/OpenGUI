@@ -29,11 +29,13 @@ void OGUI::VisualAnimationSystem::Traverse(VisualElement* element)
 	{
 		auto& ctx = element->_animContext[i];
 		float maxTime = anim.animDuration * anim.animIterCount + anim.animDelay;
-		if (ctx.time >= maxTime && anim.animIterCount > 0.f)
+		bool paused = anim.animPlayState == EAnimPlayState::Paused;
+		bool infinite = anim.animIterCount <= 0.f;
+		if (paused || (!infinite && ctx.time >= maxTime))
 			ctx.evaluating = false;
 		else
 			ctx.evaluating = true;
-		if (anim.animPlayState != EAnimPlayState::Paused)
+		if (!paused || ctx.yielding)
 		{
 			if (ctx.goingback)
 				ctx.time = std::max(anim.animDelay, ctx.time - cachedCtx->_deltaTime);
