@@ -1,7 +1,9 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Core/AsyncRenderTexture.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
+#include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Context.h"
 
@@ -25,22 +27,25 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(
 	auto transform = _worldTransform;
 	//transform.M[3][0] /= Ctx.resolution.X;
 	//transform.M[3][1] /= Ctx.resolution.Y;
-	//if (!_style.backgroundImage.empty())
-	//{
-	//	//start new load
-	//	if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != _style.backgroundImage)
-	//		backgroundImageResource = Context::Get().fileSystem.Require<AsyncRenderTexture>(_style.backgroundImage);
-	//}
-	//else //release old texture
-	//	backgroundImageResource = nullptr;
+	if (!_style.backgroundImage.empty())
+	{
+		//start new load
+		if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != _style.backgroundImage)
+		{
+			backgroundImageResource = Context::Get().textureManager->Require(_style.backgroundImage);
+			backgroundImageUrl = _style.backgroundImage;
+		}
+	}
+	else //release old texture
+		backgroundImageResource = nullptr;
 	
 	BeginDraw(Ctx.prims);
 	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
 	RoundBoxParams params {rect, uv, _style.backgroundColor, nullptr};
-	//if (backgroundImageResource && backgroundImageResource->valid())
-	//{
-	//	//params.texture = backgroundImageResource->data();
-	//}
+	if (backgroundImageResource && backgroundImageResource->valid())
+	{
+		params.texture = backgroundImageResource->Get();
+	}
 	params.radius[0] = _style.borderTopLeftRadius.value;// / Ctx.resolution.Y;
 	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;

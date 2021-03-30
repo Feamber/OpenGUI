@@ -359,7 +359,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				ctx.renderImpl = std::make_unique<WGPURenderer>();
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-
+				/*
 				auto test_tex = ctx.textureManager->Require("res/test.jpg");
 				while(!test_tex->valid())
 				{
@@ -367,7 +367,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 					ctx.textureManager->Update();
 				}
 				std::cout << "Tex loaded!: " << test_tex->Get() << std::endl;
-
+				*/
 				ctx.desktops = std::make_shared<VisualWindow>();
 				ctx.desktops->_pseudoMask |= (int)PseudoStates::Root;
 
