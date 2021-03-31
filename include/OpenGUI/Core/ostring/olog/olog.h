@@ -190,7 +190,7 @@ void func(const std::u16string_view& str)\
 {\
     func(ostr::string_view(str));\
 }\
-template<typename T, typename _Char = std::char_traits<T>::char_type>\
+template<typename T, typename _Char = typename std::char_traits<T>::char_type>\
 void func(_Char const* cstr)\
 {\
     func(std::wstring_view(std::to_wstring(cstr)));\

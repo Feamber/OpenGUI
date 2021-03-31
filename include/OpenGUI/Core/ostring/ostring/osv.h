@@ -264,7 +264,7 @@ namespace literal
 {
 #pragma warning(push)
 #pragma warning(disable: 455)
-	constexpr string_view operator""o(const char16_t* str, size_t len)
+	inline constexpr string_view operator""o(const char16_t* str, size_t len)
 	{
 		return string_view(str, len);
 	}
