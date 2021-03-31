@@ -122,7 +122,7 @@ void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
 
 }
 
-bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
 	auto root = desktops.get();
 	if (!root)
@@ -135,18 +135,20 @@ bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
 
-	event.position = Vector2f(x, y); // screen space
-	inputImpl->ScreenToClient(window, x, y); // client space
+	//event.position = Vector2f(x, y); // screen space
+	//inputImpl->ScreenToClient(window, x, y); // client space
 
-	auto dpiScale = inputImpl->GetDpiScale();
-	x /= dpiScale.X;
-	y /= dpiScale.Y;
+	//auto dpiScale = inputImpl->GetDpiScale();
+	//x /= dpiScale.X;
+	//y /= dpiScale.Y;
 
-	const auto& wctx = GetWindowContext(window);
-	const float width = wctx.X;
-	const float height = wctx.Y;
+	//const auto& wctx = GetWindowContext(window);
+	//const float width = wctx.X;
+	//const float height = wctx.Y;
+	//printf("X: %d, Y: %d\n", x, y);
 
-	auto point = Vector2f(x, height - y) - Vector2f(width, height) / 2; // center of the window
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+	printf("WIndowCenter (X: %f, Y: %f)\n", point.X, point.Y);
 
 	auto picked = PickRecursive(root, point);
 	if (picked)

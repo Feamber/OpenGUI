@@ -16,9 +16,6 @@
 #pragma comment(lib, "shcore.lib")
 #endif
 
-// for test purpose
-#define LOG(...) std::printf(__VA_ARGS__);
-
 //****************************************************************************/
 
 /*
@@ -495,7 +492,7 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 		else
 		{
 			// pass in the screen space point
-			return ctx.OnMouseDown(hWnd, MouseButton, CursorPoint.x, CursorPoint.y);
+			//return ctx.OnMouseDown(hWnd, MouseButton, CursorPoint.x, CursorPoint.y);
 		}
 		return 0;
 	}
@@ -581,7 +578,9 @@ window::Handle window::create(unsigned winW, unsigned winH, const char* /*name*/
 	HWND window = NULL;
 	WNDCLASS wndClass;
 	wndClass.style         = CS_OWNDC;
-	wndClass.lpfnWndProc   = impl::windowEvents;
+	//wndClass.lpfnWndProc   = impl::windowEvents;
+	// use SDL2
+	wndClass.lpfnWndProc   = nullptr;
 	wndClass.cbClsExtra    = 0;
 	wndClass.cbWndExtra    = 0;
 	wndClass.hInstance     = GetModuleHandle(NULL);
@@ -670,8 +669,6 @@ extern window::Handle hWnd;
 
 namespace OGUI
 {
-#define HI_BYTE(x) ((0xffff0000 & x) >> 4)
-#define LO_BYTE(x) (0x0000ffff & x)
 
 	struct WindowsInput : public InputInterface
 	{
@@ -681,17 +678,17 @@ namespace OGUI
 		}
 		virtual bool IsKeyDown(EKeyCode key_code) override
 		{
-			SHORT pressed = GetKeyState((int)key_code);
-			if (pressed < 0)
-			{
-				if (HI_BYTE(pressed) == 1)
-				{
-					printf("Key code: %d is pressed!", key_code);
-				}
-				else
-					printf("Key code: %d is release!", key_code);
-				return true;
-			}
+			//SHORT pressed = GetKeyState((int)key_code);
+			//if (pressed < 0)
+			//{
+			//	if (HI_BYTE(pressed) == 1)
+			//	{
+			//		printf("Key code: %d is pressed!", key_code);
+			//	}
+			//	else
+			//		printf("Key code: %d is release!", key_code);
+			//	return true;
+			//}
 			return false;
 		}
 		virtual bool IsKeyDown(EMouseKey key_code) override

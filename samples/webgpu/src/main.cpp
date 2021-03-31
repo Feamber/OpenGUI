@@ -410,21 +410,58 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			while(!done)
 			{
 				SDL_Event event;
-				while (SDL_PollEvent(&event)) {
+				auto& ctx = OGUI::Context::Get();
+				while (SDL_PollEvent(&event)) 
+				{
+					switch (event.type)
+					{
+						case SDL_MOUSEBUTTONDOWN:
+						{
+							EMouseKey buttonCode;
+							switch (event.button.button)
+							{
+							case SDL_BUTTON_LEFT:
+								buttonCode = EMouseKey::LB; break;
+							case SDL_BUTTON_RIGHT:
+								buttonCode = EMouseKey::RB; break;
+							case SDL_BUTTON_MIDDLE:
+								buttonCode = EMouseKey::MB; break;
+							}
+							//int width, height;
+							//SDL_GetWindowSize(window, &width, &height);
+							ctx.OnMouseDown((float)1280.0f, (float)720.0f, buttonCode, 
+								(int32_t)event.button.x, (int32_t)event.button.y);
+							break;
+						}
+					}
 					if (event.type == SDL_QUIT) {
 						done = true;
 					}
-					if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-						done = true;
-					}
-					if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
-							&& event.window.windowID == SDL_GetWindowID(window)) {
-						done = true;
-					}
-					if(event.type == SDL_MOUSEMOTION)
-					{
-						
-					}
+					//if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+					//	done = true;
+					//}
+					//if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
+					//		&& event.window.windowID == SDL_GetWindowID(window)) {
+					//	done = true;
+					//}
+					//if(event.type == SDL_MOUSEMOTION)
+					//{
+					//	
+					//}
+					//if (event.type == SDL_MOUSEBUTTONDOWN)
+					//{
+					//	EMouseKey buttonCode;
+					//	switch(event.button.button)
+					//	{
+					//		case SDL_BUTTON_LEFT:
+					//			buttonCode = EMouseKey::LB; break;
+					//		case SDL_BUTTON_RIGHT:
+					//			buttonCode = EMouseKey::RB; break;
+					//		case SDL_BUTTON_MIDDLE:
+					//			buttonCode = EMouseKey::MB; break;
+					//	}
+					//	ctx.OnMouseDown(hWnd, buttonCode, event.button.x, event.button.y);
+					//}
 				}
 				redraw();
 			}
