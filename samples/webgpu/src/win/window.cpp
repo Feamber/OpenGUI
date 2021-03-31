@@ -483,11 +483,11 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 
 		if (bMouseUp)
 		{
-			return ctx.OnMouseUp(hWnd, MouseButton, CursorPoint.x, CursorPoint.y) ? 0 : 1;
+			//return ctx.OnMouseUp(hWnd, MouseButton, CursorPoint.x, CursorPoint.y) ? 0 : 1;
 		}
 		else if (bDoubleClick)
 		{
-			return ctx.OnMouseDoubleClick(hWnd, MouseButton, CursorPoint.x, CursorPoint.y);
+			//return ctx.OnMouseDoubleClick(hWnd, MouseButton, CursorPoint.x, CursorPoint.y);
 		}
 		else
 		{
@@ -516,7 +516,7 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 				const int posx = Raw->data.mouse.lLastX;
 				const int posy = Raw->data.mouse.lLastY;
 
-				ctx.OnMouseMove(hWnd, !IsAbsoluteInput, posx, posy);
+				//ctx.OnMouseMove(hWnd, !IsAbsoluteInput, posx, posy);
 				return 1;
 			}
 		}
@@ -536,7 +536,7 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 		POINT p;
 		::GetCursorPos(&p);
 		::ScreenToClient(hWnd, &p);
-		ctx.OnMouseMove(hWnd, true, p.x, p.y);
+		//ctx.OnMouseMove(hWnd, true, p.x, p.y);
 
 		return Result ? 0 : 1;
 	}
@@ -564,106 +564,107 @@ bool yield() {
 }
 
 //******************************** Public API ********************************/
-window::Handle wh;
-window::Handle window::create(unsigned winW, unsigned winH, const char* /*name*/) {
-	/*
-	 * Dynamically added polyfill available only in the Win10 Creators Update.
-	 * Workaround aside, it should really be done in the manifest:
-	 *
-	 * https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191.aspx
-	 */
-	if (SetProcessDpiAwarenessContext != NULL) {
-		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-	}
-	HWND window = NULL;
-	WNDCLASS wndClass;
-	wndClass.style         = CS_OWNDC;
-	//wndClass.lpfnWndProc   = impl::windowEvents;
-	// use SDL2
-	wndClass.lpfnWndProc   = nullptr;
-	wndClass.cbClsExtra    = 0;
-	wndClass.cbWndExtra    = 0;
-	wndClass.hInstance     = GetModuleHandle(NULL);
-	wndClass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-	wndClass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-	wndClass.hbrBackground = NULL;
-	wndClass.lpszMenuName  = NULL;
-	wndClass.lpszClassName = TEXT("AppWin");
-	if (RegisterClass(&wndClass)) {
-		/*
-		 * On multi-monitor systems we're not guaranteed the correct DPI
-		 * without a window handle, so we create but don't show a window at
-		 * the default position, query its DPI, then destroy it.
-		 */
-		window = CreateWindow(
-			wndClass.lpszClassName, TEXT(WINDOW_WIN_NAME), 0,
-				CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-					NULL, NULL, wndClass.hInstance, NULL);
-		UINT const dpi = impl::getWindowDpi(window);
-		if (window) {
-			DestroyWindow(window);
-		}
-		/*
-		 * Create the window, adjusted using the best DPI information we can
-		 * obtain (which depends on the OS version). Works with newer Win10
-		 * onwards, and tries to do the right thing on older versions.
-		 */
-	#if WINDOW_WIN_RESIZE
-		DWORD dwWndStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN  |  WS_OVERLAPPEDWINDOW;
-	#else
-		DWORD dwWndStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN  | (WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME);
-	#endif
-		DWORD dwExtStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE |  WS_EX_ACCEPTFILES;
-		RECT rect;
-		rect.left   = 0;
-		rect.top    = 0;
-		rect.right  = MulDiv((winW) ? winW : WINDOW_WIN_W, dpi, USER_DEFAULT_SCREEN_DPI);
-		rect.bottom = MulDiv((winH) ? winH : WINDOW_WIN_H, dpi, USER_DEFAULT_SCREEN_DPI);
-		if (AdjustWindowRectExForDpi != NULL) {
-			AdjustWindowRectExForDpi(&rect, dwWndStyle, FALSE, dwExtStyle, dpi);
-		} else {
-			      AdjustWindowRectEx(&rect, dwWndStyle, FALSE, dwExtStyle);
-		}
-		winW = rect.right - rect.left;
-		winH = rect.bottom - rect.top;
-		window = CreateWindowEx(dwExtStyle,
-			wndClass.lpszClassName, TEXT(WINDOW_WIN_NAME),
-				dwWndStyle, CW_USEDEFAULT, CW_USEDEFAULT,
-					winW, winH, NULL, NULL, wndClass.hInstance, NULL);
-		if (window) {
-			/*
-			 * Accept dropped files (which requires user code to register for
-			 * drop events) and grab the print screen key (which is missing
-			 * from WM_KEYDOWN).
-			 */
-			DragAcceptFiles(window, FALSE);
-			RegisterHotKey (window, VK_SNAPSHOT, 0, VK_SNAPSHOT);
-			wh = TO_HND(window);
-			return TO_HND(window);
-		}
-		UnregisterClass(wndClass.lpszClassName, wndClass.hInstance);
-	}
-	return nullptr;
-}
+//window::Handle wh;
+//window::Handle window::create(unsigned winW, unsigned winH, const char* /*name*/) {
+//	/*
+//	 * Dynamically added polyfill available only in the Win10 Creators Update.
+//	 * Workaround aside, it should really be done in the manifest:
+//	 *
+//	 * https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191.aspx
+//	 */
+//	if (SetProcessDpiAwarenessContext != NULL) {
+//		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+//	}
+//	HWND window = NULL;
+//	WNDCLASS wndClass;
+//	wndClass.style         = CS_OWNDC;
+//	//wndClass.lpfnWndProc   = impl::windowEvents;
+//	/// use SDL2 instead of window's msg
+//	wndClass.lpfnWndProc   = nullptr;
+//	wndClass.cbClsExtra    = 0;
+//	wndClass.cbWndExtra    = 0;
+//	wndClass.hInstance     = GetModuleHandle(NULL);
+//	wndClass.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
+//	wndClass.hCursor       = LoadCursor(NULL, IDC_ARROW);
+//	wndClass.hbrBackground = NULL;
+//	wndClass.lpszMenuName  = NULL;
+//	wndClass.lpszClassName = TEXT("AppWin");
+//	if (RegisterClass(&wndClass)) {
+//		/*
+//		 * On multi-monitor systems we're not guaranteed the correct DPI
+//		 * without a window handle, so we create but don't show a window at
+//		 * the default position, query its DPI, then destroy it.
+//		 */
+//		window = CreateWindow(
+//			wndClass.lpszClassName, TEXT(WINDOW_WIN_NAME), 0,
+//				CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+//					NULL, NULL, wndClass.hInstance, NULL);
+//		UINT const dpi = impl::getWindowDpi(window);
+//		if (window) {
+//			DestroyWindow(window);
+//		}
+//		/*
+//		 * Create the window, adjusted using the best DPI information we can
+//		 * obtain (which depends on the OS version). Works with newer Win10
+//		 * onwards, and tries to do the right thing on older versions.
+//		 */
+//	#if WINDOW_WIN_RESIZE
+//		DWORD dwWndStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN  |  WS_OVERLAPPEDWINDOW;
+//	#else
+//		DWORD dwWndStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN  | (WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME);
+//	#endif
+//		DWORD dwExtStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE |  WS_EX_ACCEPTFILES;
+//		RECT rect;
+//		rect.left   = 0;
+//		rect.top    = 0;
+//		rect.right  = MulDiv((winW) ? winW : WINDOW_WIN_W, dpi, USER_DEFAULT_SCREEN_DPI);
+//		rect.bottom = MulDiv((winH) ? winH : WINDOW_WIN_H, dpi, USER_DEFAULT_SCREEN_DPI);
+//		if (AdjustWindowRectExForDpi != NULL) {
+//			AdjustWindowRectExForDpi(&rect, dwWndStyle, FALSE, dwExtStyle, dpi);
+//		} else {
+//			      AdjustWindowRectEx(&rect, dwWndStyle, FALSE, dwExtStyle);
+//		}
+//		winW = rect.right - rect.left;
+//		winH = rect.bottom - rect.top;
+//		window = CreateWindowEx(dwExtStyle,
+//			wndClass.lpszClassName, TEXT(WINDOW_WIN_NAME),
+//				dwWndStyle, CW_USEDEFAULT, CW_USEDEFAULT,
+//					winW, winH, NULL, NULL, wndClass.hInstance, NULL);
+//		if (window) {
+//			/*
+//			 * Accept dropped files (which requires user code to register for
+//			 * drop events) and grab the print screen key (which is missing
+//			 * from WM_KEYDOWN).
+//			 */
+//			DragAcceptFiles(window, FALSE);
+//			RegisterHotKey (window, VK_SNAPSHOT, 0, VK_SNAPSHOT);
+//			wh = TO_HND(window);
+//			return TO_HND(window);
+//		}
+//		UnregisterClass(wndClass.lpszClassName, wndClass.hInstance);
+//	}
+//	return nullptr;
+//}
+//
+//void window::destroy(window::Handle wHnd) {
+//	DestroyWindow(TO_WIN(wHnd));
+//}
+//
+//void window::show(window::Handle wHnd, bool show) {
+//	ShowWindow(TO_WIN(wHnd), (show) ? SW_SHOWDEFAULT : SW_HIDE);
+//}
+//
+//void window::loop(window::Handle /*wHnd*/, window::Redraw func) {
+//	while (impl::yield()) {
+//		if (func) {
+//			if (!func()) {
+//				break;
+//			}
+//		}
+//	}
+//}
 
-void window::destroy(window::Handle wHnd) {
-	DestroyWindow(TO_WIN(wHnd));
-}
-
-void window::show(window::Handle wHnd, bool show) {
-	ShowWindow(TO_WIN(wHnd), (show) ? SW_SHOWDEFAULT : SW_HIDE);
-}
-
-void window::loop(window::Handle /*wHnd*/, window::Redraw func) {
-	while (impl::yield()) {
-		if (func) {
-			if (!func()) {
-				break;
-			}
-		}
-	}
-}
-
+/// TODO: change this into SDLs input
 #include "OpenGUI/Interface/Interfaces.h"
 extern window::Handle hWnd;
 

@@ -148,7 +148,6 @@ bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey
 	//printf("X: %d, Y: %d\n", x, y);
 
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
-	printf("WIndowCenter (X: %f, Y: %f)\n", point.X, point.Y);
 
 	auto picked = PickRecursive(root, point);
 	if (picked)
@@ -167,61 +166,22 @@ bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey
 	return false;
 }
 
-bool OGUI::Context::OnMouseUp(const WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseUp(EMouseKey button, int32 x, int32 y)
 {
 	pointerDownCount--;
 	//std::cout << "OnMouseUp: " << x << "," << y << std::endl;
 	return false;
 }
 
-bool OGUI::Context::OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDoubleClick(EMouseKey button, int32 x, int32 y)
 {
 	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
 	return false;
 }
 
-bool OGUI::Context::OnMouseMove(const WindowHandle window, bool relative, int32 x, int32 y)
+bool OGUI::Context::OnMouseMove(bool relative, int32 x, int32 y)
 {
-	//auto root = desktops.get();
-	//if (!root)
-	//	return false;
-
-	//std::cout << "OnMouseMove: " << x << "," << y << std::endl;
-
-	//static Vector2f prevPointerPos;
-	//prevPointerPos = { (float)x, (float)y };
-
-	//PointerMoveEvent moveEvent;
-	//moveEvent.position = { (float)x, (float)y };
-	//moveEvent.pointerType = "mouse";
-	//moveEvent.deltaPosition = { (float)x - prevPointerPos.X, (float)y - prevPointerPos.Y };
-
-	//auto dpiScale = inputImpl->GetDpiScale();
-	//x /= dpiScale.X;
-	//y /= dpiScale.Y;
-
-	//const auto& wctx = GetWindowContext(window);
-	//const float width = wctx.X;
-	//const float height = wctx.Y;
-
-	//auto point = Vector2f(x, height - y) - Vector2f(width, height) / 2; // center of the window
-
-	//auto picked = PickRecursive(root, point);
-	//if (picked)
-	//{
-	//	if (picked != currentFocus.lock().get())
-	//	{
-	//		picked->_pseudoMask |= (int)PseudoStates::Hover;
-	//		if (auto currF = currentFocus.lock().get())
-	//		{
-	//			currF->_pseudoMask &= ~(int)PseudoStates::Hover;
-	//		}
-	//	}
-	//	currentFocus = picked->shared_from_this();
-	//	RouteEvent(picked, moveEvent);
-	//}
-
-	//prevPointerPos = { (float)x, (float)y };
+	
 	return false;
 }
 
