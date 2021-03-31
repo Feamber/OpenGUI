@@ -59,7 +59,13 @@ namespace OGUI
 		//std::cout << "Name: " << element->_name << std::endl;
 		//std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
 		if (element->Intersect(localPoint))
-			return element;
+		{
+			if (element->_isPseudoElement)
+				return element->GetHierachyParent();
+			else
+				return element;
+		}
+		
 		else return nullptr;
 	}
 	void CacheLayoutRec(VisualElement* element)

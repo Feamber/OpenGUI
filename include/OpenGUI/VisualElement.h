@@ -152,12 +152,13 @@ namespace OGUI
 		std::string backgroundImageUrl;
 
 		bool _styleDirty = false;
+		bool _sharedDirty = false;
 		bool _transformDirty = false;
 		bool _procedureStyleDirty = false;
 		Rect _prevLayout;
 		Style _style;
 		Style _preAnimatedStyle;
-		Style* _sharedStyle = nullptr;
+		CachedStyle* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
@@ -175,7 +176,7 @@ namespace OGUI
 		bool _prevEvaluating = false;
 #pragma endregion
 
-#pragma region
+#pragma region PseudoElement
 	public:
 		bool _isPseudoElement;
 		std::shared_ptr<VisualElement> _beforeElement; //TODO: use weak_ptr?

@@ -345,13 +345,19 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 			if (begin != result.end())
 				ApplyMatchedRules(element->GetAfterPseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
 			else
-				element->ReleaseAfterPseudoElement();
+				element->ReleaseAfterPseudoElement();\
 		}
 		matchingContext.currentElement = nullptr;
 	}
+	UpdateStyle(element);
+	if(element->_beforeElement)
+		UpdateStyle(element->_beforeElement.get());
+	if(element->_afterElement)
+		UpdateStyle(element->_afterElement.get());
 	element->Traverse([this](VisualElement* element)
 		{
-			Traverse(element);
+			if(!element->_isPseudoElement)
+				Traverse(element);
 		});
 	element->_styleDirty = false;
 	int styleSheetCount = sstack.size();
@@ -370,21 +376,15 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		matchHash = append_hash(matchHash, (size_t)record.complexSelector->ruleIndex);
 		matchHash = append_hash(matchHash, record.complexSelector->specificity);
 	}
-	VisualElement* parent = element->GetHierachyParent();
-	auto parentStyle = parent ? &parent->_style : nullptr;
-	Style* sharedStyle = nullptr;
-	std::vector<AnimationStyle>* sharedAnim = nullptr;
+	CachedStyle* sharedStyle = nullptr;
 	auto iter = styleCache.find(matchHash);
-	std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
 	if (iter != styleCache.end()) //todo: double check identity?
 	{
-		sharedStyle = iter->second.style.get();
-		sharedAnim = iter->second.animStyles.get();
-		overrideMask = iter->second.overrideMask;
-		inheritMask = iter->second.inheritMask;
+		sharedStyle = iter->second.get();
 	}
 	else
 	{
+		std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
 		Style resolvedStyle = Style::Create(nullptr, true);
 		std::vector<AnimationStyle> animStyles;
 		for (auto& record : matchedSelectors)
@@ -397,16 +397,23 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		CachedStyle cs{
 			overrideMask,
 			inheritMask,
-			std::make_unique<Style>(std::move(resolvedStyle)),
-			std::make_unique<std::vector<AnimationStyle>>(std::move(animStyles))
+			std::move(resolvedStyle),
+			std::move(animStyles)
 		};
 		auto pair = styleCache.emplace(matchHash, std::move(cs));
 		//check(pair.second);
-		sharedStyle = pair.first->second.style.get();
-		sharedAnim = pair.first->second.animStyles.get();
+		sharedStyle = pair.first->second.get();
 	}
+	{
+		element->_sharedDirty = element->_sharedStyle != sharedStyle;
+		element->_sharedStyle = sharedStyle;
+	}
+}
+
+void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
+{
 	/*
-	* anim style = 
+	* anim style =
 	*	 yielding + shared + inline/procedure
 	* animated rule =
 	*	anim style + anim context
@@ -420,122 +427,130 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	* animated rule and inline rule could change frequently
 	* so they are not cached
 	*/
+	VisualElement* parent = element->GetHierachyParent();
+	auto parentStyle = parent ? &parent->_style : nullptr;
+	bool sharedDirty = element->_sharedDirty;
+	bool procedureDirty = element->_procedureStyleDirty;
+	bool parentDirty = parent ? parent->_styleDirty : false;
+	if (procedureDirty || sharedDirty)
 	{
-		bool sharedDirty = element->_sharedStyle != sharedStyle;
-		bool procedureDirty = element->_procedureStyleDirty;
-		bool parentDirty = parent ? parent->_styleDirty : false;
-		element->_sharedStyle = sharedStyle;
-		if (procedureDirty || sharedDirty)
+		std::vector<AnimationStyle> anims;
+		if (element->_sharedStyle)
+			anims = element->_sharedStyle->animStyles;
+		std::vector<AnimRunContext> ctxs;
+		if (element->_inlineStyle)
+			AnimationStyle::ApplyProperties(anims, element->_inlineStyle->storage, element->_inlineStyle->rule.properties);
+		if (element->_procedureStyle)
+			AnimationStyle::ApplyProperties(anims, element->_procedureStyle->storage, element->_procedureStyle->rule.properties);
+		ctxs.resize(anims.size());
+		//Inherit Context
+		std::vector<bool> dynbitset;
+		dynbitset.resize(element->_animContext.size());
+		for (auto&& [i, anim] : ipair(anims))
 		{
-			std::vector<AnimationStyle> anims = *sharedAnim;
-			std::vector<AnimRunContext> ctxs;
-			if (element->_inlineStyle)
-				AnimationStyle::ApplyProperties(anims, element->_inlineStyle->storage, element->_inlineStyle->rule.properties);
-			if (element->_procedureStyle)
-				AnimationStyle::ApplyProperties(anims, element->_procedureStyle->storage, element->_procedureStyle->rule.properties);
-			ctxs.resize(anims.size());
-			//Inherit Context
-			std::vector<bool> dynbitset;
-			dynbitset.resize(element->_animContext.size());
-			for (auto&& [i, anim] : ipair(anims))
+			bool founded = false;
+			for (auto&& [j, oldAnim] : ipair(element->_animStyles))
 			{
-				bool founded = false;
-				for (auto&& [j, oldAnim] : ipair(element->_animStyles))
+				if (oldAnim.animName == anim.animName)
 				{
-					if (oldAnim.animName == anim.animName)
+					anim.keyframes = oldAnim.keyframes;
+					anim.sheet = oldAnim.sheet;
+					ctxs[i] = element->_animContext[j];
+					if (anim.animResumeMode == EAnimResumeMode::Reset && element->_animContext[j].yielding)
 					{
-						anim.keyframes = oldAnim.keyframes;
-						anim.sheet = oldAnim.sheet;
-						ctxs[i] = element->_animContext[j];
-						if (anim.animResumeMode == EAnimResumeMode::Reset && element->_animContext[j].yielding)
-						{
-							//Play from begining
-							ctxs[i].time = 0;
-						}
-						else
-						{	//Sync iteration
-							auto& oldCtx = element->_animContext[j];
-							float iter = (oldCtx.time - oldAnim.animDelay) / oldAnim.animDuration;
-							if (((int)anim.animDirections % 2) != ((int)oldAnim.animDirections % 2))
-								iter = iter + (1 - (iter - (int)iter));
-							ctxs[i].time = iter * anim.animDuration + anim.animDelay;
-						}
-						ctxs[i].goingback = false;
-						ctxs[i].yielding = false;
-						founded = true;
-						dynbitset[j] = true;
-						break;
+						//Play from begining
+						ctxs[i].time = 0;
 					}
-				}
-				if (!founded)
-					anim.ResolveReference(matchingContext.styleSheetStack);
-			}
-			std::vector<AnimationStyle> yieldingAnims;
-			std::vector<AnimRunContext> yieldingCtxs;
-			for (int i = 0; i < dynbitset.size(); ++i)
-			{
-				if (!dynbitset[i] && element->_animStyles[i].animYieldMode != EAnimYieldMode::Stop)
-				{
-					yieldingAnims.emplace_back(std::move(element->_animStyles[i]));
-					auto& ctx = yieldingCtxs.emplace_back(std::move(element->_animContext[i]));
-					ctx.yielding = true;
-					ctx.evaluating = true;
-					ctx.goingback = element->_animStyles[i].animYieldMode == EAnimYieldMode::Goback;
+					else
+					{	//Sync iteration
+						auto& oldCtx = element->_animContext[j];
+						float iter = (oldCtx.time - oldAnim.animDelay) / oldAnim.animDuration;
+						if (((int)anim.animDirections % 2) != ((int)oldAnim.animDirections % 2))
+							iter = iter + (1 - (iter - (int)iter));
+						ctxs[i].time = iter * anim.animDuration + anim.animDelay;
+					}
+					ctxs[i].goingback = false;
+					ctxs[i].yielding = false;
+					founded = true;
+					dynbitset[j] = true;
+					break;
 				}
 			}
-			if (yieldingAnims.size() > 0)
+			if (!founded)
+				anim.ResolveReference(matchingContext.styleSheetStack);
+		}
+		std::vector<AnimationStyle> yieldingAnims;
+		std::vector<AnimRunContext> yieldingCtxs;
+		for (int i = 0; i < dynbitset.size(); ++i)
+		{
+			if (!dynbitset[i] && element->_animStyles[i].animYieldMode != EAnimYieldMode::Stop)
 			{
-				yieldingAnims.reserve(yieldingAnims.size() + anims.size());
-				std::move(anims.begin(), anims.end(), std::back_inserter(yieldingAnims));
-				yieldingCtxs.reserve(yieldingCtxs.size() + ctxs.size());
-				std::move(ctxs.begin(), ctxs.end(), std::back_inserter(yieldingCtxs));
-				std::swap(element->_animContext, yieldingCtxs);
-				std::swap(element->_animStyles, yieldingAnims);
-			}
-			else
-			{
-				std::swap(element->_animContext, ctxs);
-				std::swap(element->_animStyles, anims);
+				yieldingAnims.emplace_back(std::move(element->_animStyles[i]));
+				auto& ctx = yieldingCtxs.emplace_back(std::move(element->_animContext[i]));
+				ctx.yielding = true;
+				ctx.evaluating = true;
+				ctx.goingback = element->_animStyles[i].animYieldMode == EAnimYieldMode::Goback;
 			}
 		}
-		bool styleDirty = false;
-		YogaStyle yogaStyle = element->_style;
-		TRSStyle trsStyle = element->_style;
-		if (sharedDirty || procedureDirty || parentDirty)
+		if (yieldingAnims.size() > 0)
 		{
-			element->_preAnimatedStyle = Style::Create(nullptr, true);
-			if (parentStyle)
-				element->_preAnimatedStyle.MergeStyle(*parentStyle, inheritMask);
-			element->_preAnimatedStyle.MergeStyle(*sharedStyle, overrideMask);
-			if (element->_inlineStyle)
-				element->_preAnimatedStyle.ApplyPropertiesFast(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parentStyle);
-			if (element->_procedureStyle)
-				element->_preAnimatedStyle.ApplyPropertiesFast(element->_procedureStyle->storage, element->_procedureStyle->rule.properties, parentStyle);
-			styleDirty = true;
+			yieldingAnims.reserve(yieldingAnims.size() + anims.size());
+			std::move(anims.begin(), anims.end(), std::back_inserter(yieldingAnims));
+			yieldingCtxs.reserve(yieldingCtxs.size() + ctxs.size());
+			std::move(ctxs.begin(), ctxs.end(), std::back_inserter(yieldingCtxs));
+			std::swap(element->_animContext, yieldingCtxs);
+			std::swap(element->_animStyles, yieldingAnims);
 		}
-		bool animationEvaling = false;
-		for (auto& ctx : element->_animContext)
-			animationEvaling |= ctx.evaluating;
-		if (element->_animContext.size() == 0 && element->_prevEvaluating)
-			styleDirty = true;
-		if(styleDirty)
-			element->_style = element->_preAnimatedStyle;
-		if(animationEvaling || styleDirty)
+		else
 		{
-			element->_style = element->_preAnimatedStyle;
-			for (auto&& [i, anim] : ipair(element->_animStyles))
-				element->_style.ApplyAnimation(anim, element->_animContext[i], parentStyle);
-			styleDirty = true;
+			std::swap(element->_animContext, ctxs);
+			std::swap(element->_animStyles, anims);
 		}
-		element->_prevEvaluating = animationEvaling;
-		if (styleDirty)
+	}
+	bool styleDirty = false;
+	YogaStyle yogaStyle = element->_style;
+	TRSStyle trsStyle = element->_style;
+	if (sharedDirty || procedureDirty || parentDirty)
+	{
+		element->_preAnimatedStyle = Style::Create(nullptr, true);
+		std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
+		if (element->_sharedStyle)
 		{
-			element->_styleDirty = styleDirty; //todo: check identity?
-			if (!(yogaStyle == element->_style))
-				element->SyncYogaStyle();
-			if (!(trsStyle == element->_style))
-				element->_transformDirty = true;
-			//todo: shape dirty?
+			inheritMask = element->_sharedStyle->inheritMask;
+			overrideMask = element->_sharedStyle->overrideMask;
 		}
+		if (parentStyle)
+			element->_preAnimatedStyle.MergeStyle(*parentStyle, inheritMask);
+		if (element->_sharedStyle)
+			element->_preAnimatedStyle.MergeStyle(element->_sharedStyle->style, overrideMask);
+		if (element->_inlineStyle)
+			element->_preAnimatedStyle.ApplyPropertiesFast(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parentStyle);
+		if (element->_procedureStyle)
+			element->_preAnimatedStyle.ApplyPropertiesFast(element->_procedureStyle->storage, element->_procedureStyle->rule.properties, parentStyle);
+		styleDirty = true;
+	}
+	bool animationEvaling = false;
+	for (auto& ctx : element->_animContext)
+		animationEvaling |= ctx.evaluating;
+	if (element->_animContext.size() == 0 && element->_prevEvaluating)
+		styleDirty = true;
+	if (styleDirty)
+		element->_style = element->_preAnimatedStyle;
+	if (animationEvaling || styleDirty)
+	{
+		element->_style = element->_preAnimatedStyle;
+		for (auto&& [i, anim] : ipair(element->_animStyles))
+			element->_style.ApplyAnimation(anim, element->_animContext[i], parentStyle);
+		styleDirty = true;
+	}
+	element->_prevEvaluating = animationEvaling;
+	if (styleDirty)
+	{
+		element->_styleDirty = styleDirty; //todo: check identity?
+		if (!(yogaStyle == element->_style))
+			element->SyncYogaStyle();
+		if (!(trsStyle == element->_style))
+			element->_transformDirty = true;
+		//todo: shape dirty?
 	}
 }
