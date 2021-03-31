@@ -158,7 +158,7 @@ namespace OGUI
 		Rect _prevLayout;
 		Style _style;
 		Style _preAnimatedStyle;
-		CachedStyle* _sharedStyle = nullptr;
+		struct CachedStyle* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
@@ -178,7 +178,7 @@ namespace OGUI
 
 #pragma region PseudoElement
 	public:
-		bool _isPseudoElement;
+		bool _isPseudoElement = false;
 		std::shared_ptr<VisualElement> _beforeElement; //TODO: use weak_ptr?
 		std::shared_ptr<VisualElement> _afterElement;
 		VisualElement* GetBeforePseudoElement();

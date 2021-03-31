@@ -345,7 +345,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 			if (begin != result.end())
 				ApplyMatchedRules(element->GetAfterPseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
 			else
-				element->ReleaseAfterPseudoElement();\
+				element->ReleaseAfterPseudoElement();
 		}
 		matchingContext.currentElement = nullptr;
 	}
@@ -400,7 +400,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 			std::move(resolvedStyle),
 			std::move(animStyles)
 		};
-		auto pair = styleCache.emplace(matchHash, std::move(cs));
+		auto pair = styleCache.emplace(matchHash, std::make_unique<CachedStyle>(std::move(cs)));
 		//check(pair.second);
 		sharedStyle = pair.first->second.get();
 	}
@@ -430,7 +430,9 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 	VisualElement* parent = element->GetHierachyParent();
 	auto parentStyle = parent ? &parent->_style : nullptr;
 	bool sharedDirty = element->_sharedDirty;
+	element->_sharedDirty = false;
 	bool procedureDirty = element->_procedureStyleDirty;
+	element->_procedureStyleDirty = false;
 	bool parentDirty = parent ? parent->_styleDirty : false;
 	if (procedureDirty || sharedDirty)
 	{
