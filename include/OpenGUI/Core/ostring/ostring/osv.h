@@ -66,7 +66,7 @@ public:
 
 	[[nodiscard]] size_t length() const noexcept;
 
-	inline [[nodiscard]] constexpr bool empty() const noexcept
+	[[nodiscard]] inline constexpr bool empty() const noexcept
 	{
 		return origin_length() == 0;
 	}
