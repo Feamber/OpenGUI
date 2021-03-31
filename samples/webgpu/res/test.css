@@ -54,6 +54,11 @@
     background-image:url(res/test1.png);
 }
 
+.Test.Bigger{
+    width: 30px;
+    height:30px;
+}
+
 @keyframes rotateanim {
     10% {
         background-color:rgb(141, 141, 141);

@@ -11,6 +11,7 @@
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualWindow.h"
+#include "OpenGUI/Core/Utilities/ipair.hpp"
 
 extern void InstallInput();
 
@@ -393,6 +394,12 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 					};
 					child1->_eventHandler.Register<PointerDownEvent, handler>();
 				}
+				std::vector<VisualElement*> tests;
+				QueryAll(ve.get(), ".Test", tests);
+				for(auto [i, test] : ipair(tests))
+					if(i%2 == 0)
+						test->_styleClasses.push_back("Bigger");
+
 				ve->_pseudoMask |= (int)PseudoStates::Root;
 				ctx.desktops->PushChild(ve.get());
 			}
