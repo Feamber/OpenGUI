@@ -101,7 +101,7 @@ OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 
 void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 {
-	//Context.Get().BroadcastDirtyEvent(this, reason);
+	Context::Get().MarkDirty(this, reason);
 }
 
 void OGUI::VisualElement::PushChild(VisualElement* child)
@@ -241,16 +241,6 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetDisplay(_ygnode, _style.display);
 }
 
-void OGUI::VisualElement::SetPseudoMask(uint32_t mask)
-{
-	if (_pseudoMask != mask)
-	{
-		_pseudoMask = mask;
-		if ((mask & _triggerPseudoMask) != 0 || (mask & ~_dependencyPseudoMask) != 0)
-			MarkDirty(DirtyReason::StyleSheet);
-	}
-}
-
 bool OGUI::VisualElement::ContainClass(std::string_view cls)
 {
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
@@ -305,6 +295,16 @@ bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element
     }
 
     return true;
+}
+
+void OGUI::VisualElement::SetPseudoClass(PseudoStates state, bool b)
+{
+	if (b)
+		_pseudoMask |= (uint32_t)state;
+	else
+		_pseudoMask &= ~(uint32_t)state;
+	if ((_triggerPseudoMask & _pseudoMask) != 0 || (_dependencyPseudoMask & ~_pseudoMask) != 0)
+		_selectorDirty = true;
 }
 
 bool OGUI::VisualElement::Intersect(Vector2f point)

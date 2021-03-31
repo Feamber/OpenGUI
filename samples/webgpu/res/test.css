@@ -50,6 +50,7 @@
     animation-name:monan;
     animation-duration: 1s;
     animation-iteration-count: infinite;
+    background-color: initial;
     background-image:url(res/test1.png);
 }
 
