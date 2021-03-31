@@ -9,13 +9,12 @@
 #include <ostring/osv.h>
 #include <ostring/helpers.h>
 
-
+// TODO: platform independent
 // TODO: move impl to cpp
-
+#include <Windows.h>
 
 _NS_OLOG_START
 
-#include <Windows.h>
 struct spdlog_sys
 {
 

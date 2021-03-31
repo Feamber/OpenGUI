@@ -5,6 +5,7 @@
 #include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Event/PointerEvent.h"
+#include "OpenGUI/Core/Types.h"
 
 
 namespace OGUI
@@ -52,6 +53,7 @@ namespace OGUI
 		//APIs
 		void Update(const WindowHandle window, float dt);
 		void Render(const WindowHandle window);
+		void MarkDirty(VisualElement* element, DirtyReason reason);
 
 		//Message Handling
 		//reference : UE4 Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h

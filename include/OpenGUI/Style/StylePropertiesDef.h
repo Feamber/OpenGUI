@@ -49,8 +49,8 @@ YOGAPROP(	flexDirection,				29,				NonInherited,			YGFlexDirection,	"flex-direct
 YOGAPROP(	alignContent,				30,				NonInherited,			YGAlign,			"align-content",				YGAlignFlexStart			)
 YOGAPROP(	alignItems,					31,				NonInherited,			YGAlign,			"align-items",					YGAlignStretch				)
 YOGAPROP(	justifyContent,				32,				NonInherited,			YGJustify,			"justify-content",				YGJustifyFlexStart			)
-YOGAPROP(	wrap,						33,				NonInherited,			YGWrap,				"wrap",							YGWrapNoWrap				)
-YOGAPROP(	display,					34,				NonInherited,			YGDisplay,			"display",						YGDisplayFlex				)
+YOGAPROP(	wrap,						33,				NonInherited,			YGWrap,				"flex-wrap",					YGWrapNoWrap				)
+YOGAPROP(	display,					34,				NonInherited,			YGDisplay,			"flex-display",					YGDisplayFlex				)
 //End Yoga props																							
 //Begin draw props																														
 STYLEPROP(	backgroundColor,			35,				Inherited,				Color4f,			"background-color",				Color4f(1.f,1.f,1.f,1.f)	)

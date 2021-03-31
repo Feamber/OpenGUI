@@ -11,7 +11,8 @@
 #include "OpenGUI/Xml/XmlAttributeDescription.h"
 #include "OpenGUI/Xml/XmlChildElementDescription.h"
 #include "OpenGUI/Event/EventHandler.h"
-#include "Animation/AnimStyle.h"
+#include "OpenGUI/Animation/AnimStyle.h"
+#include "OpenGUI/Core/Types.h"
 
 namespace OGUI
 {
@@ -19,33 +20,6 @@ namespace OGUI
 	{
 		struct DrawContext;
 	}
-
-	enum class DirtyReason : int
-	{
-		// Some data was bound
-		Bindings = 1 << 0,
-		// persistent data ready
-		ViewData = 1 << 1,
-		// changes to hierarchy
-		Hierarchy = 1 << 2,
-		// changes to properties that may have an impact on layout
-		Layout = 1 << 3,
-		// changes to StyleSheet, USS class
-		StyleSheet = 1 << 4,
-		// changes to styles, colors and other render properties
-		Styles = 1 << 5,
-		Overflow = 1 << 6,
-		BorderRadius = 1 << 7,
-		BorderWidth = 1 << 8,
-		// changes that may impact the world transform (e.g. laid out position, local transform)
-		Transform = 1 << 9,
-		// changes to the size of the element after layout has been performed, without taking the local transform into account
-		Size = 1 << 10,
-		// The visuals of the element have changed
-		Repaint = 1 << 11,
-		// The opacity of the element have changed
-		Opacity = 1 << 12,
-	};
 
 	struct Matrix4x4f{};
 
@@ -151,18 +125,20 @@ namespace OGUI
 		
 		std::string backgroundImageUrl;
 
+		bool _selectorDirty = true;
 		bool _styleDirty = false;
+		bool _sharedDirty = false;
 		bool _transformDirty = false;
 		bool _procedureStyleDirty = false;
 		Rect _prevLayout;
 		Style _style;
 		Style _preAnimatedStyle;
-		Style* _sharedStyle = nullptr;
+		struct CachedStyle* _sharedStyle = nullptr;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
+		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
-		void SetPseudoMask(uint32_t mask);
 		void CalculateLayout();
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
@@ -175,9 +151,9 @@ namespace OGUI
 		bool _prevEvaluating = false;
 #pragma endregion
 
-#pragma region
+#pragma region PseudoElement
 	public:
-		bool _isPseudoElement;
+		bool _isPseudoElement = false;
 		std::shared_ptr<VisualElement> _beforeElement; //TODO: use weak_ptr?
 		std::shared_ptr<VisualElement> _afterElement;
 		VisualElement* GetBeforePseudoElement();
