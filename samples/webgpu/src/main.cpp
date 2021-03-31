@@ -373,7 +373,8 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				{
 					constexpr auto handler = +[](PointerDownEvent& event)
 					{
-						olog::info("Oh ♂ shit!");
+						using namespace ostr::literal;
+						olog::info(OSTR("Oh ♂ shit!"));
 						return true;
 					};
 					child1->_eventHandler.Register<PointerDownEvent, handler>();
