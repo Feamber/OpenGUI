@@ -376,8 +376,7 @@ namespace OGUI
 
 	bool FromString(std::string_view str, Color4f& value)
 	{
-
-		auto grammar = R"(
+		static auto grammar = R"(
 			Color	<- CALLS / CALL / HEX / IDENT
 			CALL	<- FUNC '(' _ CNUM _ ',' _ CNUM _ ',' _ CNUM _ (',' _ CNUM _)? ')'
 			CALLS	<- FUNC '(' _ CNUM __ CNUM __ CNUM _ ('/' _ CNUM _)? ')'
@@ -393,141 +392,151 @@ namespace OGUI
 		using namespace peg;
 		using namespace std;
 
-		parser parser;
-
-		parser.log = [](size_t line, size_t col, const string& msg)
+		struct ParserInitializer
 		{
-			cerr << line << ":" << col << ": " << msg << "\n";
-		};
+			parser parser;
+			bool ok;
+			ParserInitializer()
+			{
+				parser.log = [](size_t line, size_t col, const string& msg)
+				{
+					cerr << line << ":" << col << ": " << msg << "\n";
+				};
+				ok = parser.load_grammar(grammar);
+				if (ok)
+				{
+					auto token = [](SemanticValues& vs)
+					{
+						return vs.token(0);
+					};
 
-		auto ok = parser.load_grammar(grammar);
-		if (!ok)
+					parser["CNUM"] = token;
+
+					parser["FUNC"] = [](SemanticValues& vs)
+					{
+						return vs.choice() / 2;
+					};
+
+					auto CALL = [](SemanticValues& vs)
+					{
+						size_t type = any_move<size_t>(vs[0]);
+						Color4f color = Color4f::vector_one();
+						auto ParseCNUM = [](string_view str, bool mustBePercent, bool normalize = true)
+						{
+							bool isPercent = false;
+							auto valuestr = str;
+							if (ends_with(str, "%"))
+							{
+								isPercent = true;
+								valuestr = str.substr(0, str.length() - 1);
+							}
+							else if (mustBePercent)
+								throw parse_error("invalid number, except percent.");
+							float value;
+							if (!FromString(valuestr, value))
+								throw parse_error("invalid number.");
+							if (isPercent && !mustBePercent)
+								value = value / 100;
+							else if (normalize)
+								value = roundf(value) / 255;
+							return value;
+						};
+						int size = vs.size();
+						if (size < 4)
+							throw parse_error("not enough parameter for color function.");
+						if (size > 5)
+							throw parse_error("too many parameter for color function.");
+						auto first = any_move<string_view>(vs[1]);
+						if (type == 1)
+							color.X = FromAngle(first);
+						else
+							color.X = ParseCNUM(first, false);
+						auto second = any_move<string_view>(vs[2]);
+						color.Y = ParseCNUM(second, type == 1);
+						auto third = any_move<string_view>(vs[3]);
+						color.Z = ParseCNUM(third, type == 1);
+						if (vs.size() == 5)
+						{
+							auto forth = any_move<string_view>(vs[4]);
+							color.W = ParseCNUM(forth, false, false);
+						}
+						if (type == 1)
+						{
+							Color4f hsv = color;
+							HSVtoRGB(hsv.X, hsv.Y, hsv.Z, color.X, color.Y, color.Z);
+						}
+						return color;
+					};
+					parser["CALLS"] = CALL;
+					parser["CALL"] = CALL;
+
+					parser["HEX"] = [](SemanticValues& vs)
+					{
+						Color4f color = Color4f::vector_one();
+						auto str = vs.token();
+						auto S2H = [](string_view hex)
+						{
+							string hexstr = {hex.begin(), hex.end()};
+							try
+							{
+								return stoi(hexstr, nullptr, 16);
+							}
+							catch (std::exception)
+							{
+								throw parse_error("invalid hex value");
+							}
+						};
+						auto length = str.length();
+						string fullstr;
+						if (length == 3 || length == 4)
+						{
+							fullstr.push_back(str[0]); fullstr.push_back(str[0]);
+							fullstr.push_back(str[1]); fullstr.push_back(str[1]);
+							fullstr.push_back(str[2]); fullstr.push_back(str[2]);
+							if (length == 4)
+							{
+								fullstr.push_back(str[3]); fullstr.push_back(str[3]);
+							}
+							length = length * 2;
+							str = fullstr;
+						}
+						if (length == 6 || length == 8)
+						{
+							color.X = S2H(str.substr(0, 2)) / 255.0;
+							color.Y = S2H(str.substr(2, 2)) / 255.0;
+							color.Z = S2H(str.substr(4, 2)) / 255.0;
+							if (length == 8)
+							{
+								color.W = S2H(str.substr(6, 2)) / 255.0;
+							}
+						}
+						else
+						{
+							throw parse_error("invalid hex value");
+						}
+						return color;
+					};
+
+					parser["IDENT"] = [](SemanticValues& vs)
+					{
+						Color4f res;
+						if (!FromColorName(vs.token(), res))
+							throw parse_error("invalid color name");
+						return res;
+					};
+					auto forward = [](SemanticValues& vs)
+					{
+						return vs[0];
+					};
+					parser["Color"] = forward;
+				}
+			}
+		};
+		static ParserInitializer parserInitializer; //do once
+		auto& parser = parserInitializer.parser;
+
+		if (!parserInitializer.ok)
 			return false;
-
-		auto token = [](SemanticValues& vs)
-		{
-			return vs.token(0);
-		};
-
-		parser["CNUM"] = token;
-
-		parser["FUNC"] = [](SemanticValues& vs)
-		{
-			return vs.choice() / 2;
-		};
-
-		auto CALL = [](SemanticValues& vs)
-		{
-			size_t type = any_move<size_t>(vs[0]);
-			Color4f color = Color4f::vector_one();
-			auto ParseCNUM = [](string_view str, bool mustBePercent, bool normalize = true)
-			{
-				bool isPercent = false;
-				auto valuestr = str;
-				if (ends_with(str, "%"))
-				{
-					isPercent = true;
-					valuestr = str.substr(0, str.length() - 1);
-				}
-				else if (mustBePercent)
-					throw parse_error("invalid number, except percent.");
-				float value;
-				if (!FromString(valuestr, value))
-					throw parse_error("invalid number.");
-				if (isPercent && !mustBePercent)
-					value = value / 100;
-				else if (normalize)
-					value = roundf(value) / 255;
-				return value;
-			};
-			int size = vs.size();
-			if (size < 4)
-				throw parse_error("not enough parameter for color function.");
-			if (size > 5)
-				throw parse_error("too many parameter for color function.");
-			auto first = any_move<string_view>(vs[1]);
-			if (type == 1)
-				color.X = FromAngle(first);
-			else
-				color.X = ParseCNUM(first, false);
-			auto second = any_move<string_view>(vs[2]);
-			color.Y = ParseCNUM(second, type == 1);
-			auto third = any_move<string_view>(vs[3]);
-			color.Z = ParseCNUM(third, type == 1);
-			if (vs.size() == 5)
-			{
-				auto forth = any_move<string_view>(vs[4]);
-				color.W = ParseCNUM(forth, false, false);
-			}
-			if (type == 1)
-			{
-				Color4f hsv = color;
-				HSVtoRGB(hsv.X, hsv.Y, hsv.Z, color.X, color.Y, color.Z);
-			}
-			return color;
-		};
-		parser["CALLS"] = CALL;
-		parser["CALL"] = CALL;
-
-		parser["HEX"] = [](SemanticValues& vs)
-		{
-			Color4f color = Color4f::vector_one();
-			auto str = vs.token();
-			auto S2H = [](string_view hex)
-			{
-				string hexstr = {hex.begin(), hex.end()};
-				try
-				{
-					return stoi(hexstr, nullptr, 16);
-				}
-				catch (std::exception)
-				{
-					throw parse_error("invalid hex value");
-				}
-			};
-			auto length = str.length();
-			string fullstr;
-			if (length == 3 || length == 4)
-			{
-				fullstr.push_back(str[0]); fullstr.push_back(str[0]);
-				fullstr.push_back(str[1]); fullstr.push_back(str[1]);
-				fullstr.push_back(str[2]); fullstr.push_back(str[2]);
-				if (length == 4)
-				{
-					fullstr.push_back(str[3]); fullstr.push_back(str[3]);
-				}
-				length = length * 2;
-				str = fullstr;
-			}
-			if (length == 6 || length == 8)
-			{
-				color.X = S2H(str.substr(0, 2)) / 255.0;
-				color.Y = S2H(str.substr(2, 2)) / 255.0;
-				color.Z = S2H(str.substr(4, 2)) / 255.0;
-				if (length == 8)
-				{
-					color.W = S2H(str.substr(6, 2)) / 255.0;
-				}
-			}
-			else
-			{
-				throw parse_error("invalid hex value");
-			}
-			return color;
-		};
-
-		parser["IDENT"] = [](SemanticValues& vs)
-		{
-			Color4f res;
-			if (!FromColorName(vs.token(), res))
-				throw parse_error("invalid color name");
-			return res;
-		};
-		auto forward = [](SemanticValues& vs)
-		{
-			return vs[0];
-		};
-		parser["Color"] = forward;
 
 		return parser.parse(str, value);
 	}
@@ -908,7 +917,7 @@ namespace OGUI
     
 	bool FromTransform(std::string_view str, StyleSheetStorage& sheet, StyleRule& rule)
 	{
-		auto grammar = R"(
+		static auto grammar = R"(
 			TransformList	<- Transform (w Transform)*
 			Transform		<- Translate / TranslateX / TranslateY / Scale / ScaleX / ScaleY / Rotate
 			Translate		<- 'translate' _ '(' _ LENGTH _ ',' _ LENGTH _ ')'
@@ -929,34 +938,6 @@ namespace OGUI
 		using namespace peg;
 		using namespace std;
 
-		parser parser;
-
-		parser.log = [](size_t line, size_t col, const string& msg)
-		{
-			cerr << line << ":" << col << ": " << msg << "\n";
-		};
-
-		auto ok = parser.load_grammar(grammar);
-		if (!ok)
-			return false;
-
-		parser["NUM"] = [](SemanticValues& vs)
-		{
-			float value = 0;
-			if (!FromString(vs.token(), value))
-				throw peg::parse_error("invalid number.");
-			return value;
-		};
-
-		parser["LENGTH"] = [](SemanticValues& vs)
-		{
-			return FromTranslationComponent(vs.token());
-		};
-
-		parser["ANGLE"] = [](SemanticValues& vs)
-		{
-			return FromAngle(vs.token()) / 180 * math::PI;
-		};
 		struct optionalTransform
 		{
 			std::optional<Vector2f> t;
@@ -964,35 +945,75 @@ namespace OGUI
 			std::optional<Vector2f> s;
 		};
 		using tt = optionalTransform;
-#define ARG(n) any_move<float>(vs[n])
-		parser["Rotate"] = [](SemanticValues& vs) -> tt		{ return {{},						ARG(0),	{}}; };
-		parser["ScaleX"] = [](SemanticValues& vs) -> tt		{ return {{},						{},		Vector2f{ARG(0), 1}}; };
-		parser["ScaleY"] = [](SemanticValues& vs) -> tt		{ return {{},						{},		Vector2f{1, ARG(0)}}; };
-		parser["Scale"] = [](SemanticValues& vs) -> tt		{ return {{},						{},		Vector2f{ARG(0), ARG(1)}}; };
-		parser["TranslateX"] = [](SemanticValues& vs) -> tt { return {Vector2f{ARG(0), 0},		{},		{}}; };
-		parser["TranslateY"] = [](SemanticValues& vs) -> tt { return {Vector2f{0, ARG(0)},		{},		{}}; };
-		parser["Translate"] = [](SemanticValues& vs) -> tt	{ return {Vector2f{ARG(0), ARG(1)}, {},		{}}; };
-#undef ARG
-		parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
-		static auto merge = [](auto& a, const auto& b)
+		struct ParserInitializer
 		{
-			if (!b.has_value()) return;
-			if (a.has_value())
-				a = a.value() + b.value();
-			else a = b.value();
-		};
-		parser["TransformList"] = [](SemanticValues& vs)
-		{
-			tt finalM = any_move<tt>(vs[0]);
-			for (int i = 1; i < vs.size(); ++i)
+			parser parser;
+			bool ok;
+			ParserInitializer()
 			{
-				tt M = any_move<tt>(vs[i]);
-				merge(finalM.t, M.t);
-				merge(finalM.r, M.r);
-				merge(finalM.s, M.s);
+				parser.log = [](size_t line, size_t col, const string& msg)
+				{
+					cerr << line << ":" << col << ": " << msg << "\n";
+				};
+				ok = parser.load_grammar(grammar);
+				if (ok)
+				{
+
+
+					parser["NUM"] = [](SemanticValues& vs)
+					{
+						float value = 0;
+						if (!FromString(vs.token(), value))
+							throw peg::parse_error("invalid number.");
+						return value;
+					};
+
+					parser["LENGTH"] = [](SemanticValues& vs)
+					{
+						return FromTranslationComponent(vs.token());
+					};
+
+					parser["ANGLE"] = [](SemanticValues& vs)
+					{
+						return FromAngle(vs.token()) / 180 * math::PI;
+					};
+#define ARG(n) any_move<float>(vs[n])
+					parser["Rotate"] = [](SemanticValues& vs) -> tt { return {{},						ARG(0),	{}}; };
+					parser["ScaleX"] = [](SemanticValues& vs) -> tt { return {{},						{},		Vector2f{ARG(0), 1}}; };
+					parser["ScaleY"] = [](SemanticValues& vs) -> tt { return {{},						{},		Vector2f{1, ARG(0)}}; };
+					parser["Scale"] = [](SemanticValues& vs) -> tt { return {{},						{},		Vector2f{ARG(0), ARG(1)}}; };
+					parser["TranslateX"] = [](SemanticValues& vs) -> tt { return {Vector2f{ARG(0), 0},		{},		{}}; };
+					parser["TranslateY"] = [](SemanticValues& vs) -> tt { return {Vector2f{0, ARG(0)},		{},		{}}; };
+					parser["Translate"] = [](SemanticValues& vs) -> tt { return {Vector2f{ARG(0), ARG(1)}, {},		{}}; };
+#undef ARG
+					parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
+					static auto merge = [](auto& a, const auto& b)
+					{
+						if (!b.has_value()) return;
+						if (a.has_value())
+							a = a.value() + b.value();
+						else a = b.value();
+					};
+					parser["TransformList"] = [](SemanticValues& vs)
+					{
+						tt finalM = any_move<tt>(vs[0]);
+						for (int i = 1; i < vs.size(); ++i)
+						{
+							tt M = any_move<tt>(vs[i]);
+							merge(finalM.t, M.t);
+							merge(finalM.r, M.r);
+							merge(finalM.s, M.s);
+						}
+						return finalM;
+					};
+				}
 			}
-			return finalM;
 		};
+		static ParserInitializer parserInitializer; //do once
+		auto& parser = parserInitializer.parser;
+
+		if (!parserInitializer.ok)
+			return false;
 		tt value;
 		if (!parser.parse(str, value))
 			return false;

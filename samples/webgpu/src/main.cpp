@@ -377,12 +377,14 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			InstallInput();
 			{
 				using namespace OGUI;
+				using namespace ostr::literal;
 				auto& ctx = Context::Get();
 				ctx.renderImpl = std::make_unique<WGPURenderer>();
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 				ctx.desktops = std::make_shared<VisualWindow>();
 
+				std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
 				auto ve = XmlAsset::Instantiate(asset.lock()->id);
 				if(auto child1 = QueryFirst(ve.get(), "#Child1"))
@@ -405,6 +407,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 
 				ve->_pseudoMask |= (int)PseudoStates::Root;
 				ctx.desktops->PushChild(ve.get());
+				olog::info(u"initialize completed, time used: {}"o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 			}
 
 			// main loop
