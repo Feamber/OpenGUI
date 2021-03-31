@@ -10,10 +10,10 @@
 #include <ostring/helpers.h>
 
 // TODO: platform independent
+#include <Windows.h>
 
 _NS_OLOG_START
 
-#include <Windows.h>
 
 struct spdlog_sys
 {

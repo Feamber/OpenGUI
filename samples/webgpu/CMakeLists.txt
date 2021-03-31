@@ -6,8 +6,18 @@ download_and_extract(
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
 download_and_extract(
+    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/SDL2.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/SDL2.zip
+    ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
+)
+download_and_extract(
     ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/dawn.zip
     ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn.zip
+    ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
+)
+download_and_extract(
+    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/SDL2.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
 file(GLOB resources res/*.*)
@@ -62,3 +72,4 @@ add_executable(WebgpuSample ${sources} ${platform_sources} ${headers})
 
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
 set_property(TARGET WebgpuSample PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/samples/webgpu")
+target_link_libraries(WebgpuSample SDL2)
