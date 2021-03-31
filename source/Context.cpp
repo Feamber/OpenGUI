@@ -117,6 +117,11 @@ void OGUI::Context::Render(const WindowHandle window)
 	renderImpl->RenderPrimitives(ctx.prims);
 }
 
+void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
+{
+
+}
+
 bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
 	auto root = desktops.get();
@@ -148,10 +153,10 @@ bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int
 	{
 		if (picked != currentFocus.lock().get())
 		{
-			picked->_pseudoMask |= (int)PseudoStates::Focus;
+			picked->SetPseudoClass(PseudoStates::Focus, true);
 			if (auto currF = currentFocus.lock().get())
 			{
-				currF->_pseudoMask &= ~(int)PseudoStates::Focus;
+				currF->SetPseudoClass(PseudoStates::Focus, false);
 			}
 		}
 		currentFocus = picked->shared_from_this();

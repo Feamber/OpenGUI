@@ -268,6 +268,11 @@ namespace OGUI
 		}
 	}
 
+	template<class T>
+	bool same(const T& a, const T& b) { return a == b; }
+
+	bool same(float a, float b) { return (std::isnan(a) && std::isnan(b)) || a == b; }
+
 	struct YogaStyle
 	{
 #define YOGAPROP(name, index, inherited, type, ...) \
@@ -283,8 +288,8 @@ namespace OGUI
 		bool operator==(const Style& style)
 		{
 #define YOGAPROP(name, ...) \
-			if(!(name == style.name)) \
-				return false;
+			if(!same(name, style.name)) \
+				return false; 
 #include "OpenGUI/Style/StylePropertiesDef.h"
 			return true;
 		}
@@ -323,7 +328,9 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		if (std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
 			sstack.push_back(ss);
 	}
+	if(element->_selectorDirty)
 	{
+		element->_selectorDirty = false;
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
 		FindMatches(matchingContext, result);
