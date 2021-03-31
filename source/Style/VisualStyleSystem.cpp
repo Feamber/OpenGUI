@@ -275,44 +275,50 @@ namespace OGUI
 
 	struct YogaStyle
 	{
-#define YOGAPROP(name, index, inherited, type, ...) \
+#define GEN(name, type, ...) \
 		type name;
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		YOGAPROP(GEN)
+#undef GEN
 
 		YogaStyle(const Style& style)
 		{
-#define YOGAPROP(name, ...) \
+#define GEN(name, ...) \
 			name = style.name;
-#include "OpenGUI/Style/StylePropertiesDef.h"
+			YOGAPROP(GEN)
+#undef GEN
 		}
 		bool operator==(const Style& style)
 		{
-#define YOGAPROP(name, ...) \
+#define GEN(name, ...) \
 			if(!same(name, style.name)) \
 				return false; 
-#include "OpenGUI/Style/StylePropertiesDef.h"
+			YOGAPROP(GEN)
+#undef GEN
 			return true;
 		}
 	};
 
 	struct TRSStyle
 	{
-#define TRSPROP(name, index, inherited, type, ...) \
+#define GEN(name, type, ...) \
 		type name;
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		TRSPROP(GEN)
+#undef GEN
 
 		TRSStyle(const Style& style)
 		{
-#define TRSPROP(name, ...) \
+#define GEN(name, ...) \
 			name = style.name;
-#include "OpenGUI/Style/StylePropertiesDef.h"
+			TRSPROP(GEN)
+#undef GEN
 		}
 		bool operator==(const Style& style)
 		{
-#define TRSPROP(name, ...) \
+#define GEN(name, ...) \
 			if(!(name == style.name)) \
 				return false;
-#include "OpenGUI/Style/StylePropertiesDef.h"
+			TRSPROP(GEN)
+#undef GEN
 			return true;
 		}
 	};

@@ -1,6 +1,7 @@
 #include "OpenGUI/Style/Style.h"
 #include <yoga/YGNode.h>
 #include <algorithm>
+#include "OpenGUI/Style/StylePropertiesDef.h"
 
 OGUI::Style OGUI::Style::Create(Style* parent, bool isShared)
 {
@@ -13,22 +14,24 @@ OGUI::Style OGUI::Style::Create(Style* parent, bool isShared)
 
 void OGUI::Style::MergeStyle(const Style& other, std::bitset<96> mask)
 {
-#define STYLEPROP(name, index, inherit, ...)\
+#define GEN(name, ...)\
 	if (mask.test((int)StylePropertyId::name)) \
 	{ \
 		name = other.name; \
 	}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+	STYLEPROP(GEN)
+#undef GEN
 }
 
 void OGUI::Style::InheritData(Style& parent)
 {
-#define STYLEPROP(name, index, inherit, ...)\
+#define GEN(name, _1, _2, _3, inherit)\
 	if constexpr(inherit == Inherited) \
 	{ \
 		name = parent.name; \
 	}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+	STYLEPROP(GEN)
+#undef GEN
 }
 
 namespace OGUI
@@ -45,37 +48,40 @@ namespace OGUI
 	void GetInitialProperty(T& field, StylePropertyId propId)
 	{
 		auto& InitialStyle = Style::GetInitialStyle();
-#define STYLEPROP(name, ...)\
+#define GEN(name, ...)\
 		if(propId == StylePropertyId::name) \
 		{ \
 			Assign(field, InitialStyle.name); \
 		}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef GEN
 	}
 
 	template<class T>
 	void GetUnsetProperty(T& field, StylePropertyId propId)
 	{
 		auto& InitialStyle = Style::GetInitialStyle();
-#define STYLEPROP(name, index, inherit, ...)\
+#define GEN(name, _1, _2, _3, inherit)\
 	if constexpr(inherit != Inherited) \
 		if(propId == StylePropertyId::name) \
 		{ \
 			Assign(field, InitialStyle.name); \
 		}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef GEN
 	}
 
 	template<class T>
 	void GetInheritProperty(T& field, StylePropertyId propId, const Style* parent)
 	{
-#define STYLEPROP(name, index, inherit, ...)\
+#define GEN(name, _1, _2, _3, inherit)\
 		if constexpr(inherit != Inherited) \
 			if(propId == StylePropertyId::name) \
 			{ \
 				Assign(field, parent->name); \
 			}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef GEN
 	}
 
 	template<class T>
@@ -121,7 +127,7 @@ void OGUI::Style::ApplyPropertiesFast(const StyleSheetStorage& sheet, const gsl:
 	{
 		switch(prop.id)
 		{
-#define STYLEPROP(name, index, inherit, type, ...)\
+#define GEN(name, type, ...)\
 		case StylePropertyId::name: \
 		{ \
 			if(prop.keyword) \
@@ -130,7 +136,8 @@ void OGUI::Style::ApplyPropertiesFast(const StyleSheetStorage& sheet, const gsl:
 				GetProperty<type>(name, prop, sheet); \
 			continue; \
 		}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef GEN
 		}
 	}
 }
@@ -141,27 +148,15 @@ const OGUI::Style& OGUI::Style::GetInitialStyle()
 	{
 		InitialStyle()
 		{
-#define STYLEPROP(name, index, inherit, type, id, def)\
+#define GEN(name, type, id, def, ...)\
 			style.name = def;
-#include "OpenGUI/Style/StylePropertiesDef.h"
+			STYLEPROP(GEN)
+#undef GEN
 		}
 		Style style;
 	};
 	static InitialStyle initStyle;
 	return initStyle.style;
-}
-
-namespace OGUI
-{
-	constexpr size_t GetInheritedDataSize()
-	{
-		size_t size = 0;
-#define STYLEPROP(name, index, inherit, type, ...)\
-	if constexpr(inherit == Inherited) \
-		size+=sizeof(type);
-#include "OpenGUI/Style/StylePropertiesDef.h"
-		return size;
-	}
 }
 
 template<class T>
@@ -227,9 +222,10 @@ OGUI::Style OGUI::Lerp(const Style& a, const Style& b, float alpha)
 	if (alpha == 1.f)
 		return b;
 	Style result;
-#define STYLEPROP(name, ...) \
+#define GEN(name, ...) \
 	result.name = Lerp(a.name, b.name, alpha);
-#include "OpenGUI/Style/StylePropertiesDef.h"
+	STYLEPROP(GEN)
+#undef GEN
 	return result;
 }
 
@@ -240,7 +236,7 @@ void OGUI::Style::LerpPropertiesFast(const StyleSheetStorage& sheet, const gsl::
 	{
 		switch (prop.id)
 		{
-#define STYLEPROP(name, index, inherit, type, ...)\
+#define GEN(name, type, ...)\
 		case StylePropertyId::name: { \
 			type value = name; \
 			if(prop.keyword) \
@@ -250,7 +246,8 @@ void OGUI::Style::LerpPropertiesFast(const StyleSheetStorage& sheet, const gsl::
 			name = Lerp(name, value, alpha); \
 			continue; \
 		}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef GEN
 		}
 	}
 }

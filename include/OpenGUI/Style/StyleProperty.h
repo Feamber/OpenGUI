@@ -4,6 +4,8 @@
 #include <bitset>
 #include <gsl/span>
 #include "OpenGUI/Style/VariantStorage.h"
+#include "OpenGUI/Style/StylePropertiesDef.h"
+#include "OpenGUI/Animation/AnimPropertiesDef.h"
 
 namespace OGUI
 {
@@ -26,14 +28,13 @@ namespace OGUI
 
 	enum class StylePropertyId : uint32_t
 	{
-#define	STYLEPROP(name, ...)\
+#define	GEN(name, ...)\
 		name,
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
 		NumStyle,
 		__ = NumStyle - 1,
-#define	ANIMPROP(name, ...)\
-		name,
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		ANIMPROP(GEN)
+#undef GEN
 		_End,
 		NumAnim = _End - NumStyle,
 		Num = _End - 1,

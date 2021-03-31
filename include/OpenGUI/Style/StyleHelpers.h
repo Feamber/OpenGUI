@@ -33,12 +33,13 @@ namespace OGUI
 	template<class T>
 	StyleProperty AddProperty(StyleSheetStorage& sheet, StylePropertyId id, const T& value)
 	{
-#define STYLEPROP(name, index, inherit, type, ...)\
+#define	GEN(name, type, ...)\
 		if(id == StylePropertyId::name) \
 		{ \
 			return detail::AddPropertyImpl<type>(sheet, id, value); \
 		}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef  GEN
 		assert(false);
 		return {};
 	}
