@@ -1,11 +1,12 @@
 :root {
-    width: 600px;
+    width: 800px;
     height:600px;
     justify-content:flex-start;
     align-items:flex-start;
     align-content: flex-start;
     flex-wrap: wrap;
-    background-color:rgb(184, 57, 116, 0.2);
+    background-color:rgb(255, 255, 255, 0.8);
+    background-image:url(res/test4.jpg);
 }
 
 .Child {
@@ -55,7 +56,7 @@
     animation-duration: 1s;
     animation-iteration-count: infinite;
     background-color: initial;
-    background-image:url(res/UELogo.png);
+    background-image:url(res/test1.png);
 }
 
 .Test.Bigger{

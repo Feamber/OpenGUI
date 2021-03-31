@@ -137,7 +137,7 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 			return true; \
 		} \
 	}
-	if (animIndex >= 0)
+	if (animIndex >= 0 && id >= StylePropertyId::NumStyle)
 	{
 		PARSEANIMPROP(animDuration, float, FromTime);
 		PARSEANIMPROP(animDelay, float, FromTime);

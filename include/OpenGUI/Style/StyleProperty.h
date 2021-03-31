@@ -31,11 +31,10 @@ namespace OGUI
 #define	GEN(name, ...)\
 		name,
 		STYLEPROP(GEN)
-		NumStyle,
-		__ = NumStyle - 1,
 		ANIMPROP(GEN)
 #undef GEN
 		_End,
+		NumStyle = animName,
 		NumAnim = _End - NumStyle,
 		Num = _End - 1,
 	};
