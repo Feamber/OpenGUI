@@ -8,8 +8,6 @@
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGUI/Xml/XmlFactory.h"
-#include "OpenGUI/Xml/XmlAttributeDescription.h"
-#include "OpenGUI/Xml/XmlChildElementDescription.h"
 #include "OpenGUI/Event/EventHandler.h"
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Core/Types.h"
@@ -55,36 +53,6 @@ namespace OGUI
 		void MarkDirty(DirtyReason reason);
 		std::string _name;
         std::string _path;
-
-#pragma region Xml
-	public:
-		class Traits : public XmlTraits
-		{
-        public:
-#define ATTRS \
-			PARENT_CLASS(XmlTraits) \
-			ATTR(XmlStringAttributeDescription, name, "", XmlAttributeUse::Optional)\
-			ATTR(XmlStringAttributeDescription, path, "", XmlAttributeUse::Optional)\
-			ATTR(XmlStringAttributeDescription, style, "", XmlAttributeUse::Optional)\
-			ATTR(XmlStringAttributeDescription, class_tag, "", XmlAttributeUse::Optional)\
-            ATTR(XmlStringAttributeDescription, slot_name, "", XmlAttributeUse::Optional)\
-            ATTR(XmlStringAttributeDescription, slot, "", XmlAttributeUse::Optional)
-#include "OpenGUI/Xml/GenXmlAttrsDesc.h"
-
-            bool InitAttribute(VisualElement& new_element, const XmlElement& asset, CreationContext& context);
-		};
-
-		class Factory : public XmlFactory<VisualElement, Traits>
-		{
-		public:
-            Factory()
-            {
-                xml_name = "VisualElement";
-                xml_namespace = "OGUI";
-                xml_qualified_name = xml_namespace + '.' + xml_name;
-            }
-		};
-#pragma endregion
 
 #pragma region Hierachy
 		void PushChild(VisualElement* child);

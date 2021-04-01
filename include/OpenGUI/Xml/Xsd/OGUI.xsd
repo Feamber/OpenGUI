@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:engine="OGUI" targetNamespace="OGUI" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+<!--    <xs:documentation>{h}#include "OpenGUI/Xml/XmlFactory.h"</xs:documentation>-->
+    <xs:documentation>{cpp}#include "OpenGUI/Xml/XsdGen/OGUI.h"</xs:documentation>
+  </xs:annotation>
+  
+  <!--  All Type  -->
+  <xs:complexType name="RootType">
+    <xs:complexContent mixed="false">
+      <xs:restriction base="xs:anyType">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:VisualElement" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:Style" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:Template" />
+        </xs:sequence>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="StyleType">
+    <xs:complexContent mixed="false">
+      <xs:restriction base="xs:anyType">
+        <xs:attribute name="path" type="xs:string" use="required" />
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="TemplateType">
+    <xs:complexContent mixed="false">
+      <xs:restriction base="xs:anyType">
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="path" type="xs:string" use="required" />
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AttributeOverridesType">
+    <xs:complexContent mixed="false">
+      <xs:restriction base="xs:anyType">
+        <xs:attribute name="element_name" type="xs:string" use="required" />
+        <xs:anyAttribute processContents="lax" />
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="VisualElementType">
+    <xs:complexContent mixed="false">
+      <xs:restriction base="xs:anyType">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:VisualElement" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:Style" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="optional" />
+        <xs:attribute name="path" type="xs:string" use="optional" />
+        <xs:attribute name="style" type="xs:string" use="optional" />
+        <xs:attribute name="class_tag" type="xs:string" use="optional" />
+        <xs:attribute name="slot_name" type="xs:string" use="optional" />
+        <xs:attribute name="slot" type="xs:string" use="optional" />
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:complexType name="InstanceType">
+    <xs:complexContent mixed="false">
+      <xs:extension base="engine:VisualElementType">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:AttributeOverrides" />
+        </xs:sequence>
+        <xs:attribute name="template_name" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  
+  <!--  All Element  -->
+  <xs:element name="Root" type="engine:RootType" />
+  <xs:element name="Style" type="engine:StyleType" />
+  <xs:element name="Template" type="engine:TemplateType" />
+  <xs:element name="AttributeOverrides" type="engine:AttributeOverridesType" />
+
+  <xs:element name="VisualElement" type="engine:VisualElementType" />
+  <xs:element name="Instance" substitutionGroup="engine:VisualElement" type="engine:InstanceType" />
+</xs:schema>

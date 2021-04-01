@@ -1,0 +1,13 @@
+﻿#pragma once
+#include <string>
+#include <string_view>
+#include <optional>
+#include <functional>
+#include "OpenGUI/Xml/XmlFactory.h"
+{Include}
+
+namespace {Namespace}
+{
+	using namespace OGUI;
+{Content}
+}

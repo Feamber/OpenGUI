@@ -1,0 +1,6 @@
+﻿{Include}
+
+namespace OGUI
+{
+{Content}
+}

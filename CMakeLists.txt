@@ -4,7 +4,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/") 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 if(UNIX)
     set(PLATFORM_INCLUDES ${PLATFORM_INCLUDES} include/Platform/Unix)
@@ -69,6 +69,12 @@ else()
 add_library(OpenGUI SHARED ${sources} ${headers})
 endif(OPENGUI_LIB)
 
+add_custom_command(
+        TARGET OpenGUI
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.exe -x ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/Main.xsd -h ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/XsdGen -c ${CMAKE_CURRENT_SOURCE_DIR}/source/Xml/XsdGen
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/*.xsd
+        VERBATIM)
+
 target_include_directories(OpenGUI 
     PUBLIC 
     include
@@ -88,4 +94,3 @@ endif(OPENGUI_SAMPLES)
 if(OPENGUI_TESTS)
     add_subdirectory(tests)
 endif(OPENGUI_TESTS)
-

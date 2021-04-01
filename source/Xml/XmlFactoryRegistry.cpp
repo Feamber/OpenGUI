@@ -1,6 +1,7 @@
 #include "OpenGUI/Xml/XmlFactoryRegistry.h"
 #include "OpenGUI/Xml/XmlFactory.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
+#include "OpenGUI/Xml/XsdGen/OGUI.h"
 #include <vector>
 
 namespace OGUI
@@ -10,10 +11,11 @@ namespace OGUI
 
 void OGUI::XmlFactoryRegistry::RegisterFactory(IXmlFactory* factory)
 {
-	auto result = factories.find(factory->xml_qualified_name);
+    std::string xml_qualified_name = {factory->xml_qualified_name.begin(), factory->xml_qualified_name.end()};
+	auto result = factories.find(xml_qualified_name);
 	if (result == factories.end())
 	{
-		factories[factory->xml_qualified_name] = factory;
+		factories[xml_qualified_name] = factory;
 	}
 	// TODO 日志：重复注册 XmlFactory
 }
@@ -38,12 +40,12 @@ void OGUI::XmlFactoryRegistry::RegisterEngineFactories()
 {
 	std::vector<IXmlFactory*> engine_factories =
 	{
-		new VisualElement::Factory(),
-		new XmlRootElementFactory(),
-		new XmlStyleElementFactory,
-		new XmlTemplateElementFactory(),
-		new XmlAttributeOverridesElementFactory(),
-        new TemplateContainer::Factory(),
+		new IXmlFactory_Root(),
+        new IXmlFactory_Style(),
+        new IXmlFactory_Template(),
+        new IXmlFactory_AttributeOverrides(),
+        new IXmlFactory_VisualElement(),
+        new IXmlFactory_Instance(),
 	};
 
 	for (auto factory : engine_factories)
