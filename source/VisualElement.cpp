@@ -91,12 +91,12 @@ void OGUI::VisualElement::DrawPrimitive(PrimitiveDraw::DrawContext& Ctx)
 
 OGUI::VisualElement* OGUI::VisualElement::GetParent()
 {
-	return _logical_parent.lock().get();
+	return _logical_parent;
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 {
-	return _physical_parent.lock().get();
+	return _physical_parent;
 }
 
 void OGUI::VisualElement::MarkDirty(DirtyReason reason)
@@ -111,16 +111,16 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 {
-	child->_physical_parent = shared_from_this();
+	child->_physical_parent = this;
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
-	_children.insert(_children.begin() + index, child->shared_from_this());
+	_children.insert(_children.begin() + index, child);
 }
 
 void OGUI::VisualElement::RemoveChild(VisualElement* child)
 {
-    child->_physical_parent.reset();
+    child->_physical_parent = nullptr;
     YGNodeRemoveChild(_ygnode, child->_ygnode);
-	auto end = std::remove_if(_children.begin(), _children.end(), [&](const std::shared_ptr<VisualElement>& a){ return a.get() == child; });
+	auto end = std::remove(_children.begin(), _children.end(), child);
 	_children.erase(end, _children.end());
 }
 
@@ -335,18 +335,18 @@ OGUI::VisualElement* OGUI::VisualElement::GetAfterPseudoElement()
 {
 	if (!_beforeElement)
 	{
-		_beforeElement.reset(CreatePseudoElement());
-		InsertChild(_beforeElement.get(), 0);
+		_beforeElement = CreatePseudoElement();
+		InsertChild(_beforeElement, 0);
 	}
-	return _beforeElement.get();
+	return _beforeElement;
 }
 
 void OGUI::VisualElement::ReleaseAfterPseudoElement()
 {
 	if (_beforeElement)
 	{
-		_beforeElement.reset();
-		RemoveChild(_beforeElement.get());
+		RemoveChild(_beforeElement);
+		delete _beforeElement;
 	}
 }
 
@@ -354,17 +354,17 @@ OGUI::VisualElement* OGUI::VisualElement::GetBeforePseudoElement()
 {
 	if (!_afterElement)
 	{
-		_afterElement.reset(CreatePseudoElement());
-		PushChild(_afterElement.get());
+		_afterElement = CreatePseudoElement();
+		PushChild(_afterElement);
 	}
-	return _afterElement.get();
+	return _afterElement;
 }
 
 void OGUI::VisualElement::ReleaseBeforePseudoElement()
 {
 	if (_afterElement)
 	{
-		_afterElement.reset();
-		RemoveChild(_afterElement.get());
+		RemoveChild(_afterElement);
+		delete _afterElement;
 	}
 }

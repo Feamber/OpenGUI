@@ -45,10 +45,17 @@ namespace OGUI
 			element->UpdateWorldTransform();
 		element->Traverse([&](VisualElement* next) { if(dirty) next->_transformDirty = true; TransformRec(next); });
 	}
+
+	void DestroyRec(VisualElement* element)
+	{
+		element->Traverse([&](VisualElement* next) { DestroyRec(next); });
+		delete element;
+	}
+
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
 		for (auto& child : element->_children)
-			if(auto picked = PickRecursive(child.get(), point))
+			if(auto picked = PickRecursive(child, point))
 				return picked;
 		auto invTransform = math::inverse(element->_worldTransform);
 		Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
@@ -95,7 +102,7 @@ namespace OGUI
 
 void OGUI::Context::Update(const WindowHandle window, float dt)
 {
-	auto root = desktops.get();
+	auto root = desktops;
 	textureManager->Update();
 	// Update Window
 	auto& wctx = GetOrRegisterWindowContext(window);
@@ -109,7 +116,7 @@ void OGUI::Context::Update(const WindowHandle window, float dt)
 
 void OGUI::Context::Render(const WindowHandle window)
 {
-	auto root = desktops.get();
+	auto root = desktops;
 	PrimitiveDraw::DrawContext ctx;
 	const auto& wctx = GetWindowContext(window);
 	ctx.resolution = Vector2f(wctx.X, wctx.Y);
@@ -124,7 +131,7 @@ void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
 
 bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
-	auto root = desktops.get();
+	auto root = desktops;
 	if (!root)
 		return false;
 	PointerDownEvent event;
@@ -151,15 +158,15 @@ bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int
 	auto picked = PickRecursive(root, point);
 	if (picked)
 	{
-		if (picked != currentFocus.lock().get())
+		if (picked != currentFocus)
 		{
 			picked->SetPseudoClass(PseudoStates::Focus, true);
-			if (auto currF = currentFocus.lock().get())
+			if (auto currF = currentFocus)
 			{
 				currF->SetPseudoClass(PseudoStates::Focus, false);
 			}
 		}
-		currentFocus = picked->shared_from_this();
+		currentFocus = picked;
 		RouteEvent(picked, event);
 	}
 	return false;
@@ -207,15 +214,15 @@ bool OGUI::Context::OnMouseMove(const WindowHandle window, bool relative, int32 
 	//auto picked = PickRecursive(root, point);
 	//if (picked)
 	//{
-	//	if (picked != currentFocus.lock().get())
+	//	if (picked != currentFocus)
 	//	{
 	//		picked->_pseudoMask |= (int)PseudoStates::Hover;
-	//		if (auto currF = currentFocus.lock().get())
+	//		if (auto currF = currentFocus)
 	//		{
 	//			currF->_pseudoMask &= ~(int)PseudoStates::Hover;
 	//		}
 	//	}
-	//	currentFocus = picked->shared_from_this();
+	//	currentFocus = picked;
 	//	RouteEvent(picked, moveEvent);
 	//}
 
@@ -241,8 +248,10 @@ OGUI::Context::Context()
 
 OGUI::Context::~Context()
 {
-	desktops.reset();
-	dialogs.reset();
+	if (desktops)
+		DestroyRec(desktops);
+	if (dialogs)
+		DestroyRec(dialogs);
 }
 
 OGUI::Context& OGUI::Context::Get()

@@ -380,11 +380,11 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				ctx.renderImpl = std::make_unique<WGPURenderer>();
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-				ctx.desktops = std::make_shared<VisualWindow>();
+				ctx.desktops = new VisualWindow;
 
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
 				auto ve = XmlAsset::Instantiate(asset.lock()->id);
-				if(auto child1 = QueryFirst(ve.get(), "#Child1"))
+				if(auto child1 = QueryFirst(ve, "#Child1"))
 				{
 					constexpr auto handler = +[](PointerDownEvent& event)
 					{
@@ -396,14 +396,14 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				}
 				{
 					std::vector<VisualElement*> tests;
-					QueryAll(ve.get(), ".Test", tests);
+					QueryAll(ve, ".Test", tests);
 					for (auto [i, test] : ipair(tests))
 						if (i % 2 == 0)
 							test->_styleClasses.push_back("Bigger");
 				}
 
 				ve->_pseudoMask |= (int)PseudoStates::Root;
-				ctx.desktops->PushChild(ve.get());
+				ctx.desktops->PushChild(ve);
 			}
 
 			bool done = false;

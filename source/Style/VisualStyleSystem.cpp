@@ -124,7 +124,7 @@ namespace OGUI
 		if (Match(root, complexSel))
 			return root;
 		for (auto& child : root->_children)
-			if (auto elem = QueryFirst(child.get(), complexSel))
+			if (auto elem = QueryFirst(child, complexSel))
 				return elem;
 		return nullptr;
 	}
@@ -134,7 +134,7 @@ namespace OGUI
 		if (Match(root, complexSel))
 			result.push_back(root);
 		for (auto& child : root->_children)
-			QueryAll(child.get(), complexSel, result);
+			QueryAll(child, complexSel, result);
 	}
 
 	void Lookup(
@@ -364,9 +364,9 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 	}
 	UpdateStyle(element);
 	if(element->_beforeElement)
-		UpdateStyle(element->_beforeElement.get());
+		UpdateStyle(element->_beforeElement);
 	if(element->_afterElement)
-		UpdateStyle(element->_afterElement.get());
+		UpdateStyle(element->_afterElement);
 	element->Traverse([this](VisualElement* element)
 		{
 			if(!element->_isPseudoElement)

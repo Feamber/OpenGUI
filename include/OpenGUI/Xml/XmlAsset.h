@@ -46,7 +46,7 @@ namespace OGUI
 	    // TODO 以后有资源系统后这里应该要改
 		static std::weak_ptr<XmlAsset> LoadXmlFile(const std::string& file_path);
 		static XmlAssetID GenerateID(const std::string& absolute_path);
-		static std::shared_ptr<class VisualElement> Instantiate(XmlAssetID asset_id);
+		static class VisualElement* Instantiate(XmlAssetID asset_id);
         static class TemplateContainer* ParseTemplate(XmlElement& xml_root, struct CreationContext& context);
         static class VisualElement* ParseElement(XmlElement& xml_element, struct CreationContext& context);
 

@@ -33,7 +33,7 @@ namespace OGUI
 		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
 	};
 
-	class VisualElement : public std::enable_shared_from_this<VisualElement>
+	class VisualElement
 	{
 	public:
 		VisualElement();
@@ -91,11 +91,11 @@ namespace OGUI
 		void InsertChild(VisualElement* child, int index);
 		void RemoveChild(VisualElement* child);
 
-		std::vector<std::shared_ptr<VisualElement>> _children;
+		std::vector<VisualElement*> _children;
 		
-		std::weak_ptr<VisualElement> _physical_parent;
+		VisualElement* _physical_parent;
 		//There could be some node between logical parent and this widget for layout
-		std::weak_ptr<VisualElement> _logical_parent;
+		VisualElement* _logical_parent;
 		bool _rerouteEvent;
 		template<class F>
 		void Traverse(F&& f);
@@ -154,8 +154,8 @@ namespace OGUI
 #pragma region PseudoElement
 	public:
 		bool _isPseudoElement = false;
-		std::shared_ptr<VisualElement> _beforeElement; //TODO: use weak_ptr?
-		std::shared_ptr<VisualElement> _afterElement;
+		VisualElement* _beforeElement = nullptr;
+		VisualElement* _afterElement = nullptr;
 		VisualElement* GetBeforePseudoElement();
 		void ReleaseBeforePseudoElement();
 		VisualElement* GetAfterPseudoElement();
