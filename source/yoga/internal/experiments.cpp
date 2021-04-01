@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "experiments.h"
-#include "experiments-inl.h"
+#include "internal/experiments.h"
+#include "internal/experiments-inl.h"
 
 namespace facebook {
 namespace yoga {
