@@ -30,7 +30,11 @@ namespace OGUI
         static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
     };
     struct PointerMoveEvent : PointerData {};
-    struct PointerUpEvent : PointerData {};
+    struct PointerUpEvent : PointerData 
+    {
+        EventRoutePhase currentPhase = EventRoutePhase::None;
+        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+    };
     struct PointerClickEvent : PointerData {};
     struct PointerDoubleClickEvent : PointerData {};
     struct MouseEnterEvent : PointerData {};
