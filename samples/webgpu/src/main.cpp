@@ -383,7 +383,7 @@ struct WGPURenderer : RenderInterface
 #include <SDL2/SDL_syswm.h>
 
 std::unordered_map<uint32, EKeyCode> gEKeyCodeLut;
-static void buildSDLMap()
+static void BuildSDLMap()
 {
 	gEKeyCodeLut[SDLK_BACKSPACE] = EKeyCode::Backspace;
 	gEKeyCodeLut[SDLK_TAB] = EKeyCode::Tab;
@@ -550,7 +550,6 @@ public:
 	}
 };
 
-
 void OnReloaded()
 {
 	auto ve = Context::Get().desktops->_children[0];
@@ -648,7 +647,8 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				olog::info(u"initialize completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 			
 				LoadResource();
-				buildSDLMap();
+
+				BuildSDLMap();
 			}
 
 			// main loop
