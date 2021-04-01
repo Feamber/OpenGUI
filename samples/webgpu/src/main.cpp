@@ -455,7 +455,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 						}
 						case SDL_MOUSEMOTION:
 						{
-							olog::info(u"MousePos X:{}, Y:{}"o.format(event.motion.x, event.motion.y));
+							//olog::info(u"MousePos X:{}, Y:{}"o.format(event.motion.x, event.motion.y));
 							//olog::info(u"MousePos RelX:{}, RelY:{}"o.format(event.motion.xrel, event.motion.yrel));
 							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
 							break;
@@ -465,13 +465,13 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 							if (event.key.keysym.sym == SDLK_ESCAPE)
 								done = true;
 							else
-								olog::info(u"KeyDown {}"o.format(event.key.keysym.sym));
+								;// olog::info(u"KeyDown {}"o.format(event.key.keysym.sym));
 								// ctx.OnKeyDown()
 							break;
 						}
 						case SDL_MOUSEWHEEL:
 						{
-							olog::info(u"MouseWheel Delta:{}"o.format(event.wheel.y));
+							//olog::info(u"MouseWheel Delta:{}"o.format(event.wheel.y));
 							ctx.OnMouseWheel(event.wheel.y);
 							break;
 						}
