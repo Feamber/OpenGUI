@@ -455,8 +455,8 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 						}
 						case SDL_MOUSEMOTION:
 						{
-							//olog::info(u"MousePos X:{}, Y:{}"o.format(event.motion.x, event.motion.y));
-							//olog::info(u"MousePos RelX:{}, RelY:{}"o.format(event.motion.xrel, event.motion.yrel));
+							//olog::info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
+							//olog::info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
 							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
 							break;
 						}
