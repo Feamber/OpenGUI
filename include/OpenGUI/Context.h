@@ -63,6 +63,9 @@ namespace OGUI
 		bool OnMouseMove(bool relative, int32 x, int32 y);
 		bool OnMouseMoveHP(bool relative, float x, float y);
 		bool OnMouseWheel(float delta);
+
+		bool OnKeyDown(EKeyCode keyCode);
+		bool OnKeyUp(EKeyCode keyCode);
 			
 		static Context& Get();
 		VisualElement* _elementUnderCursor = nullptr;

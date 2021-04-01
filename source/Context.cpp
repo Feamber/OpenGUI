@@ -209,6 +209,16 @@ bool OGUI::Context::OnMouseWheel(float delta)
 	return false;
 }
 
+bool OGUI::Context::OnKeyDown(EKeyCode keyCode)
+{
+	return false;
+}
+
+bool OGUI::Context::OnKeyUp(EKeyCode keyCode)
+{
+	return false;
+}
+
 OGUI::Context::Context()
 {
 	ioThread = std::make_unique<IOThread>();
