@@ -90,7 +90,7 @@ string& string::replace(size_t from, size_t count, const string& dest, case_sens
 string& string::replace(const string& src, const string& dest, case_sensitivity cs)
 {
 	// src should NOT be empty!
-	if (src.is_empty()) return *this; // ASSERT!
+	if (src.is_empty()) return *this;
 
 	size_t len = _str.size();
 	size_t index = 0;

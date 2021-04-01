@@ -1,5 +1,6 @@
 #include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
+#include "OpenGUI/Core/olog.h"
 #include <cassert>
 #include <array>
 #include <string_view>
@@ -20,7 +21,7 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view str)
 		casestr("inactive") state = PseudoStates::Active; reverse = true; break;
 		casestr("enabled") state = PseudoStates::Disabled;  reverse = true; break;
 		default:
-			assert(false);
+			OUNREACHABLE
 			return;
 	}
 	if (!reverse)
@@ -37,7 +38,7 @@ void OGUI::StyleComplexSelector::SetPseudoElement(std::string_view str)
 		casestr("before") id = PseudoElements::Before; break;
 		casestr("after") id = PseudoElements::After; break;
 		default:
-			assert(false);
+			OUNREACHABLE
 			return;
 	}
 	pseudoElem = id;

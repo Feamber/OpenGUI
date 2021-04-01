@@ -9,16 +9,15 @@
 #include "OpenGUI/Core/IOThread.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
 
-#include "OpenGUI/Core/ostring/ostring/ostr.h"
-#include "OpenGUI/Core/ostring/olog/olog.h"
+#include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Core/olog.h"
 
 void OGUI::Context::Initialize(
 	InputInterface* I, SystemInterface* S,
 	RenderInterface* R, FileInterface* F,
 	BitmapParserInterface* B)
 {
-	if(initialized)
-		assert(0 && "already initialized!");
+	OASSERT(initialized);
 	inputImpl.reset(I);
 	systemImpl.reset(S);
 	renderImpl.reset(R);

@@ -3,6 +3,8 @@
 
 namespace OGUI
 {
+	using namespace ostr::literal;
+
 	struct olog
 	{
 		enum class Level : uint8_t
@@ -35,6 +37,9 @@ static void func(ostr::string_view fmt, Args&&...args)\
 
 
 #undef __MAKE_LOG_CALL_DECLARE
+
+#define OUNREACHABLE { olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); }
+#define OASSERT(x) { if(!x) olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); }
 
 	};
 

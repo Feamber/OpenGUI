@@ -626,7 +626,7 @@ void OnReloaded()
 		constexpr auto handler1 = +[](KeyDownEvent& event)
 		{
 			using namespace ostr::literal;
-			olog::info(u"Fuck!");
+			olog::Info(u"Fuck!"_o);
 			return true;
 		};
 		child1->_eventHandler.Register<PointerDownEvent, handler>();

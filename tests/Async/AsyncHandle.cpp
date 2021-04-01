@@ -9,6 +9,7 @@
 #include <chrono>
 #include <functional>
 #include <cassert>
+#include "OpenGUI/Core/olog.h"
 
 struct MemoryResource
 {
@@ -90,7 +91,7 @@ protected:
 
             for (FileLoaderTask& task : tasks) {
                 task.file->__initialize(task.path);
-                assert(task.file != NULL && "Load Error!");
+                OASSERT(task.file != NULL && "Load Error!");
                 task.complete_callback(task.file);
             }
             {

@@ -5,6 +5,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
+#include "OpenGUI/Core/olog.h"
 
 void OGUI::VisualStyleSystem::InvalidateCache()
 {
@@ -17,7 +18,7 @@ void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 	//TODO: lazy update
 	Traverse(Tree);
 	_cacheInvalidated = false;
-	assert(matchingContext.styleSheetStack.size() == 0);
+	OASSERT(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
 }
 

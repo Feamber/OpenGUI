@@ -478,7 +478,7 @@ LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wPa
 				MouseButton = (HIWORD(wParam) & XBUTTON1) ? EMouseKey::X1B : EMouseKey::X2B;
 				break;
 			default:
-				assert(0);
+				OUNREACHABLE
 		}
 
 		if (bMouseUp)
@@ -721,7 +721,7 @@ namespace OGUI
 		}
 		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) override
 		{
-			assert(window == 0);
+			OASSERT(window == 0);
 			//not implemented
 		}
 

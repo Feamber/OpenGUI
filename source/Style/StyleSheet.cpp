@@ -1,5 +1,6 @@
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
+#include "OpenGUI/Core/olog.h"
 
 void OGUI::StyleSheet::Initialize()
 {
@@ -32,7 +33,7 @@ void OGUI::StyleSheet::Initialize()
 					mapPtr = &typeSelectors;
 					break;
 				default:
-					assert(false);
+					OUNREACHABLE
 					break;
 			}
 		}
