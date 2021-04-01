@@ -24,7 +24,6 @@ namespace XmlTool
 
 namespace OGUI {
     using namespace tinyxml2;
-    std::map<XmlAssetID, std::shared_ptr<XmlAsset>> XmlAsset::all_xml_asset = {};
 
     bool SplitXmlName(std::string_view xml_name, std::string_view &out_prefix, std::string_view &out_name) {
         std::vector<std::string_view> tokens;
@@ -100,16 +99,12 @@ namespace OGUI {
         return "";
     }
 
-    std::weak_ptr<XmlAsset> XmlAsset::LoadXmlFile(const std::string &file_path) {
-        XmlAssetID asset_id = GenerateID(file_path);
-        auto result = all_xml_asset.find(asset_id);
-        if (result != all_xml_asset.end()) return result->second->weak_from_this();
-
+    std::shared_ptr<XmlAsset> XmlAsset::LoadXmlFile(const std::string &file_path) {
         XMLDocument doc;
         doc.LoadFile(file_path.data());
         if (doc.Error()) {
             doc.PrintError();
-            return std::weak_ptr<XmlAsset>();
+            return std::shared_ptr<XmlAsset>();
         }
 
         // 找到<Root>元素
@@ -118,7 +113,7 @@ namespace OGUI {
             std::string_view out_prefix;
             std::string_view out_name;
             if (!SplitXmlElementName(xml_root, file_path, out_prefix, out_name))
-                return std::weak_ptr<XmlAsset>();
+                return std::shared_ptr<XmlAsset>();
             if (out_name == "Root")
                 break;
             xml_root = xml_root->NextSiblingElement();
@@ -129,7 +124,7 @@ namespace OGUI {
             std::cerr << file_path << std::endl;
         }
 
-        auto shared_asset = std::make_shared<XmlAsset>(asset_id, file_path);
+        auto shared_asset = std::make_shared<XmlAsset>(file_path);
         XmlAsset *asset = shared_asset.get();
         std::vector<std::pair<XMLElement *, XmlElement *>> current_layer = {{xml_root, &asset->root}};
         std::vector<std::pair<XMLElement *, XmlElement *>> next_layer;
@@ -163,11 +158,11 @@ namespace OGUI {
                     if (SplitXmlAttrName(xml_attr, file_path, out_prefix2, out_name2)) {
                         if (out_prefix2 != "") {
                             asset_element.PrintError("暂不支持有前缀的属性! attrName:" + std::string(xml_attr->Name()));
-                            return std::weak_ptr<XmlAsset>();
+                            return std::shared_ptr<XmlAsset>();
                         }
                         asset_element.SetAttribute(RegisterString(*asset, out_name2), xml_attr->Value());
                     } else
-                        return std::weak_ptr<XmlAsset>();
+                        return std::shared_ptr<XmlAsset>();
                     xml_attr = xml_attr->Next();
                 }
                 //添加子元素
@@ -188,21 +183,14 @@ namespace OGUI {
             current_layer.clear();
             std::swap(current_layer, next_layer);
         }
-        XmlAsset::all_xml_asset[asset_id] = shared_asset;
-        return shared_asset->weak_from_this();
+        return shared_asset;
     }
 
-    XmlAssetID XmlAsset::GenerateID(const std::string &absolute_path) {
-        return std::hash<std::string>{}(absolute_path);
-    }
-
-    VisualElement* XmlAsset::Instantiate(XmlAssetID asset_id) {
-        auto result = all_xml_asset.find(asset_id);
-        if (result == all_xml_asset.end()) 
-            return nullptr;
-
+    VisualElement* XmlAsset::Instantiate()
+    {
         CreationContext new_context{};
-        auto new_template = ParseTemplate(result->second->root, new_context);
+        new_context.main_asset = this;
+        auto new_template = ParseTemplate(root, new_context);
         if (new_template) 
             return new_template;
 

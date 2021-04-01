@@ -12,6 +12,17 @@
     animation-iteration-count: infinite;
 }
 
+.Test{
+    width: 20px;
+    height:20px;
+    animation-name:shapeanim;
+    animation-duration: 0.3s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    background-color: initial;
+    background-image:url(res/test1.png);
+}
+
 
 
 @keyframes t360 {
@@ -28,7 +39,7 @@
     justify-content:center;
     align-items:center;
     background-color: initial;
-    background-image:url(res/test.jpg);
+    background-image:url(res/test.jpg); 
 }
 
 #Child2 {
@@ -62,17 +73,6 @@
     animation-fill-mode: none;
     animation-yield-mode:goback;
     animation-resume-mode:reset;
-}
-
-.Test{
-    width: 20px;
-    height:20px;
-    animation-name:shapeanim;
-    animation-duration: 0.3s;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-    background-color: initial;
-    background-image:url(res/test1.png);
 }
 
 .Test.Bigger{
