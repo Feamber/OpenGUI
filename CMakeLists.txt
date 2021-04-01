@@ -73,10 +73,10 @@ target_include_directories(OpenGUI
     PUBLIC 
     include
     include/External
+    include/External/yoga
     include/OpenGui/Core/ostring
     ${PLATFORM_INCLUDES}
 )
-target_link_libraries(OpenGUI PUBLIC Yoga)
 target_link_libraries(OpenGUI PUBLIC fmt)
 target_link_libraries(OpenGUI PUBLIC spdlog)
 
