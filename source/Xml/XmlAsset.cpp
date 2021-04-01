@@ -119,7 +119,7 @@ namespace OGUI {
             std::string_view out_name;
             if (!SplitXmlElementName(xml_root, file_path, out_prefix, out_name))
                 return std::weak_ptr<XmlAsset>();
-            if (out_name == XmlRootElementFactory::element_name)
+            if (out_name == "Root")
                 break;
             xml_root = xml_root->NextSiblingElement();
         }
@@ -221,7 +221,7 @@ namespace OGUI {
             if (context.stack_template.size() > 1) // 因为需要从上一级的模板中解析覆盖属性
             {
                 for (const XmlElement &xml_child : context.instance_asset->children) {
-                    if (xml_child.name == XmlAttributeOverridesElementFactory::element_name) {
+                    if (xml_child.name == "AttributeOverrides") {
                         std::string_view element_name;
                         std::set<XmlAttribute> attribute_overrides;
                         for (const XmlAttribute &attr : xml_child.attributes) {

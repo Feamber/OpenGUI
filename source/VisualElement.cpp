@@ -272,41 +272,6 @@ namespace std
 	}
 }
 
-bool OGUI::VisualElement::Traits::InitAttribute(OGUI::VisualElement &new_element, const XmlElement &asset, CreationContext& context)
-{
-    if(!XmlTraits::InitAttribute(new_element, asset, context)) return false;
-
-    new_element._name = name.GetValue(asset);
-    new_element._path = path.GetValue(asset);
-	std::string inlineStyleStr;
-	if(style.GetValueString(inlineStyleStr, asset))
-		new_element.InitInlineStyle(inlineStyleStr);
-	std::split(class_tag.GetValue(asset), new_element._styleClasses, ",");
-
-    auto _slot_name = slot_name.GetValue(asset);
-    auto _slot = slot.GetValue(asset);
-
-    if(!_slot_name.empty())
-    {
-        auto& template_container = context.stack_template.front().template_container;
-        template_container.slots[_slot_name] = &new_element;
-    }
-
-    if(!_slot.empty())
-    {
-        auto parent_node = context.stack.front();
-        if(parent_node->IsA("TemplateContainer"))
-        {
-            auto template_container = (TemplateContainer*)parent_node;
-            auto find_slots = template_container->slots.find(_slot);
-            if(find_slots != template_container->slots.end())
-                find_slots->second->PushChild(&new_element);
-        }
-    }
-
-    return true;
-}
-
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
 	auto rect = GetRect();

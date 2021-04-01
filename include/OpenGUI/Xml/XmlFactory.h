@@ -4,9 +4,8 @@
 #include <list>
 #include <iostream>
 #include <set>
-#include "OpenGUI/Xml/XmlAttributeDescription.h"
-#include "OpenGUI/Xml/XmlChildElementDescription.h"
 #include "OpenGUI/Xml/XmlAsset.h"
+#include "OpenGUI/Core/Utilities/string_hash.hpp"
 
 namespace OGUI
 {
@@ -59,82 +58,52 @@ namespace OGUI
         }
     };
 
-    // XmlTraits描述了从 VisualElement 派生的类的XML属性和子元素类型。
-    // XmlFactory 使用它在读取XML文档时将XML属性映射到C++类属性。
-    // XmlTraits 还用于生成 XML schema。
-    class XmlTraits
-    {
-    public:
-        // 描述元素的XML属性
-        std::vector<XmlAttributeDescription*> attributes_desc;
-
-        // 描述在XML文件中可以作为该元素的子元素出现的元素的类型
-        std::vector<XmlChildElementDescription*> child_desc;
-
-        // 子类需要在这将自定义XML属性解析到C++类属性上
-        // 注意先调用父类
-        bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) {return true;};
-
-        // GenXmlAttrs.h
-        void GetAllAttr(std::vector<XmlAttributeDescription*>& result) {};
-
-        // GenXmlChildDesc.h
-        void GetAllChild(std::vector<XmlChildElementDescription*>& result) {};
-    };
-
     class IXmlFactory
     {
     public:
-        // XML文件中的元素名
-        // 在命名空间中是唯一
-        std::string xml_name;
+        std::string_view xml_name;
+        std::string_view xml_namespace;
+        std::string_view xml_qualified_name;
 
-        // XML元素的命名空间 xx.xx.xx
-        std::string xml_namespace;
-
-        // XML文件中的元素名
-        // 在整个项目中唯一
-        std::string xml_qualified_name;
-
-        // 是否可以接受任何属性 对应 XmlSchema.anyAttribute
-        bool any_attribute = false;
-
-        // 创建新 VisualElement
-        // 有些XML元素不会生成 VisualElement 只是用来辅助生成 XML schema，比如 <Root> <Template>
+        virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) = 0;
         virtual VisualElement* Create(const XmlElement& asset, CreationContext& context) = 0;
+
+        void Internal_Init(){};
+        bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr){ return true; };
     };
 
-    // 每种 VisualElement 都应该有个对应的 XmlFactory
-    template<class TCreatedType, class TTraits>
-    class XmlFactory : public IXmlFactory
+
+    template<class TFactoryInterface = IXmlFactory>
+    VisualElement* XmlFactoryEmptyCreate(TFactoryInterface& factory, const XmlElement& asset, CreationContext& context)
     {
-        static_assert(std::is_base_of_v<VisualElement, TCreatedType>);
-        static_assert(std::is_base_of_v<XmlTraits, TTraits>);
+        static_assert(std::is_base_of_v<IXmlFactory, TFactoryInterface>);
 
-    public:
-        VisualElement* Create(const XmlElement& asset, CreationContext& context) override
+        factory.Internal_Init();
+        for(const XmlAttribute& attr : asset.attributes)
         {
-            VisualElement* new_element = context.New<TCreatedType>();
-            if(!_traits.InitAttribute(*new_element, asset, context))
-            {
-                context.is_error = true;
-                std::cerr << "InitAttribute失败 xml_qualified_name： " << xml_qualified_name << std::endl;
-                delete new_element;
-                return nullptr;
-            }
-            return new_element;
+            factory.Internal_InitAttribute(hash_(attr.name), attr);
         }
+        return nullptr;
+    }
 
-    protected:
-        XmlFactory()
+    template<class TFactoryInterface = IXmlFactory, class TVisualElement = VisualElement>
+    VisualElement* XmlFactoryCreate(TFactoryInterface& factory, const XmlElement& asset, CreationContext& context)
+    {
+        static_assert(std::is_base_of_v<IXmlFactory, TFactoryInterface>);
+        static_assert(std::is_base_of_v<VisualElement, TVisualElement>);
+
+        VisualElement* new_element = context.New<TVisualElement>();
+        factory.Internal_Init();
+        for(const XmlAttribute& attr : asset.attributes)
         {
-//            xml_name = NAMEOF_SHORT_TYPE(TCreatedType).data();
-//            xml_namespace = XmlTool::GetTypeNamespace<TCreatedType>();
-//            xml_qualified_name = xml_namespace == "" ? xml_name : xml_namespace + '.' + xml_name;
-            _traits.GetAllAttr(_traits.attributes_desc);
-            _traits.GetAllChild(_traits.child_desc);
+            factory.Internal_InitAttribute(hash_(attr.name), attr);
         }
-
-        TTraits _traits;
-    };
+        if(!factory.InitAttribute(*new_element, asset, context))
+        {
+            context.is_error = true;
+            std::cerr << "InitAttribute失败 xml_qualified_name： " << factory.xml_qualified_name << std::endl;
+            return nullptr;
+        }
+        return new_element;
+    }
 }

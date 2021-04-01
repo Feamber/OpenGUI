@@ -1,0 +1,17 @@
+﻿    class IXmlFactory_{ElementName} : public {ParentTypeName}
+    {
+    public:
+{AllAttributeDefinition}
+
+        IXmlFactory_{ElementName}()
+        {
+            xml_name = "{ElementName}";
+            xml_namespace = "{Namespace}";
+            xml_qualified_name = "{Qualified}";
+        }
+
+        virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
+        virtual VisualElement* Create(const XmlElement& asset, CreationContext& context) override;
+        void Internal_Init();
+        bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
+    };
