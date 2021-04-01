@@ -93,9 +93,9 @@ namespace OGUI
 
 		std::vector<VisualElement*> _children;
 		
-		VisualElement* _physical_parent;
+		VisualElement* _physical_parent = nullptr;
 		//There could be some node between logical parent and this widget for layout
-		VisualElement* _logical_parent;
+		VisualElement* _logical_parent = nullptr;
 		bool _rerouteEvent;
 		template<class F>
 		void Traverse(F&& f);
