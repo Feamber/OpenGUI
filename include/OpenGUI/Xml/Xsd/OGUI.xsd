@@ -72,6 +72,18 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="TextType">
+    <xs:complexContent mixed="true">
+      <xs:restriction base="xs:anyType">
+        <xs:attribute name="name" type="xs:string" use="optional" />
+        <xs:attribute name="path" type="xs:string" use="optional" />
+        <xs:attribute name="style" type="xs:string" use="optional" />
+        <xs:attribute name="class_tag" type="xs:string" use="optional" />
+        <xs:attribute name="slot_name" type="xs:string" use="optional" />
+        <xs:attribute name="slot" type="xs:string" use="optional" />
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
   
   <!--  All Element  -->
   <xs:element name="Root" type="engine:RootType" />
