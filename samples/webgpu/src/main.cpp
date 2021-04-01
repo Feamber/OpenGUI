@@ -347,8 +347,9 @@ struct WGPURenderer : RenderInterface
 #define __WIN32__
 #endif // __WIN32__
 #endif
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_syswm.h"
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 	int win_width = 1280;
@@ -376,12 +377,14 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			InstallInput();
 			{
 				using namespace OGUI;
+				using namespace ostr::literal;
 				auto& ctx = Context::Get();
 				ctx.renderImpl = std::make_unique<WGPURenderer>();
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 				ctx.desktops = new VisualWindow;
 
+				std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
 				auto ve = XmlAsset::Instantiate(asset.lock()->id);
 				if(auto child1 = QueryFirst(ve, "#Child1"))
@@ -404,26 +407,77 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 
 				ve->_pseudoMask |= (int)PseudoStates::Root;
 				ctx.desktops->PushChild(ve);
+				olog::info(u"initialize completed, time used: {}"o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 			}
 
+			// main loop
 			bool done = false;
 			while(!done)
 			{
+				using namespace ostr::literal;
 				SDL_Event event;
-				while (SDL_PollEvent(&event)) {
-					if (event.type == SDL_QUIT) {
-						done = true;
-					}
-					if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-						done = true;
-					}
-					if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
-							&& event.window.windowID == SDL_GetWindowID(window)) {
-						done = true;
-					}
-					if(event.type == SDL_MOUSEMOTION)
+				auto& ctx = OGUI::Context::Get();
+				while (SDL_PollEvent(&event)) 
+				{
+					switch (event.type)
 					{
-						
+						case SDL_MOUSEBUTTONDOWN:
+						{
+							EMouseKey buttonCode;
+							switch (event.button.button)
+							{
+							case SDL_BUTTON_LEFT:
+								buttonCode = EMouseKey::LB; break;
+							case SDL_BUTTON_RIGHT:
+								buttonCode = EMouseKey::RB; break;
+							case SDL_BUTTON_MIDDLE:
+								buttonCode = EMouseKey::MB; break;
+							}
+							int width, height;
+							SDL_GetWindowSize(window, &width, &height);
+							ctx.OnMouseDown((float)width, (float)height, buttonCode, event.button.x, event.button.y);
+							break;
+						}
+						case SDL_MOUSEBUTTONUP:
+						{
+							EMouseKey buttonCode;
+							switch (event.button.button)
+							{
+							case SDL_BUTTON_LEFT:
+								buttonCode = EMouseKey::LB; break;
+							case SDL_BUTTON_RIGHT:
+								buttonCode = EMouseKey::RB; break;
+							case SDL_BUTTON_MIDDLE:
+								buttonCode = EMouseKey::MB; break;
+							}
+							ctx.OnMouseUp(buttonCode, event.button.x, event.button.y);
+							break;
+						}
+						case SDL_MOUSEMOTION:
+						{
+							olog::info(u"MousePos X:{}, Y:{}"o.format(event.motion.x, event.motion.y));
+							//olog::info(u"MousePos RelX:{}, RelY:{}"o.format(event.motion.xrel, event.motion.yrel));
+							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
+							break;
+						}
+						case SDL_KEYDOWN:
+						{
+							if (event.key.keysym.sym == SDLK_ESCAPE)
+								done = true;
+							else
+								olog::info(u"KeyDown {}"o.format(event.key.keysym.sym));
+								// ctx.OnKeyDown()
+							break;
+						}
+						case SDL_MOUSEWHEEL:
+						{
+							olog::info(u"MouseWheel Delta:{}"o.format(event.wheel.y));
+							ctx.OnMouseWheel(event.wheel.y);
+							break;
+						}
+						case SDL_QUIT:
+						done = true;
+						break;
 					}
 				}
 				redraw();

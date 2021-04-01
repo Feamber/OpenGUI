@@ -163,30 +163,30 @@ using logsys = spdlog_sys;
 #define LOG_FFL olog::spdlog_sys::__log_with_ffl(__FILE__, __FUNCTION__, __LINE__);
 
 
-void init_log_system()
+static void init_log_system()
 {
     logsys::init_log_system();
 }
 
 #define __MAKE_LOG_CALL_DECLARE(func)\
-void func(std::wstring_view sv)\
+static void func(std::wstring_view sv)\
 {\
     logsys::func(sv);\
 }\
-void func(ostr::string_view sv)\
+static void func(ostr::string_view sv)\
 {\
     std::wstring str(sv.raw().cbegin(), sv.raw().cend());\
     func(std::wstring_view(str));\
 }\
-void func(const ostr::string& sv)\
+static void func(const ostr::string& sv)\
 {\
     func(ostr::string_view(sv));\
 }\
-void func(const std::u16string& str)\
+static void func(const std::u16string& str)\
 {\
     func(ostr::string_view(str));\
 }\
-void func(const std::u16string_view& str)\
+static void func(const std::u16string_view& str)\
 {\
     func(ostr::string_view(str));\
 }\

@@ -3,14 +3,15 @@
 #include "peglib.h"
 #include <fstream>
 #include "OpenGUI/Core/Utilities/ipair.hpp"
-
+#include <chrono>
+#include "OpenGUI/Core/ostring/olog/olog.h"
 using namespace OGUI;
 
 namespace OGUI
 {
 	std::optional<StyleSheet> ParseCSS(std::string_view str)
 	{
-		auto grammar = R"(
+		static auto grammar = R"(
 			Stylesheet			<- _ (StyleRule / Keyframes)*
 			StyleRule			<- SelectorList _ '{' _ PropertyList _ '}' _
 			Keyframes			<- '@keyframes' w <IDENT> _ '{' _ KeyframeBlock* _ '}' _
@@ -21,36 +22,37 @@ namespace OGUI
 			Selector			<- SelectorPart+
 			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT>  / (':' <IDENT>)
 			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
-			Property			<- <IDENT> w ':' w <ValueList> _
+			Property			<- <IDENT> w ':' w <(!(';'/'}') .)*> _
 			~pseudoElement		<- 'before'/'after'
 			~KeyframeSelector	<- ( NUM  '%') / 'from' / 'to'
-			~ValueList			<- Value (Spliter Value)*
-			~Spliter			<- (w ',' w) / [ ]+
-			~Value				<- URL / CNUM / HEX / CALL / IDENT
-			~URL				<- 'url' w '(' (!')' .)* ')'
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
-			~HEX				<- ('#' NUM) 
-			~CNUM				<- NUM (IDENT / '%')?
 			~NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
-			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~blockcomment		<- '/*' (!'*/' .)* '*/'
 			~_					<- ([ \t\r\n] / blockcomment)*
 			~w					<- [ ]*
 		)";
 		using namespace peg;
 		using namespace std;
-		parser parser;
-		StyleSheet sheet;
-
-		parser.log = [](size_t line, size_t col, const string& msg)
+		struct ParserInitializer
 		{
-			cerr << line << ":" << col << ": " << msg << "\n";
+			parser parser;
+			bool ok;
+			ParserInitializer()
+			{
+				parser.log = [](size_t line, size_t col, const string& msg)
+				{
+					cerr << line << ":" << col << ": " << msg << "\n";
+				};
+				ok = parser.load_grammar(grammar);
+			}
 		};
+		static ParserInitializer parserInitializer; //do once
+		auto& parser = parserInitializer.parser;
 
-		auto ok = parser.load_grammar(grammar);
-		if (!ok)
+		if (!parserInitializer.ok)
 			return {};
 
+		StyleSheet sheet;
 		parser["Property"] = [](SemanticValues& vs)
 		{
 			auto name = vs.token();
@@ -196,8 +198,7 @@ namespace OGUI
 			}
 			sheet.styleKeyframes.push_back(std::move(keyframes));
 		};
-
-		//parser.enable_packrat_parsing(); // Enable packrat parsing.
+		parser.enable_packrat_parsing();
 		if (parser.parse(str))
 			return sheet;
 		return {};
