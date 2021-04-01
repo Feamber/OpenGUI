@@ -593,8 +593,8 @@ void LoadResource()
 }
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
-	int win_width = 640;
-	int win_height = 360;
+	int win_width = 1280;
+	int win_height = 720;
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
