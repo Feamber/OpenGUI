@@ -12,6 +12,7 @@
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
+#include "efsw/efsw.hpp"
 
 extern void InstallInput();
 
@@ -293,6 +294,10 @@ static void createPipelineAndBuffers() {
 	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
 }
 
+int FileVersion = 0;
+static VisualElement* ReloadedVE = nullptr;
+std::atomic_bool Reloaded = false;
+void OnReloaded();
 /**
  * Draws using the above pipeline and buffers.
  */
@@ -300,6 +305,16 @@ static bool redraw() {
 	static std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
 	auto& ctx = OGUI::Context::Get();
 	std::chrono::time_point now = std::chrono::high_resolution_clock::now();
+	if (Reloaded.load())
+	{
+		auto ve = ctx.desktops->_children[0];
+		ctx.desktops->RemoveChild(ve);
+		VisualElement::DestoryTree(ve);
+		ctx.desktops->PushChild(ReloadedVE);
+		OnReloaded();
+		Reloaded = false;
+		ctx._layoutDirty = true;
+	}
 	float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
 	prev = now;
 	ctx.Update(hWnd, deltaTime);
@@ -350,6 +365,90 @@ struct WGPURenderer : RenderInterface
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
+class UpdateListener : public efsw::FileWatchListener
+{
+public:
+	UpdateListener() {}
+
+	void handleFileAction(efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
+	{
+		switch (action)
+		{
+			case efsw::Actions::Add:
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added" << std::endl;
+				break;
+			case efsw::Actions::Delete:
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
+				break;
+			case efsw::Actions::Modified:
+				if (filename == "test.xml" || filename == "test.css")
+				{
+					FileVersion++;
+					//std::thread loader([](int Version)
+					//	{
+							using namespace ostr::literal;
+							std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
+							auto asset = XmlAsset::LoadXmlFile("res/test.xml");
+							auto ve = XmlAsset::Instantiate(asset.lock()->id);
+							//if (FileVersion == Version)
+							if(ve)
+							{
+								ReloadedVE = ve;
+								Reloaded = true;
+							}
+							olog::info(u"initialize completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+					//	}, FileVersion);
+					//loader.detach();
+				}
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified" << std::endl;
+				break;
+			case efsw::Actions::Moved:
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from (" << oldFilename << ")" << std::endl;
+				break;
+			default:
+				std::cout << "Should never happen!" << std::endl;
+		}
+	}
+};
+
+
+void OnReloaded()
+{
+	auto ve = Context::Get().desktops->_children[0];
+	if (auto child1 = QueryFirst(ve, "#Child1"))
+	{
+		constexpr auto handler = +[](PointerDownEvent& event)
+		{
+			using namespace ostr::literal;
+			olog::info(u"Oh ♂ shit!");
+			return true;
+		};
+		child1->_eventHandler.Register<PointerDownEvent, handler>();
+	}
+	{
+		std::vector<VisualElement*> tests;
+		QueryAll(ve, ".Test", tests);
+		for (auto [i, test] : ipair(tests))
+			if (i % 2 == 0)
+				test->_styleClasses.push_back("Bigger");
+	}
+
+	ve->_pseudoMask |= (int)PseudoStates::Root;
+}
+
+void LoadResource()
+{
+	using namespace OGUI;
+	auto& ctx = Context::Get();
+	auto asset = XmlAsset::LoadXmlFile("res/test.xml");
+	auto ve = XmlAsset::Instantiate(asset.lock()->id);
+	ctx.desktops->PushChild(ve);
+	OnReloaded();
+	static efsw::FileWatcher fileWatcher;
+	static UpdateListener listener;
+	efsw::WatchID watchID = fileWatcher.addWatch("res", &listener, true);
+	fileWatcher.watch();
+}
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 	int win_width = 1280;
@@ -384,30 +483,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 				ctx.desktops = new VisualWindow;
 
-				std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-				auto ve = XmlAsset::Instantiate(asset.lock()->id);
-				if(auto child1 = QueryFirst(ve, "#Child1"))
-				{
-					constexpr auto handler = +[](PointerDownEvent& event)
-					{
-						using namespace ostr::literal;
-						olog::info(u"Oh ♂ shit!");
-						return true;
-					};
-					child1->_eventHandler.Register<PointerDownEvent, handler>();
-				}
-				{
-					std::vector<VisualElement*> tests;
-					QueryAll(ve, ".Test", tests);
-					for (auto [i, test] : ipair(tests))
-						if (i % 2 == 0)
-							test->_styleClasses.push_back("Bigger");
-				}
-
-				ve->_pseudoMask |= (int)PseudoStates::Root;
-				ctx.desktops->PushChild(ve);
-				olog::info(u"initialize completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+				LoadResource();
 			}
 
 			// main loop

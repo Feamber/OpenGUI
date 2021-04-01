@@ -53,6 +53,7 @@ namespace OGUI
 		void MarkDirty(DirtyReason reason);
 		std::string _name;
         std::string _path;
+		static void DestoryTree(VisualElement* element);
 
 #pragma region Hierachy
 		void PushChild(VisualElement* child);

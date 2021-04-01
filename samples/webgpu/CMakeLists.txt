@@ -73,5 +73,6 @@ add_executable(WebgpuSample ${sources} ${platform_sources} ${headers})
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
 set_property(TARGET WebgpuSample PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/samples/webgpu")
 
+target_link_libraries(WebgpuSample efsw)
 target_link_libraries(WebgpuSample debug SDL2d)
 target_link_libraries(WebgpuSample optimized SDL2)

@@ -104,6 +104,20 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 	Context::Get().MarkDirty(this, reason);
 }
 
+
+void OGUI::VisualElement::DestoryTree(VisualElement* element)
+{
+	std::vector<VisualElement*> toDestroy;
+	toDestroy.push_back(element);
+	while (toDestroy.size() > 0)
+	{
+		auto back = toDestroy.back(); toDestroy.pop_back();
+		for (auto child : back->_children)
+			toDestroy.push_back(child);
+		delete back;
+	}
+}
+
 void OGUI::VisualElement::PushChild(VisualElement* child)
 {
 	InsertChild(child, _children.size());

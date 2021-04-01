@@ -46,19 +46,6 @@ namespace OGUI
 		element->Traverse([&](VisualElement* next) { if(dirty) next->_transformDirty = true; TransformRec(next); });
 	}
 
-	void DestroyRec(VisualElement* element)
-	{
-		std::vector<VisualElement*> toDestroy;
-		toDestroy.push_back(element);
-		while (toDestroy.size() > 0)
-		{
-			auto back = toDestroy.back(); toDestroy.pop_back();
-			for (auto child : back->_children)
-				toDestroy.push_back(child);
-			delete back;
-		}
-	}
-
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
 		for (auto& child : element->_children)
@@ -218,9 +205,9 @@ OGUI::Context::Context()
 OGUI::Context::~Context()
 {
 	if (desktops)
-		DestroyRec(desktops);
+		VisualElement::DestoryTree(desktops);
 	if (dialogs)
-		DestroyRec(dialogs);
+		VisualElement::DestoryTree(dialogs);
 }
 
 OGUI::Context& OGUI::Context::Get()

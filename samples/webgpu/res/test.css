@@ -1,5 +1,5 @@
 :root {
-    width: 800px;
+    width: 700px;
     height:600px;
     justify-content:flex-start;
     align-items:flex-start;
@@ -17,7 +17,7 @@
     justify-content:center;
     align-items:center;
     background-color: initial;
-    background-image:url(res/test.jpg);
+    background-image:url(res/UELogo.png);
 }
 
 #Child2 {
@@ -52,9 +52,10 @@
 .Test{
     width: 20px;
     height:20px;
-    animation-name:monan;
-    animation-duration: 1s;
+    animation-name:shapeanim;
+    animation-duration: 0.5s;
     animation-iteration-count: infinite;
+    animation-direction: alternate;
     background-color: initial;
     background-image:url(res/test1.png);
 }
