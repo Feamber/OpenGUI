@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 
+#include "OpenGUI/Core/open_string.h"
+
 namespace OGUI
 {
 RenderInterface::~RenderInterface()
@@ -118,6 +120,10 @@ void AsyncBitmap::Finalize()
 {
     auto& ctx = Context::Get();
     ctx.bmParserImpl->Free(bm);
+}
+
+OGUI::LogInterface::~LogInterface()
+{
 }
 
 }

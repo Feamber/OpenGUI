@@ -73,6 +73,8 @@ namespace OGUI
 		//Hooks
 		std::unique_ptr<InputInterface>  inputImpl;
 		std::unique_ptr<SystemInterface> systemImpl;
+		std::unique_ptr<LogInterface> logImpl;
+		
 		std::unique_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<FileInterface>   fileImpl;
 		std::unique_ptr<BitmapParserInterface>   bmParserImpl;
