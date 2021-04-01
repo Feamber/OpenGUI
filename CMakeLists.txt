@@ -60,7 +60,7 @@ file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
 if(OPENGUI_LIB)
-add_library(OpenGUI 
+add_library(OpenGUI STATIC
     ${sources} 
     ${headers} 
 )
@@ -69,20 +69,14 @@ else()
 add_library(OpenGUI SHARED ${sources} ${headers})
 endif(OPENGUI_LIB)
 
-add_custom_command(
-        TARGET OpenGUI
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.exe -x ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/Main.xsd -h ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/XsdGen -c ${CMAKE_CURRENT_SOURCE_DIR}/source/Xml/XsdGen
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/*.xsd
-        VERBATIM)
-
 target_include_directories(OpenGUI 
     PUBLIC 
     include
     include/External
+    include/External/yoga
     include/OpenGui/Core/ostring
     ${PLATFORM_INCLUDES}
 )
-target_link_libraries(OpenGUI PUBLIC Yoga)
 target_link_libraries(OpenGUI PUBLIC fmt)
 target_link_libraries(OpenGUI PUBLIC spdlog)
 

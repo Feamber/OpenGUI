@@ -12,7 +12,8 @@ using namespace std;
 shared_ptr<AsyncRenderTexture> RenderTextureManager::Require(
     const std::string& url, bool sync, shared_ptr<AsyncBitmap>* bmOut)
 {
-    const bool needUpload = render_textures.find(url) == render_textures.end();
+    auto iter = render_textures.find(url);
+    const bool needUpload = iter == render_textures.end();
     auto& ctx = Context::Get();
     std::shared_ptr<AsyncRenderTexture> tex_locked;
     if(needUpload)
@@ -26,7 +27,7 @@ shared_ptr<AsyncRenderTexture> RenderTextureManager::Require(
             });
         render_textures[url] = tex_locked;
     } else {
-        tex_locked = render_textures[url].lock();
+        tex_locked = iter->second.lock();
     }
     if(bmOut || needUpload)
     {
@@ -50,6 +51,7 @@ void RenderTextureManager::Update()
 {
     auto& ctx = Context::Get();
     // compile bitmaps to render_textures.
+    std::vector<std::string> uploadeds;
     for(auto&& [url, file] : files)
     {
         if(file != nullptr && file->valid())
@@ -61,8 +63,11 @@ void RenderTextureManager::Update()
             tex_locked->is_ready = true;
             auto uc = file.use_count();
             file.reset();
+            uploadeds.push_back(url);
         }
     }
+    for (auto& uploaded : uploadeds)
+        files.erase(uploaded);
 }
 
 }

@@ -3,7 +3,7 @@ enable_testing()
 include(CTest)
 include(Catch)    
 
-add_library(TestCore TestCore.cpp)
+add_library(TestCore STATIC TestCore.cpp)
 link_libraries(TestCore)
 
 FILE(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/ ${CMAKE_CURRENT_SOURCE_DIR}/*)
