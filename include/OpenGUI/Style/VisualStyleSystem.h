@@ -21,17 +21,18 @@ namespace OGUI
 		VisualElement* currentElement;
 	};
 
+	struct CachedStyle
+	{
+		std::bitset<96> overrideMask;
+		std::bitset<96> inheritMask;
+		//use ptr to avoid reallocate
+		Style style;
+		std::vector<AnimationStyle> animStyles;
+	};
+
 	class VisualStyleSystem : public VisualSystemBase
 	{
-		struct CachedStyle
-		{
-			std::bitset<96> overrideMask;
-			std::bitset<96> inheritMask;
-			//use ptr to avoid reallocate
-			std::unique_ptr<Style> style; 
-			std::unique_ptr<std::vector<AnimationStyle>> animStyles;
-		};
-		using StyleCache = std::unordered_map<size_t, CachedStyle>;
+		using StyleCache = std::unordered_map<size_t, std::unique_ptr<CachedStyle>>;
 		StyleCache styleCache;
 		StyleMatchingContext matchingContext;
 
@@ -39,6 +40,7 @@ namespace OGUI
 
 		static void FindMatches(StyleMatchingContext& context, std::vector<SelectorMatchRecord>& matchedSelectors);
 		void ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors);
+		void UpdateStyle(VisualElement* element);
 
 	public:
 		virtual void Update(VisualElement* Tree);

@@ -5,6 +5,7 @@
 #include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Event/PointerEvent.h"
+#include "OpenGUI/Core/Types.h"
 
 
 namespace OGUI
@@ -37,9 +38,9 @@ namespace OGUI
 		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*,BitmapParserInterface*);
 
 		//Windows
-		std::shared_ptr<VisualWindow> desktops;
-		std::shared_ptr<VisualWindow> dialogs;
-		std::weak_ptr<VisualElement> currentFocus;
+		VisualWindow* desktops;
+		VisualWindow* dialogs;
+		VisualElement* currentFocus;
 
 		//Systems
 		VisualStyleSystem styleSystem;
@@ -52,18 +53,19 @@ namespace OGUI
 		//APIs
 		void Update(const WindowHandle window, float dt);
 		void Render(const WindowHandle window);
+		void MarkDirty(VisualElement* element, DirtyReason reason);
 
 		//Message Handling
 		//reference : UE4 Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h
-		bool OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseUp(const WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseMove(const WindowHandle window, bool relative, int32 x, int32 y);
+		bool OnMouseDown(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
+		bool OnMouseUp(EMouseKey button, int32 x, int32 y);
+		bool OnMouseDoubleClick(EMouseKey button, int32 x, int32 y);
+		bool OnMouseMove(bool relative, int32 x, int32 y);
 		bool OnMouseMoveHP(bool relative, float x, float y);
 		bool OnMouseWheel(float delta);
 			
 		static Context& Get();
-		std::weak_ptr<VisualElement> _elementUnderCursor;
+		VisualElement* _elementUnderCursor;
 	public:
 		//Hooks
 		std::unique_ptr<InputInterface>  inputImpl;

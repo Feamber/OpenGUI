@@ -109,13 +109,19 @@ namespace OGUI_Xsd
 
                 Directory.CreateDirectory(configure.OutputH);
                 String hFilePath = Path.Combine(configure.OutputH, pair.Key + ".h");
-                File.WriteAllText(hFilePath, OutH);
-                Debug.WriteLine("生成.h文件：" + Path.GetFullPath(hFilePath));
+                if(File.Exists(hFilePath) && File.ReadAllText(hFilePath) != OutH)
+                {
+                    File.WriteAllText(hFilePath, OutH);
+                    Debug.WriteLine("生成.h文件：" + Path.GetFullPath(hFilePath));
+                }
 
                 Directory.CreateDirectory(configure.OutputCpp);
                 String cppFilePath = Path.Combine(configure.OutputCpp, pair.Key + ".cpp");
-                File.WriteAllText(cppFilePath, OutCpp);
-                Debug.WriteLine("生成.h文件：" + Path.GetFullPath(cppFilePath));
+                if (File.Exists(cppFilePath) && File.ReadAllText(cppFilePath) != OutCpp)
+                {
+                    File.WriteAllText(cppFilePath, OutCpp);
+                    Debug.WriteLine("生成.cpp文件：" + Path.GetFullPath(cppFilePath));
+                }
             }
 
             return 0;

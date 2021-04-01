@@ -7,6 +7,7 @@ namespace OGUI
     void BroadcastEvent(VisualElement* element, T& event)
     {
         element->Traverse([&](VisualElement* next) { 
+            if (next->_isPseudoElement) return;
             next->_eventHandler.Handle(event);
             BroadcastEvent<T>(next, event); });
     }

@@ -16,9 +16,10 @@ const OGUI::AnimationStyle& OGUI::AnimationStyle::GetInitialStyle()
 	{
 		InitialStyle()
 		{
-#define ANIMPROP(name, index, type, id, def)\
+#define GEN(name, type, id, def)\
 			style.name = def;
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+			ANIMPROP(GEN)
+#undef GEN
 		}
 		AnimationStyle style;
 	};
@@ -85,12 +86,13 @@ namespace OGUI
 	void GetInitialProperty(T& field, StylePropertyId propId)
 	{
 		auto& InitialStyle = AnimationStyle::GetInitialStyle();
-#define ANIMPROP(name, ...)\
+#define GEN(name, ...)\
 		if(propId == StylePropertyId::name) \
 		{ \
 			Assign(field, InitialStyle.name); \
 		}
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		ANIMPROP(GEN)
+#undef GEN
 	}
 
 	template<class T>
@@ -125,7 +127,7 @@ void OGUI::AnimationStyle::ApplyProperties(const StyleSheetStorage& sheet, const
 {
 	for (auto& prop : props)
 	{
-#define ANIMPROP(name, index, type, ...)\
+#define GEN(name, type, ...)\
 		if(prop.id == StylePropertyId::name) \
 		{ \
 			if(prop.keyword) \
@@ -134,7 +136,8 @@ void OGUI::AnimationStyle::ApplyProperties(const StyleSheetStorage& sheet, const
 				GetProperty<type>(name, prop, sheet); \
 			continue; \
 		}
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		ANIMPROP(GEN)
+#undef GEN
 	}
 }
 
@@ -156,9 +159,10 @@ void OGUI::AnimationStyle::ResolveReference(const gsl::span<StyleSheet*>& sheets
 
 bool OGUI::AnimationStyle::operator==(const AnimationStyle& other)
 {
-#define ANIMPROP(name, index, type, ...)\
+#define GEN(name, type, ...)\
 	if(!(name == other.name)) return false;
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+	ANIMPROP(GEN)
+#undef GEN
 	return true;
 }
 

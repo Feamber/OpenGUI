@@ -11,9 +11,9 @@
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualWindow.h"
+#include "OpenGUI/Core/Utilities/ipair.hpp"
 
 extern void InstallInput();
-window::Handle hWnd;
 
 WGPUDevice device;
 WGPUQueue queue;
@@ -26,6 +26,7 @@ WGPU_OGUI_Texture* default_ogui_texture;
 
 using namespace OGUI;
 std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
+window::Handle hWnd;
 
 struct BitmapParser final : public OGUI::BitmapParserInterface
 {
@@ -340,11 +341,35 @@ struct WGPURenderer : RenderInterface
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
 #include "olog/olog.h"
+#if defined(_WIN32) || defined(_WIN64)
+#define SDL_MAIN_HANDLED
+#ifndef __WIN32__
+#define __WIN32__
+#endif // __WIN32__
+#endif
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
+	int win_width = 1280;
+	int win_height = 720;
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
+		return -1;
+	}
+	SDL_Window* window = SDL_CreateWindow("Demo",
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		win_width, win_height, 0
+	);
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(window, &wmInfo);
+#if defined(_WIN32) || defined(_WIN64)
+	hWnd = (window::Handle)wmInfo.info.win.window;
+#endif
 	olog::init_log_system();
-
-	if (hWnd = window::create();hWnd) {
+	if (hWnd) {
 		if (device = webgpu::create(hWnd);device) {
 			queue = wgpuDeviceGetDefaultQueue(device);
 			swapchain = webgpu::createSwapChain(device, WINDOW_WIN_W, WINDOW_WIN_H);
@@ -352,38 +377,111 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			InstallInput();
 			{
 				using namespace OGUI;
+				using namespace ostr::literal;
 				auto& ctx = Context::Get();
 				ctx.renderImpl = std::make_unique<WGPURenderer>();
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-				/*
-				auto test_tex = ctx.textureManager->Require("res/test.jpg");
-				while(!test_tex->valid())
-				{
-					std::cout << "Wait 4 tex loading..." << std::endl;
-					ctx.textureManager->Update();
-				}
-				std::cout << "Tex loaded!: " << test_tex->Get() << std::endl;
-				*/
-				ctx.desktops = std::make_shared<VisualWindow>();
+				ctx.desktops = new VisualWindow;
 
+				std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
 				auto ve = XmlAsset::Instantiate(asset.lock()->id);
-				if(auto child1 = QueryFirst(ve.get(), "#Child1"))
+				if(auto child1 = QueryFirst(ve, "#Child1"))
 				{
 					constexpr auto handler = +[](PointerDownEvent& event)
 					{
-						olog::info("Oh ♂ shit!");
+						using namespace ostr::literal;
+						olog::info(u"Oh ♂ shit!");
 						return true;
 					};
 					child1->_eventHandler.Register<PointerDownEvent, handler>();
 				}
+				{
+					std::vector<VisualElement*> tests;
+					QueryAll(ve, ".Test", tests);
+					for (auto [i, test] : ipair(tests))
+						if (i % 2 == 0)
+							test->_styleClasses.push_back("Bigger");
+				}
+
 				ve->_pseudoMask |= (int)PseudoStates::Root;
-				ctx.desktops->PushChild(ve.get());
+				ctx.desktops->PushChild(ve);
+				olog::info(u"initialize completed, time used: {}"o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 			}
 
-			window::show(hWnd);
-			window::loop(hWnd, redraw);
+			// main loop
+			bool done = false;
+			while(!done)
+			{
+				using namespace ostr::literal;
+				SDL_Event event;
+				auto& ctx = OGUI::Context::Get();
+				while (SDL_PollEvent(&event)) 
+				{
+					switch (event.type)
+					{
+						case SDL_MOUSEBUTTONDOWN:
+						{
+							EMouseKey buttonCode;
+							switch (event.button.button)
+							{
+							case SDL_BUTTON_LEFT:
+								buttonCode = EMouseKey::LB; break;
+							case SDL_BUTTON_RIGHT:
+								buttonCode = EMouseKey::RB; break;
+							case SDL_BUTTON_MIDDLE:
+								buttonCode = EMouseKey::MB; break;
+							}
+							int width, height;
+							SDL_GetWindowSize(window, &width, &height);
+							ctx.OnMouseDown((float)width, (float)height, buttonCode, event.button.x, event.button.y);
+							break;
+						}
+						case SDL_MOUSEBUTTONUP:
+						{
+							EMouseKey buttonCode;
+							switch (event.button.button)
+							{
+							case SDL_BUTTON_LEFT:
+								buttonCode = EMouseKey::LB; break;
+							case SDL_BUTTON_RIGHT:
+								buttonCode = EMouseKey::RB; break;
+							case SDL_BUTTON_MIDDLE:
+								buttonCode = EMouseKey::MB; break;
+							}
+							ctx.OnMouseUp(buttonCode, event.button.x, event.button.y);
+							break;
+						}
+						case SDL_MOUSEMOTION:
+						{
+							olog::info(u"MousePos X:{}, Y:{}"o.format(event.motion.x, event.motion.y));
+							//olog::info(u"MousePos RelX:{}, RelY:{}"o.format(event.motion.xrel, event.motion.yrel));
+							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
+							break;
+						}
+						case SDL_KEYDOWN:
+						{
+							if (event.key.keysym.sym == SDLK_ESCAPE)
+								done = true;
+							else
+								olog::info(u"KeyDown {}"o.format(event.key.keysym.sym));
+								// ctx.OnKeyDown()
+							break;
+						}
+						case SDL_MOUSEWHEEL:
+						{
+							olog::info(u"MouseWheel Delta:{}"o.format(event.wheel.y));
+							ctx.OnMouseWheel(event.wheel.y);
+							break;
+						}
+						case SDL_QUIT:
+						done = true;
+						break;
+					}
+				}
+				redraw();
+			}
 
 		#ifndef __EMSCRIPTEN__
 			// last bit of clean-up
@@ -399,12 +497,8 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			//wgpuDeviceRelease(device);
 		#endif
 		}
-	#ifndef __EMSCRIPTEN__
-	#ifdef __APPLE__
-		if(hWnd) 
-			window::destroy(hWnd);
-	#endif
-	#endif
+		SDL_DestroyWindow(window);
+		SDL_Quit();
 	}
 	return 0;
 }

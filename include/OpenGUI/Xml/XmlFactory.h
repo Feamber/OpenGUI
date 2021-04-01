@@ -46,15 +46,15 @@ namespace OGUI
         XmlElement const * instance_asset;
 
         // 生成过程中生成的所有VisualElement
-        std::list<std::shared_ptr<VisualElement>> all;
+        std::list<VisualElement*> all;
 
         template<class T>
         T* New()
         {
             static_assert(std::is_base_of_v<VisualElement, T>);
-            auto new_element = std::make_shared<T>();
+            auto new_element = new T();
             all.push_front(new_element);
-            return new_element.get();
+            return new_element;
         }
     };
 

@@ -242,4 +242,31 @@ namespace OGUI
         uint32_t    width, height;
         PixelFormat format;
     };
+
+	enum class DirtyReason : int
+	{
+		// Some data was bound
+		Bindings = 1 << 0,
+		// persistent data ready
+		ViewData = 1 << 1,
+		// changes to hierarchy
+		Hierarchy = 1 << 2,
+		// changes to properties that may have an impact on layout
+		Layout = 1 << 3,
+		// changes to StyleSheet, USS class
+		StyleSheet = 1 << 4,
+		// changes to styles, colors and other render properties
+		Styles = 1 << 5,
+		Overflow = 1 << 6,
+		BorderRadius = 1 << 7,
+		BorderWidth = 1 << 8,
+		// changes that may impact the world transform (e.g. laid out position, local transform)
+		Transform = 1 << 9,
+		// changes to the size of the element after layout has been performed, without taking the local transform into account
+		Size = 1 << 10,
+		// The visuals of the element have changed
+		Repaint = 1 << 11,
+		// The opacity of the element have changed
+		Opacity = 1 << 12,
+	};
 }

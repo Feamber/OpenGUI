@@ -5,12 +5,11 @@ OGUI::StylePropertyId OGUI::PropertyNameToId(std::string_view name)
 {
 	static std::unordered_map<std::string_view, StylePropertyId> name2id =
 	{
-#define STYLEPROP(id, index, inherit, type, name, ...) \
+#define GEN(id, type, name, ...) \
 		{name, StylePropertyId::id},
-#include "OpenGUI/Style/StylePropertiesDef.h"
-#define	ANIMPROP(id, index, type, name, ...)\
-		{name, StylePropertyId::id},
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		STYLEPROP(GEN)
+		ANIMPROP(GEN)
+#undef GEN
 	};
 	auto iter = name2id.find(name);
 	if (iter != name2id.end())
@@ -23,12 +22,11 @@ int OGUI::PropertyNameToOrder(std::string_view name)
 {
 	static std::unordered_map<std::string_view, StylePropertyId> name2id =
 	{
-#define STYLEPROP(id, index, inherit, type, name, ...) \
+#define GEN(id, type, name, ...) \
 		{name, StylePropertyId::id},
-#include "OpenGUI/Style/StylePropertiesDef.h"
-#define	ANIMPROP(id, index, type, name, ...)\
-		{name, StylePropertyId::id},
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		STYLEPROP(GEN)
+		ANIMPROP(GEN)
+#undef GEN
 		{"transform", StylePropertyId::translation},
 		{"margin", StylePropertyId::marginLeft},
 		{"border-width", StylePropertyId::paddingLeft},
@@ -46,12 +44,11 @@ std::string_view OGUI::PropertyIdToName(StylePropertyId id)
 {
 	static constexpr std::string_view id2name[] =
 	{
-#define STYLEPROP(id, index, inherit, type, name, ...) \
+#define GEN(id, type, name, ...) \
 		name,
-#include "OpenGUI/Style/StylePropertiesDef.h"
-#define	ANIMPROP(id, index, type, name, ...)\
-		name,
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		STYLEPROP(GEN)
+		ANIMPROP(GEN)
+#undef GEN
 	};
 	if (id < StylePropertyId::_End)
 		return id2name[(uint8_t)id];
@@ -62,9 +59,10 @@ std::string_view OGUI::PropertyIdToName(StylePropertyId id)
 std::bitset<96> OGUI::GetInheritMask()
 {
 	std::bitset<96> res;
-#define STYLEPROP(id, index, inherit, ...) \
+#define GEN(id, _1, _2, _3, inherit) \
 	if constexpr(inherit == Inheritance::Inherited) \
 		res.set((int)StylePropertyId::id); 
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef GEN
 	return res;
 }

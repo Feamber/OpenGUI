@@ -1,71 +1,64 @@
-#if defined(YOGAPROP) || defined(TRSPROP) || defined(SHAPEPROP)
-#define STYLEPROP(...)
-#endif
+#pragma once
 
-#if !defined(YOGAPROP)
-#define YOGAPROP STYLEPROP
-#endif	
-
-#if !defined(TRSPROP)
-#define TRSPROP STYLEPROP
-#endif	
-
-#if !defined(SHAPEPROP)
-#define SHAPEPROP STYLEPROP
-#endif		
-
-//			name,						index,			inherited,				type,				id,								initial
+//			name,				type,				id,								initial							inherited,	
 //Begin Yoga props
-YOGAPROP(	flex,						0,				NonInherited,			float,				"flex",							YGUndefined					)
-YOGAPROP(	flexGrow,					1,				NonInherited,			float,				"flex-grow",					0.f							)
-YOGAPROP(	flexShrink,					2,				NonInherited,			float,				"flow-shrink",					1.f							)
-YOGAPROP(	flexBasis,					3,				NonInherited,			YGValue,			"flex-basis",					YGValueAuto					)
-YOGAPROP(	left,						4,				NonInherited,			YGValue,			"left",							YGValueAuto					)
-YOGAPROP(	top,						5,				NonInherited,			YGValue,			"top",							YGValueAuto					)
-YOGAPROP(	right,						6,				NonInherited,			YGValue,			"right",						YGValueAuto					)
-YOGAPROP(	bottom,						7,				NonInherited,			YGValue,			"bottom",						YGValueAuto					)
-YOGAPROP(	marginLeft,					8,				NonInherited,			YGValue,			"margin-left",					YGValueZero					)
-YOGAPROP(	marginTop,					9,				NonInherited,			YGValue,			"margin-top",					YGValueZero					)
-YOGAPROP(	marginRight,				10,				NonInherited,			YGValue,			"margin-right",					YGValueZero					)
-YOGAPROP(	marginBottom,				11,				NonInherited,			YGValue,			"margin-bottom",				YGValueZero					)
-YOGAPROP(	paddingLeft,				12,				NonInherited,			YGValue,			"padding-left",					YGValueZero					)
-YOGAPROP(	paddingTop,					13,				NonInherited,			YGValue,			"padding-top",					YGValueZero					)
-YOGAPROP(	paddingRight,				14,				NonInherited,			YGValue,			"padding-right",				YGValueZero					)
-YOGAPROP(	paddingBottom,				15,				NonInherited,			YGValue,			"padding-bottom",				YGValueZero					)
-YOGAPROP(	borderLeftWidth,			16,				NonInherited,			float,				"border-left-width",			0.f							)
-YOGAPROP(	borderTopWidth,				17,				NonInherited,			float,				"border-top-width",				0.f							)
-YOGAPROP(	borderRightWidth,			18,				NonInherited,			float,				"border-right-width",			0.f							)
-YOGAPROP(	borderBottomWidth,			19,				NonInherited,			float,				"border-bottom-width",			0.f							)
-YOGAPROP(	width,						20,				NonInherited,			YGValue,			"width",						YGValueAuto					)
-YOGAPROP(	height,						21,				NonInherited,			YGValue,			"height",						YGValueAuto					)
-YOGAPROP(	position,					22,				NonInherited,			YGPositionType,		"position",						YGPositionTypeRelative		)
-YOGAPROP(	overflow,					23,				NonInherited,			YGOverflow,			"overflow",						YGOverflowVisible			)
-YOGAPROP(	alignSelf,					24,				NonInherited,			YGAlign,			"align-self",					YGAlignAuto					)
-YOGAPROP(	maxWidth,					25,				NonInherited,			YGValue,			"max-width",					YGValueUndefined			)
-YOGAPROP(	maxHeight,					26,				NonInherited,			YGValue,			"max-height",					YGValueUndefined			)
-YOGAPROP(	minWidth,					27,				NonInherited,			YGValue,			"min-width",					YGValueAuto					)
-YOGAPROP(	minHeight,					28,				NonInherited,			YGValue,			"min-height",					YGValueAuto					)
-YOGAPROP(	flexDirection,				29,				NonInherited,			YGFlexDirection,	"flex-direction",				YGFlexDirectionRow			)
-YOGAPROP(	alignContent,				30,				NonInherited,			YGAlign,			"align-content",				YGAlignFlexStart			)
-YOGAPROP(	alignItems,					31,				NonInherited,			YGAlign,			"align-items",					YGAlignStretch				)
-YOGAPROP(	justifyContent,				32,				NonInherited,			YGJustify,			"justify-content",				YGJustifyFlexStart			)
-YOGAPROP(	wrap,						33,				NonInherited,			YGWrap,				"flex-wrap",					YGWrapNoWrap				)
-YOGAPROP(	display,					34,				NonInherited,			YGDisplay,			"flex-display",					YGDisplayFlex				)
-//End Yoga props																							
-//Begin draw props																														
-STYLEPROP(	backgroundColor,			35,				Inherited,				Color4f,			"background-color",				Color4f(1.f,1.f,1.f,1.f)	)
-SHAPEPROP(	fontSize,					36,				Inherited,				float,				"font-size",					0.f							)
-SHAPEPROP(	borderTopLeftRadius,		37,				NonInherited,			YGValue,			"border-top-left-radius",		YGValueZero					)
-SHAPEPROP(	borderTopRightRadius,		38,				NonInherited,			YGValue,			"border-top-right-radius",		YGValueZero					)
-SHAPEPROP(	borderBottomLeftRadius,		39,				NonInherited,			YGValue,			"border-bottom-left-radius",	YGValueZero					)
-SHAPEPROP(	borderBottomRightRadius,	40,				NonInherited,			YGValue,			"border-bottom-right-radius",	YGValueZero					)
-TRSPROP(	translation,				41,				NonInherited,			Vector2f,			"translation",					Vector2f::vector_zero()		)
-TRSPROP(	rotation,					42,				NonInherited,			float,				"rotation",						0							)
-TRSPROP(	scale,						43,				NonInherited,			Vector2f,			"scale",						Vector2f::vector_one()		)
-STYLEPROP(	backgroundImage,			44,				NonInherited,			std::string,		"background-image",				""							)
-//End draw props
+#define YOGAPROP(F) \
+F(	flex,						float,				"flex",							YGUndefined,					NonInherited	) \
+F(	flexGrow,					float,				"flex-grow",					0.f,							NonInherited	) \
+F(	flexShrink,					float,				"flow-shrink",					1.f,							NonInherited	) \
+F(	flexBasis,					YGValue,			"flex-basis",					YGValueAuto,					NonInherited	) \
+F(	left,						YGValue,			"left",							YGValueAuto,					NonInherited	) \
+F(	top,						YGValue,			"top",							YGValueAuto,					NonInherited	) \
+F(	right,						YGValue,			"right",						YGValueAuto,					NonInherited	) \
+F(	bottom,						YGValue,			"bottom",						YGValueAuto,					NonInherited	) \
+F(	marginLeft,					YGValue,			"margin-left",					YGValueZero,					NonInherited	) \
+F(	marginTop,					YGValue,			"margin-top",					YGValueZero,					NonInherited	) \
+F(	marginRight,				YGValue,			"margin-right",					YGValueZero,					NonInherited	) \
+F(	marginBottom,				YGValue,			"margin-bottom",				YGValueZero,					NonInherited	) \
+F(	paddingLeft,				YGValue,			"padding-left",					YGValueZero,					NonInherited	) \
+F(	paddingTop,					YGValue,			"padding-top",					YGValueZero,					NonInherited	) \
+F(	paddingRight,				YGValue,			"padding-right",				YGValueZero,					NonInherited	) \
+F(	paddingBottom,				YGValue,			"padding-bottom",				YGValueZero,					NonInherited	) \
+F(	borderLeftWidth,			float,				"border-left-width",			0.f,							NonInherited	) \
+F(	borderTopWidth,				float,				"border-top-width",				0.f,							NonInherited	) \
+F(	borderRightWidth,			float,				"border-right-width",			0.f,							NonInherited	) \
+F(	borderBottomWidth,			float,				"border-bottom-width",			0.f,							NonInherited	) \
+F(	width,						YGValue,			"width",						YGValueAuto,					NonInherited	) \
+F(	height,						YGValue,			"height",						YGValueAuto,					NonInherited	) \
+F(	position,					YGPositionType,		"position",						YGPositionTypeRelative,			NonInherited	) \
+F(	overflow,					YGOverflow,			"overflow",						YGOverflowVisible,				NonInherited	) \
+F(	alignSelf,					YGAlign,			"align-self",					YGAlignAuto,					NonInherited	) \
+F(	maxWidth,					YGValue,			"max-width",					YGValueUndefined,				NonInherited	) \
+F(	maxHeight,					YGValue,			"max-height",					YGValueUndefined,				NonInherited	) \
+F(	minWidth,					YGValue,			"min-width",					YGValueAuto,					NonInherited	) \
+F(	minHeight,					YGValue,			"min-height",					YGValueAuto,					NonInherited	) \
+F(	flexDirection,				YGFlexDirection,	"flex-direction",				YGFlexDirectionRow,				NonInherited	) \
+F(	alignContent,				YGAlign,			"align-content",				YGAlignFlexStart,				NonInherited	) \
+F(	alignItems,					YGAlign,			"align-items",					YGAlignStretch,					NonInherited	) \
+F(	justifyContent,				YGJustify,			"justify-content",				YGJustifyFlexStart,				NonInherited	) \
+F(	wrap,						YGWrap,				"flex-wrap",					YGWrapNoWrap,					NonInherited	) \
+F(	display,					YGDisplay,			"flex-display",					YGDisplayFlex,					NonInherited	) \
 
-#undef TRSPROP
-#undef YOGAPROP
-#undef SHAPEPROP
-#undef STYLEPROP
+//End Yoga props																												
+//Begin draw props		
+
+#define SHAPEPROP(F) \
+F(	fontSize,					float,				"font-size",					0.f,							Inherited		) \
+F(	borderTopLeftRadius,		YGValue,			"border-top-left-radius",		YGValueZero,					NonInherited	) \
+F(	borderTopRightRadius,		YGValue,			"border-top-right-radius",		YGValueZero,					NonInherited	) \
+F(	borderBottomLeftRadius,		YGValue,			"border-bottom-left-radius",	YGValueZero,					NonInherited	) \
+F(	borderBottomRightRadius,	YGValue,			"border-bottom-right-radius",	YGValueZero,					NonInherited	) \
+
+#define TRSPROP(F) \
+F(	translation,				Vector2f,			"translation",					Vector2f::vector_zero(),		NonInherited	) \
+F(	rotation,					float,				"rotation",						0,								NonInherited	) \
+F(	scale,						Vector2f,			"scale",						Vector2f::vector_one(),			NonInherited	) \
+
+#define STYLEPROP(F) \
+YOGAPROP(F) \
+SHAPEPROP(F) \
+TRSPROP(F) \
+F(	backgroundColor,			Color4f,			"background-color",				Color4f(1.f,1.f,1.f,1.f),		Inherited		) \
+F(	backgroundImage,			std::string,		"background-image",				"",								NonInherited	) \
+
+//End draw props

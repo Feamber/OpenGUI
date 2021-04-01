@@ -5,6 +5,7 @@
 #include <OpenGUI/Style/VariantStorage.h>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/StyleSheet.h"
+#include "OpenGUI/Style/StylePropertiesDef.h"
 namespace OGUI
 {
 	struct AnimationStyle;
@@ -21,9 +22,10 @@ namespace OGUI
 		void LerpPropertiesFast(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
 			const Style* parent, float alpha);
 		void InheritData(Style& parent);
-#define	STYLEPROP(name, index, inherit, type, ...)\
+#define	GEN(name, type, ...)\
 		type name;
-#include "OpenGUI/Style/StylePropertiesDef.h"
+		STYLEPROP(GEN)
+#undef  GEN
 	};
 
 	Style Lerp(const Style& a, const Style& b, float alpha);

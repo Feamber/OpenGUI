@@ -196,7 +196,7 @@ namespace OGUI {
         return std::hash<std::string>{}(absolute_path);
     }
 
-    std::shared_ptr<VisualElement> XmlAsset::Instantiate(XmlAssetID asset_id) {
+    VisualElement* XmlAsset::Instantiate(XmlAssetID asset_id) {
         auto result = all_xml_asset.find(asset_id);
         if (result == all_xml_asset.end()) 
             return nullptr;
@@ -204,7 +204,10 @@ namespace OGUI {
         CreationContext new_context{};
         auto new_template = ParseTemplate(result->second->root, new_context);
         if (new_template) 
-            return new_template->shared_from_this();
+            return new_template;
+
+        for(auto element : new_context.all)
+            delete element;
         return nullptr;
     }
 

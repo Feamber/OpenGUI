@@ -7,7 +7,7 @@ TEST_CASE("XmlParser", "[XmlAsset]")
     using namespace OGUI;
     auto asset = XmlAsset::LoadXmlFile("XmlParserTest.xml");
     REQUIRE(!asset.expired());
-    std::shared_ptr<VisualElement> ins = XmlAsset::Instantiate(asset.lock()->id);
+    VisualElement* ins = XmlAsset::Instantiate(asset.lock()->id);
 
     auto A = ins->_children[0];
     REQUIRE(A->_name == "A");

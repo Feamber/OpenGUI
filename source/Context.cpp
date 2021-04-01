@@ -45,10 +45,24 @@ namespace OGUI
 			element->UpdateWorldTransform();
 		element->Traverse([&](VisualElement* next) { if(dirty) next->_transformDirty = true; TransformRec(next); });
 	}
+
+	void DestroyRec(VisualElement* element)
+	{
+		std::vector<VisualElement*> toDestroy;
+		toDestroy.push_back(element);
+		while (toDestroy.size() > 0)
+		{
+			auto back = toDestroy.back(); toDestroy.pop_back();
+			for (auto child : back->_children)
+				toDestroy.push_back(child);
+			delete back;
+		}
+	}
+
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
 		for (auto& child : element->_children)
-			if(auto picked = PickRecursive(child.get(), point))
+			if(auto picked = PickRecursive(child, point))
 				return picked;
 		auto invTransform = math::inverse(element->_worldTransform);
 		Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
@@ -59,7 +73,13 @@ namespace OGUI
 		//std::cout << "Name: " << element->_name << std::endl;
 		//std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
 		if (element->Intersect(localPoint))
-			return element;
+		{
+			if (element->_isPseudoElement)
+				return element->GetHierachyParent();
+			else
+				return element;
+		}
+		
 		else return nullptr;
 	}
 	void CacheLayoutRec(VisualElement* element)
@@ -89,7 +109,7 @@ namespace OGUI
 
 void OGUI::Context::Update(const WindowHandle window, float dt)
 {
-	auto root = desktops.get();
+	auto root = desktops;
 	textureManager->Update();
 	// Update Window
 	auto& wctx = GetOrRegisterWindowContext(window);
@@ -103,7 +123,7 @@ void OGUI::Context::Update(const WindowHandle window, float dt)
 
 void OGUI::Context::Render(const WindowHandle window)
 {
-	auto root = desktops.get();
+	auto root = desktops;
 	PrimitiveDraw::DrawContext ctx;
 	const auto& wctx = GetWindowContext(window);
 	ctx.resolution = Vector2f(wctx.X, wctx.Y);
@@ -111,9 +131,14 @@ void OGUI::Context::Render(const WindowHandle window)
 	renderImpl->RenderPrimitives(ctx.prims);
 }
 
-bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y)
+void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
 {
-	auto root = desktops.get();
+
+}
+
+bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
+{
+	auto root = desktops;
 	if (!root)
 		return false;
 	PointerDownEvent event;
@@ -124,64 +149,8 @@ bool OGUI::Context::OnMouseDown(const WindowHandle window, EMouseKey button, int
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
 
-	event.position = Vector2f(x, y); // screen space
-	inputImpl->ScreenToClient(window, x, y); // client space
-
-	auto dpiScale = inputImpl->GetDpiScale();
-	x /= dpiScale.X;
-	y /= dpiScale.Y;
-
-	const auto& wctx = GetWindowContext(window);
-	const float width = wctx.X;
-	const float height = wctx.Y;
-
-	auto point = Vector2f(x, height - y) - Vector2f(width, height) / 2; // center of the window
-
-	auto picked = PickRecursive(root, point);
-	if (picked)
-	{
-		if (picked != currentFocus.lock().get())
-		{
-			picked->_pseudoMask |= (int)PseudoStates::Focus;
-			if (auto currF = currentFocus.lock().get())
-			{
-				currF->_pseudoMask &= ~(int)PseudoStates::Focus;
-			}
-		}
-		currentFocus = picked->shared_from_this();
-		RouteEvent(picked, event);
-	}
-	return false;
-}
-
-bool OGUI::Context::OnMouseUp(const WindowHandle window, EMouseKey button, int32 x, int32 y)
-{
-	pointerDownCount--;
-	//std::cout << "OnMouseUp: " << x << "," << y << std::endl;
-	return false;
-}
-
-bool OGUI::Context::OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y)
-{
-	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
-	return false;
-}
-
-bool OGUI::Context::OnMouseMove(const WindowHandle window, bool relative, int32 x, int32 y)
-{
-	//auto root = desktops.get();
-	//if (!root)
-	//	return false;
-
-	//std::cout << "OnMouseMove: " << x << "," << y << std::endl;
-
-	//static Vector2f prevPointerPos;
-	//prevPointerPos = { (float)x, (float)y };
-
-	//PointerMoveEvent moveEvent;
-	//moveEvent.position = { (float)x, (float)y };
-	//moveEvent.pointerType = "mouse";
-	//moveEvent.deltaPosition = { (float)x - prevPointerPos.X, (float)y - prevPointerPos.Y };
+	//event.position = Vector2f(x, y); // screen space
+	//inputImpl->ScreenToClient(window, x, y); // client space
 
 	//auto dpiScale = inputImpl->GetDpiScale();
 	//x /= dpiScale.X;
@@ -190,25 +159,43 @@ bool OGUI::Context::OnMouseMove(const WindowHandle window, bool relative, int32 
 	//const auto& wctx = GetWindowContext(window);
 	//const float width = wctx.X;
 	//const float height = wctx.Y;
+	//printf("X: %d, Y: %d\n", x, y);
 
-	//auto point = Vector2f(x, height - y) - Vector2f(width, height) / 2; // center of the window
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
 
-	//auto picked = PickRecursive(root, point);
-	//if (picked)
-	//{
-	//	if (picked != currentFocus.lock().get())
-	//	{
-	//		picked->_pseudoMask |= (int)PseudoStates::Hover;
-	//		if (auto currF = currentFocus.lock().get())
-	//		{
-	//			currF->_pseudoMask &= ~(int)PseudoStates::Hover;
-	//		}
-	//	}
-	//	currentFocus = picked->shared_from_this();
-	//	RouteEvent(picked, moveEvent);
-	//}
+	auto picked = PickRecursive(root, point);
+	if (picked)
+	{
+		if (picked != currentFocus)
+		{
+			picked->SetPseudoClass(PseudoStates::Focus, true);
+			if (auto currF = currentFocus)
+			{
+				currF->SetPseudoClass(PseudoStates::Focus, false);
+			}
+		}
+		currentFocus = picked;
+		RouteEvent(picked, event);
+	}
+	return false;
+}
 
-	//prevPointerPos = { (float)x, (float)y };
+bool OGUI::Context::OnMouseUp(EMouseKey button, int32 x, int32 y)
+{
+	pointerDownCount--;
+	//std::cout << "OnMouseUp: " << x << "," << y << std::endl;
+	return false;
+}
+
+bool OGUI::Context::OnMouseDoubleClick(EMouseKey button, int32 x, int32 y)
+{
+	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
+	return false;
+}
+
+bool OGUI::Context::OnMouseMove(bool relative, int32 x, int32 y)
+{
+	
 	return false;
 }
 
@@ -230,8 +217,10 @@ OGUI::Context::Context()
 
 OGUI::Context::~Context()
 {
-	desktops.reset();
-	dialogs.reset();
+	if (desktops)
+		DestroyRec(desktops);
+	if (dialogs)
+		DestroyRec(dialogs);
 }
 
 OGUI::Context& OGUI::Context::Get()

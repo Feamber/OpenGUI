@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "OpenGUI/Style/StyleSheet.h"
+#include "OpenGUI/Animation/AnimPropertiesDef.h"
 
 namespace OGUI
 {
@@ -24,8 +25,9 @@ namespace OGUI
 		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
 		void ResolveReference(const gsl::span<StyleSheet*>& sheets);
 		bool operator==(const AnimationStyle& other);
-#define	ANIMPROP(name, index, type, ...)\
+#define	GEN(name, type, ...)\
 		type name;
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+		ANIMPROP(GEN)
+#undef GEN
 	};
 }

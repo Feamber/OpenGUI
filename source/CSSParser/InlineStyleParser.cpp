@@ -6,36 +6,36 @@ namespace OGUI
 {
     std::optional<InlineStyle> ParseInlineStyle(std::string_view str)
 	{
-		auto grammar = R"(
+		static auto grammar = R"(
 			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
-			Property			<- <IDENT> w ':' w <ValueList> _
-			~ValueList			<- Value (Spliter Value)*
-			~Spliter			<- (w ',' w) / [ ]+
-			~Value				<- URL / CNUM / HEX / CALL / IDENT
-			~URL				<- 'url' w '(' (!')' .)* ')'
+			Property			<- <IDENT> w ':' w <(!(';') .)*> _
 			~IDENT				<- [a-zA-Z] [a-zA-Z0-9-]*
-			~HEX				<- ('#' NUM) 
-			~CNUM				<- NUM (IDENT / '%')?
-			~NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
-			~CALL				<- IDENT w '('  w CNUM ( w ',' w CNUM)* w  ')'
 			~blockcomment		<- '/*' (!'*/' .)* '*/'
 			~_					<- ([ \t\r\n] / blockcomment)*
 			~w					<- [ ]*
 		)";
 		using namespace peg;
 		using namespace std;
-		parser parser;
-		InlineStyle sheet;
-
-		parser.log = [](size_t line, size_t col, const string& msg)
+		struct ParserInitializer
 		{
-			cerr << line << ":" << col << ": " << msg << "\n";
+			parser parser;
+			bool ok;
+			ParserInitializer()
+			{
+				parser.log = [](size_t line, size_t col, const string& msg)
+				{
+					cerr << line << ":" << col << ": " << msg << "\n";
+				};
+				ok = parser.load_grammar(grammar);
+			}
 		};
+		static ParserInitializer parserInitializer; //do once
+		auto& parser = parserInitializer.parser;
 
-		auto ok = parser.load_grammar(grammar);
-		if (!ok)
+		if (!parserInitializer.ok)
 			return {};
 
+		InlineStyle sheet;
 		parser["Property"] = [](SemanticValues& vs)
 		{
 			auto name = vs.token();
@@ -67,7 +67,7 @@ namespace OGUI
 			}
 		};
 
-		//parser.enable_packrat_parsing(); // Enable packrat parsing.
+		parser.enable_packrat_parsing();
 		if (parser.parse(str))
 			return sheet;
 		return {};

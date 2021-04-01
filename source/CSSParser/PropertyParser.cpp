@@ -137,13 +137,14 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 			return true; \
 		} \
 	}
-	if (animIndex >= 0)
+	if (animIndex >= 0 && id >= StylePropertyId::NumStyle)
 	{
 		PARSEANIMPROP(animDuration, float, FromTime);
 		PARSEANIMPROP(animDelay, float, FromTime);
 		PARSEANIMPROP(animIterCount, float, FromIterationCount);
-#define ANIMPROP(idd, index, type, ...) PARSEANIMPROP(idd, type, FromString) {}
-#include "OpenGUI/Animation/AnimPropertiesDef.h"
+#define GEN(idd, type, ...) PARSEANIMPROP(idd, type, FromString);
+		ANIMPROP(GEN);
+#undef GEN
 	}
 	else
 	{
@@ -152,8 +153,10 @@ bool OGUI::ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::s
 
 	PARSEPROP(backgroundImage, std::string, FromUrl);
 	PARSEPROP(translation, Vector2f, FromTranslation);
-#define STYLEPROP(idd, index, inherit, type, ...) PARSEPROP(idd, type, FromString) {}
-#include "OpenGUI/Style/StylePropertiesDef.h"
+
+#define	GEN(idd, type, ...) PARSEPROP(idd, type, FromString)
+	STYLEPROP(GEN)
+#undef  GEN
 fail:
 	errorMsg = "failed to parse style property value!"; 
 	errorType = ParseErrorType::InvalidValue; 

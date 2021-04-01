@@ -10,10 +10,10 @@
 #include <ostring/helpers.h>
 
 // TODO: platform independent
+// TODO: move impl to cpp
+#include <Windows.h>
 
 _NS_OLOG_START
-
-#include <Windows.h>
 
 struct spdlog_sys
 {
@@ -61,42 +61,42 @@ struct spdlog_sys
         *pline = line;
     }
 
-    static void verbose(std::string_view sv)
+    static void verbose(std::wstring_view sv)
     {
         change_pattern_if_ffl();
         spdlog::trace(sv);
         reset_pattern();
     }
 
-    static void debug(std::string_view sv)
+    static void debug(std::wstring_view sv)
     {
         change_pattern_if_ffl();
         spdlog::debug(sv);
         reset_pattern();
     }
 
-    static void info(std::string_view sv)
+    static void info(std::wstring_view sv)
     {
         change_pattern_if_ffl();
         spdlog::info(sv);
         reset_pattern();
     }
 
-    static void warn(std::string_view sv)
+    static void warn(std::wstring_view sv)
     {
         change_pattern_if_ffl();
         spdlog::warn(sv);
         reset_pattern();
     }
 
-    static void error(std::string_view sv)
+    static void error(std::wstring_view sv)
     {
         change_pattern_if_ffl();
         spdlog::error(sv);
         reset_pattern();
     }
 
-    static void fatal(std::string_view sv)
+    static void fatal(std::wstring_view sv)
     {
         change_pattern_if_ffl();
         spdlog::critical(sv);
@@ -163,33 +163,48 @@ using logsys = spdlog_sys;
 #define LOG_FFL olog::spdlog_sys::__log_with_ffl(__FILE__, __FUNCTION__, __LINE__);
 
 
-void init_log_system()
+static void init_log_system()
 {
     logsys::init_log_system();
 }
 
 #define __MAKE_LOG_CALL_DECLARE(func)\
-void func(std::string_view sv)\
+static void func(std::wstring_view sv)\
 {\
     logsys::func(sv);\
 }\
-void func(const std::string& sv)\
+static void func(ostr::string_view sv)\
 {\
-    func(std::string_view(sv));\
+    std::wstring str(sv.raw().cbegin(), sv.raw().cend());\
+    func(std::wstring_view(str));\
 }\
-void func(ostr::string_view sv)\
-{\
-    std::string str;\
-    sv.to_utf8(str);\
-    func(std::string_view(str));\
-}\
-void func(const ostr::string& sv)\
+static void func(const ostr::string& sv)\
 {\
     func(ostr::string_view(sv));\
 }\
-void func(const std::u16string& str)\
+static void func(const std::u16string& str)\
 {\
     func(ostr::string_view(str));\
+}\
+static void func(const std::u16string_view& str)\
+{\
+    func(ostr::string_view(str));\
+}\
+template<typename T, typename _Char = typename std::char_traits<T>::char_type>\
+void func(_Char const* cstr)\
+{\
+    func(std::wstring_view(std::to_wstring(cstr)));\
+}\
+template<typename T>\
+void func(std::basic_string_view<T> sv)\
+{\
+    std::wstring str(sv.cbegin(), sv.cend());\
+    func(std::wstring_view(str));\
+}\
+template<typename T>\
+void func(std::basic_string<T> str)\
+{\
+    func(std::basic_string_view<T>(str));\
 }\
 template<typename T, typename...Args>\
 void func(T fmt, Args&&...args)\
@@ -203,6 +218,7 @@ __MAKE_LOG_CALL_DECLARE(info)
 __MAKE_LOG_CALL_DECLARE(warn)
 __MAKE_LOG_CALL_DECLARE(error)
 __MAKE_LOG_CALL_DECLARE(fatal)
+
 
 #undef __MAKE_LOG_CALL_DECLARE
 
