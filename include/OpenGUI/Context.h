@@ -38,9 +38,9 @@ namespace OGUI
 		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*,BitmapParserInterface*);
 
 		//Windows
-		VisualWindow* desktops;
-		VisualWindow* dialogs;
-		VisualElement* currentFocus;
+		VisualWindow* desktops = nullptr;
+		VisualWindow* dialogs = nullptr;
+		VisualElement* currentFocus = nullptr;
 
 		//Systems
 		VisualStyleSystem styleSystem;
@@ -65,7 +65,7 @@ namespace OGUI
 		bool OnMouseWheel(float delta);
 			
 		static Context& Get();
-		VisualElement* _elementUnderCursor;
+		VisualElement* _elementUnderCursor = nullptr;
 	public:
 		//Hooks
 		std::unique_ptr<InputInterface>  inputImpl;

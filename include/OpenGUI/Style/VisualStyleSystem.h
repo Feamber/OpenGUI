@@ -18,7 +18,7 @@ namespace OGUI
 	struct StyleMatchingContext
 	{
 		std::vector<StyleSheet*> styleSheetStack;
-		VisualElement* currentElement;
+		VisualElement* currentElement = nullptr;
 	};
 
 	struct CachedStyle
