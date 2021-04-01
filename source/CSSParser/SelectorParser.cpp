@@ -74,6 +74,7 @@ namespace OGUI
 		if (!parserInitializer.ok)
 			return {};
 		StyleComplexSelector value;
+		parser.enable_packrat_parsing();
 		if (parser.parse(str, value))
 			return value;
 		return {};

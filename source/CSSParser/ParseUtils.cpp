@@ -538,6 +538,7 @@ namespace OGUI
 		if (!parserInitializer.ok)
 			return false;
 
+		parser.enable_packrat_parsing();
 		return parser.parse(str, value);
 	}
 
@@ -1015,6 +1016,7 @@ namespace OGUI
 		if (!parserInitializer.ok)
 			return false;
 		tt value;
+		parser.enable_packrat_parsing();
 		if (!parser.parse(str, value))
 			return false;
 		if (value.t.has_value())

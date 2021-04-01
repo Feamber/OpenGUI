@@ -67,7 +67,7 @@ namespace OGUI
 			}
 		};
 
-		//parser.enable_packrat_parsing(); // Enable packrat parsing.
+		parser.enable_packrat_parsing();
 		if (parser.parse(str))
 			return sheet;
 		return {};

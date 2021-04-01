@@ -198,7 +198,7 @@ namespace OGUI
 			}
 			sheet.styleKeyframes.push_back(std::move(keyframes));
 		};
-		//parser.enable_packrat_parsing(); // Enable packrat parsing.
+		parser.enable_packrat_parsing();
 		if (parser.parse(str))
 			return sheet;
 		return {};
