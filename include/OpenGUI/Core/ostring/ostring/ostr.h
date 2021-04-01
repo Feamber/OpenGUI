@@ -75,7 +75,9 @@ public:
 
 	string(const string_view& sv)
 		: _str(sv.raw())
-	{}
+	{
+		calculate_surrogate();
+	}
 
 	string& operator=(const string_view& sv)
 	{
