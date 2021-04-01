@@ -7,6 +7,17 @@
     flex-wrap: wrap;
     background-color:rgb(255, 255, 255, 0.8);
     background-image:url(res/test4.jpg);
+    animation-name: t360;
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+}
+
+
+
+@keyframes t360 {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .Child {
@@ -33,6 +44,10 @@
 
 #Child1::before {
     transform: translate(-20px, -40px);
+}
+
+#Child2::before {
+    transform: scale(0.8, 0.8) translate(5px, -5px);
 }
 
 /*negative delay hack*/
@@ -90,7 +105,7 @@
 
 @keyframes shapeanim {
     to {
-        transform:  scale(1.2, 1.2) rotate(360deg);
+        transform:  scale(1.2, 1.2) rotate(480deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         background-color:rgb(73, 214, 125);

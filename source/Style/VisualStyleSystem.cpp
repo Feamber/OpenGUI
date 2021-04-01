@@ -503,7 +503,7 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 		}
 		std::vector<AnimationStyle> yieldingAnims;
 		std::vector<AnimRunContext> yieldingCtxs;
-		if (!_cacheInvalidated) //just remove if cache is invalidated
+		if (_cacheInvalidated) //just remove if cache is invalidated
 			goto noYield;
 		for (int i = 0; i < dynbitset.size(); ++i)
 		{
@@ -559,8 +559,6 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 		animationEvaling |= ctx.evaluating;
 	if (element->_animContext.size() == 0 && element->_prevEvaluating)
 		styleDirty = true;
-	if (styleDirty)
-		element->_style = element->_preAnimatedStyle;
 	if (animationEvaling || styleDirty)
 	{
 		element->_style = element->_preAnimatedStyle;
