@@ -12,8 +12,8 @@
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
-#include "OpenGUI/Core/ostring/ostring/ostr.h"
-#include "OpenGUI/Core/ostring/olog/olog.h"
+#include "OpenGUI/Core/open_string.h"
+#include "OpenGUI/Core/olog.h"
 #include "efsw/efsw.hpp"
 
 extern void InstallInput();
@@ -189,6 +189,62 @@ public:
 	WGPUBuffer index_buffer;
 };
 
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/daily_file_sink.h>
+
+#include <Windows.h>
+struct SpdlogLogger : LogInterface
+{
+	SpdlogLogger()
+	{
+		auto console_sink = get_console_sink();
+		console_sink->set_level(spdlog::level::info);
+		console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
+
+		auto file_sink = get_file_sink();
+		file_sink->set_level(spdlog::level::trace);
+		file_sink->set_pattern("[%Y-%m-%d %z %X.(%F)] [%^%l%$] [%P.%t] %v");
+
+		auto logger = std::make_shared<spdlog::logger>("logger_default", spdlog::sinks_init_list{ console_sink, file_sink });
+		logger->set_level(spdlog::level::trace);
+		logger->flush_on(spdlog::level::info);
+		spdlog::set_default_logger(logger);
+
+		SetConsoleOutputCP(65001);
+	}
+
+	virtual void Log(olog::Level l, ostr::string_view msg)
+	{
+		std::wstring str(msg.raw().cbegin(), msg.raw().cend());
+		spdlog::level::level_enum spdlevel = 
+		[l]
+		{
+			if (l == olog::Level::None) return spdlog::level::off;
+			return (spdlog::level::level_enum)((uint8_t)l - 1);
+		}();
+		spdlog::log(spdlevel, std::wstring_view(str));
+	}
+
+	std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> get_console_sink()
+	{
+		static std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> _static = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+		return _static;
+	}
+
+	std::shared_ptr<spdlog::sinks::daily_file_sink_mt> get_file_sink()
+	{
+		static std::shared_ptr<spdlog::sinks::daily_file_sink_mt> _static = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+			"Daily.log",        // file name
+			0,                  // hour
+			0,                  // minute
+			false,              // truncate
+			7                   // max files
+			);
+		return _static;
+	}
+};
+
 /**
  * Bare minimum pipeline to draw a triangle using the above shaders.
  */
@@ -327,7 +383,7 @@ static bool redraw() {
 		}
 		ReloadXML = false;
 		ReloadCSS = false;
-		olog::info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+		olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 	}
 	else if(ReloadCSS)
 	{
@@ -342,7 +398,7 @@ static bool redraw() {
 			ctx.styleSystem.InvalidateCache();
 			ve->_selectorDirty = true;
 		}
-		olog::info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+		olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 		ReloadCSS = false;
 	}
 	float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
@@ -511,7 +567,7 @@ static void BuildSDLMap()
 
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
-#include "olog/olog.h"
+#include "OpenGUI/Core/olog.h"
 #if defined(_WIN32) || defined(_WIN64)
 #define SDL_MAIN_HANDLED
 #ifndef __WIN32__
@@ -562,7 +618,7 @@ void OnReloaded()
 		constexpr auto handler = +[](PointerDownEvent& event)
 		{
 			using namespace ostr::literal;
-			olog::info(u"Oh ♂ shit!");
+			olog::Info(u"Oh ♂ shit!"_o);
 			return true;
 		};
 		child1->_eventHandler.Register<PointerDownEvent, handler>();
@@ -609,7 +665,6 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 #if defined(_WIN32) || defined(_WIN64)
 	hWnd = (window::Handle)wmInfo.info.win.window;
 #endif
-	olog::init_log_system();
 	if (hWnd) {
 		if (device = webgpu::create(hWnd);device) {
 			queue = wgpuDeviceGetDefaultQueue(device);
@@ -624,6 +679,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 				ctx.desktops = new VisualWindow;
+				ctx.logImpl = std::make_unique<SpdlogLogger>();
 				LoadResource();
 
 				BuildSDLMap();
@@ -674,15 +730,15 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 						}
 						case SDL_MOUSEMOTION:
 						{
-							//olog::info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
-							//olog::info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
+							//olog::Info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
+							//olog::Info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
 							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
 							break;
 						}
 						case SDL_KEYDOWN:
 						{
-							//olog::info(u"KeyDown {}"_o.format(event.key.keysym.sym));
-							//olog::info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
+							//olog::Info(u"KeyDown {}"_o.format(event.key.keysym.sym));
+							//olog::Info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
 							ctx.OnKeyDown(gEKeyCodeLut[event.key.keysym.sym]);
 							break;
 						}
@@ -692,15 +748,15 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 								done = true;
 							else
 							{
-								//olog::info(u"KeyDown {}"_o.format(event.key.keysym.sym));
-								//olog::info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
+								//olog::Info(u"KeyDown {}"_o.format(event.key.keysym.sym));
+								//olog::Info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
 								ctx.OnKeyUp(gEKeyCodeLut[event.key.keysym.sym]);
 							}
 							break;
 						}
 						case SDL_MOUSEWHEEL:
 						{
-							//olog::info(u"MouseWheel Delta:{}"_o.format(event.wheel.y));
+							//olog::Info(u"MouseWheel Delta:{}"_o.format(event.wheel.y));
 							ctx.OnMouseWheel(event.wheel.y);
 							break;
 						}

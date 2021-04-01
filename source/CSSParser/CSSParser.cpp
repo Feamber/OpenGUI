@@ -4,7 +4,6 @@
 #include <fstream>
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include <chrono>
-#include "OpenGUI/Core/ostring/olog/olog.h"
 using namespace OGUI;
 
 namespace OGUI

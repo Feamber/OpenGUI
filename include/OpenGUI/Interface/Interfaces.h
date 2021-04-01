@@ -1,6 +1,8 @@
 #pragma once
 #include "OpenGUI/Core/Types.h"
 #include <string_view>
+#include "OpenGUI/Core/open_string.h"
+#include "OpenGUI/Core/olog.h"
 
 namespace OGUI
 {
@@ -72,4 +74,12 @@ namespace OGUI
         virtual void SetScissor(const Scissor scissor) = 0;
         virtual void ResetScissor() = 0;
 	};
+
+	struct LogInterface
+	{
+		virtual ~LogInterface();
+
+		virtual void Log(olog::Level l, ostr::string_view msg) = 0;
+	};
+
 }
