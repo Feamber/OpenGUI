@@ -377,3 +377,5 @@ cpp.hint
 *.exe
 !thirdparty/xerces-c/bin/xerces-c_4_0D.dll
 !thirdparty/xerces-c/bin
+/OGUI_Xsd/压缩.bat
+/OGUI_Xsd/OGUI_Xsd.zip

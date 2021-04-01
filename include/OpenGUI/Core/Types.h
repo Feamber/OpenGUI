@@ -29,6 +29,7 @@ namespace OGUI
 
     enum class EKeyCode : uint32
 	{
+		/// means not supported keycode
 		Invalid = 0x00,
 		Backspace = 0x08,
 		Tab = 0x09,
@@ -50,7 +51,7 @@ namespace OGUI
 		Right = 0x27,
 		Down = 0x28,
 		Select = 0x29,
-		Print = 0x2A,
+		Print = 0x2A, ///
 		Execute = 0x2B,
 		Print_screen = 0x2C,
 		Insert = 0x2D,
@@ -92,8 +93,8 @@ namespace OGUI
 		X = 0x58,
 		Y = 0x59,
 		Z = 0x5A,
-		LSystem = 0x5B,
-		RSystem = 0x5C,
+		LSystem = 0x5B, ///
+		RSystem = 0x5C, ///
 		App = 0x5D,
 		Sleep = 0x5F,
 		Numpad0 = 0x60,
@@ -108,9 +109,9 @@ namespace OGUI
 		Numpad9 = 0x69,
 		Multiply = 0x6A,
 		Add = 0x6B,
-		Separator = 0x6C,
+		Separator = 0x6C, ///
 		Subtract = 0x6D,
-		Decimal = 0x6E,
+		Decimal = 0x6E, ///
 		Divide = 0x6F,
 		F1 = 0x70,
 		F2 = 0x71,
@@ -148,8 +149,8 @@ namespace OGUI
 		Plus = 0xBB,		// =+ key
 		Comma = 0xBC,		// ,< key
 		Minus = 0xBD,		// -_ key
-		Dot = 0xBE,			// .> key
-		Slash = 0xBF,		// /? key on US standard keyboard
+		Dot = 0xBE,			///.> key
+		Slash = 0xBF,		/// /? key on US standard keyboard
 		Wave = 0xC0,		// ~` key on US standard keyboard
 		LBranket = 0xDB,	// [{ key on US standard keyboard
 		Backslash = 0xDC,	// \| key on US standard keyboard

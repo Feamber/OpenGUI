@@ -311,15 +311,19 @@ static bool redraw() {
 	{
 		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 		auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-		auto newVe = XmlAsset::Instantiate(asset.lock()->id);
-		if (newVe)
+		
+		if(asset)
 		{
-			auto ve = ctx.desktops->_children[0];
-			ctx.desktops->RemoveChild(ve);
-			VisualElement::DestoryTree(ve);
-			ctx.desktops->PushChild(newVe);
-			OnReloaded();
-			ctx._layoutDirty = true;
+			auto newVe = asset->Instantiate();
+			if (newVe)
+			{
+				auto ve = ctx.desktops->_children[0];
+				ctx.desktops->RemoveChild(ve);
+				VisualElement::DestoryTree(ve);
+				ctx.desktops->PushChild(newVe);
+				OnReloaded();
+				ctx._layoutDirty = true;
+			}
 		}
 		ReloadXML = false;
 		ReloadCSS = false;
@@ -379,6 +383,132 @@ struct WGPURenderer : RenderInterface
 
 };
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
+
+std::unordered_map<uint32, EKeyCode> gEKeyCodeLut;
+static void BuildSDLMap()
+{
+	gEKeyCodeLut[SDLK_BACKSPACE] = EKeyCode::Backspace;
+	gEKeyCodeLut[SDLK_TAB] = EKeyCode::Tab;
+	gEKeyCodeLut[SDLK_CLEAR] = EKeyCode::Clear;
+	gEKeyCodeLut[SDLK_LSHIFT] = EKeyCode::LShift;
+	gEKeyCodeLut[SDLK_RSHIFT] = EKeyCode::RShift;
+	gEKeyCodeLut[SDLK_LCTRL] = EKeyCode::LCtrl;
+	gEKeyCodeLut[SDLK_RCTRL] = EKeyCode::RCtrl;
+	gEKeyCodeLut[SDLK_LALT] = EKeyCode::LAlt;
+	gEKeyCodeLut[SDLK_RALT] = EKeyCode::RAlt;
+	gEKeyCodeLut[SDLK_PAUSE] = EKeyCode::Pause;
+	gEKeyCodeLut[SDLK_CAPSLOCK] = EKeyCode::CapsLock;
+	gEKeyCodeLut[SDLK_ESCAPE] = EKeyCode::Esc;
+	gEKeyCodeLut[SDLK_SPACE] = EKeyCode::SpaceBar;
+	gEKeyCodeLut[SDLK_CAPSLOCK] = EKeyCode::CapsLock;
+	gEKeyCodeLut[SDLK_PAGEUP] = EKeyCode::PageUp;
+	gEKeyCodeLut[SDLK_PAGEDOWN] = EKeyCode::PageDown;
+	gEKeyCodeLut[SDLK_END] = EKeyCode::End;
+	gEKeyCodeLut[SDLK_HOME] = EKeyCode::Home;
+	gEKeyCodeLut[SDLK_LEFT] = EKeyCode::Left;
+	gEKeyCodeLut[SDLK_UP] = EKeyCode::Up;
+	gEKeyCodeLut[SDLK_RIGHT] = EKeyCode::Right;
+	gEKeyCodeLut[SDLK_DOWN] = EKeyCode::Down;
+	gEKeyCodeLut[SDLK_SELECT] = EKeyCode::Select;
+	gEKeyCodeLut[SDLK_PRINTSCREEN] = EKeyCode::Print_screen;
+	gEKeyCodeLut[SDLK_EXECUTE] = EKeyCode::Execute;
+	gEKeyCodeLut[SDLK_INSERT] = EKeyCode::Insert;
+	gEKeyCodeLut[SDLK_DELETE] = EKeyCode::Del;
+	gEKeyCodeLut[SDLK_HELP] = EKeyCode::Help;
+
+	gEKeyCodeLut[SDLK_0] = EKeyCode::Zero;
+	gEKeyCodeLut[SDLK_1] = EKeyCode::One;
+	gEKeyCodeLut[SDLK_2] = EKeyCode::Two;
+	gEKeyCodeLut[SDLK_3] = EKeyCode::Three;
+	gEKeyCodeLut[SDLK_4] = EKeyCode::Four;
+	gEKeyCodeLut[SDLK_5] = EKeyCode::Five;
+	gEKeyCodeLut[SDLK_6] = EKeyCode::Six;
+	gEKeyCodeLut[SDLK_7] = EKeyCode::Seven;
+	gEKeyCodeLut[SDLK_8] = EKeyCode::Eight;
+	gEKeyCodeLut[SDLK_9] = EKeyCode::Nine;
+
+	gEKeyCodeLut[SDLK_APP1] = EKeyCode::App;
+	gEKeyCodeLut[SDLK_SLEEP] = EKeyCode::Sleep;
+
+	gEKeyCodeLut[SDLK_KP_0] = EKeyCode::Numpad0;
+	gEKeyCodeLut[SDLK_KP_1] = EKeyCode::Numpad1;
+	gEKeyCodeLut[SDLK_KP_2] = EKeyCode::Numpad2;
+	gEKeyCodeLut[SDLK_KP_3] = EKeyCode::Numpad3;
+	gEKeyCodeLut[SDLK_KP_4] = EKeyCode::Numpad4;
+	gEKeyCodeLut[SDLK_KP_5] = EKeyCode::Numpad5;
+	gEKeyCodeLut[SDLK_KP_6] = EKeyCode::Numpad6;
+	gEKeyCodeLut[SDLK_KP_7] = EKeyCode::Numpad7;
+	gEKeyCodeLut[SDLK_KP_8] = EKeyCode::Numpad8;
+	gEKeyCodeLut[SDLK_KP_9] = EKeyCode::Numpad9;
+
+	gEKeyCodeLut[SDLK_KP_MULTIPLY] = EKeyCode::Multiply;
+	gEKeyCodeLut[SDLK_KP_PLUS] = EKeyCode::Add;
+	gEKeyCodeLut[SDLK_KP_DIVIDE] = EKeyCode::Divide;
+	gEKeyCodeLut[SDLK_KP_MINUS] = EKeyCode::Subtract;
+
+	gEKeyCodeLut[SDLK_F1] = EKeyCode::F1;
+	gEKeyCodeLut[SDLK_F2] = EKeyCode::F2;
+	gEKeyCodeLut[SDLK_F3] = EKeyCode::F3;
+	gEKeyCodeLut[SDLK_F4] = EKeyCode::F4;
+	gEKeyCodeLut[SDLK_F5] = EKeyCode::F5;
+	gEKeyCodeLut[SDLK_F6] = EKeyCode::F6;
+	gEKeyCodeLut[SDLK_F7] = EKeyCode::F7;
+	gEKeyCodeLut[SDLK_F8] = EKeyCode::F8;
+	gEKeyCodeLut[SDLK_F9] = EKeyCode::F9;
+	gEKeyCodeLut[SDLK_F10] = EKeyCode::F10;
+	gEKeyCodeLut[SDLK_F11] = EKeyCode::F11;
+	gEKeyCodeLut[SDLK_F12] = EKeyCode::F12;
+	gEKeyCodeLut[SDLK_F13] = EKeyCode::F13;
+	gEKeyCodeLut[SDLK_F14] = EKeyCode::F14;
+	gEKeyCodeLut[SDLK_F15] = EKeyCode::F15;
+	gEKeyCodeLut[SDLK_F16] = EKeyCode::F16;
+	gEKeyCodeLut[SDLK_F17] = EKeyCode::F17;
+	gEKeyCodeLut[SDLK_F18] = EKeyCode::F18;
+	gEKeyCodeLut[SDLK_F19] = EKeyCode::F19;
+	gEKeyCodeLut[SDLK_F20] = EKeyCode::F20;
+	gEKeyCodeLut[SDLK_F21] = EKeyCode::F21;
+	gEKeyCodeLut[SDLK_F22] = EKeyCode::F22;
+	gEKeyCodeLut[SDLK_F23] = EKeyCode::F23;
+	gEKeyCodeLut[SDLK_F24] = EKeyCode::F24;
+
+	gEKeyCodeLut[SDLK_NUMLOCKCLEAR] = EKeyCode::Num_lock;
+
+	gEKeyCodeLut[SDLK_SEMICOLON] = EKeyCode::Semicolon;
+	gEKeyCodeLut[SDLK_PLUS] = EKeyCode::Plus;
+	gEKeyCodeLut[SDLK_COMMA] = EKeyCode::Comma;
+	gEKeyCodeLut[SDLK_MINUS] = EKeyCode::Minus;
+	gEKeyCodeLut[SDLK_SLASH] = EKeyCode::Slash;
+
+	gEKeyCodeLut[SDLK_a] = EKeyCode::A;
+	gEKeyCodeLut[SDLK_b] = EKeyCode::B;
+	gEKeyCodeLut[SDLK_c] = EKeyCode::C;
+	gEKeyCodeLut[SDLK_d] = EKeyCode::D;
+	gEKeyCodeLut[SDLK_e] = EKeyCode::E;
+	gEKeyCodeLut[SDLK_f] = EKeyCode::F;
+	gEKeyCodeLut[SDLK_g] = EKeyCode::G;
+	gEKeyCodeLut[SDLK_h] = EKeyCode::H;
+	gEKeyCodeLut[SDLK_i] = EKeyCode::I;
+	gEKeyCodeLut[SDLK_j] = EKeyCode::J;
+	gEKeyCodeLut[SDLK_k] = EKeyCode::K;
+	gEKeyCodeLut[SDLK_l] = EKeyCode::L;
+	gEKeyCodeLut[SDLK_m] = EKeyCode::M;
+	gEKeyCodeLut[SDLK_n] = EKeyCode::N;
+	gEKeyCodeLut[SDLK_o] = EKeyCode::O;
+	gEKeyCodeLut[SDLK_p] = EKeyCode::P;
+	gEKeyCodeLut[SDLK_q] = EKeyCode::Q;
+	gEKeyCodeLut[SDLK_r] = EKeyCode::R;
+	gEKeyCodeLut[SDLK_s] = EKeyCode::S;
+	gEKeyCodeLut[SDLK_t] = EKeyCode::T;
+	gEKeyCodeLut[SDLK_u] = EKeyCode::U;
+	gEKeyCodeLut[SDLK_v] = EKeyCode::V;
+	gEKeyCodeLut[SDLK_w] = EKeyCode::W;
+	gEKeyCodeLut[SDLK_x] = EKeyCode::X;
+	gEKeyCodeLut[SDLK_y] = EKeyCode::Y;
+	gEKeyCodeLut[SDLK_z] = EKeyCode::Z;
+}
+
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
 #include "olog/olog.h"
@@ -389,8 +519,6 @@ struct WGPURenderer : RenderInterface
 #endif // __WIN32__
 #endif
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
 class UpdateListener : public efsw::FileWatchListener
 {
 public:
@@ -426,7 +554,6 @@ public:
 	}
 };
 
-
 void OnReloaded()
 {
 	auto ve = Context::Get().desktops->_children[0];
@@ -456,7 +583,7 @@ void LoadResource()
 	using namespace OGUI;
 	auto& ctx = Context::Get();
 	auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-	auto ve = XmlAsset::Instantiate(asset.lock()->id);
+	auto ve = asset->Instantiate();
 	ctx.desktops->PushChild(ve);
 	OnReloaded();
 	static efsw::FileWatcher fileWatcher;
@@ -466,8 +593,8 @@ void LoadResource()
 }
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
-	int win_width = 1280;
-	int win_height = 720;
+	int win_width = 640;
+	int win_height = 360;
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
@@ -497,8 +624,9 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 				ctx.desktops = new VisualWindow;
-
 				LoadResource();
+
+				BuildSDLMap();
 			}
 
 			// main loop
@@ -553,11 +681,21 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 						}
 						case SDL_KEYDOWN:
 						{
+							//olog::info(u"KeyDown {}"_o.format(event.key.keysym.sym));
+							//olog::info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
+							ctx.OnKeyDown(gEKeyCodeLut[event.key.keysym.sym]);
+							break;
+						}
+						case SDL_KEYUP:
+						{
 							if (event.key.keysym.sym == SDLK_ESCAPE)
 								done = true;
 							else
-								;// olog::info(u"KeyDown {}"_o.format(event.key.keysym.sym));
-								// ctx.OnKeyDown()
+							{
+								//olog::info(u"KeyDown {}"_o.format(event.key.keysym.sym));
+								//olog::info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
+								ctx.OnKeyUp(gEKeyCodeLut[event.key.keysym.sym]);
+							}
 							break;
 						}
 						case SDL_MOUSEWHEEL:

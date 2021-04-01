@@ -48,6 +48,8 @@ namespace OGUI
         // 生成过程中生成的所有VisualElement
         std::list<VisualElement*> all;
 
+        XmlAsset* main_asset = nullptr;
+
         template<class T>
         T* New()
         {

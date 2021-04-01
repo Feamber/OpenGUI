@@ -7,6 +7,28 @@
     flex-wrap: wrap;
     background-color:rgb(255, 255, 255, 0.8);
     background-image:url(res/test4.jpg);
+    animation-name: t360;
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+}
+
+.Test{
+    width: 20px;
+    height:20px;
+    animation-name:shapeanim;
+    animation-duration: 0.3s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    background-color: initial;
+    background-image:url(res/test1.png);
+}
+
+
+
+@keyframes t360 {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .Child {
@@ -17,7 +39,7 @@
     justify-content:center;
     align-items:center;
     background-color: initial;
-    background-image:url(res/test.jpg);
+    background-image:url(res/test.jpg); 
 }
 
 #Child2 {
@@ -35,6 +57,10 @@
     transform: translate(-20px, -40px);
 }
 
+#Child2::before {
+    transform: scale(0.8, 0.8) translate(5px, -5px);
+}
+
 /*negative delay hack*/
 #Child1:focus {
     animation-name:rotateanim;
@@ -47,17 +73,6 @@
     animation-fill-mode: none;
     animation-yield-mode:goback;
     animation-resume-mode:reset;
-}
-
-.Test{
-    width: 20px;
-    height:20px;
-    animation-name:shapeanim;
-    animation-duration: 0.5s;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-    background-color: initial;
-    background-image:url(res/test1.png);
 }
 
 .Test.Bigger{
@@ -90,7 +105,7 @@
 
 @keyframes shapeanim {
     to {
-        transform:  scale(1.2, 1.2) rotate(360deg);
+        transform:  scale(1.2, 1.2) rotate(480deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         background-color:rgb(73, 214, 125);
@@ -111,7 +126,6 @@
 
 @keyframes rotateanim2 {
     10% {
-        background-color:rgb(26, 11, 92);
         transform: rotate(10deg);
     }
     30% {
@@ -127,7 +141,6 @@
         transform:  rotate(0deg);
     }
     to {
-        background-color:rgb(73, 214, 125);
         transform:  scale(1.2, 1.2);
     }
 }

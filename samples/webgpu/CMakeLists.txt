@@ -1,6 +1,11 @@
 project(WebgpuSample)
 
 download_and_extract(
+		${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/OGUI_Xsd.zip
+		${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.zip
+		${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/
+)
+download_and_extract(
     ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn.zip
     ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/dawn.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
