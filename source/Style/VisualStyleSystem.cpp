@@ -16,6 +16,7 @@ void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
 	Traverse(Tree);
+	_cacheInvalidated = false;
 	assert(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
 }
@@ -424,7 +425,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		sharedStyle = pair.first->second.get();
 	}
 	{
-		element->_sharedDirty = element->_sharedStyle != sharedStyle;
+		element->_sharedDirty = element->_sharedStyle != sharedStyle || _cacheInvalidated;
 		element->_sharedStyle = sharedStyle;
 	}
 }
@@ -502,6 +503,8 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 		}
 		std::vector<AnimationStyle> yieldingAnims;
 		std::vector<AnimRunContext> yieldingCtxs;
+		if (!_cacheInvalidated) //just remove if cache is invalidated
+			goto noYield;
 		for (int i = 0; i < dynbitset.size(); ++i)
 		{
 			if (!dynbitset[i] && element->_animStyles[i].animYieldMode != EAnimYieldMode::Stop)
@@ -524,6 +527,7 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 		}
 		else
 		{
+			noYield:
 			std::swap(element->_animContext, ctxs);
 			std::swap(element->_animStyles, anims);
 		}
