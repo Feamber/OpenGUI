@@ -341,7 +341,9 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		if (std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
 			sstack.push_back(ss);
 	}
-	if(element->_selectorDirty || _cacheInvalidated)
+	if (_cacheInvalidated)
+		element->ResetStyles();
+	if(element->_selectorDirty)
 	{
 		element->_selectorDirty = false;
 		matchingContext.currentElement = element;
@@ -425,7 +427,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		sharedStyle = pair.first->second.get();
 	}
 	{
-		element->_sharedDirty = element->_sharedStyle != sharedStyle || _cacheInvalidated;
+		element->_sharedDirty = element->_sharedStyle != sharedStyle;
 		element->_sharedStyle = sharedStyle;
 	}
 }

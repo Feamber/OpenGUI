@@ -111,6 +111,8 @@ namespace OGUI
 		void CalculateLayout();
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
+		void _ResetStyles();
+		void ResetStyles();
 #pragma endregion
 
 #pragma region Animation
