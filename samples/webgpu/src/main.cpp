@@ -311,7 +311,7 @@ static bool redraw() {
 	{
 		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 		auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-		auto newVe = XmlAsset::Instantiate(asset.lock()->id);
+		auto newVe = asset->Instantiate();
 		if (newVe)
 		{
 			auto ve = ctx.desktops->_children[0];
@@ -580,7 +580,7 @@ void LoadResource()
 	using namespace OGUI;
 	auto& ctx = Context::Get();
 	auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-	auto ve = XmlAsset::Instantiate(asset.lock()->id);
+	auto ve = asset->Instantiate();
 	ctx.desktops->PushChild(ve);
 	OnReloaded();
 	static efsw::FileWatcher fileWatcher;
@@ -624,7 +624,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 
 				std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-				auto ve = XmlAsset::Instantiate(asset.lock()->id);
+				auto ve = asset->Instantiate();
 				if(auto child1 = QueryFirst(ve, "#Child1"))
 				{
 					constexpr auto handler = +[](PointerDownEvent& event)

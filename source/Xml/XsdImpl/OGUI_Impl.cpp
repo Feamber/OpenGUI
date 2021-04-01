@@ -58,9 +58,11 @@ namespace OGUI
     VisualElement* IXmlFactory_Template::Create(const XmlElement& asset, CreationContext& context)
     {
         XmlFactoryEmptyCreate(*this, asset, context);
+
         auto new_asset = XmlAsset::LoadXmlFile({path.begin(), path.end()});
-        if(!new_asset.expired())
+        if(new_asset)
         {
+            context.main_asset->all_child_asset.emplace_back(new_asset);
             if(!name.empty())
             {
                 const std::string sname = {name.begin(), name.end()};
@@ -68,7 +70,7 @@ namespace OGUI
                 auto result = templates_alias.find(sname);
                 if(result == templates_alias.end())
                 {
-                    templates_alias[sname] = &new_asset.lock()->root;
+                    templates_alias[sname] = &new_asset->root;
                     return nullptr;
                 }
                 std::cerr << "重复的<Template>别名 name: " << name << std::endl;
