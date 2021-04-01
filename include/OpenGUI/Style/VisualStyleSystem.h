@@ -35,6 +35,7 @@ namespace OGUI
 		using StyleCache = std::unordered_map<size_t, std::unique_ptr<CachedStyle>>;
 		StyleCache styleCache;
 		StyleMatchingContext matchingContext;
+		bool _cacheInvalidated = false;
 
 		void Traverse(VisualElement* element);
 
@@ -43,6 +44,7 @@ namespace OGUI
 		void UpdateStyle(VisualElement* element);
 
 	public:
+		void InvalidateCache();
 		virtual void Update(VisualElement* Tree);
 	};
 }

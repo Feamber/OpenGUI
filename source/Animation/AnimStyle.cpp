@@ -181,7 +181,7 @@ namespace OGUI
 			return true;
 		else if(direction == EAnimDirection::Alternate && turn % 2 == 1)
 			return true;
-		else if(direction == EAnimDirection::Alternate && turn % 2 == 0)
+		else if(direction == EAnimDirection::AlternateReverse && turn % 2 == 0)
 			return true;
 		else 
 			return false;

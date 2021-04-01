@@ -6,6 +6,12 @@
 #include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 
+void OGUI::VisualStyleSystem::InvalidateCache()
+{
+	styleCache.clear(); 
+	_cacheInvalidated = true;
+}
+
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
 	//TODO: lazy update
@@ -334,7 +340,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		if (std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
 			sstack.push_back(ss);
 	}
-	if(element->_selectorDirty)
+	if(element->_selectorDirty || _cacheInvalidated)
 	{
 		element->_selectorDirty = false;
 		matchingContext.currentElement = element;

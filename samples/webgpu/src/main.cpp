@@ -12,6 +12,8 @@
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
+#include "OpenGUI/Core/ostring/ostring/ostr.h"
+#include "OpenGUI/Core/ostring/olog/olog.h"
 #include "efsw/efsw.hpp"
 
 extern void InstallInput();
@@ -294,9 +296,8 @@ static void createPipelineAndBuffers() {
 	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
 }
 
-int FileVersion = 0;
-static VisualElement* ReloadedVE = nullptr;
-std::atomic_bool Reloaded = false;
+bool ReloadCSS = false;
+bool ReloadXML = false;
 void OnReloaded();
 /**
  * Draws using the above pipeline and buffers.
@@ -305,15 +306,40 @@ static bool redraw() {
 	static std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
 	auto& ctx = OGUI::Context::Get();
 	std::chrono::time_point now = std::chrono::high_resolution_clock::now();
-	if (Reloaded.load())
+	using namespace ostr::literal;
+	if (ReloadXML)
 	{
-		auto ve = ctx.desktops->_children[0];
-		ctx.desktops->RemoveChild(ve);
-		VisualElement::DestoryTree(ve);
-		ctx.desktops->PushChild(ReloadedVE);
-		OnReloaded();
-		Reloaded = false;
-		ctx._layoutDirty = true;
+		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
+		auto asset = XmlAsset::LoadXmlFile("res/test.xml");
+		auto newVe = XmlAsset::Instantiate(asset.lock()->id);
+		if (newVe)
+		{
+			auto ve = ctx.desktops->_children[0];
+			ctx.desktops->RemoveChild(ve);
+			VisualElement::DestoryTree(ve);
+			ctx.desktops->PushChild(newVe);
+			OnReloaded();
+			ctx._layoutDirty = true;
+		}
+		ReloadXML = false;
+		ReloadCSS = false;
+		olog::info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+	}
+	else if(ReloadCSS)
+	{
+		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
+		auto asset = ParseCSSFile("res/test.css");
+		if (asset)
+		{
+			auto ve = ctx.desktops->_children[0];
+			*ve->_styleSheets[0] = asset.value();
+			ve->_styleSheets[0]->Initialize();
+			ctx._layoutDirty = true;
+			ctx.styleSystem.InvalidateCache();
+			ve->_selectorDirty = true;
+		}
+		olog::info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+		ReloadCSS = false;
 	}
 	float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
 	prev = now;
@@ -381,24 +407,13 @@ public:
 				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
 				break;
 			case efsw::Actions::Modified:
-				if (filename == "test.xml" || filename == "test.css")
+				if (filename == "test.css")
 				{
-					FileVersion++;
-					//std::thread loader([](int Version)
-					//	{
-							using namespace ostr::literal;
-							std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-							auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-							auto ve = XmlAsset::Instantiate(asset.lock()->id);
-							//if (FileVersion == Version)
-							if(ve)
-							{
-								ReloadedVE = ve;
-								Reloaded = true;
-							}
-							olog::info(u"initialize completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-					//	}, FileVersion);
-					//loader.detach();
+					ReloadCSS = true;
+				}
+				if (filename == "test.xml" )
+				{
+					ReloadXML = true;
 				}
 				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified" << std::endl;
 				break;
