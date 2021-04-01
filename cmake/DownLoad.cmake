@@ -18,8 +18,8 @@ endfunction(download_file)
 
 function(download_and_extract url file dir)
  download_file(${url} ${file})
- file(ARCHIVE_EXTRACT 
-   INPUT ${file} DESTINATION ${dir}
-)
-#execute_process(COMMAND 7z x DESTINATION ${dir})
+ #file(ARCHIVE_EXTRACT 
+   #INPUT ${file} DESTINATION ${dir}
+#)
+execute_process(COMMAND 7z x DESTINATION ${dir})
 endfunction()

@@ -58,7 +58,7 @@ namespace OGUI
 		//Message Handling
 		//reference : UE4 Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h
 		bool OnMouseDown(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
-		bool OnMouseUp(EMouseKey button, int32 x, int32 y);
+		bool OnMouseUp(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
 		bool OnMouseDoubleClick(EMouseKey button, int32 x, int32 y);
 		bool OnMouseMove(bool relative, int32 x, int32 y);
 		bool OnMouseMoveHP(bool relative, float x, float y);
