@@ -16,6 +16,8 @@
 #include "OpenGUI/Core/olog.h"
 #include "efsw/efsw.hpp"
 
+#include "OpenGUI/Event/KeyEvent.h"
+
 extern void InstallInput();
 
 WGPUDevice device;
@@ -621,7 +623,14 @@ void OnReloaded()
 			olog::Info(u"Oh ♂ shit!"_o);
 			return true;
 		};
+		constexpr auto handler1 = +[](KeyDownEvent& event)
+		{
+			using namespace ostr::literal;
+			olog::info(u"Fuck!");
+			return true;
+		};
 		child1->_eventHandler.Register<PointerDownEvent, handler>();
+		child1->_eventHandler.Register<KeyDownEvent, handler1>();
 	}
 	{
 		std::vector<VisualElement*> tests;
@@ -649,15 +658,15 @@ void LoadResource()
 }
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
-	int win_width = 1280;
-	int win_height = 720;
+	int window_width = WINDOW_WIN_W;
+	int window_height = WINDOW_WIN_H;
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
 	}
 	SDL_Window* window = SDL_CreateWindow("Demo",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		win_width, win_height, 0
+		window_width, window_height, 0
 	);
 	SDL_SysWMinfo wmInfo;
 	SDL_VERSION(&wmInfo.version);
@@ -668,7 +677,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 	if (hWnd) {
 		if (device = webgpu::create(hWnd);device) {
 			queue = wgpuDeviceGetDefaultQueue(device);
-			swapchain = webgpu::createSwapChain(device, WINDOW_WIN_W, WINDOW_WIN_H);
+			swapchain = webgpu::createSwapChain(device, window_width, window_height);
 			createPipelineAndBuffers();
 			InstallInput();
 			{
@@ -690,6 +699,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			while(!done)
 			{
 				using namespace ostr::literal;
+
 				SDL_Event event;
 				auto& ctx = OGUI::Context::Get();
 				while (SDL_PollEvent(&event)) 
@@ -710,6 +720,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 							}
 							int width, height;
 							SDL_GetWindowSize(window, &width, &height);
+							//olog::info(u"Width: {}, Height: {}"_o.format(width, height));
 							ctx.OnMouseDown((float)width, (float)height, buttonCode, event.button.x, event.button.y);
 							break;
 						}
@@ -725,7 +736,9 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 							case SDL_BUTTON_MIDDLE:
 								buttonCode = EMouseKey::MB; break;
 							}
-							ctx.OnMouseUp(buttonCode, event.button.x, event.button.y);
+							int width, height;
+							SDL_GetWindowSize(window, &width, &height);
+							ctx.OnMouseUp((float)width, (float)height, buttonCode, event.button.x, event.button.y);
 							break;
 						}
 						case SDL_MOUSEMOTION:
@@ -745,7 +758,9 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 						case SDL_KEYUP:
 						{
 							if (event.key.keysym.sym == SDLK_ESCAPE)
+							{
 								done = true;
+							}
 							else
 							{
 								//olog::Info(u"KeyDown {}"_o.format(event.key.keysym.sym));
