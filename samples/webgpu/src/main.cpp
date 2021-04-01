@@ -311,15 +311,19 @@ static bool redraw() {
 	{
 		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 		auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-		auto newVe = asset->Instantiate();
-		if (newVe)
+		
+		if(asset)
 		{
-			auto ve = ctx.desktops->_children[0];
-			ctx.desktops->RemoveChild(ve);
-			VisualElement::DestoryTree(ve);
-			ctx.desktops->PushChild(newVe);
-			OnReloaded();
-			ctx._layoutDirty = true;
+			auto newVe = asset->Instantiate();
+			if (newVe)
+			{
+				auto ve = ctx.desktops->_children[0];
+				ctx.desktops->RemoveChild(ve);
+				VisualElement::DestoryTree(ve);
+				ctx.desktops->PushChild(newVe);
+				OnReloaded();
+				ctx._layoutDirty = true;
+			}
 		}
 		ReloadXML = false;
 		ReloadCSS = false;
@@ -590,8 +594,8 @@ void LoadResource()
 }
 
 extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
-	int win_width = 1280;
-	int win_height = 720;
+	int win_width = 640;
+	int win_height = 360;
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
@@ -621,32 +625,6 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 				ctx.bmParserImpl = std::make_unique<BitmapParser>();
 				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 				ctx.desktops = new VisualWindow;
-
-				std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-				auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-				auto ve = asset->Instantiate();
-				if(auto child1 = QueryFirst(ve, "#Child1"))
-				{
-					constexpr auto handler = +[](PointerDownEvent& event)
-					{
-						using namespace ostr::literal;
-						olog::info(u"Oh ♂ shit!");
-						return true;
-					};
-					child1->_eventHandler.Register<PointerDownEvent, handler>();
-				}
-				{
-					std::vector<VisualElement*> tests;
-					QueryAll(ve, ".Test", tests);
-					for (auto [i, test] : ipair(tests))
-						if (i % 2 == 0)
-							test->_styleClasses.push_back("Bigger");
-				}
-
-				ve->_pseudoMask |= (int)PseudoStates::Root;
-				ctx.desktops->PushChild(ve);
-				olog::info(u"initialize completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-			
 				LoadResource();
 				buildSDLMap();
 			}
