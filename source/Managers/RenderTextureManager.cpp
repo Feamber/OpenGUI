@@ -12,7 +12,10 @@ using namespace std;
 shared_ptr<AsyncRenderTexture> RenderTextureManager::Require(
     const std::string& url, bool sync, shared_ptr<AsyncBitmap>* bmOut)
 {
-    const bool needUpload = render_textures.find(url) == render_textures.end();
+    const bool needUpload = 
+        render_textures.find(url) == render_textures.end() ||
+        render_textures.find(url) == nullptr
+    ;
     auto& ctx = Context::Get();
     std::shared_ptr<AsyncRenderTexture> tex_locked;
     if(needUpload)
