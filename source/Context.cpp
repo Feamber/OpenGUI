@@ -200,7 +200,7 @@ bool OGUI::Context::OnMouseDoubleClick(EMouseKey button, int32 x, int32 y)
 
 bool OGUI::Context::OnMouseMove(bool relative, int32 x, int32 y)
 {
-	
+	olog::Info(u"Mouse PosX:%d, PosY:%d"_o.format(x, y));
 	return false;
 }
 
@@ -211,8 +211,11 @@ bool OGUI::Context::OnMouseMoveHP(bool relative, float x, float y)
 
 bool OGUI::Context::OnMouseWheel(float delta)
 {
+	olog::Info(u"Mouse WheelY:%.2f"_o.format(delta));
 	return false;
 }
+
+static bool gPrevPressed = false;
 
 bool OGUI::Context::OnKeyDown(EKeyCode keyCode)
 {
@@ -220,19 +223,39 @@ bool OGUI::Context::OnKeyDown(EKeyCode keyCode)
 	if (!root)
 		return false;
 
-	//KeyDownEvent e;
-	//e.key = keyCode;
-
-	//if (currentFocus)
-	//{
-	//	RouteEvent(currentFocus, e);
-	//}
+	if (currentFocus)
+	{
+		if (gPrevPressed == false)
+		{
+			KeyDownEvent e;
+			e.key = keyCode;
+			RouteEvent(currentFocus, e);
+			gPrevPressed = true;
+		}
+		else
+		{
+			KeyHoldEvent e;
+			e.key = keyCode;
+			RouteEvent(currentFocus, e);
+		}
+	}
 
 	return false;
 }
 
 bool OGUI::Context::OnKeyUp(EKeyCode keyCode)
 {
+	auto root = desktops;
+	if (!root)
+		return false;
+
+	KeyUpEvent e;
+	e.key = keyCode;
+
+	if (currentFocus)
+		RouteEvent(currentFocus, e);
+	gPrevPressed = false;
+
 	return false;
 }
 
