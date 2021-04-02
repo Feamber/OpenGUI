@@ -12,7 +12,7 @@ namespace OGUI
         {
             return bm;
         }
-        inline size_t size() const final {return bm.size_in_bytes;}
+        inline size_t size() const final {return bm.resource.size_in_bytes;}
     protected:
         Bitmap bm;
     };

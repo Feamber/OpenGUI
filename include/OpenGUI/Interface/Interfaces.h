@@ -59,7 +59,7 @@ namespace OGUI
 	};
 	struct PersistantPrimitiveInterface {};
     using TextureHandle = TextureInterface*;
-    using RenderTargetViewHandle = RenderTargetView*;
+    using RenderTargetViewHandle = struct RenderTargetView*;
     using PersistantPrimitiveHandle = PersistantPrimitiveInterface*;
 	struct RenderInterface
 	{

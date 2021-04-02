@@ -140,7 +140,7 @@ inline static WGPU_OGUI_Texture* createTexture(
     dtLayout.rowsPerImage = bitmap.height;
 
     WGPUExtent3D writeSize = descriptor.size;
-    wgpuQueueWriteTexture(queue, &cpyView, bitmap.bytes, bitmap.size_in_bytes, &dtLayout, &writeSize);
+    wgpuQueueWriteTexture(queue, &cpyView, bitmap.resource.bytes, bitmap.resource.size_in_bytes, &dtLayout, &writeSize);
 
 	WGPUTextureViewDescriptor viewDesc = {};
 	viewDesc.format = WGPUTextureFormat_RGBA8Unorm;
@@ -159,8 +159,8 @@ inline static void createBitMapFromJPG(const char* filename, OGUI::Bitmap& bm)
 {
     int x, y, n;
     auto data = stbi_load(filename, &x, &y, &n, STBI_rgb_alpha);
-    bm.bytes = data;
-    bm.size_in_bytes = x * y * n * sizeof(*data);
+    bm.resource.bytes = data;
+    bm.resource.size_in_bytes = x * y * n * sizeof(*data);
     bm.format = OGUI::PF_R8G8B8A8;
     bm.height = y;
     bm.width = x;
@@ -168,5 +168,5 @@ inline static void createBitMapFromJPG(const char* filename, OGUI::Bitmap& bm)
 
 inline static void freeBitMap(OGUI::Bitmap& bm)
 {
-    stbi_image_free(bm.bytes);
+    stbi_image_free(bm.resource.bytes);
 }
