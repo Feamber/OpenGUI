@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "ParseUtils.hpp"
 #include "peglib.h"
 #include "OpenGUI/Core/Utilities/any_move.hpp"

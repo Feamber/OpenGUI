@@ -52,22 +52,27 @@ include(Download)
 set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 
 # Build Options.
-option(OPENGUI_LIB "Build VM as Static Library." ON)
+option(OPENGUI_USE_FREETYPE "Use FreeType as Text Rasterization Lib." ON)
+option(OPENGUI_USE_HARFBUZZ "Use Harfbuzz as Text Shape Lib." ON)
+option(OPENGUI_USE_ICU "Use libICU" ON)
+option(OPENGUI_LIB "Build VM as Static Library." OFF)
 option(OPENGUI_TESTS "Build Test Targets." ON)
 option(OPENGUI_SAMPLES "Build Test Targets." ON)
 
+# Start Configure OpenGUI
 file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
-if(OPENGUI_LIB)
-add_library(OpenGUI STATIC
-    ${sources} 
-    ${headers} 
-)
-target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
+if(${OPENGUI_LIB})
+    add_library(OpenGUI STATIC
+        ${sources} 
+        ${headers} 
+    )
+    target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
-add_library(OpenGUI SHARED ${sources} ${headers})
-endif(OPENGUI_LIB)
+    add_library(OpenGUI SHARED ${sources} ${headers})
+    message(STATUS "LibraryType: Shared Lib")
+endif(${OPENGUI_LIB})
 
 target_include_directories(OpenGUI 
     PUBLIC 
@@ -77,13 +82,30 @@ target_include_directories(OpenGUI
     ${PLATFORM_INCLUDES}
 )
 target_link_libraries(OpenGUI PUBLIC fmt)
-target_link_libraries(OpenGUI PUBLIC spdlog)
-add_custom_command(
-        TARGET OpenGUI
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.exe -x ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/Main.xsd -h ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/XsdGen -c ${CMAKE_CURRENT_SOURCE_DIR}/source/Xml/XsdGen
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/*.xsd
-        VERBATIM)
 
+add_custom_command(
+    TARGET OpenGUI
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.exe -x ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/Main.xsd -h ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/XsdGen -c ${CMAKE_CURRENT_SOURCE_DIR}/source/Xml/XsdGen
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/*.xsd
+    VERBATIM
+)
+
+if(OPENGUI_USE_FREETYPE OR OPENGUI_USE_HARFBUZZ OR OPENGUI_USE_ICU)
+    download_and_extract(
+        ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/FontLibs.zip
+        ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/FontLibs.zip
+        ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
+    )
+    download_and_extract(
+        ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/FontLibs.zip
+        ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/FontLibs.zip
+        ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
+    )
+endif()
+
+# End Configure OpenGUI
+
+        
 link_libraries(OpenGUI)
 if(OPENGUI_SAMPLES)
     add_subdirectory(samples)

@@ -12,9 +12,10 @@ namespace OGUI
     class RenderTextureManager
     {
     public:
-        std::shared_ptr<AsyncRenderTexture> Require(
+        std::shared_ptr<AsyncRenderTexture> RequireFromFileSystem(
             const std::string& url, bool sync = false,
             std::shared_ptr<AsyncBitmap>* bmOut = nullptr);
+
         void Update();
     protected:
         std::unordered_map<std::string, std::weak_ptr<AsyncRenderTexture>> 

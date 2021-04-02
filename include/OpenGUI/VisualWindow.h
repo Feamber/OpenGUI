@@ -2,7 +2,7 @@
 
 namespace OGUI
 {
-    class VisualWindow : public VisualElement
+    class OGUI_API VisualWindow : public VisualElement
     {
     public:
         VisualWindow();

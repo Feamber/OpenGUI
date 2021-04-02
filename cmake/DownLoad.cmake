@@ -16,10 +16,14 @@
  endif(_retval)
 endfunction(download_file)
 
+function(extract_file file dir)
+  file(ARCHIVE_EXTRACT 
+    INPUT ${file} DESTINATION ${dir}
+  )
+  #execute_process(COMMAND 7z x DESTINATION ${dir})
+endfunction()
+
 function(download_and_extract url file dir)
- download_file(${url} ${file})
- file(ARCHIVE_EXTRACT 
-   INPUT ${file} DESTINATION ${dir}
-)
-#execute_process(COMMAND 7z x DESTINATION ${dir})
+  download_file(${url} ${file})
+  extract_file(${file} ${dir})
 endfunction()

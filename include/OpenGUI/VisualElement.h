@@ -21,7 +21,7 @@ namespace OGUI
 
 	struct Matrix4x4f{};
 
-	struct Interpolation
+	struct OGUI_API Interpolation
 	{
 		float duration;
 		float time = 0;
@@ -31,7 +31,7 @@ namespace OGUI
 		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
 	};
 
-	class VisualElement
+	class OGUI_API VisualElement
 	{
 	public:
 		VisualElement();
@@ -111,6 +111,8 @@ namespace OGUI
 		void CalculateLayout();
 		void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
+		void _ResetStyles();
+		void ResetStyles();
 #pragma endregion
 
 #pragma region Animation

@@ -1,6 +1,8 @@
-﻿#include "OpenGUI/Core/Types.h"
+﻿#define DLL_IMPLEMENTATION
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/AsyncFile.h"
+#include "OpenGUI/Core/AsyncRenderTexture.h"
 #include "OpenGUI/Core/IOThread.h"
 #include "OpenGUI/Core/AsyncBitmap.h"
 #include "OpenGUI/Context.h"
@@ -76,9 +78,9 @@ MemoryResource FileInterface::Load(const char* path)
     FileHandle f = this->Open(path);
     this->Seek(f, 0l, SEEK_END);
     result.size_in_bytes = this->Tell(f);
-    result.data = (uint8_t*)::malloc(result.size_in_bytes);
+    result.bytes = (uint8_t*)::malloc(result.size_in_bytes);
     this->Seek(f, 0l, SEEK_SET);
-    this->Read(result.data, result.size_in_bytes, f);
+    this->Read(result.bytes, result.size_in_bytes, f);
     this->Close(f);
     return result;
 }
@@ -107,6 +109,27 @@ IOThread::~IOThread()
         loader_thread.join();
 }
 
+void IOThread::loaderThreadFunction()
+{
+    while(is_running)
+    {
+        load_queue_mutex.lock();
+        std::vector<FileLoaderTask> tasks = load_queue;
+        load_queue.clear();
+        load_queue_mutex.unlock();
+
+        for (FileLoaderTask& task : tasks) {
+            task.file->__initialize(task.path.c_str());
+            task.complete_callback(task.file);
+        }
+
+        {
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(1ms);
+        }
+    }
+}
+
 // AsyncBitmap
 void AsyncBitmap::Initialize(const char* path) 
 {
@@ -124,6 +147,23 @@ void AsyncBitmap::Finalize()
 
 OGUI::LogInterface::~LogInterface()
 {
+}
+
+OGUI::AsyncImage::~AsyncImage()
+{
+    auto& ctx = Context::Get();
+    ctx.renderImpl->ReleaseTexture(_handle); // Release from RenderDevice.
+}
+
+OGUI::AsyncRenderTexture::AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle, ERenderTextureType type)
+    :texture_type(type)
+{
+    device_image = image_handle;
+}
+
+OGUI::AsyncRenderTexture::~AsyncRenderTexture()
+{
+    device_image.reset();
 }
 
 }

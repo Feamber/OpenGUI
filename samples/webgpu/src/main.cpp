@@ -16,6 +16,8 @@
 #include "OpenGUI/Core/olog.h"
 #include "efsw/efsw.hpp"
 
+#include "OpenGUI/Event/KeyEvent.h"
+
 extern void InstallInput();
 
 WGPUDevice device;
@@ -42,8 +44,8 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 		const auto channels = (n == 1) ? 1 : 4;
 
 		auto data = stbi_load_from_file((FILE*)file, &x, &y, &n, channels);
-		bm.bytes = data;
-		bm.size_in_bytes = x * y * channels * sizeof(*data);
+		bm.resource.bytes = data;
+		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
 		bm.height = y;
 		bm.width = x;
 
@@ -51,7 +53,7 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
     }
     inline void Free(Bitmap bm)
     {
-        stbi_image_free(bm.bytes);
+        stbi_image_free(bm.resource.bytes);
     }
 };
 
@@ -331,8 +333,8 @@ static void createPipelineAndBuffers() {
 
 	memset(white_tex, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
 	Bitmap bitmap = {};
-	bitmap.bytes = white_tex;
-	bitmap.size_in_bytes = 4 * 1024 * 1024;
+	bitmap.resource.bytes = white_tex;
+	bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
 	bitmap.width = 1024; bitmap.height = 1024;
 	bitmap.format = PF_R8G8B8A8;
 	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
@@ -441,6 +443,8 @@ struct WGPURenderer : RenderInterface
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
+#define SDL_MAIN_NEEDED
+#include <SDL2/SDL_main.h>
 
 std::unordered_map<uint32, EKeyCode> gEKeyCodeLut;
 static void BuildSDLMap()
@@ -621,7 +625,37 @@ void OnReloaded()
 			olog::Info(u"Oh ♂ shit!"_o);
 			return true;
 		};
+		constexpr auto handlerDown = +[](KeyDownEvent& event)
+		{
+			using namespace ostr::literal;
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is Down!"_o);
+			}
+			return true;
+		};
+		constexpr auto handlerUp = +[](KeyUpEvent& event)
+		{
+			using namespace ostr::literal;
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is up!"_o);
+			}
+			return true;
+		};
+		constexpr auto handlerHold = +[](KeyHoldEvent& event)
+		{
+			using namespace ostr::literal;
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is Holding!"_o);
+			}
+			return true;
+		};
 		child1->_eventHandler.Register<PointerDownEvent, handler>();
+		child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
+		child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
+		child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
 	}
 	{
 		std::vector<VisualElement*> tests;
@@ -648,16 +682,16 @@ void LoadResource()
 	fileWatcher.watch();
 }
 
-extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
-	int win_width = 1280;
-	int win_height = 720;
+int main(int /*argc*/, char* /*argv*/[]) {
+	int window_width = WINDOW_WIN_W;
+	int window_height = WINDOW_WIN_H;
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
 	}
 	SDL_Window* window = SDL_CreateWindow("Demo",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		win_width, win_height, 0
+		window_width, window_height, 0
 	);
 	SDL_SysWMinfo wmInfo;
 	SDL_VERSION(&wmInfo.version);
@@ -668,7 +702,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 	if (hWnd) {
 		if (device = webgpu::create(hWnd);device) {
 			queue = wgpuDeviceGetDefaultQueue(device);
-			swapchain = webgpu::createSwapChain(device, WINDOW_WIN_W, WINDOW_WIN_H);
+			swapchain = webgpu::createSwapChain(device, window_width, window_height);
 			createPipelineAndBuffers();
 			InstallInput();
 			{
@@ -690,6 +724,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 			while(!done)
 			{
 				using namespace ostr::literal;
+
 				SDL_Event event;
 				auto& ctx = OGUI::Context::Get();
 				while (SDL_PollEvent(&event)) 
@@ -710,6 +745,7 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 							}
 							int width, height;
 							SDL_GetWindowSize(window, &width, &height);
+							//olog::info(u"Width: {}, Height: {}"_o.format(width, height));
 							ctx.OnMouseDown((float)width, (float)height, buttonCode, event.button.x, event.button.y);
 							break;
 						}
@@ -725,13 +761,15 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 							case SDL_BUTTON_MIDDLE:
 								buttonCode = EMouseKey::MB; break;
 							}
-							ctx.OnMouseUp(buttonCode, event.button.x, event.button.y);
+							int width, height;
+							SDL_GetWindowSize(window, &width, &height);
+							ctx.OnMouseUp((float)width, (float)height, buttonCode, event.button.x, event.button.y);
 							break;
 						}
 						case SDL_MOUSEMOTION:
 						{
-							//olog::Info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
-							//olog::Info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
+							olog::Info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
+							olog::Info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
 							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
 							break;
 						}
@@ -745,7 +783,9 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 						case SDL_KEYUP:
 						{
 							if (event.key.keysym.sym == SDLK_ESCAPE)
+							{
 								done = true;
+							}
 							else
 							{
 								//olog::Info(u"KeyDown {}"_o.format(event.key.keysym.sym));
@@ -761,8 +801,8 @@ extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
 							break;
 						}
 						case SDL_QUIT:
-						done = true;
-						break;
+							done = true;
+							break;
 					}
 				}
 				redraw();

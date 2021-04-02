@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/AsyncBitmap.h"
@@ -9,7 +10,7 @@ namespace OGUI
 {
 using namespace std;
 
-shared_ptr<AsyncRenderTexture> RenderTextureManager::Require(
+shared_ptr<AsyncRenderTexture> RenderTextureManager::RequireFromFileSystem(
     const std::string& url, bool sync, shared_ptr<AsyncBitmap>* bmOut)
 {
     auto iter = render_textures.find(url);
@@ -18,13 +19,12 @@ shared_ptr<AsyncRenderTexture> RenderTextureManager::Require(
     std::shared_ptr<AsyncRenderTexture> tex_locked;
     if(needUpload)
     {
-        tex_locked = 
-            std::shared_ptr<AsyncRenderTexture>(new AsyncRenderTexture(), 
-            [this, url](AsyncRenderTexture* tex){
-                auto& ctx = Context::Get();
-                ctx.renderImpl->ReleaseTexture(tex->Get()); // Release from RenderDevice.
+        tex_locked = std::make_shared<AsyncRenderTexture>(
+            std::shared_ptr<AsyncImage>(new AsyncImage(), 
+            [this, url](AsyncImage* tex){
                 render_textures.erase(url);
-            });
+            }), ERenderTextureType::RawTexture
+        );
         render_textures[url] = tex_locked;
     } else {
         tex_locked = iter->second.lock();
@@ -58,9 +58,9 @@ void RenderTextureManager::Update()
         {
             auto tex_locked = render_textures[url].lock();
             // comple/upload texture to render device.
-            tex_locked->_handle 
+            tex_locked->device_image->_handle 
                 = ctx.renderImpl->RegisterTexture(file->GetBitmap());
-            tex_locked->is_ready = true;
+            tex_locked->device_image->is_ready = true;
             auto uc = file.use_count();
             file.reset();
             uploadeds.push_back(url);

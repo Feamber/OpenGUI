@@ -1,7 +1,9 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Style/Style.h"
 #include <yoga/YGNode.h>
 #include <algorithm>
 #include "OpenGUI/Style/StylePropertiesDef.h"
+#include "OpenGUI/Core/olog.h"
 
 OGUI::Style OGUI::Style::Create(Style* parent, bool isShared)
 {
@@ -97,7 +99,7 @@ namespace OGUI
 			GetInheritProperty<T>(field, prop.id, parent);
 			return;
 		}
-		assert(false);
+		OUNREACHABLE
 	}
 
 	template<class T>
@@ -204,7 +206,7 @@ namespace OGUI
 
 	YGValue Lerp(const YGValue& a, const YGValue& b, float alpha)
 	{
-		assert(a.unit == b.unit);
+		OASSERT(a.unit == b.unit);
 		return {Lerp(a.value, b.value, alpha), b.unit};
 	}
 }

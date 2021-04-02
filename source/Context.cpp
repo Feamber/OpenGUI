@@ -1,20 +1,24 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Context.h"
 #include <iostream>
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Event/PointerEvent.h"
+#include "OpenGUI/Event/KeyEvent.h"
 #include "OpenGUI/Event/EventRouter.h"
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/IOThread.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
 
+#include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Core/olog.h"
+
 void OGUI::Context::Initialize(
 	InputInterface* I, SystemInterface* S,
 	RenderInterface* R, FileInterface* F,
 	BitmapParserInterface* B)
 {
-	if(initialized)
-		assert(0 && "already initialized!");
+	OASSERT(initialized);
 	inputImpl.reset(I);
 	systemImpl.reset(S);
 	renderImpl.reset(R);
@@ -136,18 +140,6 @@ bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
 
-	//event.position = Vector2f(x, y); // screen space
-	//inputImpl->ScreenToClient(window, x, y); // client space
-
-	//auto dpiScale = inputImpl->GetDpiScale();
-	//x /= dpiScale.X;
-	//y /= dpiScale.Y;
-
-	//const auto& wctx = GetWindowContext(window);
-	//const float width = wctx.X;
-	//const float height = wctx.Y;
-	//printf("X: %d, Y: %d\n", x, y);
-
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
 
 	auto picked = PickRecursive(root, point);
@@ -167,10 +159,37 @@ bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey
 	return false;
 }
 
-bool OGUI::Context::OnMouseUp(EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseUp(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
+	auto root = desktops;
+	if (!root)
+		return false;
+	PointerUpEvent event;
+
 	pointerDownCount--;
-	//std::cout << "OnMouseUp: " << x << "," << y << std::endl;
+	event.pointerType = "mouse";
+	event.button = button;
+	event.isPrimary = pointerDownCount == 1;
+	event.gestureType = EGestureEvent::None;
+
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+	//printf("X: %.2f, Y: %.2f\n", point.X, point.Y);
+	//olog::info("Mouse Up");
+
+	//auto picked = PickRecursive(root, point);
+	//if (picked)
+	//{
+	//	if (picked != currentFocus)
+	//	{
+	//		picked->SetPseudoClass(PseudoStates::Focus, false);
+	//		if (auto currF = currentFocus)
+	//		{
+	//			currF->SetPseudoClass(PseudoStates::Focus, false);
+	//		}
+	//	}
+	//	currentFocus = picked;
+	//	RouteEvent(picked, event);
+	//}
 	return false;
 }
 
@@ -182,7 +201,7 @@ bool OGUI::Context::OnMouseDoubleClick(EMouseKey button, int32 x, int32 y)
 
 bool OGUI::Context::OnMouseMove(bool relative, int32 x, int32 y)
 {
-	
+	olog::Info(u"Mouse PosX:%d, PosY:%d"_o.format(x, y));
 	return false;
 }
 
@@ -193,16 +212,51 @@ bool OGUI::Context::OnMouseMoveHP(bool relative, float x, float y)
 
 bool OGUI::Context::OnMouseWheel(float delta)
 {
+	olog::Info(u"Mouse WheelY:%.2f"_o.format(delta));
 	return false;
 }
 
+static bool gPrevPressed = false;
+
 bool OGUI::Context::OnKeyDown(EKeyCode keyCode)
 {
+	auto root = desktops;
+	if (!root)
+		return false;
+
+	if (currentFocus)
+	{
+		if (gPrevPressed == false)
+		{
+			KeyDownEvent e;
+			e.key = keyCode;
+			RouteEvent(currentFocus, e);
+			gPrevPressed = true;
+		}
+		else
+		{
+			KeyHoldEvent e;
+			e.key = keyCode;
+			RouteEvent(currentFocus, e);
+		}
+	}
+
 	return false;
 }
 
 bool OGUI::Context::OnKeyUp(EKeyCode keyCode)
 {
+	auto root = desktops;
+	if (!root)
+		return false;
+
+	KeyUpEvent e;
+	e.key = keyCode;
+
+	if (currentFocus)
+		RouteEvent(currentFocus, e);
+	gPrevPressed = false;
+
 	return false;
 }
 

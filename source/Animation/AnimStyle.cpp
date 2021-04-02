@@ -1,7 +1,9 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include <algorithm>
+#include "OpenGUI/Core/olog.h"
 
 OGUI::AnimationStyle OGUI::AnimationStyle::Create(bool isShared)
 {
@@ -46,7 +48,7 @@ void OGUI::AnimationStyle::ApplyProperties(std::vector<OGUI::AnimationStyle>& se
 		rule.push_back(prop);
 		if (prop.id == StylePropertyId::animName)
 		{
-			assert(!prop.keyword);
+			OASSERT(!prop.keyword);
 			names[i] =sheet.Get<std::string>(prop.value);
 		}
 	}
@@ -104,7 +106,7 @@ namespace OGUI
 			GetInitialProperty<T>(field, prop.id);
 			return;
 		}
-		assert(false);
+		OUNREACHABLE
 	}
 
 	template<class T>
@@ -154,7 +156,7 @@ void OGUI::AnimationStyle::ResolveReference(const gsl::span<StyleSheet*>& sheets
 			return;
 		}
 	}
-	assert(false);
+	OUNREACHABLE
 }
 
 bool OGUI::AnimationStyle::operator==(const AnimationStyle& other)

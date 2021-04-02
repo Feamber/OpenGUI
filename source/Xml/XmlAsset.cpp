@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include <fstream>
 #include <iostream>
 #include "OpenGUI/Xml/XmlFactoryRegistry.h"

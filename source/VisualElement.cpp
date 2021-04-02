@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
@@ -32,7 +33,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(
 		//start new load
 		if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != _style.backgroundImage)
 		{
-			backgroundImageResource = Context::Get().textureManager->Require(_style.backgroundImage);
+			backgroundImageResource = Context::Get().textureManager->RequireFromFileSystem(_style.backgroundImage);
 			backgroundImageUrl = _style.backgroundImage;
 		}
 	}
@@ -260,6 +261,26 @@ bool OGUI::VisualElement::ContainClass(std::string_view cls)
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
 }
 
+void OGUI::VisualElement::_ResetStyles()
+{
+	_sharedStyle = nullptr;
+	_selectorDirty = true;
+	//dosent clean this cause we want to inherit anim context
+	//_animContext.clear();
+	//_animStyles.clear();
+	_triggerPseudoMask = 0;
+	_dependencyPseudoMask = 0;
+}
+
+void OGUI::VisualElement::ResetStyles()
+{
+	_ResetStyles();
+	if (_beforeElement)
+		_beforeElement->_ResetStyles();
+	if (_afterElement)
+		_afterElement->_ResetStyles();
+}
+
 namespace std
 {
 	void split(const string& s, vector<string>& tokens, const string_view& delimiters = " ")
@@ -326,6 +347,7 @@ void OGUI::VisualElement::ReleaseAfterPseudoElement()
 	{
 		RemoveChild(_beforeElement);
 		delete _beforeElement;
+		_beforeElement = nullptr;
 	}
 }
 
@@ -345,5 +367,6 @@ void OGUI::VisualElement::ReleaseBeforePseudoElement()
 	{
 		RemoveChild(_afterElement);
 		delete _afterElement;
+		_afterElement = nullptr;
 	}
 }

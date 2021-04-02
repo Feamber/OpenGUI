@@ -9,13 +9,13 @@ namespace OGUI
     using FileHandle = void*;
 	using WindowHandle = void*;
 	
-    struct SystemInterface
+    struct OGUI_API SystemInterface
 	{
 		virtual ~SystemInterface();
 		virtual void log(std::string_view str) = 0;
 	};
 
-    struct InputInterface
+    struct OGUI_API InputInterface
 	{
 		virtual ~InputInterface();
 		virtual bool UseSystemGesture() = 0;
@@ -33,7 +33,7 @@ namespace OGUI
  		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) = 0;
 	};
     
-    struct FileInterface
+    struct OGUI_API FileInterface
 	{
 		virtual ~FileInterface();
 		virtual FileHandle Open(const char* path);
@@ -45,7 +45,7 @@ namespace OGUI
 		virtual MemoryResource Load(const char* path);
 	};
 
-	struct BitmapParserInterface
+	struct OGUI_API BitmapParserInterface
 	{
 		virtual ~BitmapParserInterface();
 
@@ -53,11 +53,15 @@ namespace OGUI
 		virtual void Free(Bitmap bm) = 0;
 	};
 
-	struct TextureInterface {};
-	struct PersistantPrimitiveInterface {};
+	struct OGUI_API TextureInterface 
+	{
+
+	};
+	struct OGUI_API PersistantPrimitiveInterface {};
     using TextureHandle = TextureInterface*;
+    using RenderTargetViewHandle = struct RenderTargetView*;
     using PersistantPrimitiveHandle = PersistantPrimitiveInterface*;
-	struct RenderInterface
+	struct OGUI_API RenderInterface
 	{
 		virtual ~RenderInterface();
 		virtual PersistantPrimitiveHandle RegisterPrimitive(
@@ -68,6 +72,10 @@ namespace OGUI
         virtual void RenderPrimitives(const struct PrimDrawList&) = 0;
         virtual void RenderPrimitives(const struct PersistantPrimDrawList&) = 0;
 
+		//virtual RenderTargetViewHandle RegisterRenderTargetView(const Bitmap&) = 0;
+		//virtual RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) = 0;		
+		//virtual void ReleaseRenderTargetView(RenderTargetViewHanle) = 0;
+
         virtual TextureHandle RegisterTexture(const Bitmap&) = 0;
         virtual void ReleaseTexture(TextureHandle) = 0;
 
@@ -75,7 +83,7 @@ namespace OGUI
         virtual void ResetScissor() = 0;
 	};
 
-	struct LogInterface
+	struct OGUI_API LogInterface
 	{
 		virtual ~LogInterface();
 
