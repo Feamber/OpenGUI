@@ -8,6 +8,7 @@ namespace OGUI
 	{
 		friend class RenderTextureManager;
 	public:
+		~AsyncImage();
 		inline const TextureHandle Get(void) const
 		{
 			return _handle;
@@ -21,11 +22,38 @@ namespace OGUI
 		std::atomic_bool is_ready;
 	};
 
+	using Region = Rect;
+	class AsyncStaticAtlas : public AsyncImage
+	{
+		friend class RenderTextureManager;
+	public:
+		
+	protected:
+		std::vector<std::string_view> region_names;
+	};
+
+	class AsyncDynamicAtlas : public AsyncStaticAtlas
+	{
+		
+	public:
+		
+	};
+
+	enum ERenderTextureType
+	{
+		RawTexture,
+		StaticAtlas,
+		DynmicAtlas,
+		SVG,
+		Count
+	};
+
 	class AsyncRenderTexture
 	{
 		friend class RenderTextureManager;
 	public:
-		AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle);
+		~AsyncRenderTexture();
+		AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle, ERenderTextureType type);
 		inline const TextureHandle Get(void) const
 		{
 			return device_image->Get();
@@ -36,5 +64,9 @@ namespace OGUI
 		}
 	protected:
 		std::shared_ptr<AsyncImage> device_image;
+		std::shared_ptr<AsyncStaticAtlas> static_atlas;
+
+		ERenderTextureType texture_type;
 	};
+
 }

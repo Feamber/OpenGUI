@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"

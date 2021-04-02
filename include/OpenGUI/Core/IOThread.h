@@ -31,26 +31,8 @@ public:
     IOThread();
     ~IOThread();
 protected:
-    inline void loaderThreadFunction()
-    {
-        while(is_running)
-        {
-            load_queue_mutex.lock();
-            std::vector<FileLoaderTask> tasks = load_queue;
-            load_queue.clear();
-            load_queue_mutex.unlock();
+    void loaderThreadFunction();
 
-            for (FileLoaderTask& task : tasks) {
-                task.file->__initialize(task.path.c_str());
-                task.complete_callback(task.file);
-            }
-
-            {
-                using namespace std::chrono_literals;
-                std::this_thread::sleep_for(1ms);
-            }
-        }
-    }
     struct FileLoaderTask 
     {
 		std::string path;

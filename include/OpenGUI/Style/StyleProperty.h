@@ -3,17 +3,13 @@
 #include <string_view>
 #include <bitset>
 #include <gsl/span>
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Style/VariantStorage.h"
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #include "OpenGUI/Animation/AnimPropertiesDef.h"
 
 namespace OGUI
 {
-	enum Inheritance
-	{
-		Inherited,
-		NonInherited
-	};
 
 	enum class StyleKeyword : int
 	{
@@ -60,10 +56,10 @@ namespace OGUI
 		bool Keyword : 1;
 		VariantHandle value;
 	};
-	StylePropertyId PropertyNameToId(std::string_view name);
-	std::string_view PropertyIdToName(StylePropertyId id);
-	int PropertyNameToOrder(std::string_view name);
-	std::bitset<96> GetInheritMask();
 
-	void GetOverrideMask(const gsl::span<StyleProperty>& props, std::bitset<96>& ovr, std::bitset<96>& iht);
+	OGUI_API StylePropertyId PropertyNameToId(std::string_view name);
+	OGUI_API std::string_view PropertyIdToName(StylePropertyId id);
+	OGUI_API int PropertyNameToOrder(std::string_view name);
+	OGUI_API std::bitset<96> GetInheritMask();
+	OGUI_API void GetOverrideMask(const gsl::span<StyleProperty>& props, std::bitset<96>& ovr, std::bitset<96>& iht);
 }

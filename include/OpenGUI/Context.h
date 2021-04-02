@@ -29,7 +29,7 @@ namespace OGUI
 		WindowHandle window;
 	};
 
-	class Context
+	class OGUI_API Context
 	{
 	public:
 		Context();

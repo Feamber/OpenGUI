@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "ParseUtils.hpp"
 #include "OpenGUI/Core/Utilities/any_move.hpp"
 #include "OpenGUI/Core/ColorSpace.h"

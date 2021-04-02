@@ -1,5 +1,7 @@
 #pragma once
 #include "OpenGUI/Core/open_string.h"
+#include "OpenGUI/Configure.h"
+#include <cassert>
 
 namespace OGUI
 {
@@ -20,8 +22,8 @@ namespace OGUI
 		};
 
 #define __MAKE_LOG_CALL_DECLARE(func)\
-static void func(ostr::string_view msg);\
-static void func(const ostr::string& msg);\
+OGUI_API static void func(ostr::string_view msg);\
+OGUI_API static void func(const ostr::string& msg);\
 template<typename...Args>\
 static void func(ostr::string_view fmt, Args&&...args)\
 {\
@@ -38,8 +40,8 @@ static void func(ostr::string_view fmt, Args&&...args)\
 
 #undef __MAKE_LOG_CALL_DECLARE
 
-#define OUNREACHABLE { olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); }
-#define OASSERT(x) { if(!x) olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); }
+#define OUNREACHABLE { using namespace ostr::literal; OGUI::olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); assert(false); }
+#define OASSERT(x) { using namespace ostr::literal; if(!(x)){ OGUI::olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); assert(false); }}
 
 	};
 

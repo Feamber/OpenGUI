@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Style/StyleProperty.h"
 #include <unordered_map>
 
@@ -59,10 +60,9 @@ std::string_view OGUI::PropertyIdToName(StylePropertyId id)
 std::bitset<96> OGUI::GetInheritMask()
 {
 	std::bitset<96> res;
-#define GEN(id, _1, _2, _3, inherit) \
-	if constexpr(inherit == Inheritance::Inherited) \
-		res.set((int)StylePropertyId::id); 
-		STYLEPROP(GEN)
+#define GEN(id, ...) \
+	res.set((int)StylePropertyId::id); 
+	INHERITEDPROP(GEN)
 #undef GEN
 	return res;
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Configure.h"
 #include <string>
 #include <string_view>
 #include <filesystem>
@@ -10,7 +11,7 @@ namespace OGUI
 {
     using XmlAssetID = size_t;
 
-    struct XmlAttribute
+    struct OGUI_API XmlAttribute
     {
         std::string_view name;
         std::string value;
@@ -23,7 +24,7 @@ namespace OGUI
         }
     };
 
-    struct XmlElement
+    struct OGUI_API XmlElement
     {
         std::string_view name = "";
         std::string_view full_name = "";
@@ -41,7 +42,7 @@ namespace OGUI
         const XmlAttribute* FindAttribute(const std::string_view &name) const;
     };
 
-	class XmlAsset : public std::enable_shared_from_this<XmlAsset>
+	class OGUI_API XmlAsset : public std::enable_shared_from_this<XmlAsset>
 	{
 	public:
 	    // TODO 以后有资源系统后这里应该要改

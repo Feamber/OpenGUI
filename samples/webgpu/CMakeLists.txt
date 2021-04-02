@@ -83,3 +83,7 @@ target_link_libraries(WebgpuSample
 	debug SDL2d optimized SDL2
 	debug SDL2maind optimized SDL2main
 )
+
+add_subdirectory(extern)
+target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/extern")
+target_link_libraries(WebgpuSample spdlog)

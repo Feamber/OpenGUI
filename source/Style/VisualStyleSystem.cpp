@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include <algorithm>
 #include <bitset>
 #include "OpenGUI/Style/VisualStyleSystem.h"

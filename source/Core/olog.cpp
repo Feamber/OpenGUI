@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/open_string.h"
 #include "OpenGUI/Context.h"

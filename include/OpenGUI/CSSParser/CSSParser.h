@@ -5,10 +5,9 @@
 
 namespace OGUI
 {
-	std::optional<StyleSheet> ParseCSS(std::string_view str);
-	std::optional<InlineStyle> ParseInlineStyle(std::string_view str);
-	std::optional<StyleSheet> ParseCSSFile(std::string path);
-	std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
+	OGUI_API std::optional<StyleSheet> ParseCSS(std::string_view str);
+	OGUI_API std::optional<InlineStyle> ParseInlineStyle(std::string_view str);
+	OGUI_API std::optional<StyleSheet> ParseCSSFile(std::string path);
 
 	using property_list_t = std::vector<std::pair<std::string_view, std::string_view>>;
 	OGUI_API void sort(property_list_t& list);

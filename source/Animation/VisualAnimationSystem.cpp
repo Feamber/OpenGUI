@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Context.h"

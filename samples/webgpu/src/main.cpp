@@ -44,8 +44,8 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 		const auto channels = (n == 1) ? 1 : 4;
 
 		auto data = stbi_load_from_file((FILE*)file, &x, &y, &n, channels);
-		bm.bytes = data;
-		bm.size_in_bytes = x * y * channels * sizeof(*data);
+		bm.resource.bytes = data;
+		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
 		bm.height = y;
 		bm.width = x;
 
@@ -53,7 +53,7 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
     }
     inline void Free(Bitmap bm)
     {
-        stbi_image_free(bm.bytes);
+        stbi_image_free(bm.resource.bytes);
     }
 };
 
@@ -333,8 +333,8 @@ static void createPipelineAndBuffers() {
 
 	memset(white_tex, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
 	Bitmap bitmap = {};
-	bitmap.bytes = white_tex;
-	bitmap.size_in_bytes = 4 * 1024 * 1024;
+	bitmap.resource.bytes = white_tex;
+	bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
 	bitmap.width = 1024; bitmap.height = 1024;
 	bitmap.format = PF_R8G8B8A8;
 	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
@@ -625,14 +625,37 @@ void OnReloaded()
 			olog::Info(u"Oh ♂ shit!"_o);
 			return true;
 		};
-		constexpr auto handler1 = +[](KeyDownEvent& event)
+		constexpr auto handlerDown = +[](KeyDownEvent& event)
 		{
 			using namespace ostr::literal;
-			olog::Info(u"Fuck!"_o);
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is Down!"_o);
+			}
+			return true;
+		};
+		constexpr auto handlerUp = +[](KeyUpEvent& event)
+		{
+			using namespace ostr::literal;
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is up!"_o);
+			}
+			return true;
+		};
+		constexpr auto handlerHold = +[](KeyHoldEvent& event)
+		{
+			using namespace ostr::literal;
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is Holding!"_o);
+			}
 			return true;
 		};
 		child1->_eventHandler.Register<PointerDownEvent, handler>();
-		child1->_eventHandler.Register<KeyDownEvent, handler1>();
+		child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
+		child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
+		child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
 	}
 	{
 		std::vector<VisualElement*> tests;
@@ -745,8 +768,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
 						}
 						case SDL_MOUSEMOTION:
 						{
-							//olog::Info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
-							//olog::Info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
+							olog::Info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
+							olog::Info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
 							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
 							break;
 						}
@@ -778,8 +801,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
 							break;
 						}
 						case SDL_QUIT:
-						done = true;
-						break;
+							done = true;
+							break;
 					}
 				}
 				redraw();

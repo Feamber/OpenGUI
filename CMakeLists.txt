@@ -55,7 +55,7 @@ set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 option(OPENGUI_USE_FREETYPE "Use FreeType as Text Rasterization Lib." ON)
 option(OPENGUI_USE_HARFBUZZ "Use Harfbuzz as Text Shape Lib." ON)
 option(OPENGUI_USE_ICU "Use libICU" ON)
-option(OPENGUI_LIB "Build VM as Static Library." ON)
+option(OPENGUI_LIB "Build VM as Static Library." OFF)
 option(OPENGUI_TESTS "Build Test Targets." ON)
 option(OPENGUI_SAMPLES "Build Test Targets." ON)
 
@@ -63,7 +63,7 @@ option(OPENGUI_SAMPLES "Build Test Targets." ON)
 file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
-if(OPENGUI_LIB)
+if(${OPENGUI_LIB})
     add_library(OpenGUI STATIC
         ${sources} 
         ${headers} 
@@ -71,7 +71,8 @@ if(OPENGUI_LIB)
     target_compile_definitions(OpenGUI PUBLIC -DOGUI_BUILD_LIB)
 else()
     add_library(OpenGUI SHARED ${sources} ${headers})
-endif(OPENGUI_LIB)
+    message(STATUS "LibraryType: Shared Lib")
+endif(${OPENGUI_LIB})
 
 add_custom_command(
         OUTPUT dasdasdasd.dgsdgf
