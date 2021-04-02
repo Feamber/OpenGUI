@@ -68,11 +68,9 @@ F(textOverflow, TextOverflow, "text-overflow", TextOverflow::Clip)\
         std::vector<ostr::string> _texts;
         struct Content
         {
-            int index:31;
-            bool isElement:1;
+            int index : 31;
+            bool isElement : 1;
         };
         std::vector<Content> _contents;
-        Rect MeasureSize(float width, float height, YGMeasureMode widthMode, YGMeasureMode heightMode);
-        void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx) override;
-    }
+    };
 }
