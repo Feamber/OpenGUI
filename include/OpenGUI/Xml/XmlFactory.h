@@ -6,6 +6,7 @@
 #include <set>
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
+#include "OpenGUI/Core/olog.h"
 
 namespace OGUI
 {
@@ -106,7 +107,7 @@ namespace OGUI
         if(!factory.InitAttribute(*new_element, asset, context))
         {
             context.is_error = true;
-            std::cerr << "InitAttribute失败 xml_qualified_name： " << factory.xml_qualified_name << std::endl;
+            olog::Error(u"InitAttribute失败 xml_qualified_name：{}"_o, ostr::string( factory.xml_qualified_name ));
             return nullptr;
         }
         return new_element;
