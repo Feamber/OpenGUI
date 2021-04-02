@@ -46,6 +46,6 @@ namespace OGUI
 
 	public:
 		OGUI_API void InvalidateCache();
-		virtual void Update(VisualElement* Tree);
+		OGUI_API virtual void Update(VisualElement* Tree);
 	};
 }
