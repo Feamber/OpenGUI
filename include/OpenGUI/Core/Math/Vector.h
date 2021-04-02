@@ -279,6 +279,7 @@ namespace OGUI
     };
     using Vector3f = Vector<float, 3>;
 	using Vector3lf = Vector<double, 3>;
+    using Vector3u = Vector<uint32_t, 3>;
 
 	
     // Vector4f

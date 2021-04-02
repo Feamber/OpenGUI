@@ -44,8 +44,8 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 		const auto channels = (n == 1) ? 1 : 4;
 
 		auto data = stbi_load_from_file((FILE*)file, &x, &y, &n, channels);
-		bm.bytes = data;
-		bm.size_in_bytes = x * y * channels * sizeof(*data);
+		bm.resource.bytes = data;
+		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
 		bm.height = y;
 		bm.width = x;
 
@@ -53,7 +53,7 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
     }
     inline void Free(Bitmap bm)
     {
-        stbi_image_free(bm.bytes);
+        stbi_image_free(bm.resource.bytes);
     }
 };
 
@@ -333,8 +333,8 @@ static void createPipelineAndBuffers() {
 
 	memset(white_tex, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
 	Bitmap bitmap = {};
-	bitmap.bytes = white_tex;
-	bitmap.size_in_bytes = 4 * 1024 * 1024;
+	bitmap.resource.bytes = white_tex;
+	bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
 	bitmap.width = 1024; bitmap.height = 1024;
 	bitmap.format = PF_R8G8B8A8;
 	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
