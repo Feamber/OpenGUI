@@ -79,5 +79,7 @@ target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/inclu
 set_property(TARGET WebgpuSample PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/samples/webgpu")
 
 target_link_libraries(WebgpuSample efsw)
-target_link_libraries(WebgpuSample debug SDL2d)
-target_link_libraries(WebgpuSample optimized SDL2)
+target_link_libraries(WebgpuSample 
+	debug SDL2d optimized SDL2
+	debug SDL2maind optimized SDL2main
+)

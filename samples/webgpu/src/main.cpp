@@ -443,6 +443,8 @@ struct WGPURenderer : RenderInterface
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
+#define SDL_MAIN_NEEDED
+#include <SDL2/SDL_main.h>
 
 std::unordered_map<uint32, EKeyCode> gEKeyCodeLut;
 static void BuildSDLMap()
@@ -657,7 +659,7 @@ void LoadResource()
 	fileWatcher.watch();
 }
 
-extern "C" int __main__(int /*argc*/, char* /*argv*/[]) {
+int main(int /*argc*/, char* /*argv*/[]) {
 	int window_width = WINDOW_WIN_W;
 	int window_height = WINDOW_WIN_H;
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
