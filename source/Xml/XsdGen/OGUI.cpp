@@ -15,6 +15,7 @@ namespace OGUI
 
         return false;
     }
+
     void IXmlFactory_Style::Internal_Init()
     {
         OGUI::IXmlFactory::Internal_Init();
@@ -32,6 +33,7 @@ namespace OGUI
         }
         return false;
     }
+
     void IXmlFactory_Template::Internal_Init()
     {
         OGUI::IXmlFactory::Internal_Init();
@@ -51,6 +53,7 @@ namespace OGUI
         }
         return false;
     }
+
     void IXmlFactory_AttributeOverrides::Internal_Init()
     {
         OGUI::IXmlFactory::Internal_Init();
@@ -68,6 +71,7 @@ namespace OGUI
         }
         return false;
     }
+
     void IXmlFactory_VisualElement::Internal_Init()
     {
         OGUI::IXmlFactory::Internal_Init();
@@ -95,6 +99,7 @@ namespace OGUI
         }
         return false;
     }
+
     void IXmlFactory_Instance::Internal_Init()
     {
         OGUI::IXmlFactory_VisualElement::Internal_Init();
@@ -112,5 +117,19 @@ namespace OGUI
         }
         return false;
     }
+
+    void IXmlFactory_Text::Internal_Init()
+    {
+        OGUI::IXmlFactory_VisualElement::Internal_Init();
+
+    }
+
+    bool IXmlFactory_Text::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr)
+    {
+        OGUI::IXmlFactory_VisualElement::Internal_InitAttribute(attr_name_hash, attr);
+
+        return false;
+    }
+
 
 }

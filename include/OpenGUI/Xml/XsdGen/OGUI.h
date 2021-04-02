@@ -19,6 +19,7 @@ namespace OGUI
             xml_name = "Root";
             xml_namespace = "OGUI";
             xml_qualified_name = "OGUI.Root";
+            
         }
 
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
@@ -26,6 +27,7 @@ namespace OGUI
         void Internal_Init();
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
+
     class IXmlFactory_Style : public OGUI::IXmlFactory
     {
     public:
@@ -36,6 +38,7 @@ namespace OGUI
             xml_name = "Style";
             xml_namespace = "OGUI";
             xml_qualified_name = "OGUI.Style";
+            
         }
 
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
@@ -43,6 +46,7 @@ namespace OGUI
         void Internal_Init();
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
+
     class IXmlFactory_Template : public OGUI::IXmlFactory
     {
     public:
@@ -54,6 +58,7 @@ namespace OGUI
             xml_name = "Template";
             xml_namespace = "OGUI";
             xml_qualified_name = "OGUI.Template";
+            
         }
 
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
@@ -61,6 +66,7 @@ namespace OGUI
         void Internal_Init();
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
+
     class IXmlFactory_AttributeOverrides : public OGUI::IXmlFactory
     {
     public:
@@ -71,6 +77,7 @@ namespace OGUI
             xml_name = "AttributeOverrides";
             xml_namespace = "OGUI";
             xml_qualified_name = "OGUI.AttributeOverrides";
+            
         }
 
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
@@ -78,6 +85,7 @@ namespace OGUI
         void Internal_Init();
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
+
     class IXmlFactory_VisualElement : public OGUI::IXmlFactory
     {
     public:
@@ -93,6 +101,7 @@ namespace OGUI
             xml_name = "VisualElement";
             xml_namespace = "OGUI";
             xml_qualified_name = "OGUI.VisualElement";
+            
         }
 
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
@@ -100,6 +109,7 @@ namespace OGUI
         void Internal_Init();
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
+
     class IXmlFactory_Instance : public OGUI::IXmlFactory_VisualElement
     {
     public:
@@ -110,6 +120,7 @@ namespace OGUI
             xml_name = "Instance";
             xml_namespace = "OGUI";
             xml_qualified_name = "OGUI.Instance";
+            
         }
 
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
@@ -117,5 +128,25 @@ namespace OGUI
         void Internal_Init();
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
+
+    class IXmlFactory_Text : public OGUI::IXmlFactory_VisualElement
+    {
+    public:
+
+
+        IXmlFactory_Text()
+        {
+            xml_name = "Text";
+            xml_namespace = "OGUI";
+            xml_qualified_name = "OGUI.Text";
+            mixed = true;
+        }
+
+        virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;
+        virtual VisualElement* Create(const XmlElement& asset, CreationContext& context) override;
+        void Internal_Init();
+        bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
+    };
+
 
 }

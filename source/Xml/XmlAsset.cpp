@@ -126,58 +126,85 @@ namespace OGUI {
 
         auto shared_asset = std::make_shared<XmlAsset>(file_path);
         XmlAsset *asset = shared_asset.get();
-        std::vector<std::pair<XMLElement *, XmlElement *>> current_layer = {{xml_root, &asset->root}};
-        std::vector<std::pair<XMLElement *, XmlElement *>> next_layer;
+        std::vector<std::pair<XMLNode *, XmlElement *>> current_layer = {{xml_root, &asset->root}};
+        std::vector<std::pair<XMLNode *, XmlElement *>> next_layer;
         while (!current_layer.empty()) {
             for (auto &pair : current_layer) {
-                XMLElement &xml_element = *pair.first;
+                XMLNode &xml_node = *pair.first;
                 XmlElement &asset_element = *pair.second;
-                //先扫描属性注册命名空间
-                RegisterNamespace(*asset, xml_element);
-                //初始化 asset_element
-                std::string_view out_prefix;
-                std::string_view out_name;
-                if (!SplitXmlElementName(&xml_element, file_path, out_prefix, out_name)) std::weak_ptr<XmlAsset>();
-                asset_element.name = RegisterString(*asset, out_name);
-                asset_element.prefix = RegisterString(*asset, out_prefix);
-                asset_element.namespace_url = FindNamespace(asset->all_namespace, out_prefix);
-                asset_element.xml_asset = asset;
-                asset_element.file_line = xml_element.GetLineNum();
-                if (asset_element.namespace_url != "")
-                    asset_element.full_name = RegisterString(*asset,
-                                                             std::string({asset_element.namespace_url.begin(),asset_element.namespace_url.end()}) +
-                                                             "." +
-                                                             std::string({asset_element.name.begin(),asset_element.name.end()}));
-                else
-                    asset_element.full_name = asset_element.name;
-                //初始化元素属性
-                auto xml_attr = xml_element.FirstAttribute();
-                while (xml_attr) {
-                    std::string_view out_prefix2;
-                    std::string_view out_name2;
-                    if (SplitXmlAttrName(xml_attr, file_path, out_prefix2, out_name2)) {
-                        if (out_prefix2 != "") {
-                            asset_element.PrintError("暂不支持有前缀的属性! attrName:" + std::string(xml_attr->Name()));
-                            return std::shared_ptr<XmlAsset>();
-                        }
-                        asset_element.SetAttribute(RegisterString(*asset, out_name2), xml_attr->Value());
-                    } else
-                        return std::shared_ptr<XmlAsset>();
-                    xml_attr = xml_attr->Next();
+
+                if(xml_node.ToText()) //字符节点是特殊的
+                {
+                    XMLText &xml_text = *xml_node.ToText();
+                    asset_element.name = RegisterString(*asset, "TextValue");
+                    asset_element.prefix = "OGUI";
+                    asset_element.namespace_url = "OGUI";
+                    asset_element.xml_asset = asset;
+                    asset_element.file_line = xml_node.GetLineNum();
+                    asset_element.full_name = "OGUI.TextValue";
+                    auto t = xml_text.Value();;
+                    asset_element.text = xml_text.Value();
                 }
+                else if(xml_node.ToElement())
+                {
+                    XMLElement &xml_element = *xml_node.ToElement();
+                    //先扫描属性注册命名空间
+                    RegisterNamespace(*asset, xml_element);
+                    //初始化 asset_element
+                    std::string_view out_prefix;
+                    std::string_view out_name;
+                    if (!SplitXmlElementName(&xml_element, file_path, out_prefix, out_name)) std::weak_ptr<XmlAsset>();
+                    asset_element.name = RegisterString(*asset, out_name);
+                    asset_element.prefix = RegisterString(*asset, out_prefix);
+                    asset_element.namespace_url = FindNamespace(asset->all_namespace, out_prefix);
+                    asset_element.xml_asset = asset;
+                    asset_element.file_line = xml_element.GetLineNum();
+                    if (asset_element.namespace_url != "")
+                        asset_element.full_name = RegisterString(*asset,
+                                                                 std::string({asset_element.namespace_url.begin(),asset_element.namespace_url.end()}) +
+                                                                 "." +
+                                                                 std::string({asset_element.name.begin(),asset_element.name.end()}));
+                    else
+                        asset_element.full_name = asset_element.name;
+                    //初始化元素属性
+                    auto xml_attr = xml_element.FirstAttribute();
+                    while (xml_attr) {
+                        std::string_view out_prefix2;
+                        std::string_view out_name2;
+                        if (SplitXmlAttrName(xml_attr, file_path, out_prefix2, out_name2))
+                        {
+                            if(FindNamespace(asset->all_namespace, out_prefix2) != "http://www.w3.org/2001/XMLSchema-instance")
+                            {
+                                if (out_prefix2 != "")
+                                {
+                                    asset_element.PrintError("暂不支持有前缀的属性! attrName:" + std::string(xml_attr->Name()));
+                                    return std::shared_ptr<XmlAsset>();
+                                }
+                                asset_element.SetAttribute(RegisterString(*asset, out_name2), xml_attr->Value());
+                            }
+                        } else
+                            return std::shared_ptr<XmlAsset>();
+                        xml_attr = xml_attr->Next();
+                    }
+                }
+
                 //添加子元素
-                auto xml_child = xml_element.FirstChildElement();
+                auto xml_child = xml_node.FirstChild();
                 int childCount = 0;
                 while (xml_child) {
-                    xml_child = xml_child->NextSiblingElement();
-                    childCount++;
+                    if(xml_child && (xml_child->ToText() || xml_child->ToElement()))
+                        childCount++;
+                    xml_child = xml_child->NextSibling();
                 }
                 asset_element.children.reserve(childCount);
-                xml_child = xml_element.FirstChildElement();
+                xml_child = xml_node.FirstChild();
                 while (xml_child) {
-                    XmlElement &asset_child = asset_element.children.emplace_back();
-                    next_layer.emplace_back(std::pair<XMLElement *, XmlElement *>(xml_child, &asset_child));
-                    xml_child = xml_child->NextSiblingElement();
+                    if(xml_child->ToText() || xml_child->ToElement())
+                    {
+                        XmlElement &asset_child = asset_element.children.emplace_back();
+                        next_layer.emplace_back(std::pair<XMLNode *, XmlElement *>(xml_child, &asset_child));
+                    }
+                    xml_child = xml_child->NextSibling();
                 }
             }
             current_layer.clear();

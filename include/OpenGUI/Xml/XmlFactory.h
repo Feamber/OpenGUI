@@ -67,6 +67,9 @@ namespace OGUI
         std::string_view xml_namespace;
         std::string_view xml_qualified_name;
 
+        // 对应xsd中的 <xs:complexContent mixed="false">
+        bool mixed = false;
+
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) = 0;
         virtual VisualElement* Create(const XmlElement& asset, CreationContext& context) = 0;
 

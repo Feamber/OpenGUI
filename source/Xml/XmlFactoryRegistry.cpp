@@ -46,6 +46,8 @@ void OGUI::XmlFactoryRegistry::RegisterEngineFactories()
         new IXmlFactory_AttributeOverrides(),
         new IXmlFactory_VisualElement(),
         new IXmlFactory_Instance(),
+        new IXmlFactory_Text(),
+        new IXmlFactory_TextValue(),
 	};
 
 	for (auto factory : engine_factories)

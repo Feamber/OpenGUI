@@ -70,7 +70,7 @@ namespace OGUI_Xsd
             }
             if(visualElementType == null)
             {
-                Console.Write("ERROR: Can't find VisualElementType");
+                Debug.Fail("ERROR: Can't find VisualElementType");
                 return 1;
             }
 
@@ -82,7 +82,7 @@ namespace OGUI_Xsd
                 XmlAttribute obj = (XmlAttribute)Activator.CreateInstance(xmlType);
                 if (allXmlTypeMap.ContainsKey(obj.XmlType()))
                 {
-                    Console.Write("ERROR: XmlAttribute::XmlType() repeat! XmlType: ", obj.XmlType());
+                    Debug.Fail("ERROR: XmlAttribute::XmlType() repeat! XmlType: ", obj.XmlType());
                     return 1;
                 }
                 allXmlTypeMap.Add(obj.XmlType(), obj);
@@ -104,7 +104,7 @@ namespace OGUI_Xsd
             {
                 String OutH;
                 String OutCpp;
-                GenNamespaceXmlFactory(out OutH, out OutCpp, pair.Key, pair.Value, allXmlTypeMap);
+                GenNamespaceXmlFactory(out OutH, out OutCpp, pair.Key, pair.Value, allXmlTypeMap, schemaSet);
                 if(OutH.Length == 0) continue;
 
                 Directory.CreateDirectory(configure.OutputH);
@@ -127,7 +127,7 @@ namespace OGUI_Xsd
             return 0;
         }
 
-        static void GenNamespaceXmlFactory(out String OutH,out String OutCpp, string namespaceName, List<XmlSchemaElement> allElement, Dictionary<string, XmlAttribute> allXmlTypeMap)
+        static void GenNamespaceXmlFactory(out String OutH,out String OutCpp, string namespaceName, List<XmlSchemaElement> allElement, Dictionary<string, XmlAttribute> allXmlTypeMap, XmlSchemaSet schemaSet)
         {
             String AllIncludeH = "";
             String AllIncludeCpp = "";
@@ -164,16 +164,50 @@ namespace OGUI_Xsd
                 XmlSchemaComplexType elementType = element.ElementSchemaType as XmlSchemaComplexType;
                 if(elementType == null)
                 {
-                    Console.Write("ERROR: 现在不应该有元素的类型不是 XmlSchemaComplexType！ element：" + element.QualifiedName);
+                    Debug.Fail("ERROR: 现在不应该有元素的类型不是 XmlSchemaComplexType！ element：" + element.QualifiedName);
                     OutH = "";
                     OutCpp = "";
                     return;
                 }
 
-                XmlSchemaComplexType parentType = elementType.BaseXmlSchemaType as XmlSchemaComplexType;
+                XmlSchemaType? baseType = null;
+                if (elementType.Annotation != null) //这是用来开洞的，强行继承
+                {
+                    var documentationArray2 = elementType.Annotation.Items.OfType<XmlSchemaDocumentation>().ToArray();
+                    foreach (var doc in documentationArray2)
+                    {
+                        String info = doc.Markup[0].Value;
+                        if (info.Contains("{base}"))
+                        {
+                            info = info.Replace("{base}", "");
+                            foreach (DictionaryEntry entry in schemaSet.GlobalTypes)
+                            {
+                                XmlSchemaType type = (XmlSchemaType)entry.Value;
+                                if(type.QualifiedName.ToString() == info)
+                                {
+                                    baseType = type;
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                }
+                else
+                    baseType = elementType.BaseXmlSchemaType;
+
+                if(elementType.Annotation != null && baseType == null)
+                {
+                    Debug.Fail("ERROR: 类型标记了 <Annotation> 但是没匹配到正确的开洞 element：" + element.QualifiedName);
+                    OutH = "";
+                    OutCpp = "";
+                    return;
+                }
+
+                XmlSchemaComplexType parentType = baseType as XmlSchemaComplexType;
                 if (parentType == null)
                 {
-                    Console.Write("ERROR: 现在不应该有父类型类型不是 XmlSchemaComplexType！ element：" + element.QualifiedName);
+                    Debug.Fail("ERROR: 现在不应该有父类型类型不是 XmlSchemaComplexType！ element：" + element.QualifiedName);
                     OutH = "";
                     OutCpp = "";
                     return;
@@ -226,7 +260,7 @@ namespace OGUI_Xsd
                     }
                     else
                     {
-                        Console.Write("ERROR: 找不到对应属性类型的XmlAttribute！ attrTypeName：" + attrTypeName);
+                        Debug.Fail("ERROR: 找不到对应属性类型的XmlAttribute！ attrTypeName：" + attrTypeName);
                         OutH = "";
                         OutCpp = "";
                         return;
@@ -254,6 +288,7 @@ namespace OGUI_Xsd
                     .Replace("{Namespace}", element.QualifiedName.Namespace)
                     .Replace("{Qualified}", element.QualifiedName.Namespace + '.' + element.QualifiedName.Name)
                     .Replace("{ParentTypeName}", parentTypeName)
+                    .Replace("{Mixed}", elementType.ContentType == XmlSchemaContentType.Mixed ? "mixed = true;" : "")
                     .Replace("{AllAttributeDefinition}", AllAttributeDefinition);
 
                 xmlFactoryClassCpp = xmlFactoryClassCpp
@@ -280,11 +315,11 @@ namespace OGUI_Xsd
         static void ValidationCallback(object sender, ValidationEventArgs args)
         {
             if (args.Severity == XmlSeverityType.Warning)
-                Console.Write("WARNING: ");
+                Debug.Write("WARNING: ");
             else if (args.Severity == XmlSeverityType.Error)
-                Console.Write("ERROR: ");
+                Debug.Fail("ERROR: ");
 
-            Console.WriteLine(args.Message);
+            Debug.WriteLine(args.Message);
         }
     }
 }

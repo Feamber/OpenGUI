@@ -8,6 +8,7 @@
             xml_name = "{ElementName}";
             xml_namespace = "{Namespace}";
             xml_qualified_name = "{Qualified}";
+            {Mixed}
         }
 
         virtual bool InitAttribute(VisualElement& new_element, const XmlElement& Asset, CreationContext& context) override;

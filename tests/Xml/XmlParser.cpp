@@ -1,3 +1,4 @@
+#include <OpenGUI/Xml/XmlFactoryTool.h>
 #include "catch.hpp"
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualElement.h"
@@ -8,6 +9,13 @@ TEST_CASE("XmlParser", "[XmlAsset]")
     auto asset = XmlAsset::LoadXmlFile("XmlParserTest.xml");
     REQUIRE(asset);
     VisualElement* ins = asset->Instantiate();
+    REQUIRE(ins);
+
+    auto Text = ins->_children[1];
+    REQUIRE(Text->_name == "Text");
+    REQUIRE(((TextValue*)Text->_children[0])->text == "aaaa");
+    REQUIRE(((TextValue*)Text->_children[1]->_children[0]->_children[0])->text == "ssss");
+    REQUIRE(((TextValue*)Text->_children[2])->text == "bbbb");
 
     auto A = ins->_children[0];
     REQUIRE(A->_name == "A");

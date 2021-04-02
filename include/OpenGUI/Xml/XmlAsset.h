@@ -29,6 +29,7 @@ namespace OGUI
         std::string_view full_name = "";
         std::string_view prefix = "";
         std::string_view namespace_url = "";
+        std::string text = "";
         std::vector<XmlAttribute> attributes {};
         std::vector<XmlElement> children {};
 

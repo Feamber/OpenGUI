@@ -174,5 +174,15 @@ namespace OGUI
     {
         return IXmlFactory_VisualElement::InitAttribute(new_element, asset, context);
     }
+
+    VisualElement* IXmlFactory_Text::Create(const XmlElement& asset, CreationContext& context)
+    {
+        return XmlFactoryCreate<IXmlFactory_Text, TextVisualElement>(*this, asset, context);
+    }
+
+    bool IXmlFactory_Text::InitAttribute(VisualElement &new_element, const XmlElement &asset, CreationContext &context)
+    {
+        return IXmlFactory_VisualElement::InitAttribute(new_element, asset, context);
+    }
 }
 
