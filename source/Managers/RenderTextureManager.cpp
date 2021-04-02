@@ -21,10 +21,8 @@ shared_ptr<AsyncRenderTexture> RenderTextureManager::RequireFromFileSystem(
         tex_locked = std::make_shared<AsyncRenderTexture>(
             std::shared_ptr<AsyncImage>(new AsyncImage(), 
             [this, url](AsyncImage* tex){
-                auto& ctx = Context::Get();
-                ctx.renderImpl->ReleaseTexture(tex->Get()); // Release from RenderDevice.
                 render_textures.erase(url);
-            })
+            }), ERenderTextureType::RawTexture
         );
         render_textures[url] = tex_locked;
     } else {

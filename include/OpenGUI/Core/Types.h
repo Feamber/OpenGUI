@@ -232,22 +232,22 @@ namespace OGUI
 
 	struct MemoryResource
 	{
-		uint8_t* data = nullptr;
+		uint8_t* bytes = nullptr;
 		size_t size_in_bytes = 0;
 	};
 
     struct Bitmap
     {
-        uint8_t*    bytes;
-        uint32_t    size_in_bytes;
-        uint32_t    width, height;
-        PixelFormat format;
+		MemoryResource resource;
+        uint32_t       width, height;
+        PixelFormat    format;
     };
 
-	struct RenderTargetView
+	// Reference: https://github.com/rougier/freetype-gl
+	struct DynamicAtlasResource
 	{
-		struct TextureInterface* owner;
-		Rect region;
+		std::vector<Vector3u> nodes;
+		Bitmap bitmap;
 	};
 
 	enum class DirtyReason : int
@@ -276,4 +276,13 @@ namespace OGUI
 		// The opacity of the element have changed
 		Opacity = 1 << 12,
 	};
+
+/*
+	struct RenderTargetView
+	{
+		struct TextureInterface* owner;
+		Rect region;
+	};
+*/
 }
+
