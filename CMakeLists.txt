@@ -88,7 +88,6 @@ target_include_directories(OpenGUI
     ${PLATFORM_INCLUDES}
 )
 target_link_libraries(OpenGUI PUBLIC fmt)
-target_link_libraries(OpenGUI PUBLIC spdlog)
 
 if(OPENGUI_USE_FREETYPE OR OPENGUI_USE_HARFBUZZ OR OPENGUI_USE_ICU)
     download_and_extract(
