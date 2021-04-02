@@ -1,6 +1,7 @@
 ﻿#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/AsyncFile.h"
+#include "OpenGUI/Core/AsyncRenderTexture.h"
 #include "OpenGUI/Core/IOThread.h"
 #include "OpenGUI/Core/AsyncBitmap.h"
 #include "OpenGUI/Context.h"
@@ -124,6 +125,11 @@ void AsyncBitmap::Finalize()
 
 OGUI::LogInterface::~LogInterface()
 {
+}
+
+OGUI::AsyncRenderTexture::AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle)
+{
+    device_image = image_handle;
 }
 
 }

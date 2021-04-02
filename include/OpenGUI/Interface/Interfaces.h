@@ -53,9 +53,13 @@ namespace OGUI
 		virtual void Free(Bitmap bm) = 0;
 	};
 
-	struct TextureInterface {};
+	struct TextureInterface 
+	{
+
+	};
 	struct PersistantPrimitiveInterface {};
     using TextureHandle = TextureInterface*;
+    using RenderTargetViewHandle = RenderTargetView*;
     using PersistantPrimitiveHandle = PersistantPrimitiveInterface*;
 	struct RenderInterface
 	{
@@ -67,6 +71,10 @@ namespace OGUI
 
         virtual void RenderPrimitives(const struct PrimDrawList&) = 0;
         virtual void RenderPrimitives(const struct PersistantPrimDrawList&) = 0;
+
+		//virtual RenderTargetViewHandle RegisterRenderTargetView(const Bitmap&) = 0;
+		//virtual RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) = 0;		
+		//virtual void ReleaseRenderTargetView(RenderTargetViewHanle) = 0;
 
         virtual TextureHandle RegisterTexture(const Bitmap&) = 0;
         virtual void ReleaseTexture(TextureHandle) = 0;

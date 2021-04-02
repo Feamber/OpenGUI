@@ -244,6 +244,12 @@ namespace OGUI
         PixelFormat format;
     };
 
+	struct RenderTargetView
+	{
+		struct TextureInterface* owner;
+		Rect region;
+	};
+
 	enum class DirtyReason : int
 	{
 		// Some data was bound

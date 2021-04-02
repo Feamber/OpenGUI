@@ -4,7 +4,7 @@
 
 namespace OGUI
 {
-    class AsyncRenderTexture
+    class AsyncImage
 	{
 		friend class RenderTextureManager;
 	public:
@@ -19,5 +19,22 @@ namespace OGUI
 	protected:
 		TextureHandle _handle;
 		std::atomic_bool is_ready;
+	};
+
+	class AsyncRenderTexture
+	{
+		friend class RenderTextureManager;
+	public:
+		AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle);
+		inline const TextureHandle Get(void) const
+		{
+			return device_image->Get();
+		}
+		inline bool valid(void) const
+		{
+			return device_image->valid();
+		}
+	protected:
+		std::shared_ptr<AsyncImage> device_image;
 	};
 }
