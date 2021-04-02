@@ -625,14 +625,37 @@ void OnReloaded()
 			olog::Info(u"Oh ♂ shit!"_o);
 			return true;
 		};
-		constexpr auto handler1 = +[](KeyDownEvent& event)
+		constexpr auto handlerDown = +[](KeyDownEvent& event)
 		{
 			using namespace ostr::literal;
-			olog::Info(u"Fuck!"_o);
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is Down!"_o);
+			}
+			return true;
+		};
+		constexpr auto handlerUp = +[](KeyUpEvent& event)
+		{
+			using namespace ostr::literal;
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is up!"_o);
+			}
+			return true;
+		};
+		constexpr auto handlerHold = +[](KeyHoldEvent& event)
+		{
+			using namespace ostr::literal;
+			if (event.key == EKeyCode::W)
+			{
+				olog::Info(u"W is Holding!"_o);
+			}
 			return true;
 		};
 		child1->_eventHandler.Register<PointerDownEvent, handler>();
-		child1->_eventHandler.Register<KeyDownEvent, handler1>();
+		child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
+		child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
+		child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
 	}
 	{
 		std::vector<VisualElement*> tests;
@@ -745,8 +768,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
 						}
 						case SDL_MOUSEMOTION:
 						{
-							//olog::Info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
-							//olog::Info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
+							olog::Info(u"MousePos X:{}, Y:{}"_o.format(event.motion.x, event.motion.y));
+							olog::Info(u"MousePos RelX:{}, RelY:{}"_o.format(event.motion.xrel, event.motion.yrel));
 							ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
 							break;
 						}
@@ -778,8 +801,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
 							break;
 						}
 						case SDL_QUIT:
-						done = true;
-						break;
+							done = true;
+							break;
 					}
 				}
 				redraw();
