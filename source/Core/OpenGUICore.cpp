@@ -1,4 +1,5 @@
-﻿#include "OpenGUI/Core/Types.h"
+﻿#define DLL_IMPLEMENTATION
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
@@ -106,6 +107,27 @@ IOThread::~IOThread()
     is_running = false;
     if(loader_thread.joinable())
         loader_thread.join();
+}
+
+void IOThread::loaderThreadFunction()
+{
+    while(is_running)
+    {
+        load_queue_mutex.lock();
+        std::vector<FileLoaderTask> tasks = load_queue;
+        load_queue.clear();
+        load_queue_mutex.unlock();
+
+        for (FileLoaderTask& task : tasks) {
+            task.file->__initialize(task.path.c_str());
+            task.complete_callback(task.file);
+        }
+
+        {
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(1ms);
+        }
+    }
 }
 
 // AsyncBitmap

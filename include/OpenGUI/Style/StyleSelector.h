@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Configure.h"
 #include <string>
 #include <vector>
 #include <cinttypes>
@@ -68,10 +69,10 @@ namespace OGUI
 	}; 
 	class VisualElement;
 
-	std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
-	bool Match(VisualElement* current, StyleComplexSelector& complexSel);
-	VisualElement* QueryFirst(VisualElement* root, std::string_view str);
-	VisualElement* QueryFirst(VisualElement* root, StyleComplexSelector& complexSel);
-	void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result);
-	void QueryAll(VisualElement* root, StyleComplexSelector& complexSel, std::vector<VisualElement*>& result);
+	OGUI_API std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
+	OGUI_API bool Match(VisualElement* current, StyleComplexSelector& complexSel);
+	OGUI_API VisualElement* QueryFirst(VisualElement* root, std::string_view str);
+	OGUI_API VisualElement* QueryFirst(VisualElement* root, StyleComplexSelector& complexSel);
+	OGUI_API void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result);
+	OGUI_API void QueryAll(VisualElement* root, StyleComplexSelector& complexSel, std::vector<VisualElement*>& result);
 }

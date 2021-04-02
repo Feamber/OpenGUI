@@ -49,7 +49,7 @@ namespace OGUI
 		using KeyframesMap = std::map<std::string_view, int>;
 		KeyframesMap namedKeyframes;
 
-		void Initialize();
+		OGUI_API void Initialize();
 	};
 
 	struct InlineStyle

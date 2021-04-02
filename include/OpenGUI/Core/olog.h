@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGUI/Core/open_string.h"
+#include "OpenGUI/Configure.h"
 #include <cassert>
 
 namespace OGUI
@@ -21,8 +22,8 @@ namespace OGUI
 		};
 
 #define __MAKE_LOG_CALL_DECLARE(func)\
-static void func(ostr::string_view msg);\
-static void func(const ostr::string& msg);\
+OGUI_API static void func(ostr::string_view msg);\
+OGUI_API static void func(const ostr::string& msg);\
 template<typename...Args>\
 static void func(ostr::string_view fmt, Args&&...args)\
 {\

@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Style/Style.h"
 #include <yoga/YGNode.h>
 #include <algorithm>

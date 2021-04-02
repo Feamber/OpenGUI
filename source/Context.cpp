@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Context.h"
 #include <iostream>
 #include "OpenGUI/Core/AsyncFile.h"

@@ -246,6 +246,8 @@ namespace OGUI
 	// Reference: https://github.com/rougier/freetype-gl
 	struct DynamicAtlasResource
 	{
+		//static DynamicAtlasResource* Create(const uint32_t width, const uint32_t height, const uint32_t pixel_depth);
+
 		std::vector<Vector3u> nodes;
 		Bitmap bitmap;
 	};

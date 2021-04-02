@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Style/Style.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"

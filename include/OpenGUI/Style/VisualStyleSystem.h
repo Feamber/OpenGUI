@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/VisualSystem.h"
 #include <unordered_set>
 #include <function_ref/function_ref.hpp>
@@ -44,7 +45,7 @@ namespace OGUI
 		void UpdateStyle(VisualElement* element);
 
 	public:
-		void InvalidateCache();
+		OGUI_API void InvalidateCache();
 		virtual void Update(VisualElement* Tree);
 	};
 }

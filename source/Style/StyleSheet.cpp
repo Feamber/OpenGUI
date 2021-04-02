@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include "OpenGUI/Core/olog.h"

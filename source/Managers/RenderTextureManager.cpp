@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/AsyncBitmap.h"
