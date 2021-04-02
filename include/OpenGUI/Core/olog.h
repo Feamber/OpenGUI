@@ -40,7 +40,7 @@ static void func(ostr::string_view fmt, Args&&...args)\
 #undef __MAKE_LOG_CALL_DECLARE
 
 #define OUNREACHABLE { using namespace ostr::literal; OGUI::olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); assert(false); }
-#define OASSERT(x) { using namespace ostr::literal; if(!(x)) OGUI::olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); assert(false); }
+#define OASSERT(x) { using namespace ostr::literal; if(!(x)){ OGUI::olog::Fatal(u"Unexpected value @ {}"_o, ostr::string(__FUNCTION__)); assert(false); }}
 
 	};
 
