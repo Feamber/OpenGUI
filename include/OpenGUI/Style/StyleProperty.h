@@ -9,11 +9,6 @@
 
 namespace OGUI
 {
-	enum Inheritance
-	{
-		Inherited,
-		NonInherited
-	};
 
 	enum class StyleKeyword : int
 	{

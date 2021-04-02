@@ -25,12 +25,9 @@ void OGUI::Style::MergeStyle(const Style& other, std::bitset<96> mask)
 
 void OGUI::Style::InheritData(Style& parent)
 {
-#define GEN(name, _1, _2, _3, inherit)\
-	if constexpr(inherit == Inherited) \
-	{ \
-		name = parent.name; \
-	}
-	STYLEPROP(GEN)
+#define GEN(name, ...)\
+	name = parent.name; 
+	INHERITEDPROP(GEN)
 #undef GEN
 }
 
@@ -61,26 +58,24 @@ namespace OGUI
 	void GetUnsetProperty(T& field, StylePropertyId propId)
 	{
 		auto& InitialStyle = Style::GetInitialStyle();
-#define GEN(name, _1, _2, _3, inherit)\
-	if constexpr(inherit != Inherited) \
+#define GEN(name, ...)\
 		if(propId == StylePropertyId::name) \
 		{ \
 			Assign(field, InitialStyle.name); \
 		}
-		STYLEPROP(GEN)
+		NONINHERITEDPROP(GEN)
 #undef GEN
 	}
 
 	template<class T>
 	void GetInheritProperty(T& field, StylePropertyId propId, const Style* parent)
 	{
-#define GEN(name, _1, _2, _3, inherit)\
-		if constexpr(inherit != Inherited) \
-			if(propId == StylePropertyId::name) \
-			{ \
-				Assign(field, parent->name); \
-			}
-		STYLEPROP(GEN)
+#define GEN(name, ...)\
+		if(propId == StylePropertyId::name) \
+		{ \
+			Assign(field, parent->name); \
+		}
+		INHERITEDPROP(GEN)
 #undef GEN
 	}
 
