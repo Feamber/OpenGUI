@@ -5,6 +5,7 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Context.h"
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/CSSParser/CSSParser.h"
@@ -13,22 +14,24 @@
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include "OpenGUI/Core/open_string.h"
 #include "OpenGUI/Core/olog.h"
+#include "OpenGUI/Core/DynamicAtlasResource.h"
 #include "efsw/efsw.hpp"
 
 #include "OpenGUI/Event/KeyEvent.h"
 
 extern void InstallInput();
 
+using namespace OGUI;
 WGPUDevice device;
 WGPUQueue queue;
 WGPUSwapChain swapchain;
 WGPURenderPipeline pipeline;
 WGPUBindGroupLayout bindGroupLayout;
 WGPUSampler sampler;
-uint8_t white_tex[4 * 1024 * 1024];
+std::unique_ptr<DynamicAtlasResource> white_tex
+	= std::unique_ptr<DynamicAtlasResource>(DynamicAtlasResource::Create(1024, 1024, PF_R8G8B8A8));
 WGPU_OGUI_Texture* default_ogui_texture;
 
-using namespace OGUI;
 std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 window::Handle hWnd;
 
@@ -249,7 +252,7 @@ struct SpdlogLogger : LogInterface
 /**
  * Bare minimum pipeline to draw a triangle using the above shaders.
  */
-
+uint8_t white_tex2[511 * 511 * 4];
 static void createPipelineAndBuffers() {
 	// compile shaders
 	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
@@ -330,12 +333,27 @@ static void createPipelineAndBuffers() {
 	wgpuShaderModuleRelease(fragMod);
 	wgpuShaderModuleRelease(vertMod);
 
-	memset(white_tex, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
-	Bitmap bitmap = {};
-	bitmap.resource.bytes = white_tex;
-	bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
-	bitmap.width = 1024; bitmap.height = 1024;
-	bitmap.format = PF_R8G8B8A8;
+	memset(white_tex2, 255, 4 * 511 * 511 * sizeof(uint8_t)); // pure white
+	auto allocated = white_tex->AllocateRegion(256, 256);
+	size_t ati = 0;
+	while(!allocated.is_zero())
+	{
+		if(ati % 2 == 0)
+		{
+			white_tex->SetRegion(
+				allocated[0], allocated[1], allocated[2], allocated[3],
+				white_tex2,
+				allocated[2] * 4
+			);
+		}
+		ati++;
+
+		uint32_t width = rand() % 256 + 8;
+		uint32_t height = rand() % 256 + 8;
+		allocated = white_tex->AllocateRegion(width, height);
+	}
+
+	Bitmap bitmap = white_tex->GetBitmap();
 	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
 	ogui_textures[t] = *t;
 	default_ogui_texture = t;

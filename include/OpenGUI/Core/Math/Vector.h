@@ -24,6 +24,16 @@ namespace OGUI
         {
             return m_;
         }
+        FORCEINLINE const T& operator[](size_t idx) const
+        {
+            return data_view()[idx];
+        }
+
+        FORCEINLINE T& operator[](size_t idx)
+        {
+            return data_view()[idx];
+        }
+
         T length_squared() const
         {
             T res = 0;
@@ -38,9 +48,13 @@ namespace OGUI
         {
             return math::sqrt(length_squared());
         }
+        FORCEINLINE bool is_zero() const
+        {
+            return length_squared() == 0;
+        }
         static constexpr Vector<T, N> vector_one();
         static constexpr Vector<T, N> vector_zero();
-    protected:
+ 
         std::array<T, N> m_ = OGUI::create_array<float, N>(0.f);
     };
 
@@ -78,12 +92,12 @@ namespace OGUI
             return vec * Scale;
         }
         
-        FORCEINLINE const T operator[](size_t idx) const
+        FORCEINLINE const T& operator[](size_t idx) const
         {
             return data_view()[idx];
         }
 
-        FORCEINLINE T operator[](size_t idx)
+        FORCEINLINE T& operator[](size_t idx)
         {
             return data_view()[idx];
         }
@@ -148,10 +162,8 @@ namespace OGUI
 
 		union
 		{
-			struct 
-			{
-                T X, Y;
-			};
+			struct { T X, Y; };
+			struct { T x, y; };
 			std::array<T, 2> m_ = { 0, 0 };
 		};
     };
@@ -191,12 +203,12 @@ namespace OGUI
             return vec * Scale;
         }
         
-        FORCEINLINE const T operator[](size_t idx) const
+        FORCEINLINE const T& operator[](size_t idx) const
         {
             return data_view()[idx];
         }
 
-        FORCEINLINE T operator[](size_t idx)
+        FORCEINLINE T& operator[](size_t idx)
         {
             return data_view()[idx];
         }
@@ -270,16 +282,15 @@ namespace OGUI
 
 		union
 		{
-			struct 
-			{
-                T X, Y, Z;
-			};
+			struct { T X, Y, Z; };
+			struct { T x, y, z; };
 			std::array<T, 3> m_ = { 0, 0, 0};
 		};
     };
     using Vector3f = Vector<float, 3>;
 	using Vector3lf = Vector<double, 3>;
     using Vector3u = Vector<uint32_t, 3>;
+    using Vector3i = Vector<int32_t, 3>;
 
 	
     // Vector4f
@@ -379,16 +390,17 @@ namespace OGUI
 
     	union
     	{
-            struct alignas(16)
-            {
-                float X, Y, Z, W;
-            };
+            struct alignas(16) { float X, Y, Z, W; };
+            struct alignas(16) { float x, y, z, w; };
             alignas(16) std::array<float, 4> m_ = { 0.f, 0.f, 0.f, 0.f };
     	};
     };
     using Color4u = Vector<uint8_t, 4u>;
     using Color4f = Vector<float, 4u>;
     using Vector4f = Vector<float, 4>;
+    using Vector4u = Vector<uint32_t, 4>;
+    using Vector4i = Vector<int32_t, 4>;
+
 	FORCEINLINE constexpr Vector4f Vector4f::vector_one()
     {
         return Vector4f(1.f, 1.f, 1.f, 1.f);
