@@ -1,6 +1,6 @@
 #pragma once
 #include <typeindex>
-#include <vector>
+#include "OpenGUI/Core/Containers/vector.hpp"
 
 namespace OGUI
 {

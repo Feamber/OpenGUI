@@ -6,7 +6,6 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"
-#include "OpenGUI/Style/StyleHelpers.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/Xml/XmlAsset.h"

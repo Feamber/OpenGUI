@@ -2,7 +2,7 @@
 #include "OpenGUI/Xml/XmlFactory.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Xml/XsdGen/OGUI.h"
-#include <vector>
+#include "OpenGUI/Core/Containers/vector.hpp"
 
 namespace OGUI
 {
