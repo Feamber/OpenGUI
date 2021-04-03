@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 
 namespace OGUI

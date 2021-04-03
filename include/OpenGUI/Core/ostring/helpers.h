@@ -1,7 +1,7 @@
 #pragma once
 #include <iterator>
 #include <string>
-#include <vector>
+#include "OpenGUI/Core/Containers/vector.hpp"
 #include <functional>
 #include "definitions.h"
 #include "types.h"
@@ -12,7 +12,6 @@ namespace helper
 {
 	namespace codepoint
 	{
-
 		constexpr char8_t HIGHEST_MASK = 0b10000000;
 
 		// Unicode constants
