@@ -12,10 +12,8 @@ namespace OGUI
 	struct AnimRunContext;
 	struct Style
 	{
-		bool isShared;
-
 		static const Style& GetInitialStyle();
-		static Style Create(Style* parent, bool isShared);
+		static Style Create(Style* parent);
 		void MergeStyle(const Style& other, std::bitset<96> mask);
 		void ApplyPropertiesFast(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent);
 		void ApplyAnimation(const AnimationStyle& anim, const AnimRunContext& ctx, const Style* parent);

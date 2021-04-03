@@ -409,7 +409,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	else
 	{
 		std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
-		Style resolvedStyle = Style::Create(nullptr, true);
+		Style resolvedStyle = Style::Create(nullptr);
 		std::vector<AnimationStyle> animStyles;
 		for (auto& record : matchedSelectors)
 		{
@@ -507,7 +507,7 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 		}
 		std::vector<AnimationStyle> yieldingAnims;
 		std::vector<AnimRunContext> yieldingCtxs;
-		if (_cacheInvalidated) //just remove if cache is invalidated
+		if (_cacheInvalidated) //just skip yield anim if cache is invalidated
 			goto noYield;
 		for (int i = 0; i < dynbitset.size(); ++i)
 		{
@@ -541,7 +541,7 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 	TRSStyle trsStyle = element->_style;
 	if (sharedDirty || procedureDirty || parentDirty)
 	{
-		element->_preAnimatedStyle = Style::Create(nullptr, true);
+		element->_preAnimatedStyle = Style::Create(nullptr);
 		std::bitset<96> overrideMask = {}, inheritMask = GetInheritMask();
 		if (element->_sharedStyle)
 		{

@@ -5,10 +5,9 @@
 #include "OpenGUI/Style/StylePropertiesDef.h"
 #include "OpenGUI/Core/olog.h"
 
-OGUI::Style OGUI::Style::Create(Style* parent, bool isShared)
+OGUI::Style OGUI::Style::Create(Style* parent)
 {
 	Style style = GetInitialStyle();
-	style.isShared = isShared;
 	if (parent)
 		style.InheritData(*parent);
 	return style;
