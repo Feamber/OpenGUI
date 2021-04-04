@@ -75,9 +75,9 @@ else()
 endif(${OPENGUI_LIB})
 
 add_custom_command(
-        OUTPUT dasdasdasd.dgsdgf
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.exe -x ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/Main.xsd -h ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/XsdGen -c ${CMAKE_CURRENT_SOURCE_DIR}/source/Xml/XsdGen
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/*.xsd
+    OUTPUT dasdasdasd.dgsdgf
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.exe -x ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/Main.xsd -h ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/XsdGen -c ${CMAKE_CURRENT_SOURCE_DIR}/source/Xml/XsdGen
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/OpenGUI/Xml/Xsd/*.xsd
 )
 
 target_include_directories(OpenGUI 
@@ -87,7 +87,9 @@ target_include_directories(OpenGUI
     include/External/yoga
     ${PLATFORM_INCLUDES}
 )
-target_link_libraries(OpenGUI PUBLIC fmt)
+target_link_libraries(OpenGUI 
+    PUBLIC fmt freetype harfbuzz
+)
 
 if(OPENGUI_USE_FREETYPE OR OPENGUI_USE_HARFBUZZ OR OPENGUI_USE_ICU)
     download_and_extract(

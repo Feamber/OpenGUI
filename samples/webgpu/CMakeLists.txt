@@ -25,6 +25,15 @@ download_and_extract(
     ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
+download_and_extract(
+    ${FILE_SERVER_DIR}/fonts/Vera.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Vera.zip
+    ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
+)
+extract_file(
+	${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Vera.zip 
+	${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
+)
 file(GLOB resources res/*.*)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)

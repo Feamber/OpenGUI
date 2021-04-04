@@ -29,7 +29,7 @@ namespace OGUI
 	public:
 		
 	protected:
-		std::vector<std::string_view> region_names;
+		OGUI::vector<std::string_view> region_names;
 	};
 
 	class AsyncDynamicAtlas : public AsyncStaticAtlas

@@ -55,7 +55,7 @@ namespace OGUI
         static constexpr Vector<T, N> vector_one();
         static constexpr Vector<T, N> vector_zero();
  
-        std::array<T, N> m_ = OGUI::create_array<float, N>(0.f);
+        std::array<T, N> m_ = OGUI::create_array<T, N>(0);
     };
 
 	template <typename T, size_t N>

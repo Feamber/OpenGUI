@@ -14,10 +14,12 @@ namespace OGUI
         void SetRegion(const uint32_t x, const uint32_t y, const uint32_t width,
             const uint32_t height, const uint8_t* data, const size_t stride);
         void Clear();
-
         inline const Bitmap GetBitmap() const { return bitmap; }
-
         ~DynamicAtlasResource();
+        FORCEINLINE const uint32_t width() const { return bitmap.width; }
+        FORCEINLINE const uint32_t height() const { return bitmap.height; }
+        FORCEINLINE const PixelFormat format() const { return bitmap.format; }
+        const uint32_t depth() const;
 
     protected:
         void Merge();

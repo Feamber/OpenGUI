@@ -125,6 +125,11 @@ inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
     }
 }
 
+const uint32_t DynamicAtlasResource::depth() const
+{
+    return size_in_bytes(bitmap.format);
+}
+
 OGUI::DynamicAtlasResource::~DynamicAtlasResource()
 {
     OASSERT(bitmap.resource.bytes);
