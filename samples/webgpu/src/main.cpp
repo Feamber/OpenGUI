@@ -31,7 +31,7 @@ WGPURenderPipeline pipeline;
 WGPUBindGroupLayout bindGroupLayout;
 WGPUSampler sampler;
 std::unique_ptr<Font::TextureFont> white_tex = std::unique_ptr<Font::TextureFont>(
-	Font::TextureFont::TextureFontFromFile(1024, 1024, PF_R8G8B8A8, "Vera.ttf", 128)
+	Font::TextureFont::TextureFontFromFile(1024, 1024, PF_R8, "Vera.ttf", 128)
 );
 WGPU_OGUI_Texture* default_ogui_texture;
 
@@ -45,7 +45,7 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 		Bitmap bm = {};
 		int x, y, n;
 		stbi_info_from_file((FILE*)file, &x, &y, &n);
-		bm.format = n == 1 ? PF_R8Uint : OGUI::PF_R8G8B8A8;
+		bm.format = n == 1 ? PF_R8 : OGUI::PF_R8G8B8A8;
 		const auto channels = (n == 1) ? 1 : 4;
 
 		auto data = stbi_load_from_file((FILE*)file, &x, &y, &n, channels);

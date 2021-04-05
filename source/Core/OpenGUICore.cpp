@@ -118,9 +118,9 @@ inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
     case OGUI::PixelFormat::PF_R8G8B8A8: return 4;
     case OGUI::PixelFormat::PF_R16G16B16A16: return 8;
     case OGUI::PixelFormat::PF_R8G8B8A8_SRGB: return 4;
-    case OGUI::PixelFormat::PF_R8Uint: return 1;
-    case OGUI::PixelFormat::PF_R16Uint: return 2;
-    case OGUI::PixelFormat::PF_R32Uint: return 4;
+    case OGUI::PixelFormat::PF_R8: return 1;
+    case OGUI::PixelFormat::PF_R16: return 2;
+    case OGUI::PixelFormat::PF_R32: return 4;
     default: return -1;
     }
 }

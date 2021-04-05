@@ -75,9 +75,9 @@ inline static WGPUTextureFormat translate(OGUI::PixelFormat format)
     case OGUI::PixelFormat::PF_R8G8B8A8: return WGPUTextureFormat_RGBA8Unorm;
     case OGUI::PixelFormat::PF_R16G16B16A16: return WGPUTextureFormat_RGBA16Float;
     case OGUI::PixelFormat::PF_R8G8B8A8_SRGB: return WGPUTextureFormat_RGBA8UnormSrgb;
-    case OGUI::PixelFormat::PF_R8Uint: return WGPUTextureFormat_R8Uint;
-    case OGUI::PixelFormat::PF_R16Uint: return WGPUTextureFormat_R16Uint;
-    case OGUI::PixelFormat::PF_R32Uint: return WGPUTextureFormat_R32Uint;
+    case OGUI::PixelFormat::PF_R8: return WGPUTextureFormat_R8Unorm;
+    case OGUI::PixelFormat::PF_R16: return WGPUTextureFormat_R16Uint;
+    case OGUI::PixelFormat::PF_R32: return WGPUTextureFormat_R32Uint;
     default: return WGPUTextureFormat_Undefined;
     }
 }
@@ -89,9 +89,9 @@ inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
     case OGUI::PixelFormat::PF_R8G8B8A8: return 4;
     case OGUI::PixelFormat::PF_R16G16B16A16: return 8;
     case OGUI::PixelFormat::PF_R8G8B8A8_SRGB: return 4;
-    case OGUI::PixelFormat::PF_R8Uint: return 1;
-    case OGUI::PixelFormat::PF_R16Uint: return 2;
-    case OGUI::PixelFormat::PF_R32Uint: return 4;
+    case OGUI::PixelFormat::PF_R8: return 1;
+    case OGUI::PixelFormat::PF_R16: return 2;
+    case OGUI::PixelFormat::PF_R32: return 4;
     default: return -1;
     }
 }
@@ -143,7 +143,7 @@ inline static WGPU_OGUI_Texture* createTexture(
     wgpuQueueWriteTexture(queue, &cpyView, bitmap.resource.bytes, bitmap.resource.size_in_bytes, &dtLayout, &writeSize);
 
 	WGPUTextureViewDescriptor viewDesc = {};
-	viewDesc.format = WGPUTextureFormat_RGBA8Unorm;
+	viewDesc.format = translate(bitmap.format);
 	viewDesc.dimension = WGPUTextureViewDimension_2D;
 	viewDesc.baseMipLevel = 0;
 	viewDesc.mipLevelCount = 1;
