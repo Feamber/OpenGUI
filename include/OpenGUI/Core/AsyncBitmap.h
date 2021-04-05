@@ -3,7 +3,7 @@
 
 namespace OGUI
 {
-    class AsyncBitmap final : public AsyncFile
+    class OGUI_API AsyncBitmap final : public AsyncFile
     {
     public:
         void Initialize(const char* path) final;

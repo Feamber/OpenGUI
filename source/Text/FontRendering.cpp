@@ -188,7 +188,8 @@ cleanup:
 }
 
 // ------------------------------------------ texture_font_generate_kerning ---
-static void texture_font_generate_kerning(TextureFont* self, FT_Library *library, FT_Face *face)
+static void texture_font_generate_kerning(TextureFont* self, 
+    FT_Library *library, FT_Face *face)
 {
     FT_UInt glyph_index, prev_index;
     FT_Vector kerning;
@@ -330,10 +331,11 @@ bool TextureFont::LoadGlyph(const char* codepoint)
          -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
         if ( region[0] < 0 )
         {
-            fprintf( stderr, "Texture atlas is full (line %d)\n",  __LINE__ );
+            fprintf( stderr, 
+                "Texture atlas is full (line %d)\n",  __LINE__ );
             FT_Done_Face( face );
             FT_Done_FreeType( library );
-            return 0;
+            return false;
         }
         atlas->SetRegion(region[0], region[1], 4, 4, data, 0);
         glyph->codepoint = -1;
@@ -405,7 +407,7 @@ bool TextureFont::LoadGlyph(const char* codepoint)
                  __LINE__, error, FT_Error_String(error) );
         FT_Done_Face( face );
         FT_Done_FreeType( library );
-        return 0;
+        return false;
     }
 
     if( self->render_mode == ERenderMode::Normal || self->render_mode == ERenderMode::SDF )
@@ -430,10 +432,10 @@ bool TextureFont::LoadGlyph(const char* codepoint)
         }
 
         FT_Stroker_Set(stroker,
-                        (int)(self->outline_thickness * HRES),
-                        FT_STROKER_LINECAP_ROUND,
-                        FT_STROKER_LINEJOIN_ROUND,
-                        0);
+            (int)(self->outline_thickness * HRES),
+            FT_STROKER_LINECAP_ROUND,
+            FT_STROKER_LINEJOIN_ROUND, 0
+        );
 
         error = FT_Get_Glyph( face->glyph, &ft_glyph);
 
@@ -459,9 +461,13 @@ bool TextureFont::LoadGlyph(const char* codepoint)
         }
 
         if( self->atlas->depth() == 1 )
+        {
             error = FT_Glyph_To_Bitmap( &ft_glyph, FT_RENDER_MODE_NORMAL, 0, 1);
+        }
         else
+        {
             error = FT_Glyph_To_Bitmap( &ft_glyph, FT_RENDER_MODE_LCD, 0, 1);
+        }
 
         if( error )
         {
@@ -482,7 +488,7 @@ cleanup_stroker:
         {
             FT_Done_Face( face );
             FT_Done_FreeType( library );
-            return 0;
+            return false;
         }
     }
 
@@ -520,7 +526,7 @@ cleanup_stroker:
         fprintf( stderr, "Texture atlas is full (line %d)\n",  __LINE__ );
         FT_Done_Face( face );
         FT_Done_FreeType( library );
-        return 0;
+        return false;
     }
 
     x = region[0];
@@ -569,15 +575,18 @@ cleanup_stroker:
     glyph->advance_y = convert_F26Dot6_to_float(slot->advance.y);
     self->glyphs.emplace_back(glyph);
 
-    if( self->render_mode != ERenderMode::Normal && self->render_mode != ERenderMode::SDF )
+    if( self->render_mode != ERenderMode::Normal &&
+        self->render_mode != ERenderMode::SDF)
+    {
         FT_Done_Glyph( ft_glyph );
+    }
 
     texture_font_generate_kerning( self, &library, &face );
 
     FT_Done_Face( face );
     FT_Done_FreeType( library );
 
-    return 1;
+    return true;
 }
 
 TextureGlyph* TextureFont::CreateGlyph(const char * codepoint )
