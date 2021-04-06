@@ -201,8 +201,8 @@ void OGUI::DynamicAtlasResource::Merge()
 int DynamicAtlasResource::Fit(const size_t index, const uint32_t width, const uint32_t height)
 {
     auto* node = &nodes[index];
-    int x = node->x;
-    int y = node->y;
+    uint32_t x = node->x;
+    uint32_t y = node->y;
     int width_left = width;
     auto i = index;
     if ( (x + width) > (bitmap.width - 1) )
@@ -228,7 +228,7 @@ OGUI::Vector4i DynamicAtlasResource::AllocateRegion(const uint32_t width, const 
     Vector3u* node = nullptr;
     Vector3u* prev = nullptr;
 
-    OGUI::Vector4i region = {{0,0,width,height}};
+    OGUI::Vector4i region = {{0,0,(int32_t)width,(int32_t)height}};
     best_index  = -1;
 
     for(size_t i = 0u; i < nodes.size(); i++)
