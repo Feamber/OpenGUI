@@ -356,6 +356,19 @@ void AsyncBitmap::Finalize()
     ctx.bmParserImpl->Free(bm);
 }
 
+// AsyncBlob
+void AsyncBlob::Initialize(const char* path) 
+{
+    auto& ctx = Context::Get();
+    resource = ctx.fileImpl->Load(path);
+}
+
+void AsyncBlob::Finalize() 
+{
+    auto& ctx = Context::Get();
+    ::free(resource.bytes);
+}
+
 OGUI::LogInterface::~LogInterface()
 {
 }

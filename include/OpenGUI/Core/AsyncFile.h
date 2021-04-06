@@ -21,4 +21,22 @@ namespace OGUI
         }
         std::atomic_bool is_ready = false;
     };  
+
+    struct OGUI_API AsyncBlob : public AsyncFile
+    {
+    public:
+        void Initialize(const char* path) final;
+        void Finalize() final;
+        FORCEINLINE const MemoryResource& GetResource() const
+        {
+            return resource;
+        }
+        FORCEINLINE MemoryResource& GetResource() 
+        {
+            return resource;
+        }
+        inline size_t size() const final {return resource.size_in_bytes;}
+    protected:
+        MemoryResource resource;
+    };
 }

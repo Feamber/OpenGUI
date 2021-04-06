@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/Math/Vector.h"
+#include "OpenGUI/Core/AsyncFile.h"
 
 namespace OGUI
 {
@@ -29,4 +30,14 @@ namespace OGUI
 		Bitmap bitmap;
         uint32_t used_surface_size = 0;
 	};
+    
+    /*
+    struct OGUI_API AsyncAtlasMemoryFile : public AsyncFile
+    {
+    public:
+
+    protected:
+
+    };
+    */
 }

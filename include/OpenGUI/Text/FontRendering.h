@@ -142,8 +142,7 @@ namespace Font
             const PixelFormat atlas_format,
             const char* filename, const float32_t pt_size);
         ~TextureFont();
-        //static TextureFont* TextureFontFromMemory(
-        //    MemoryResource resource, float32_t pt_size);
+        //static TextureFont* TextureFontFromMemory(MemoryResource resource, float32_t pt_size);
         TextureGlyph* CreateGlyph(const char* codepoint_u8);
         TextureGlyph* FindGlyph(const char* codepoint_u8); 
         FORCEINLINE const DynamicAtlasResource* GetAtlas() const { return atlas.get(); }
