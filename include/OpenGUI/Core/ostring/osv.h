@@ -236,6 +236,14 @@ namespace literal
 	}
 }
 
+struct sv_hash
+{
+	[[nodiscard]] inline size_t operator()(ostr::string_view sv) const
+	{
+		return std::hash<std::u16string_view>{}(sv.raw());
+	}
+};
+
 _NS_OSTR_END 
 
 template<>
