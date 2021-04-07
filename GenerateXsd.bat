@@ -1,0 +1,1 @@
+%~dp0OGUI_Xsd\bin\Release\netcoreapp3.1\publish\OGUI_Xsd.exe XsdToCpp -x %~dp0include\OpenGUI\Xml\Xsd\Main.xsd -h %~dp0include\OpenGUI\Xml\XsdGen -c %~dp0source\Xml\XsdGen

@@ -1,4 +1,4 @@
-﻿    class IXmlFactory_{ElementName} : public {ParentTypeName}
+﻿    class {xx_API} IXmlFactory_{ElementName} : public {ParentTypeName}
     {
     public:
 {AllAttributeDefinition}

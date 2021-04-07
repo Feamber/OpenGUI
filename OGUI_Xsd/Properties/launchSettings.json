@@ -2,7 +2,7 @@
   "profiles": {
     "OGUI_Xsd": {
       "commandName": "Project",
-      "commandLineArgs": "XsdToCpp -x ../../../../include/OpenGUI/Xml/Xsd/Main.xsd  -h ./Gen/H -c ./Gen/Cpp"
+      "commandLineArgs": "XsdToCpp -x C:\\Work\\OpenGUIv2\\include\\OpenGUI\\Xml\\Xsd\\Main.xsd -h C:\\Work\\OpenGUIv2\\include\\OpenGUI\\Xml\\XsdGen -c C:\\Work\\OpenGUIv2\\source\\Xml\\XsdGen"
     }
   }
 }

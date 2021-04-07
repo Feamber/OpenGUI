@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema elementFormDefault="qualified" xmlns:engine="OGUI" targetNamespace="OGUI" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:annotation>
-    <!-- {h}给.h文件添加include -->
-    <!-- {cpp}给.cpp文件添加include -->
+    <!-- {h}给.h文件最上方添加代码 -->
+    <!-- {cpp}给.cpp文件最上方添加代码 -->
+    <xs:documentation>{cpp}#define DLL_IMPLEMENTATION</xs:documentation>
     <xs:documentation>{cpp}#include "OpenGUI/Xml/XsdGen/OGUI.h"</xs:documentation>
+    <xs:documentation>{xx_API}OGUI_API</xs:documentation>
   </xs:annotation>
 
   <!--  要和下面的 xs:element 定义对应 -->
