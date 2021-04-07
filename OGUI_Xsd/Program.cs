@@ -109,7 +109,8 @@ namespace OGUI_Xsd
 
                 Directory.CreateDirectory(configure.OutputH);
                 String hFilePath = Path.Combine(configure.OutputH, pair.Key + ".h");
-                if(File.Exists(hFilePath) && File.ReadAllText(hFilePath) != OutH)
+                File.Create(hFilePath).Close();
+                if (File.ReadAllText(hFilePath) != OutH)
                 {
                     File.WriteAllText(hFilePath, OutH);
                     Debug.WriteLine("生成.h文件：" + Path.GetFullPath(hFilePath));
@@ -117,7 +118,8 @@ namespace OGUI_Xsd
 
                 Directory.CreateDirectory(configure.OutputCpp);
                 String cppFilePath = Path.Combine(configure.OutputCpp, pair.Key + ".cpp");
-                if (File.Exists(cppFilePath) && File.ReadAllText(cppFilePath) != OutCpp)
+                File.Create(cppFilePath).Close();
+                if (File.ReadAllText(cppFilePath) != OutCpp)
                 {
                     File.WriteAllText(cppFilePath, OutCpp);
                     Debug.WriteLine("生成.cpp文件：" + Path.GetFullPath(cppFilePath));
@@ -133,6 +135,7 @@ namespace OGUI_Xsd
             String AllIncludeCpp = "";
             String AllXmlFactoryClassH = "";
             String AllXmlFactoryClassCpp = "";
+            String XX_API = "";
             foreach (XmlSchemaElement element in allElement)
             {
                 XmlSchema xmlSchema = (XmlSchema)element.Parent;
@@ -140,18 +143,23 @@ namespace OGUI_Xsd
                 var documentationArray = annotation.Items.OfType<XmlSchemaDocumentation>().ToArray();
                 foreach(var doc in documentationArray)
                 {
-                    String newInclude = doc.Markup[0].Value;
-                    if(newInclude.Contains("{h}"))
+                    String insert = doc.Markup[0].Value;
+                    if(insert.Contains("{h}"))
                     {
-                        newInclude = newInclude.Replace("{h}", "");
-                        if (!AllIncludeH.Contains(newInclude))
-                            AllIncludeH += newInclude + Environment.NewLine;
+                        insert = insert.Replace("{h}", "");
+                        if (!AllIncludeH.Contains(insert))
+                            AllIncludeH += insert + Environment.NewLine;
                     }
-                    else if (newInclude.Contains("{cpp}"))
+                    else if (insert.Contains("{cpp}"))
                     {
-                        newInclude = newInclude.Replace("{cpp}", "");
-                        if (!AllIncludeCpp.Contains(newInclude))
-                            AllIncludeCpp += newInclude + Environment.NewLine;
+                        insert = insert.Replace("{cpp}", "");
+                        if (!AllIncludeCpp.Contains(insert))
+                            AllIncludeCpp += insert + Environment.NewLine;
+                    }
+                    else if (insert.Contains("{xx_API}"))
+                    {
+                        insert = insert.Replace("{xx_API}", "");
+                        XX_API = insert;
                     }
 
                 }
@@ -284,6 +292,7 @@ namespace OGUI_Xsd
                     parentTypeName = parentType.QualifiedName.Namespace + "::" + "IXmlFactory_" + parentType.QualifiedName.Name.TrimEnd("Type".ToCharArray());
                 }
                 xmlFactoryClassH = xmlFactoryClassH
+                    .Replace("{xx_API}", XX_API)
                     .Replace("{ElementName}", element.QualifiedName.Name)
                     .Replace("{Namespace}", element.QualifiedName.Namespace)
                     .Replace("{Qualified}", element.QualifiedName.Namespace + '.' + element.QualifiedName.Name)

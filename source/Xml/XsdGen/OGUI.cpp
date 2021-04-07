@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Xml/XsdGen/OGUI.h"
 
 

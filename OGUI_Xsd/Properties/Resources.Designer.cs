@@ -61,12 +61,12 @@ namespace OGUI_Xsd.Properties {
         }
         
         /// <summary>
-        ///   查找类似             const std::string_view&amp; str = attr.name;
-        ///            switch (attr_name_hash)
-        ///            {
+        ///   查找类似         const std::string_view&amp; str = attr.name;
+        ///        switch (attr_name_hash)
+        ///        {
         ///{AllSwitchInitAttribute}
-        ///                default: return false;
-        ///            } 的本地化字符串。
+        ///            default: return false;
+        ///        } 的本地化字符串。
         /// </summary>
         internal static string SwitchTemplate {
             get {
@@ -84,9 +84,10 @@ namespace OGUI_Xsd.Properties {
         ///    bool IXmlFactory_{ElementName}::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute&amp; attr)
         ///    {
         ///        {ParentTypeName}::Internal_InitAttribute(attr_name_hash, attr);
-        ///        {Switch}
+        ///{Switch}
         ///        return false;
-        ///    } 的本地化字符串。
+        ///    }
+        /// 的本地化字符串。
         /// </summary>
         internal static string XmlFactoryClassCpp {
             get {
@@ -95,7 +96,7 @@ namespace OGUI_Xsd.Properties {
         }
         
         /// <summary>
-        ///   查找类似     class IXmlFactory_{ElementName} : public {ParentTypeName}
+        ///   查找类似     class {xx_API} IXmlFactory_{ElementName} : public {ParentTypeName}
         ///    {
         ///    public:
         ///{AllAttributeDefinition}
@@ -105,10 +106,11 @@ namespace OGUI_Xsd.Properties {
         ///            xml_name = &quot;{ElementName}&quot;;
         ///            xml_namespace = &quot;{Namespace}&quot;;
         ///            xml_qualified_name = &quot;{Qualified}&quot;;
+        ///            {Mixed}
         ///        }
         ///
         ///        virtual bool InitAttribute(VisualElement&amp; new_element, const XmlElement&amp; Asset, CreationContext&amp; context) override;
-        ///        virtual VisualElement* Create(const XmlElement&amp; asset, CreationContext&amp; c [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///        virtual VisualElement* Create(const XmlElem [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string XmlFactoryClassH {
             get {

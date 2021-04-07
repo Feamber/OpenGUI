@@ -3,13 +3,14 @@
 #include <string_view>
 #include <optional>
 #include <functional>
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Xml/XmlFactory.h"
 
 
 namespace OGUI
 {
 	using namespace OGUI;
-    class IXmlFactory_Root : public OGUI::IXmlFactory
+    class OGUI_API IXmlFactory_Root : public OGUI::IXmlFactory
     {
     public:
 
@@ -28,7 +29,7 @@ namespace OGUI
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
 
-    class IXmlFactory_Style : public OGUI::IXmlFactory
+    class OGUI_API IXmlFactory_Style : public OGUI::IXmlFactory
     {
     public:
         std::string_view path;
@@ -47,7 +48,7 @@ namespace OGUI
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
 
-    class IXmlFactory_Template : public OGUI::IXmlFactory
+    class OGUI_API IXmlFactory_Template : public OGUI::IXmlFactory
     {
     public:
         std::string_view name;
@@ -67,7 +68,7 @@ namespace OGUI
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
 
-    class IXmlFactory_AttributeOverrides : public OGUI::IXmlFactory
+    class OGUI_API IXmlFactory_AttributeOverrides : public OGUI::IXmlFactory
     {
     public:
         std::string_view element_name;
@@ -86,7 +87,7 @@ namespace OGUI
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
 
-    class IXmlFactory_VisualElement : public OGUI::IXmlFactory
+    class OGUI_API IXmlFactory_VisualElement : public OGUI::IXmlFactory
     {
     public:
         std::optional<std::string_view> name;
@@ -110,7 +111,7 @@ namespace OGUI
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
 
-    class IXmlFactory_Instance : public OGUI::IXmlFactory_VisualElement
+    class OGUI_API IXmlFactory_Instance : public OGUI::IXmlFactory_VisualElement
     {
     public:
         std::string_view template_name;
@@ -129,7 +130,7 @@ namespace OGUI
         bool Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr);
     };
 
-    class IXmlFactory_Text : public OGUI::IXmlFactory_VisualElement
+    class OGUI_API IXmlFactory_Text : public OGUI::IXmlFactory_VisualElement
     {
     public:
 

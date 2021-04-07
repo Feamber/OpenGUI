@@ -3,6 +3,7 @@
 #include <string_view>
 #include <optional>
 #include <functional>
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Xml/XmlFactory.h"
 {Include}
 
