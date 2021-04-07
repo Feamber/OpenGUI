@@ -138,6 +138,7 @@ namespace OGUI_Xsd.Properties {
         ///#include &lt;string_view&gt;
         ///#include &lt;optional&gt;
         ///#include &lt;functional&gt;
+        ///#include &quot;OpenGUI/Configure.h&quot;
         ///#include &quot;OpenGUI/Xml/XmlFactory.h&quot;
         ///{Include}
         ///
