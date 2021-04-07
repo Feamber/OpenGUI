@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Xml/XmlFactoryRegistry.h"
 #include "OpenGUI/Xml/XmlFactory.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
