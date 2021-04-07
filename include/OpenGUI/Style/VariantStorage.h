@@ -2,6 +2,19 @@
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include <boost/hana.hpp>
 
+namespace boost::hana
+{
+	template <typename Iterable, typename T>
+	constexpr auto index_of(Iterable const& iterable, T const& element)
+	{
+		auto size = decltype(hana::size(iterable)){};
+		auto dropped = decltype(hana::size(
+			hana::drop_while(iterable, hana::not_equal.to(element))
+		)){};
+		return size - dropped;
+	}
+}
+
 namespace OGUI
 {
 	namespace hana = boost::hana;
@@ -31,7 +44,7 @@ namespace OGUI
 		template<class T>
 		constexpr static auto IndexOf()
 		{
-			return *hana::index_if(vectorValues, hana::_ == hana::type_c<T>);
+			return hana::index_of(vectorValues, hana::type_c<T>);
 		}
 
 		template<class T> 
