@@ -12,6 +12,7 @@
 
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
+#include "OpenGUI/Core/StdLog.h"
 
 void OGUI::Context::Initialize(
 	InputInterface* I, SystemInterface* S,
@@ -264,6 +265,7 @@ OGUI::Context::Context()
 {
 	ioThread = std::make_unique<IOThread>();
 	textureManager = std::make_unique<RenderTextureManager>();
+	logImpl = std::make_unique<StdOutputLog>();
 }
 
 OGUI::Context::~Context()

@@ -11,7 +11,7 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view str)
 {
 	PseudoStates state = PseudoStates::Active;
 	bool reverse = false;
-	switch (hash_(str))
+	switchstr(str)
 	{
 		casestr("active") state = PseudoStates::Active; break;
 		casestr("hover") state = PseudoStates::Hover; break;
@@ -34,7 +34,7 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view str)
 void OGUI::StyleComplexSelector::SetPseudoElement(std::string_view str)
 {
 	PseudoElements id = PseudoElements::After;
-	switch (hash_(str))
+	switchstr(str)
 	{
 		casestr("before") id = PseudoElements::Before; break;
 		casestr("after") id = PseudoElements::After; break;

@@ -1,14 +1,10 @@
 #pragma once
-#include <cinttypes>
-#include <string_view>
-namespace OGUI
-{
-    [[nodiscard]] inline constexpr uint64_t hash_(std::string_view str) noexcept
-    {
-        uint64_t hash = 5381;
-        for (auto c : str)
-            hash = hash * 33 + c;
-        return hash;
-    }
-#define casestr(s) case hash_(s): if(str != s) break;
-}
+#include "OpenGUI/Core/ostring/helpers.h"
+
+// used for switch stl string
+#define switchstr(s) switch(ostr::string str = s; str.get_hash())
+
+// used for switch Name
+#define switchname(n) switch(ostr::string_view str = n.ToStringView(); n.GetStringHash())
+
+#define casestr(s) case u ## s ##_o.get_hash(): if(str != u ## s ##_o) break;

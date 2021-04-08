@@ -6,6 +6,7 @@
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include <map>
 #include <set>
+#include "OpenGUI/Core/Name.h"
 
 namespace OGUI
 {
@@ -13,23 +14,23 @@ namespace OGUI
 
     struct OGUI_API XmlAttribute
     {
-        std::string_view name;
+        Name name;
         std::string value;
 
-        XmlAttribute(const std::string_view& name, const std::string &value) : name(name), value(value) {}
+        XmlAttribute(const Name& name, const std::string &value) : name(name), value(value) {}
 
         bool operator<(const XmlAttribute &rhs) const
         {
-            return name < rhs.name;
+            return name.Compare_Literal(rhs.name) < 0;
         }
     };
 
     struct OGUI_API XmlElement
     {
-        std::string_view name = "";
-        std::string_view full_name = "";
-        std::string_view prefix = "";
-        std::string_view namespace_url = "";
+        Name name = "";
+        Name full_name = "";
+        Name prefix = "";
+        Name namespace_url = "";
         std::string text = "";
         std::vector<XmlAttribute> attributes {};
         std::vector<XmlElement> children {};
@@ -38,8 +39,8 @@ namespace OGUI
         int file_line = 0;
 
         void PrintError(std::string_view message) const;
-        void SetAttribute(const std::string_view &name, const std::string &value);
-        const XmlAttribute* FindAttribute(const std::string_view &name) const;
+        void SetAttribute(const Name &name, const std::string &value);
+        const XmlAttribute* FindAttribute(const Name &name) const;
     };
 
 	class OGUI_API XmlAsset : public std::enable_shared_from_this<XmlAsset>
@@ -54,8 +55,7 @@ namespace OGUI
         class VisualElement* Instantiate();
 
         std::string file_path;
-        std::map<std::string_view, std::string> all_namespace;
-        std::set<std::string> all_string;
+        std::map<Name, Name> all_namespace;
         XmlElement root;
 
         std::list<std::shared_ptr<XmlAsset>> all_child_asset;

@@ -7,21 +7,22 @@
 
 namespace OGUI
 {
-	std::map<std::string, IXmlFactory*> OGUI::XmlFactoryRegistry::factories = {};
+	std::map<Name, IXmlFactory*> OGUI::XmlFactoryRegistry::factories = {};
 }
 
 void OGUI::XmlFactoryRegistry::RegisterFactory(IXmlFactory* factory)
 {
-    std::string xml_qualified_name = {factory->xml_qualified_name.begin(), factory->xml_qualified_name.end()};
+    Name xml_qualified_name = factory->xml_qualified_name;
 	auto result = factories.find(xml_qualified_name);
 	if (result == factories.end())
 	{
 		factories[xml_qualified_name] = factory;
+		return;
 	}
-	// TODO 日志：重复注册 XmlFactory
+	olog::Fatal(u"重复注册 XmlFactory"_o);
 }
 
-OGUI::IXmlFactory* OGUI::XmlFactoryRegistry::FindFactory(const std::string& Xml_qualified_name)
+OGUI::IXmlFactory* OGUI::XmlFactoryRegistry::FindFactory(const Name& Xml_qualified_name)
 {
 	struct Initial
 	{

@@ -1,5 +1,7 @@
 ﻿#define DLL_IMPLEMENTATION
 #include <stdlib.h>
+#include <iostream>
+#include <chrono>
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/DynamicAtlasResource.h"
 #include "OpenGUI/Interface/Interfaces.h"
@@ -10,6 +12,7 @@
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/open_string.h"
 #include "OpenGUI/Core/olog.h"
+#include "OpenGUI/Core/StdLog.h"
 #include "OpenGUI/Core/open_string.h"
 #include "OpenGUI/Context.h"
 
@@ -22,7 +25,7 @@ namespace OGUI
     }\
     void olog::func(const ostr::string& msg) \
     {\
-        Verbose(msg.to_sv());\
+        func(msg.to_sv());\
     }
 
     __MAKE_LOG_CALL_IMPL(Verbose)
@@ -388,6 +391,38 @@ OGUI::AsyncRenderTexture::AsyncRenderTexture(std::shared_ptr<AsyncImage> image_h
 OGUI::AsyncRenderTexture::~AsyncRenderTexture()
 {
     device_image.reset();
+}
+
+StdOutputLog::~StdOutputLog()
+{}
+
+void StdOutputLog::Log(olog::Level l, ostr::string_view msg)
+{
+    const std::string verbosity =
+    [l]
+    {
+        switch(l)
+        {
+            case olog::Level::Verbose :
+            return "Verbose";
+            case olog::Level::Debug :
+            return "Debug";
+            case olog::Level::Info :
+            return "Info";
+            case olog::Level::Warn :
+            return "Warn";
+            case olog::Level::Error :
+            return "Error";
+            case olog::Level::Fatal :
+            return "Fatal";
+            default: break;
+        }
+        return "Unknown";
+    }();
+
+    std::string str;
+    msg.encode_to_utf8(str);
+    std::cout << "<" << verbosity << "> " << str << std::endl;
 }
 
 }

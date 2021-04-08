@@ -1,5 +1,4 @@
-﻿        const std::string_view& str = attr.name;
-        switch (attr_name_hash)
+﻿        switch (const Name& str = attr.name; attr_name_hash)
         {
 {AllSwitchInitAttribute}
             default: return false;

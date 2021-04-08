@@ -26,9 +26,9 @@ namespace XmlTool
 namespace OGUI {
     using namespace tinyxml2;
 
-    bool SplitXmlName(std::string_view xml_name, std::string_view &out_prefix, std::string_view &out_name) {
-        std::vector<std::string_view> tokens;
-        XmlTool::split(xml_name, tokens, ":");
+    bool SplitXmlName(ostr::string_view xml_name, Name& out_prefix, Name& out_name) {
+        std::vector<ostr::string_view> tokens;
+        xml_name.split(u":"_o, tokens);
         if (tokens.size() == 2) {
             out_prefix = tokens[0];
             out_name = tokens[1];
@@ -38,25 +38,21 @@ namespace OGUI {
             out_name = tokens[0];
             return true;
         }
-
-
         return false;
     }
 
-    bool SplitXmlElementName(const XMLElement *xml_element, std::string_view file_path, std::string_view &out_prefix,
-                             std::string_view &out_name) {
-        if (!SplitXmlName(xml_element->Name(), out_prefix, out_name)) {
-            std::cerr << "XML解析错误：元素名称格式不正常 " << std::endl;
-            std::cerr << file_path << "  (" << xml_element->GetLineNum() << ")" << std::endl;
+    bool SplitXmlElementName(const XMLElement *xml_element, std::string_view file_path, Name& out_prefix,
+                             Name& out_name) {
+        if (!SplitXmlName(Name(xml_element->Name()).ToStringView(), out_prefix, out_name)) {
+            olog::Error(u"XML解析错误：元素名称格式不正常 {} ({})"_o, ostr::string(file_path), xml_element->GetLineNum());
             return false;
         }
         return true;
     }
 
-    bool SplitXmlAttrName(const XMLAttribute *xml_attr, std::string_view file_path, std::string_view &out_prefix, std::string_view &out_name) {
-        if (!SplitXmlName(xml_attr->Name(), out_prefix, out_name)) {
-            std::cerr << "XML解析错误：属性名称格式不正常 " << std::endl;
-            std::cerr << file_path << "  (" << xml_attr->GetLineNum() << ")" << std::endl;
+    bool SplitXmlAttrName(const XMLAttribute *xml_attr, std::string_view file_path, Name& out_prefix, Name& out_name) {
+        if (!SplitXmlName(Name(xml_attr->Name()).ToStringView(), out_prefix, out_name)) {
+            olog::Error(u"XML解析错误：属性名称格式不正常 {} ({})"_o, ostr::string(file_path), xml_attr->GetLineNum());
             return false;
         }
         return true;
@@ -66,12 +62,12 @@ namespace OGUI {
         auto xml_attr = xml_element.FirstAttribute();
         while (xml_attr) {
             bool is_delete = false;
-            std::string_view out_prefix;
-            std::string_view out_name;
+            Name out_prefix;
+            Name out_name;
             if (SplitXmlAttrName(xml_attr, asset.file_path, out_prefix, out_name)) {
                 if (out_prefix == "xmlns") {
                     is_delete = true;
-                    if (!out_name.empty())
+                    if (!out_name.IsNone())
                         asset.all_namespace.emplace(out_name, xml_attr->Value());
                 }
             }
@@ -87,12 +83,7 @@ namespace OGUI {
         }
     }
 
-    std::string_view RegisterString(XmlAsset &asset, std::string_view string) {
-        return asset.all_string.insert(
-            std::string(string.begin(), string.end())).first->data();
-    }
-
-    std::string_view FindNamespace(std::map<std::string_view , std::string> &namespace_map, std::string_view key) {
+    Name FindNamespace(std::map<Name, Name> &namespace_map, Name key) {
         auto find = namespace_map.find(key);
         if (find != namespace_map.end()) {
             return find->second;
@@ -111,8 +102,8 @@ namespace OGUI {
         // 找到<Root>元素
         auto xml_root = doc.FirstChildElement();
         while (xml_root) {
-            std::string_view out_prefix;
-            std::string_view out_name;
+            Name out_prefix;
+            Name out_name;
             if (!SplitXmlElementName(xml_root, file_path, out_prefix, out_name))
                 return std::shared_ptr<XmlAsset>();
             if (out_name == "Root")
@@ -123,6 +114,7 @@ namespace OGUI {
         if (!xml_root) {
             std::cerr << "XML解析错误：没有找到<Root>元素" << std::endl;
             std::cerr << file_path << std::endl;
+            olog::Error(u"XML解析错误：没有找到<Root>元素"_o, ostr::string(file_path));
         }
 
         auto shared_asset = std::make_shared<XmlAsset>(file_path);
@@ -137,12 +129,12 @@ namespace OGUI {
                 if(xml_node.ToText()) //字符节点是特殊的
                 {
                     XMLText &xml_text = *xml_node.ToText();
-                    asset_element.name = RegisterString(*asset, "TextValue");
-                    asset_element.prefix = "OGUI";
-                    asset_element.namespace_url = "OGUI";
+                    asset_element.name = u"TextValue"_o;
+                    asset_element.prefix = u"OGUI"_o;
+                    asset_element.namespace_url = u"OGUI"_o;
                     asset_element.xml_asset = asset;
                     asset_element.file_line = xml_node.GetLineNum();
-                    asset_element.full_name = "OGUI.TextValue";
+                    asset_element.full_name = u"OGUI.TextValue"_o;
                     auto t = xml_text.Value();;
                     asset_element.text = xml_text.Value();
                 }
@@ -152,26 +144,23 @@ namespace OGUI {
                     //先扫描属性注册命名空间
                     RegisterNamespace(*asset, xml_element);
                     //初始化 asset_element
-                    std::string_view out_prefix;
-                    std::string_view out_name;
+                    Name out_prefix;
+                    Name out_name;
                     if (!SplitXmlElementName(&xml_element, file_path, out_prefix, out_name)) std::weak_ptr<XmlAsset>();
-                    asset_element.name = RegisterString(*asset, out_name);
-                    asset_element.prefix = RegisterString(*asset, out_prefix);
+                    asset_element.name = out_name;
+                    asset_element.prefix = out_prefix;
                     asset_element.namespace_url = FindNamespace(asset->all_namespace, out_prefix);
                     asset_element.xml_asset = asset;
                     asset_element.file_line = xml_element.GetLineNum();
                     if (asset_element.namespace_url != "")
-                        asset_element.full_name = RegisterString(*asset,
-                                                                 std::string({asset_element.namespace_url.begin(),asset_element.namespace_url.end()}) +
-                                                                 "." +
-                                                                 std::string({asset_element.name.begin(),asset_element.name.end()}));
+                        asset_element.full_name = u"{}.{}"_o.format(asset_element.namespace_url.ToStringView(), asset_element.name.ToStringView());
                     else
                         asset_element.full_name = asset_element.name;
                     //初始化元素属性
                     auto xml_attr = xml_element.FirstAttribute();
                     while (xml_attr) {
-                        std::string_view out_prefix2;
-                        std::string_view out_name2;
+                        Name out_prefix2;
+                        Name out_name2;
                         if (SplitXmlAttrName(xml_attr, file_path, out_prefix2, out_name2))
                         {
                             if(FindNamespace(asset->all_namespace, out_prefix2) != "http://www.w3.org/2001/XMLSchema-instance")
@@ -181,7 +170,7 @@ namespace OGUI {
                                     asset_element.PrintError("暂不支持有前缀的属性! attrName:" + std::string(xml_attr->Name()));
                                     return std::shared_ptr<XmlAsset>();
                                 }
-                                asset_element.SetAttribute(RegisterString(*asset, out_name2), xml_attr->Value());
+                                asset_element.SetAttribute(out_name2, xml_attr->Value());
                             }
                         } else
                             return std::shared_ptr<XmlAsset>();
@@ -241,7 +230,7 @@ namespace OGUI {
             {
                 for (const XmlElement &xml_child : context.instance_asset->children) {
                     if (xml_child.name == "AttributeOverrides") {
-                        std::string_view element_name;
+                        Name element_name;
                         std::set<XmlAttribute> attribute_overrides;
                         for (const XmlAttribute &attr : xml_child.attributes) {
                             if (attr.name == "name") continue;
@@ -251,7 +240,7 @@ namespace OGUI {
                                 attribute_overrides.emplace(attr.name, attr.value);
                         }
 
-                        if (element_name.empty()) {
+                        if (element_name.IsNone()) {
                             context.is_error = true;
                             xml_child.PrintError("<AttributeOverrides element_name=?> 找不到element_name");
                             return nullptr;
@@ -312,10 +301,10 @@ namespace OGUI {
 
     VisualElement *XmlAsset::ParseElement(XmlElement &xml_element, CreationContext &context)
     {
-        IXmlFactory *factory = XmlFactoryRegistry::FindFactory({xml_element.full_name.begin(), xml_element.full_name.end()});
+        IXmlFactory *factory = XmlFactoryRegistry::FindFactory(xml_element.full_name);
         if (factory == nullptr) {
             context.is_error = true;
-            std::cerr << "找不到对应的元素类型 xml_qualified_name: " << xml_element.full_name << std::endl;
+            olog::Error(u"找不到对应的元素类型 xml_qualified_name: {}"_o, xml_element.full_name.ToStringView());
             return nullptr;
         }
 
@@ -336,11 +325,12 @@ namespace OGUI {
     }
 
     void XmlElement::PrintError(std::string_view message) const {
-        std::cerr << xml_asset->file_path + " [" + std::to_string(file_line) + "] <" << full_name << "> Error: "
-                  << message << std::endl;
+        // std::cerr << xml_asset->file_path + " [" + std::to_string(file_line) + "] <" << full_name << "> Error: "
+        //           << message << std::endl;
+        olog::Error(u"{} [{}] <{}> Error: {}"_o, ostr::string(xml_asset->file_path), file_line, full_name.ToStringView(), ostr::string(message));
     }
 
-    void XmlElement::SetAttribute(const std::string_view &attr_name, const std::string &attr_value) {
+    void XmlElement::SetAttribute(const Name &attr_name, const std::string &attr_value) {
         for (auto &attr : attributes) {
             if (attr.name == attr_name) {
                 attr.value = attr_value;
@@ -350,7 +340,7 @@ namespace OGUI {
         attributes.emplace_back(attr_name, attr_value);
     }
 
-    const XmlAttribute *XmlElement::FindAttribute(const std::string_view &name) const
+    const XmlAttribute *XmlElement::FindAttribute(const Name &name) const
     {
         for (auto &attr : attributes) {
             if (attr.name == name) return &attr;

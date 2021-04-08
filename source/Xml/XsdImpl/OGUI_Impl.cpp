@@ -64,17 +64,16 @@ namespace OGUI
         if(new_asset)
         {
             context.main_asset->all_child_asset.emplace_back(new_asset);
-            if(!name.empty())
+            if(!name.IsNone())
             {
-                const std::string sname = {name.begin(), name.end()};
                 auto& templates_alias = context.stack_template.front().templates_alias;
-                auto result = templates_alias.find(sname);
+                auto result = templates_alias.find(name);
                 if(result == templates_alias.end())
                 {
-                    templates_alias[sname] = &new_asset->root;
+                    templates_alias[name] = &new_asset->root;
                     return nullptr;
                 }
-                std::cerr << "重复的<Template>别名 name: " << name << std::endl;
+                olog::Error(u"重复的<Template>别名 name: {}"_o, name.ToStringView());
             }
         }
 
@@ -139,7 +138,7 @@ namespace OGUI
         if(context.is_error) return nullptr;
 
         auto& templates_alias = context.stack_template.front().templates_alias;
-        auto result = templates_alias.find({template_name.begin(), template_name.end()});
+        auto result = templates_alias.find(template_name);
         if(result != templates_alias.end())
         {
             context.instance_asset = &asset;
@@ -147,19 +146,19 @@ namespace OGUI
             if(new_template_container == nullptr)
             {
                 context.is_error = true;
-                std::cerr << "ParseTemplate失败 aliasName： " << template_name << std::endl;
+                olog::Error(u"ParseTemplate失败 aliasName： {}"_o, template_name.ToStringView());
                 return nullptr;
             }
 
             Internal_Init();
             for(const XmlAttribute& attr : asset.attributes)
             {
-                Internal_InitAttribute(hash_(attr.name), attr);
+                Internal_InitAttribute(attr.name.GetStringHash(), attr);
             }
             if(!InitAttribute(*new_template_container, asset, context))
             {
                 context.is_error = true;
-                std::cerr << "InitAttribute失败 xml_qualified_name： " << xml_qualified_name << std::endl;
+                olog::Error(u"InitAttribute失败 xml_qualified_name： {}_o", xml_qualified_name.ToStringView());
                 return nullptr;
             }
 
@@ -167,7 +166,7 @@ namespace OGUI
         }
 
         context.is_error = true;
-        std::cerr << "<Instance>没找到模板别名 template_name: " << template_name << std::endl;
+        olog::Error(u"<Instance>没找到模板别名 template_name: {}"_o, template_name.ToStringView());
         return nullptr;
     }
 

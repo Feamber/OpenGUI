@@ -6,6 +6,7 @@
 #include <set>
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
+#include "OpenGUI/Core/Name.h"
 #include "OpenGUI/Core/olog.h"
 
 namespace OGUI
@@ -22,12 +23,12 @@ namespace OGUI
 
             // key = element-name
             // 当前模板需要覆盖的属性
-            std::map<std::string_view , std::set<XmlAttribute>> attribute_overrides;
+            std::map<Name , std::set<XmlAttribute>> attribute_overrides;
 
             // <engine:Template path="/Assets/Portrait.xml" name="Portrait"/>
             // key = name
             // value = path指向的模板root节点
-            std::map<std::string, XmlElement*> templates_alias;
+            std::map<Name, XmlElement*> templates_alias;
 
             Template(XmlElement &xml_root, class TemplateContainer& template_container) :
                     xml_root(xml_root),
@@ -64,9 +65,9 @@ namespace OGUI
     class IXmlFactory
     {
     public:
-        std::string_view xml_name;
-        std::string_view xml_namespace;
-        std::string_view xml_qualified_name;
+        Name xml_name;
+        Name xml_namespace;
+        Name xml_qualified_name;
 
         // 对应xsd中的 <xs:complexContent mixed="false">
         bool mixed = false;
@@ -87,7 +88,7 @@ namespace OGUI
         factory.Internal_Init();
         for(const XmlAttribute& attr : asset.attributes)
         {
-            factory.Internal_InitAttribute(hash_(attr.name), attr);
+            factory.Internal_InitAttribute(attr.name.GetStringHash(), attr);
         }
         return nullptr;
     }
@@ -102,12 +103,12 @@ namespace OGUI
         factory.Internal_Init();
         for(const XmlAttribute& attr : asset.attributes)
         {
-            factory.Internal_InitAttribute(hash_(attr.name), attr);
+            factory.Internal_InitAttribute(attr.name.GetStringHash(), attr);
         }
         if(!factory.InitAttribute(*new_element, asset, context))
         {
             context.is_error = true;
-            olog::Error(u"InitAttribute失败 xml_qualified_name：{}"_o, ostr::string( factory.xml_qualified_name ));
+            olog::Error(u"InitAttribute失败 xml_qualified_name：{}"_o, factory.xml_qualified_name.ToStringView());
             return nullptr;
         }
         return new_element;

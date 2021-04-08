@@ -25,4 +25,7 @@ TEST_CASE("Name", "NameTest")
     REQUIRE(n_custom.Compare_Id("abc") == 0);
     REQUIRE(!n_custom.IsNone());
 
+    REQUIRE(n_custom.Compare_Id(n_empty) > 0);
+    REQUIRE(n_custom.Compare_Literal(n_empty) < 0);
+
 }

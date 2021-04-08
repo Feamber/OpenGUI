@@ -10,15 +10,23 @@ namespace OGUI
 
 	size_t NamePool::Make(const ostr::string_view& str)
 	{
-		auto it = _table.find(str);
-		if (it != _table.cend())
-		{
-			return it->second;
-		}
+		uint32_t hash = str.get_hash();
+		auto& arr = _hashtable[hash];
+
+		for(const auto& i : arr)
+			if(_data[i] == str) return i;
+
 		size_t index = _data.size();
 		_data.push_back(str);
-		_table[str] = index;
+
+		_hashtable[hash].push_back(index);
+
 		return index;
+	}
+	
+	ostr::string_view NamePool::Read(size_t entry) const
+	{
+		return _data[entry];
 	}
 	
 	NamePool& NamePool::Get()
@@ -35,7 +43,7 @@ namespace OGUI
 
 	NamePool::NamePool()
 		: _data()
-		, _table()
+		, _hashtable()
 	{
 		using namespace ostr::literal;
 		for (const auto& s : {
@@ -61,20 +69,16 @@ namespace OGUI
 	Name::Name(ostr::string_view sv)
 	{
 		using namespace ostr::literal;
-		if (sv.is_empty()) sv = u"None"_o;
+		if (sv.is_empty()) 
+		{ 
+			_entry = 0; 
+			return;
+		}
 		_entry = NamePool::Get().Make(sv);
 	}
 
 	Name::Name(const ostr::string& str)
 		: Name(str.to_sv())
-	{}
-
-	Name::Name(const Name& other)
-		: _entry(other._entry)
-	{}
-
-	Name::Name(Name&& other)
-		: _entry(other._entry)
 	{}
 
 	bool Name::operator==(const Name& rhs) const
@@ -86,10 +90,15 @@ namespace OGUI
 	{
 		return !operator==(rhs);
 	}
+
+	bool Name::operator<(const Name& rhs) const
+	{
+		return Compare_Id(rhs) < 0;
+	}
 	
 	ostr::string_view Name::ToStringView() const
 	{
-		return NamePool::Get()._data[_entry];
+		return NamePool::Get().Read(_entry);
 	}
 
 	int Name::Compare_Id(const Name& rhs) const
@@ -105,5 +114,20 @@ namespace OGUI
 	bool Name::IsNone() const
 	{
 		return _entry == 0;
+	}
+	
+	void Name::Reset()
+	{
+		_entry = 0;
+	}
+	
+	size_t Name::GetHash() const
+	{
+		return std::hash<size_t>()(_entry);
+	}
+	
+	size_t Name::GetStringHash() const
+	{
+		return ToStringView().get_hash();
 	}
 }
