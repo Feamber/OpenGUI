@@ -64,7 +64,7 @@ namespace OGUI
         if(new_asset)
         {
             context.main_asset->all_child_asset.emplace_back(new_asset);
-            if(!name.IsNone())
+            if(!name.empty())
             {
                 auto& templates_alias = context.stack_template.front().templates_alias;
                 auto result = templates_alias.find(name);
@@ -73,7 +73,7 @@ namespace OGUI
                     templates_alias[name] = &new_asset->root;
                     return nullptr;
                 }
-                olog::Error(u"重复的<Template>别名 name: {}"_o, name.ToStringView());
+                olog::Error(u"重复的<Template>别名 name: {}"_o, ostr::string(name));
             }
         }
 
@@ -146,7 +146,7 @@ namespace OGUI
             if(new_template_container == nullptr)
             {
                 context.is_error = true;
-                olog::Error(u"ParseTemplate失败 aliasName： {}"_o, template_name.ToStringView());
+                olog::Error(u"ParseTemplate失败 aliasName： {}"_o, ostr::string(template_name));
                 return nullptr;
             }
 
@@ -166,7 +166,7 @@ namespace OGUI
         }
 
         context.is_error = true;
-        olog::Error(u"<Instance>没找到模板别名 template_name: {}"_o, template_name.ToStringView());
+        olog::Error(u"<Instance>没找到模板别名 template_name: {}"_o, ostr::string(template_name));
         return nullptr;
     }
 

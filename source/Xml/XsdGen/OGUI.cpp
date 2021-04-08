@@ -26,7 +26,7 @@ namespace OGUI
     bool IXmlFactory_Style::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr)
     {
         OGUI::IXmlFactory::Internal_InitAttribute(attr_name_hash, attr);
-        switch (const Name& str = attr.name; attr_name_hash)
+        switch (const Name& __str = attr.name; attr_name_hash)
         {
             casestr("path") path = attr.value; return true;
             default: return false;
@@ -44,7 +44,7 @@ namespace OGUI
     bool IXmlFactory_Template::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr)
     {
         OGUI::IXmlFactory::Internal_InitAttribute(attr_name_hash, attr);
-        switch (const Name& str = attr.name; attr_name_hash)
+        switch (const Name& __str = attr.name; attr_name_hash)
         {
             casestr("name") name = attr.value; return true;
             casestr("path") path = attr.value; return true;
@@ -62,7 +62,7 @@ namespace OGUI
     bool IXmlFactory_AttributeOverrides::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr)
     {
         OGUI::IXmlFactory::Internal_InitAttribute(attr_name_hash, attr);
-        switch (const Name& str = attr.name; attr_name_hash)
+        switch (const Name& __str = attr.name; attr_name_hash)
         {
             casestr("element_name") element_name = attr.value; return true;
             default: return false;
@@ -84,7 +84,7 @@ namespace OGUI
     bool IXmlFactory_VisualElement::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr)
     {
         OGUI::IXmlFactory::Internal_InitAttribute(attr_name_hash, attr);
-        switch (const Name& str = attr.name; attr_name_hash)
+        switch (const Name& __str = attr.name; attr_name_hash)
         {
             casestr("name") name.emplace(attr.value); return true;
             casestr("path") path.emplace(attr.value); return true;
@@ -106,7 +106,7 @@ namespace OGUI
     bool IXmlFactory_Instance::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr)
     {
         OGUI::IXmlFactory_VisualElement::Internal_InitAttribute(attr_name_hash, attr);
-        switch (const Name& str = attr.name; attr_name_hash)
+        switch (const Name& __str = attr.name; attr_name_hash)
         {
             casestr("template_name") template_name = attr.value; return true;
             default: return false;

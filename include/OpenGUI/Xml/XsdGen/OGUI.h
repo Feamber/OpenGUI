@@ -4,8 +4,8 @@
 #include <optional>
 #include <functional>
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Core/Name.h"
 #include "OpenGUI/Xml/XmlFactory.h"
+
 
 namespace OGUI
 {
@@ -51,7 +51,7 @@ namespace OGUI
     class OGUI_API IXmlFactory_Template : public OGUI::IXmlFactory
     {
     public:
-        Name name;
+        std::string_view name;
         std::string_view path;
 
         IXmlFactory_Template()
@@ -114,7 +114,7 @@ namespace OGUI
     class OGUI_API IXmlFactory_Instance : public OGUI::IXmlFactory_VisualElement
     {
     public:
-        Name template_name;
+        std::string_view template_name;
 
         IXmlFactory_Instance()
         {
@@ -133,6 +133,7 @@ namespace OGUI
     class OGUI_API IXmlFactory_Text : public OGUI::IXmlFactory_VisualElement
     {
     public:
+
 
         IXmlFactory_Text()
         {

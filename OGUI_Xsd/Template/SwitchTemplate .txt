@@ -1,4 +1,4 @@
-﻿        switch (const Name& str = attr.name; attr_name_hash)
+﻿        switch (const Name& __str = attr.name; attr_name_hash)
         {
 {AllSwitchInitAttribute}
             default: return false;
