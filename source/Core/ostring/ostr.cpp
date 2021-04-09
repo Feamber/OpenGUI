@@ -1,6 +1,6 @@
 
 #include <string_view>
-#include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGui/Core/ostring/ostr.h"
 
 _NS_OSTR_BEGIN
 

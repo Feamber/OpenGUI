@@ -1,5 +1,5 @@
 
-#include "OpenGUI/Core/ostring/osv.h"
+#include "OpenGui/Core/ostring/osv.h"
 #include <string_view>
 
 _NS_OSTR_BEGIN

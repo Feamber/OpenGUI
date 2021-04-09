@@ -1,13 +1,13 @@
 #pragma once
 
-// UNUSED!
-
 #include <vector>
 #include <string>
 #include <string_view>
 
-#include "OpenGui/Core/ostring/osv.h"
 #include "definitions.h"
+#include "helpers.h"
+
+#include <assert.h>
 
 _NS_OSTR_BEGIN
 
@@ -55,22 +55,23 @@ namespace ofmt {
 	using a = char_base_t<const char(&)[5]>;
 
 	template<typename T>
-	bool to_string(T&& arg, std::u16string_view param, std::u16string& out) = delete;
+	bool to_string(const T& arg, std::u16string_view param, std::u16string& out) = delete;
 
 	template <class T, class Traits>
-	inline bool to_string(std::basic_string_view<T, Traits>&& arg, std::u16string_view param, std::u16string& out)
+	inline bool to_string(const std::basic_string_view<T, Traits>& arg, std::u16string_view param, std::u16string& out)
 	{
 		out.append(arg.cbegin(), arg.cend());
 		return true;
 	}
 
 	template <class T, size_t N>
-	using cstr_arr = T(&)[N];
+	using cstr_arr = const T(&)[N];
 
 	template <class T, size_t N>
-	inline bool to_string(cstr_arr<T, N>&& arg, std::u16string_view param, std::u16string& out)
+	inline bool to_string(const cstr_arr<T, N>& arg, std::u16string_view param, std::u16string& out)
 	{
-		out.append(arg);
+		std::basic_string_view<T> sv(arg);
+		out.append(sv.cbegin(), sv.cend());
 		return true;
 	}
 
@@ -78,7 +79,7 @@ namespace ofmt {
 	using cstr_ptr = const T*&;
 
 	template <typename T>
-	inline bool to_string(cstr_ptr<T>&& arg, std::u16string_view param, std::u16string& out)
+	inline bool to_string(const cstr_ptr<T>& arg, std::u16string_view param, std::u16string& out)
 	{
 		std::basic_string_view<T> sv(arg);
 		out.append(sv.cbegin(), sv.cend());
@@ -86,33 +87,28 @@ namespace ofmt {
 	}
 
 	template<>
-	inline bool to_string<std::u16string_view>(std::u16string_view&& arg, std::u16string_view param, std::u16string& out)
+	inline bool to_string<std::u16string_view>(const std::u16string_view& arg, std::u16string_view param, std::u16string& out)
 	{
 		out = arg;
 		return true;
 	}
 
 	template<>
-	inline bool to_string<int>(int&& arg, std::u16string_view param, std::u16string& out)
+	inline bool to_string<int>(const int& arg, std::u16string_view param, std::u16string& out)
 	{
-		int i = abs(arg);
-		size_t size = (size_t)(floor(log10(i)) + 1) + (arg < 0 ? 1 : 0);
-		out.append(size, u'0');
-		if (arg < 0) {
-			--size;
-			out[size] = u'-';
-		}
-		for(int p = 0; p < size; ++p )
-		{
-			out[p] = (i % 10 + u'0');
-			i /= 10;
-		}
-		std::reverse(out.begin(), out.end());
+		helper::string::from_int(arg, out);
+		return true;
+	}
+
+	template<>
+	inline bool to_string<float>(const float& arg, std::u16string_view param, std::u16string& out)
+	{
+		helper::string::from_float_round(arg, out);
 		return true;
 	}
 
 
-	template<typename Arg0, typename...Args>
+	template<typename Arg0>
 	inline void to_string_index(size_t index, int alignment, std::u16string& out, std::u16string_view param, Arg0&& a0)
 	{
 		if (index != 0) return;
@@ -164,8 +160,6 @@ namespace ofmt {
 	template<typename...Args>
 	inline std::u16string format(std::u16string_view fmt, Args&&...args)
 	{
-		using namespace ostr::literal;
-
 		size_t prev_holder = 0;
 
 		// TODO: performance hit here when construct string
@@ -175,6 +169,8 @@ namespace ofmt {
 		//	^	^	^	^	^	^	^	^
 		//	|	|	|	|	|	|	|	|
 		// TODO: performance hit here when construct string
+
+		int auto_index = -1;
 		
 		for (size_t i = 0; i < fmt.size(); ++i)
 		{
@@ -189,6 +185,10 @@ namespace ofmt {
 					prev_holder = i + 1;
 					continue;
 				}
+				if (fmt.data()[i] == u'}')
+				{
+					++auto_index;
+				}
 				ans.append(fmt.substr(prev_holder, i - prev_holder - 1));
 				size_t index = 0;
 				size_t param_colon = SIZE_MAX;
@@ -197,8 +197,9 @@ namespace ofmt {
 				for (; i < fmt.size(); ++i)
 				{
 					c = fmt.data()[i];
-					if (helper::character::is_number(c))
+					if (ostr::helper::character::is_number(c))
 					{
+						assert(auto_index == -1 && "auto index not allowed when using manual index.");
 						index = index * 10 + helper::character::to_number(c);
 						continue;
 					}
@@ -245,7 +246,7 @@ namespace ofmt {
 					if (c == u'}')
 					{
 						to_string_index(
-							index,
+							(auto_index == -1) ? index : auto_index,
 							alignment,
 							ans,
 							(param_colon == SIZE_MAX) ? u"" : fmt.substr(param_colon, i - param_colon),
@@ -256,7 +257,7 @@ namespace ofmt {
 					}
 					else
 					{
-						// ERROR!
+						assert(false && "unknown format.");
 					}
 				}
 					
