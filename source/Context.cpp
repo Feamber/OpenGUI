@@ -202,7 +202,7 @@ bool OGUI::Context::OnMouseDoubleClick(EMouseKey button, int32 x, int32 y)
 
 bool OGUI::Context::OnMouseMove(bool relative, int32 x, int32 y)
 {
-	olog::Info(u"Mouse PosX:%d, PosY:%d"_o.format(x, y));
+	olog::Info(u"Mouse PosX:%d, PosY:%d"_o, x, y);
 	return false;
 }
 
@@ -213,7 +213,7 @@ bool OGUI::Context::OnMouseMoveHP(bool relative, float x, float y)
 
 bool OGUI::Context::OnMouseWheel(float delta)
 {
-	olog::Info(u"Mouse WheelY:%.2f"_o.format(delta));
+	olog::Info(u"Mouse WheelY:{}"_o, delta);
 	return false;
 }
 

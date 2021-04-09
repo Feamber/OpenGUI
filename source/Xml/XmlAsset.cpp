@@ -44,7 +44,7 @@ namespace OGUI {
     bool SplitXmlElementName(const XMLElement *xml_element, std::string_view file_path, Name& out_prefix,
                              Name& out_name) {
         if (!SplitXmlName(Name(xml_element->Name()).ToStringView(), out_prefix, out_name)) {
-            olog::Error(u"XML解析错误：元素名称格式不正常 {} ({})"_o, ostr::string(file_path), xml_element->GetLineNum());
+            olog::Error(u"XML解析错误：元素名称格式不正常 {} ({})"_o, file_path, xml_element->GetLineNum());
             return false;
         }
         return true;
@@ -52,7 +52,7 @@ namespace OGUI {
 
     bool SplitXmlAttrName(const XMLAttribute *xml_attr, std::string_view file_path, Name& out_prefix, Name& out_name) {
         if (!SplitXmlName(Name(xml_attr->Name()).ToStringView(), out_prefix, out_name)) {
-            olog::Error(u"XML解析错误：属性名称格式不正常 {} ({})"_o, ostr::string(file_path), xml_attr->GetLineNum());
+            olog::Error(u"XML解析错误：属性名称格式不正常 {} ({})"_o, file_path, xml_attr->GetLineNum());
             return false;
         }
         return true;
@@ -114,7 +114,7 @@ namespace OGUI {
         if (!xml_root) {
             std::cerr << "XML解析错误：没有找到<Root>元素" << std::endl;
             std::cerr << file_path << std::endl;
-            olog::Error(u"XML解析错误：没有找到<Root>元素"_o, ostr::string(file_path));
+            olog::Error(u"XML解析错误：没有找到<Root>元素"_o, file_path);
         }
 
         auto shared_asset = std::make_shared<XmlAsset>(file_path);
@@ -327,7 +327,7 @@ namespace OGUI {
     void XmlElement::PrintError(std::string_view message) const {
         // std::cerr << xml_asset->file_path + " [" + std::to_string(file_line) + "] <" << full_name << "> Error: "
         //           << message << std::endl;
-        olog::Error(u"{} [{}] <{}> Error: {}"_o, ostr::string(xml_asset->file_path), file_line, full_name.ToStringView(), ostr::string(message));
+        olog::Error(u"{} [{}] <{}> Error: {}"_o, xml_asset->file_path, file_line, full_name.ToStringView(), message);
     }
 
     void XmlElement::SetAttribute(const Name &attr_name, const std::string &attr_value) {

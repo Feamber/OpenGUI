@@ -64,11 +64,18 @@ namespace ofmt {
 		return true;
 	}
 
+	template <class T, class Traits>
+	inline bool to_string(const std::basic_string<T, Traits>& arg, std::u16string_view param, std::u16string& out)
+	{
+		out.append(arg.cbegin(), arg.cend());
+		return true;
+	}
+
 	template <class T, size_t N>
 	using cstr_arr = const T(&)[N];
 
 	template <class T, size_t N>
-	inline bool to_string(const cstr_arr<T, N>& arg, std::u16string_view param, std::u16string& out)
+	inline bool to_string(cstr_arr<T, N>& arg, std::u16string_view param, std::u16string& out)
 	{
 		std::basic_string_view<T> sv(arg);
 		out.append(sv.cbegin(), sv.cend());
@@ -79,7 +86,7 @@ namespace ofmt {
 	using cstr_ptr = const T*&;
 
 	template <typename T>
-	inline bool to_string(const cstr_ptr<T>& arg, std::u16string_view param, std::u16string& out)
+	inline bool to_string(cstr_ptr<T>& arg, std::u16string_view param, std::u16string& out)
 	{
 		std::basic_string_view<T> sv(arg);
 		out.append(sv.cbegin(), sv.cend());
