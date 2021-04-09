@@ -61,8 +61,7 @@ namespace OGUI_Xsd.Properties {
         }
         
         /// <summary>
-        ///   查找类似         const std::string_view&amp; str = attr.name;
-        ///        switch (attr_name_hash)
+        ///   查找类似         switch (const Name&amp; __str = attr.name; attr_name_hash)
         ///        {
         ///{AllSwitchInitAttribute}
         ///            default: return false;
