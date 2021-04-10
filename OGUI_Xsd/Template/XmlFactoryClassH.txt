@@ -5,9 +5,11 @@
 
         IXmlFactory_{ElementName}()
         {
-            xml_name = "{ElementName}";
-            xml_namespace = "{Namespace}";
-            xml_qualified_name = "{Qualified}";
+            using namespace literal;
+
+            xml_name = u"{ElementName}"_name;
+            xml_namespace = u"{Namespace}"_name;
+            xml_qualified_name = u"{Qualified}"_name;
             {Mixed}
         }
 

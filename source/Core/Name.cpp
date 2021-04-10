@@ -23,6 +23,16 @@ namespace OGUI
 
 		return index;
 	}
+
+	size_t NamePool::MakeLiteral(const char16_t* literal)
+	{
+		auto it = _literaltable.find(literal);
+		if (it != _literaltable.cend())
+			return it->second;
+		size_t entry = Make(literal);
+		_literaltable[literal] = entry;
+		return entry;
+	}
 	
 	ostr::string_view NamePool::Read(size_t entry) const
 	{
@@ -58,17 +68,14 @@ namespace OGUI
 	
 	Name::Name()
 		: _entry(0)
-	{
-	}
+	{}
 
 	Name::Name(EName e)
 		: _entry(std::underlying_type_t<EName>(e))
-	{
-	}
+	{}
 
 	Name::Name(ostr::string_view sv)
 	{
-		using namespace ostr::literal;
 		if (sv.is_empty()) 
 		{ 
 			_entry = 0; 

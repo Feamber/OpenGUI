@@ -11,9 +11,6 @@ using codepoint = char32_t;
 
 using small_size_t = unsigned short;
 
-template<typename T, size_t N>
-using char_array = const T [N];
-
 enum class endian : uint8_t
 {
 	big,
