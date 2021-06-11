@@ -73,13 +73,13 @@ namespace OGUI
 	
 	namespace PrimitiveDraw
 	{
-		struct DrawContext
+		struct OGUI_API DrawContext
 		{
 			PrimDrawList prims;
 			Vector2f     resolution = Vector2f(0.f, 0.f);
 		}; 
 
-		struct BoxParams
+		struct OGUI_API BoxParams
 		{
 			Rect rect;
 			Rect uv;
@@ -90,7 +90,7 @@ namespace OGUI
 			//SVG
 			//Material
 		};
-		struct CheckBox0Params
+		struct OGUI_API CheckBox0Params
 		{
 			Rect outter;
 			Color4f outter_color;
@@ -98,14 +98,14 @@ namespace OGUI
 			Color4f inner_color;
 			bool checked;
 		};
-		struct CircleParams 
+		struct OGUI_API CircleParams 
 		{
 			Vector2f pos;
 			Rect uv;
 			Color4f color;
 			float radius;
 		};
-		struct FanParams
+		struct OGUI_API FanParams
 		{
 			Vector2f pos;
 			Rect uv;
@@ -114,14 +114,14 @@ namespace OGUI
 			float degree;
 			float beginDegree;
 		};
-		struct RoundBoxParams
+		struct OGUI_API RoundBoxParams
 		{
 			Rect rect;
 			Rect uv;
 			Color4f color;
 			float radius[4];
 		};
-		struct LineParams
+		struct OGUI_API LineParams
 		{
 			std::vector<Vector2f> points;
 			Rect uv;

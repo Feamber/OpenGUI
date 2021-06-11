@@ -1,0 +1,73 @@
+:root {
+    width: 700px;
+    height:600px;
+    background-color:rgb(255, 255, 255, 0.8);
+    background-image:url(res/test4.jpg);
+}
+
+.Element{
+    width: 40px;
+    height:40px;
+    background-color: coral;
+}
+
+.Element:focus{
+    background-color:red;
+}
+
+.Element:keyboardFocus{
+    background-color:darkorchid;
+}
+
+.FocusScope{
+    position: absolute;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    background-color: cyan;
+}
+
+.FocusScope:focus{
+    background-color:darkgray;
+}
+
+#Scope1{
+    width: 100px;
+    height: 400px;
+    left: 50px;
+    top: 20px;
+}
+
+#Scope2{
+    align-content:space-around;
+    flex-wrap:wrap;
+    flex-direction:row;
+    width: 100px;
+    height: 300px;
+    left: 500px;
+    top: 100px;
+}
+
+#e1{
+    position: absolute;
+    left: 300px;
+    top: 30px;
+}
+
+#e2{
+    position: absolute;
+    left: 300px;
+    top: 100px;
+}
+
+#e3{
+    position: absolute;
+    left: 300px;
+    top: 300px;
+}
+
+#e4{
+    position: absolute;
+    left: 300px;
+    top: 500px;
+}

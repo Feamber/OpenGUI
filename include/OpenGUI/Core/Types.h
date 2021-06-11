@@ -27,6 +27,31 @@ namespace OGUI
         PF_Count
     };
 
+	enum class ENavMode : uint32
+	{
+		None,
+		Horizontal,
+		Vertical,
+		Automatic,
+		Explicit,
+	};
+
+	enum class ENavCycleMode : uint32
+	{
+		None,
+		Horizontal,
+		Vertical,
+		Automatic,
+	};
+
+	enum class ENavDirection : uint32
+	{
+		Up,
+		Down,
+		Left,
+		Right,
+	};
+
     enum class EKeyCode : uint32
 	{
 		/// means not supported keycode

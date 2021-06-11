@@ -6,5 +6,8 @@ namespace OGUI
     {
     public:
         VisualWindow();
+
+        virtual std::string_view GetTypeName() override { return "VisualWindow"; }
+        virtual std::string_view GetFullTypeName() override { return "OGUI::VisualWindow"; }
     };
 }

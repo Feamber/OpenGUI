@@ -266,17 +266,64 @@ namespace helper
 			return ans;
 		}
 
+		template<typename T>
+		inline void from_int(int arg, std::basic_string<T>& out)
+		{
+			out.clear();
+			if (arg == 0)
+			{
+				out.append(1, u'0');
+				return;
+			}
+			int i = std::abs(arg);
+			size_t size = (size_t)(floor(log10(i)) + 1) + (arg < 0 ? 1 : 0);
+			out.append(size, u'0');
+			if (arg < 0) {
+				--size;
+				out[size] = u'-';
+			}
+			for (int p = 0; p < size; ++p)
+			{
+				out[p] = (i % 10 + u'0');
+				i /= 10;
+			}
+			std::reverse(out.begin(), out.end());
+		}
+
+		template<typename T>
+		inline void from_float_round(float arg, std::basic_string<T>& out)
+		{
+			out.clear();
+			// TODO: use Schubfach algorithm to round float
+			// which implemented by dragon box
+			float n = std::abs(arg);
+			float i;
+			float f = modff(n, &i);
+			from_int((int)i, out);
+
+			out.push_back(u'.');
+
+			while (f > 0.01)
+			{
+				f *= 10;
+				float ip;
+				f = std::modff(f, &ip);
+				out.push_back((int)ip + u'0');
+			}
+		}
+
 		// calculate surrogate pair inside, only work for char16_t
 		template<typename _Iter, typename = ::std::enable_if<::std::is_same_v<::std::iterator_traits<_Iter>, char16_t>>>
 		inline size_t count_surrogate_pair(_Iter from, _Iter end)
 		{
 			size_t surrogate_pair_count = 0;
-			while (from < end)
-			{
-				if (from < (end - 1) && helper::codepoint::is_surrogate_pair(from[0], from[1]))
-				{
-					++surrogate_pair_count;
+
+			while (from < end) {
+				if (helper::codepoint::is_lead_surrogate(*from)) {
 					++from;
+					if (from < end && helper::codepoint::is_trail_surrogate(*from)) {
+						++surrogate_pair_count;
+					}
 				}
 				++from;
 			}
@@ -289,11 +336,17 @@ namespace helper
 		{
 			while (count > 0 && from != end)
 			{
-				if (((end - from) > 1) && helper::codepoint::is_surrogate_pair(from[0], from[1]))
+				if (helper::codepoint::is_lead_surrogate(*from))
+				{
 					++from;
+					if (from < end)
+						if (!helper::codepoint::is_trail_surrogate(*from))
+							--count;
+				}
 				--count;
 				++from;
 			}
+
 			return from;
 		}
 

@@ -27,7 +27,7 @@ namespace OGUI
     }
 
     template<class T>
-    void RouteEvent(VisualElement* target, T& event)
+    bool RouteEvent(VisualElement* target, T& event)
     {
         int phaseMask = (int)event.PhaseMask;
         EventRoutePhase& currentPhase = event.currentPhase;
@@ -42,18 +42,18 @@ namespace OGUI
             {
                 auto& element = routePath[i];
                 if(element->_eventHandler.Handle(event))
-                    return;
+                    return true;
             }
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
         if (currentPhase == EventRoutePhase::Reach)
         {
             if(target->_eventHandler.Handle(event))
-                return;
+                return true;
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
                     if(parent->_eventHandler.Handle(event))
-                        return;
+                        return true;
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
         if (currentPhase == EventRoutePhase::Broadcast)
@@ -66,8 +66,10 @@ namespace OGUI
             if(routePath.size() == 0) BuildRoutePath(target, routePath);
             for(auto parent : routePath)
                 if(parent->_eventHandler.Handle(event))
-                    return;
+                    return true;
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
+
+        return false;
     }
 }

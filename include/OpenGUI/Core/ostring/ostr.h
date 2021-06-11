@@ -3,10 +3,10 @@
 #include <string>
 #include <string_view>
 #include <algorithm>
+
+#include "format.h"
 #include "helpers.h"
 #include "osv.h"
-
-// TODO: move impl to cpp
 
 _NS_OSTR_BEGIN
 
@@ -20,33 +20,16 @@ public:
 	string& operator=(string&&) = default;
 	string& operator=(const string&) = default;
 
-	template<typename T, size_t N>
-	string(const T arr[N])
-	{
-		using ut = std::make_unsigned_t< T >;
-		using up = std::add_pointer_t< std::add_const_t< ut > >;
-		std::basic_string_view<ut> sv(reinterpret_cast< up >(arr), N);
-		_str = std::u16string(sv.cbegin(), sv.cend());
-		calculate_surrogate();
-	}
-
 	template<typename T>
-	string(const T* src)
+	string(const T* src, size_t len = SIZE_MAX)
 	{
 		using ut = std::make_unsigned_t< T >;
 		using up = std::add_pointer_t< std::add_const_t< ut > >;
-		std::basic_string_view<ut> sv(reinterpret_cast<up>(src));
-		_str = std::u16string(sv.cbegin(), sv.cend());
-		calculate_surrogate();
-	}
-
-	template<typename T>
-	string(const T* src, size_t len)
-	{
-		using ut = std::make_unsigned_t< T >;
-		using up = std::add_pointer_t< std::add_const_t< ut > >;
-		std::basic_string_view<ut> sv(reinterpret_cast<up>(src), len);
-		_str = std::u16string(sv.cbegin(), sv.cend());
+		std::basic_string_view<ut> sv((up)(src));
+		len = std::min(sv.size(), len);
+		sv = sv.substr(0, len);
+		_str.reserve(len);
+		_str.assign(sv.cbegin(), sv.cend());
 		calculate_surrogate();
 	}
 
@@ -86,7 +69,8 @@ public:
 	string(const std::basic_string<T>& str)
 	{
 		using ut = std::make_unsigned_t< T >;
-		_str = std::u16string((const ut*)str.data(), (const ut*)(str.data() + str.size()));
+		_str.reserve(str.size());
+		_str.assign((const ut*)str.data(), (const ut*)(str.data() + str.size()));
 		calculate_surrogate();
 	}
 
@@ -94,7 +78,8 @@ public:
 	string(std::basic_string_view<T> str)
 	{
 		using ut = std::make_unsigned_t< T >;
-		_str = std::u16string((const ut*)str.data(), (const ut*)(str.data() + str.size()));
+		_str.reserve(str.size());
+		_str.assign((const ut*)str.data(), (const ut*)(str.data() + str.size()));
 		calculate_surrogate();
 	}
 
@@ -240,7 +225,8 @@ public:
 	template<typename...Args>
 	[[nodiscard]] string format(Args&&...args) const
 	{
-		return fmt::format(_str.c_str(), go_str(std::forward<Args>(args))...);
+		// return fmt::format(_str.c_str(), go_str(std::forward<Args>(args))...);
+		return ofmt::format(_str.c_str(), std::forward<Args>(args)...);
 	}
 
 	string& trim_start();
@@ -309,6 +295,25 @@ private:
 	size_t _surrogate_pair_count = 0;
 
 };
+
+inline bool operator==(const ostr::string& lhs, const ostr::string_view& rhs)
+{
+	return lhs.to_sv() == rhs;
+}
+
+inline bool operator==(const ostr::string_view& lhs, const ostr::string& rhs)
+{
+	return rhs == lhs;
+}
+
+namespace ofmt {
+	template <>
+	inline bool to_string<string>(const string& arg, std::u16string_view param, std::u16string& out)
+	{
+		out.append(arg.raw());
+		return true;
+	}
+}
 
 _NS_OSTR_END
 

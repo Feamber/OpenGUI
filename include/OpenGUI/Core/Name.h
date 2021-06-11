@@ -16,10 +16,12 @@ namespace OGUI
 
 		std::vector<ostr::string> _data;
 		std::map<uint32_t, std::vector<size_t>> _hashtable;
+		std::map<const char16_t*, size_t> _literaltable;
 
 		// TODO: rwlock
 
 		size_t Make(const ostr::string_view& str);
+		size_t MakeLiteral(const char16_t* literal);
 		ostr::string_view Read(size_t entry) const;
 
 		static NamePool& Get();
@@ -52,14 +54,14 @@ namespace OGUI
 		Name(Name&& other) = default;
 		Name& operator=(const Name& other) = default;
 
-		template<typename T, size_t N>
-		Name(ostr::char_array<T, N> arr)
-			: Name(ostr::string(arr))
-		{}
-
 		template<typename T>
 		Name(const T* cstr)
 			: Name(ostr::string(cstr))
+		{}
+
+		template<>
+		Name(const char16_t* cstr)
+			: Name(ostr::string_view(cstr))
 		{}
 
 		template<typename T>
@@ -67,9 +69,19 @@ namespace OGUI
 			: Name(ostr::string(str))
 		{}
 
+		template<>
+		Name(std::basic_string<char16_t> str)
+			: Name(ostr::string_view(str))
+		{}
+
 		template<typename T>
 		Name(std::basic_string_view<T> sv)
 			: Name(ostr::string(sv))
+		{}
+
+		template<>
+		Name(std::basic_string_view<char16_t> sv)
+			: Name(ostr::string_view(sv))
 		{}
 
 		bool operator==(const Name& rhs) const;
@@ -93,6 +105,13 @@ namespace OGUI
 		size_t _entry;
 	};
 
+	namespace literal
+	{
+		[[nodiscard]] inline Name operator""_name(const char16_t* str, size_t len) noexcept
+		{
+			return (EName)NamePool::Get().MakeLiteral(str);
+		}
+	}
 }
 
 namespace std

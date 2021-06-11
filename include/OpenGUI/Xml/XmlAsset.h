@@ -38,7 +38,7 @@ namespace OGUI
         class XmlAsset* xml_asset = nullptr;
         int file_line = 0;
 
-        void PrintError(std::string_view message) const;
+        void PrintError(ostr::string_view message) const;
         void SetAttribute(const Name &name, const std::string &value);
         const XmlAttribute* FindAttribute(const Name &name) const;
     };

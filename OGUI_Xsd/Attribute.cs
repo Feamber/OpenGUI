@@ -12,6 +12,14 @@ namespace OGUI_Xsd
         public abstract string XmlValueStringToCppValueTemplate();
     }
 
+    public class Enumeration_XmlAttribute : XmlAttribute
+    {
+        public override string CppType() { return "std::string_view"; }
+        public override string XmlType() { return "Enumeration"; }
+        public override string XmlValueFormatToCppValueFormat(string xmlValueString) { return '\"' + xmlValueString + '\"'; }
+        public override string XmlValueStringToCppValueTemplate() { return "{XmlValueString}"; }
+    }
+
     public class String_XmlAttribute : XmlAttribute
     {
         public override string CppType() { return "std::string_view"; }

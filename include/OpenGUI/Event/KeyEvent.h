@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 #include "OpenGUI/Interface/Interfaces.h"
-//#include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Event/EventBase.h"
 
 namespace OGUI
 {

@@ -14,7 +14,8 @@ namespace OGUI
 		Checked = 1 << 2,
 		Disabled = 1 << 3,
 		Focus = 1 << 4,
-		Root = 1 << 5,
+		KeyboardFocus = 1 << 5,
+		Root = 1 << 6,
 	};
 
 	enum class PseudoElements : uint32_t

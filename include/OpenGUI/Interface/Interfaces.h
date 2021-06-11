@@ -92,7 +92,7 @@ namespace OGUI
 
 	struct OGUI_API FontLibraryInterface
 	{
-		virtual ~FontLibraryInterface() {};
+		virtual ~FontLibraryInterface() {}
 
 		virtual bool LoadFromFile(const char* filename) = 0;
 	};

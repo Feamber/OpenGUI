@@ -6,7 +6,7 @@
 
 namespace OGUI
 {
-    class TemplateContainer : public VisualElement
+    class OGUI_API TemplateContainer : public VisualElement
     {
     public:
         std::map<std::string, VisualElement*> slots;
@@ -15,14 +15,14 @@ namespace OGUI
         virtual std::string_view GetFullTypeName() { return "OGUI::TemplateContainer"; }
     };
 
-    class TextVisualElement : public VisualElement
+    class OGUI_API TextVisualElement : public VisualElement
     {
     public:
         virtual std::string_view GetTypeName() { return "Text"; }
         virtual std::string_view GetFullTypeName() { return "OGUI::Text"; }
     };
 
-    class TextValue : public VisualElement
+    class OGUI_API TextValue : public VisualElement
     {
     public:
         std::string text;
@@ -32,7 +32,7 @@ namespace OGUI
     };
 
     // 这是专门用来解析字符串节点的特殊控件
-    class IXmlFactory_TextValue : public OGUI::IXmlFactory_VisualElement
+    class OGUI_API IXmlFactory_TextValue : public OGUI::IXmlFactory_VisualElement
     {
     public:
         IXmlFactory_TextValue()

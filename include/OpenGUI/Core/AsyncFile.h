@@ -5,7 +5,7 @@
 namespace OGUI
 {
     class IOThread;
-    struct AsyncFile
+    struct OGUI_API AsyncFile
     {
         friend class IOThread;
         virtual ~AsyncFile();

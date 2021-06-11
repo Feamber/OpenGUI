@@ -1,4 +1,5 @@
 #define DLL_IMPLEMENTATION
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Xml/XsdGen/OGUI.h"
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/VisualElement.h"
@@ -104,6 +105,25 @@ namespace OGUI
 
     bool IXmlFactory_VisualElement::InitAttribute(VisualElement &new_element, const XmlElement &asset, CreationContext &context)
     {
+        if(focusable) new_element.focusable = focusable.value();
+        if(navMode)
+        {
+            auto srt = navMode.value();
+            if(srt == "None")            new_element.navMode = ENavMode::None;
+            else if(srt == "Horizontal") new_element.navMode = ENavMode::Horizontal;
+            else if(srt == "Vertical")   new_element.navMode = ENavMode::Vertical;
+            else if(srt == "Automatic")  new_element.navMode = ENavMode::Automatic;
+        }
+        if(isFocusScope) new_element.isFocusScope = isFocusScope.value();
+        if(isKeeyScopeFocused) new_element.isKeeyScopeFocused = isKeeyScopeFocused.value();
+        if(navCycleMode)
+        {
+            auto srt = navCycleMode.value();
+            if(srt == "None")            new_element.navCycleMode = ENavCycleMode::None;
+            else if(srt == "Horizontal") new_element.navCycleMode = ENavCycleMode::Horizontal;
+            else if(srt == "Vertical")   new_element.navCycleMode = ENavCycleMode::Vertical;
+            else if(srt == "Automatic")  new_element.navCycleMode = ENavCycleMode::Automatic;
+        }
         if(name.has_value()) new_element._name = name.value();
         if(path.has_value()) new_element._path = path.value();
         if(style.has_value()) new_element.InitInlineStyle(style.value());
@@ -113,8 +133,8 @@ namespace OGUI
         if(slot_name.has_value())
         {
             std::string _slot_name = {slot_name.value().begin(), slot_name.value().end()};
-            auto& template_container = context.stack_template.front().template_container;
-            template_container.slots[_slot_name] = &new_element;
+            auto template_container = context.stack_template.front().template_container;
+            template_container->slots[_slot_name] = &new_element;
         }
 
         if(slot.has_value())
