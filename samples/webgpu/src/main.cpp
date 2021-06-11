@@ -497,11 +497,11 @@ public:
 				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
 				break;
 			case efsw::Actions::Modified:
-				if (filename == "test.css")
+				if (filename == "test_nav.css")
 				{
 					ReloadCSS = true;
 				}
-				if (filename == "test.xml" )
+				if (filename == "test_nav.xml" )
 				{
 					ReloadXML = true;
 				}

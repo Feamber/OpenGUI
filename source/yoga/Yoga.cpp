@@ -3215,6 +3215,8 @@ static void YGNodelayoutImpl(
   if (performLayout && (isNodeFlexWrap || YGIsBaselineLayout(node))) {
     float crossDimLead = 0;
     float currentLead = leadingPaddingAndBorderCross;
+    
+    //[volla] : modified due to unexpected behavior
     if (!YGFloatIsUndefined(availableInnerCrossDim)) {
       const float remainingAlignContentDim =
           availableInnerCrossDim - totalLineCrossDim;
@@ -3226,13 +3228,14 @@ static void YGNodelayoutImpl(
           currentLead += remainingAlignContentDim / 2;
           break;
         case YGAlignStretch:
-          if (availableInnerCrossDim > totalLineCrossDim) {
+          if (availableInnerCrossDim > totalLineCrossDim && lineCount > 1) {
+            currentLead -= remainingAlignContentDim / (2 * lineCount);
             crossDimLead = remainingAlignContentDim / lineCount;
           }
           break;
         case YGAlignSpaceAround:
           if (availableInnerCrossDim > totalLineCrossDim) {
-            currentLead += remainingAlignContentDim / (2 * lineCount);
+            //currentLead += remainingAlignContentDim / (2 * lineCount);
             if (lineCount > 1) {
               crossDimLead = remainingAlignContentDim / lineCount;
             }
@@ -3242,6 +3245,7 @@ static void YGNodelayoutImpl(
           break;
         case YGAlignSpaceBetween:
           if (availableInnerCrossDim > totalLineCrossDim && lineCount > 1) {
+            currentLead -= remainingAlignContentDim / ((lineCount - 1) * 2);
             crossDimLead = remainingAlignContentDim / (lineCount - 1);
           }
           break;
