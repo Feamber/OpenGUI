@@ -1,6 +1,6 @@
 #define DLL_IMPLEMENTATION
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Context.h"
-#include <iostream>
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Event/KeyEvent.h"
@@ -40,7 +40,7 @@ namespace OGUI
 {
 	void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
 	{
-		element->DrawBackgroundPrimitive(ctx);
+		element->DrawPrimitive(ctx);
 		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 	}
 	void TransformRec(VisualElement* element)
@@ -146,15 +146,6 @@ bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey
 	auto picked = PickRecursive(root, point);
 	if (picked)
 	{
-		if (picked != currentFocus)
-		{
-			picked->SetPseudoClass(PseudoStates::Focus, true);
-			if (auto currF = currentFocus)
-			{
-				currF->SetPseudoClass(PseudoStates::Focus, false);
-			}
-		}
-		currentFocus = picked;
 		RouteEvent(picked, event);
 	}
 	return false;
@@ -225,20 +216,41 @@ bool OGUI::Context::OnKeyDown(EKeyCode keyCode)
 	if (!root)
 		return false;
 
-	if (currentFocus)
+	if (_keyboardFocused)
 	{
+		bool result;
 		if (gPrevPressed == false)
 		{
 			KeyDownEvent e;
 			e.key = keyCode;
-			RouteEvent(currentFocus, e);
+			result = RouteEvent(_keyboardFocused, e);
 			gPrevPressed = true;
 		}
 		else
 		{
 			KeyHoldEvent e;
 			e.key = keyCode;
-			RouteEvent(currentFocus, e);
+			result = RouteEvent(_keyboardFocused, e);
+		}
+
+		if(!result)
+		{
+			if(std::find(keyNavigation_Up.begin(), keyNavigation_Up.end(), keyCode) != keyNavigation_Up.end())
+			{
+				OnKeyNavigation(_keyboardFocused, ENavDirection::Up);
+			}
+			else if(std::find(keyNavigation_Down.begin(), keyNavigation_Down.end(), keyCode) != keyNavigation_Down.end())
+			{
+				OnKeyNavigation(_keyboardFocused, ENavDirection::Down);
+			}
+			else if(std::find(keyNavigation_Left.begin(), keyNavigation_Left.end(), keyCode) != keyNavigation_Left.end())
+			{
+				OnKeyNavigation(_keyboardFocused, ENavDirection::Left);
+			}
+			else if(std::find(keyNavigation_Right.begin(), keyNavigation_Right.end(), keyCode) != keyNavigation_Right.end())
+			{
+				OnKeyNavigation(_keyboardFocused, ENavDirection::Right);
+			}
 		}
 	}
 
@@ -254,8 +266,8 @@ bool OGUI::Context::OnKeyUp(EKeyCode keyCode)
 	KeyUpEvent e;
 	e.key = keyCode;
 
-	if (currentFocus)
-		RouteEvent(currentFocus, e);
+	if (_keyboardFocused)
+		RouteEvent(_keyboardFocused, e);
 	gPrevPressed = false;
 
 	return false;
@@ -309,3 +321,227 @@ const OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHan
 	return NULL_WINDOW_CONTEXT;
 }
 
+void OGUI::Context::OnKeyNavigation(OGUI::VisualElement* element, ENavDirection direction)
+{
+	auto nextNavTarget = element->FindNextNavTarget(direction);
+	if(nextNavTarget)
+	{
+		SetFocus(nextNavTarget);
+	}
+}
+
+bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
+{
+	if(newWindow != _currentActivateWindow)
+	{
+		std::vector<VisualElement*> FocusedPath;
+		VisualWindow::GetRelativeFocusedPath(newWindow, FocusedPath);
+		VisualElement* newKeyboardFocused = FocusedPath.back();
+
+		if(_keyboardFocused)
+		{
+			PreLostKeyboardFocusEvent preLostKeyboardFocusEvent;
+			preLostKeyboardFocusEvent.currentFocused = _keyboardFocused;
+			preLostKeyboardFocusEvent.newFocused = newKeyboardFocused;
+			if(RouteEvent(_keyboardFocused, preLostKeyboardFocusEvent)) return false;
+		}
+
+		PreGotKeyboardFocusEvent preGotKeyboardFocusEvent;
+		preGotKeyboardFocusEvent.currentFocused = _keyboardFocused;
+		preGotKeyboardFocusEvent.newFocused = newKeyboardFocused;
+		if(RouteEvent(newKeyboardFocused, preGotKeyboardFocusEvent)) return false;
+		auto oldKeyboardFocused = _keyboardFocused;
+		_keyboardFocused = newKeyboardFocused;
+		_currentActivateWindow = newWindow;
+
+		if(oldKeyboardFocused)
+		{
+			LostKeyboardFocusEvent lostKeyboardFocusEvent;
+			lostKeyboardFocusEvent.currentFocused = _keyboardFocused;
+			lostKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
+			RouteEvent(oldKeyboardFocused, lostKeyboardFocusEvent);
+		}
+
+		GotKeyboardFocusEvent gotKeyboardFocusEvent;
+		gotKeyboardFocusEvent.currentFocused = _keyboardFocused;
+		gotKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
+		RouteEvent(_keyboardFocused, gotKeyboardFocusEvent);
+		return true;
+		
+	}
+	return false;
+}
+
+bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
+{
+	if(!element->focusable) return false;
+
+	auto newFocus_Root = element->GetRoot();
+	VisualElement* oldKeyboardFocus = _keyboardFocused;
+	VisualElement* newKeyboardFocus = newFocus_Root == _currentActivateWindow ? element : nullptr;
+
+	std::vector<VisualElement*> oldFocusedPath;
+	VisualWindow::GetRelativeFocusedPath(newFocus_Root, oldFocusedPath);
+
+	std::vector<VisualElement*> newFocusedPath;
+	VisualElement* tempNewFocused = element;
+	while (tempNewFocused) 
+	{
+		newFocusedPath.insert(newFocusedPath.begin(), tempNewFocused);
+		tempNewFocused = tempNewFocused->GetPrevFocusScope();
+	}
+
+	// 焦点丢失前事件
+	for (int i = 0; i < oldFocusedPath.size(); ++i) 
+	{
+		VisualElement* oldFocused = oldFocusedPath[i];
+		VisualElement* newFocused = i < newFocusedPath.size() ? newFocusedPath[i] : nullptr;
+
+		if(oldFocused && oldFocused != newFocused)
+		{
+			PreLostFocusEvent preLostFocusEvent;
+			preLostFocusEvent.currentFocusedPath = &oldFocusedPath;
+			preLostFocusEvent.newFocusedPath = &newFocusedPath;
+			if(RouteEvent(oldFocused, preLostFocusEvent)) return false;
+			if(!oldFocused->isFocusScope) break;
+			if(oldFocused->isFocusScope && oldFocused->isKeeyScopeFocused) break;
+		}
+	}
+	if(oldKeyboardFocus && oldKeyboardFocus != newKeyboardFocus)
+	{
+		PreLostKeyboardFocusEvent preLostKeyboardFocusEvent;
+		preLostKeyboardFocusEvent.currentFocused = oldKeyboardFocus;
+		preLostKeyboardFocusEvent.newFocused = newKeyboardFocus;
+		if(RouteEvent(oldKeyboardFocus, preLostKeyboardFocusEvent)) return false;
+	}
+	for (int i = 0; i < newFocusedPath.size(); ++i) 
+	{
+		VisualElement* oldFocused = i < oldFocusedPath.size() ? oldFocusedPath[i] : nullptr;
+		VisualElement* prevNewFocused = i-1 >= 0 ? newFocusedPath[i-1] : nullptr;
+		VisualElement* newFocused = newFocusedPath[i];
+
+		if(prevNewFocused && oldFocused != newFocused && 
+			prevNewFocused->isFocusScope && 
+			prevNewFocused->isKeeyScopeFocused && 
+			prevNewFocused->currentFocused &&
+			prevNewFocused->currentFocused != newFocused)
+		{
+			PreLostFocusEvent preLostFocusEvent;
+			preLostFocusEvent.currentFocusedPath = &oldFocusedPath;
+			preLostFocusEvent.newFocusedPath = &newFocusedPath;
+			if(RouteEvent(prevNewFocused->currentFocused, preLostFocusEvent)) return false;
+		}
+	}
+
+	//焦点获得前事件
+	for (int i = 0; i < newFocusedPath.size(); ++i) 
+	{
+		VisualElement* oldFocused = i < oldFocusedPath.size() ? oldFocusedPath[i] : nullptr;
+		VisualElement* prevNewFocused = i-1 >= 0 ? newFocusedPath[i-1] : nullptr;
+		VisualElement* newFocused = newFocusedPath[i];
+
+		if(oldFocused != newFocused)
+		{
+			if(prevNewFocused && 
+			prevNewFocused->isFocusScope && 
+			prevNewFocused->isKeeyScopeFocused && 
+			prevNewFocused->currentFocused &&
+			prevNewFocused->currentFocused == newFocused)
+				continue;
+
+			PreGotFocusEvent preGotFocusEvent;
+			preGotFocusEvent.currentFocusedPath = &oldFocusedPath;
+			preGotFocusEvent.newFocusedPath = &newFocusedPath;
+			if(RouteEvent(newFocused, preGotFocusEvent)) return false;
+		}
+	}
+	if(newKeyboardFocus && oldKeyboardFocus != newKeyboardFocus)
+	{
+		PreGotKeyboardFocusEvent preGotKeyboardFocusEvent;
+		preGotKeyboardFocusEvent.currentFocused = oldKeyboardFocus;
+		preGotKeyboardFocusEvent.newFocused = newKeyboardFocus;
+		if(RouteEvent(newKeyboardFocus, preGotKeyboardFocusEvent)) return false;
+	}
+
+	//离开焦点事件
+	for (int i = 0; i < oldFocusedPath.size(); ++i) 
+	{
+		VisualElement* prevOldFocused = i-1 >= 0 ? oldFocusedPath[i-1] : nullptr;
+		VisualElement* oldFocused = oldFocusedPath[i];
+		VisualElement* newFocused = i < newFocusedPath.size() ? newFocusedPath[i] : nullptr;
+
+		if(oldFocused && oldFocused != newFocused)
+		{
+			if(prevOldFocused) prevOldFocused->currentFocused = nullptr; //实际修改状态
+
+			LostFocusEvent lostFocusEvent;
+			lostFocusEvent.currentFocusedPath = &newFocusedPath;
+			lostFocusEvent.oldFocusedPath = &oldFocusedPath;
+			RouteEvent(oldFocused, lostFocusEvent);
+
+			if(!oldFocused->isFocusScope) break;
+			if(oldFocused->isFocusScope && oldFocused->isKeeyScopeFocused) break;
+		}
+	}
+	if(oldKeyboardFocus && oldKeyboardFocus != newKeyboardFocus)
+	{
+		LostKeyboardFocusEvent lostKeyboardFocusEvent;
+		lostKeyboardFocusEvent.currentFocused = newKeyboardFocus;
+		lostKeyboardFocusEvent.oldFocused = oldKeyboardFocus;
+		RouteEvent(oldKeyboardFocus, lostKeyboardFocusEvent);
+	}
+	for (int i = 0; i < newFocusedPath.size(); ++i) 
+	{
+		VisualElement* oldFocused = i < oldFocusedPath.size() ? oldFocusedPath[i] : nullptr;
+		VisualElement* prevNewFocused = i-1 >= 0 ? newFocusedPath[i-1] : nullptr;
+		VisualElement* newFocused = newFocusedPath[i];
+
+		if(prevNewFocused && oldFocused != newFocused && 
+			prevNewFocused->isFocusScope && 
+			prevNewFocused->isKeeyScopeFocused && 
+			prevNewFocused->currentFocused &&
+			prevNewFocused->currentFocused != newFocused)
+		{
+			LostFocusEvent lostFocusEvent;
+			lostFocusEvent.currentFocusedPath = &newFocusedPath;
+			lostFocusEvent.oldFocusedPath = &oldFocusedPath;
+			if(RouteEvent(prevNewFocused->currentFocused, lostFocusEvent)) return false;
+		}
+	}
+
+	//获得焦点事件
+	for (int i = 0; i < newFocusedPath.size(); ++i) 
+	{
+		VisualElement* oldFocused = i < oldFocusedPath.size() ? oldFocusedPath[i] : nullptr;
+		VisualElement* prevNewFocused = i-1 >= 0 ? newFocusedPath[i-1] : nullptr;
+		VisualElement* newFocused = newFocusedPath[i];
+
+		if(oldFocused != newFocused)
+		{
+			if(prevNewFocused && 
+			prevNewFocused->isFocusScope && 
+			prevNewFocused->isKeeyScopeFocused && 
+			prevNewFocused->currentFocused &&
+			prevNewFocused->currentFocused == newFocused)
+				continue;
+
+			if(prevNewFocused) prevNewFocused->currentFocused = newFocused; //实际修改状态
+
+			GotFocusEvent gotFocusEvent;
+			gotFocusEvent.currentFocusedPath = &newFocusedPath;
+			gotFocusEvent.oldFocusedPath = &oldFocusedPath;
+			RouteEvent(newFocused, gotFocusEvent);
+		}
+	}
+	if(newKeyboardFocus && oldKeyboardFocus != newKeyboardFocus)
+	{
+		_keyboardFocused = newKeyboardFocus; //实际修改状态
+
+		GotKeyboardFocusEvent gotKeyboardFocusEvent;
+		gotKeyboardFocusEvent.currentFocused = newKeyboardFocus;
+		gotKeyboardFocusEvent.oldFocused = oldKeyboardFocus;
+		RouteEvent(newKeyboardFocus, gotKeyboardFocusEvent);
+	}
+
+	return true;
+}

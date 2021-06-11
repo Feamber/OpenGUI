@@ -81,6 +81,11 @@ namespace OGUI
         class_tag.reset();
         slot_name.reset();
         slot.reset();
+        focusable.reset();
+        navMode.reset();
+        isFocusScope.reset();
+        isKeeyScopeFocused.reset();
+        navCycleMode.reset();
     }
 
     bool IXmlFactory_VisualElement::Internal_InitAttribute(size_t attr_name_hash, const XmlAttribute& attr)
@@ -94,6 +99,11 @@ namespace OGUI
             casestr("class_tag") class_tag.emplace(attr.value); return true;
             casestr("slot_name") slot_name.emplace(attr.value); return true;
             casestr("slot") slot.emplace(attr.value); return true;
+            casestr("focusable") focusable.emplace(attr.value == "true" || attr.value == "1" ? true : false); return true;
+            casestr("navMode") navMode.emplace(attr.value); return true;
+            casestr("isFocusScope") isFocusScope.emplace(attr.value == "true" || attr.value == "1" ? true : false); return true;
+            casestr("isKeeyScopeFocused") isKeeyScopeFocused.emplace(attr.value == "true" || attr.value == "1" ? true : false); return true;
+            casestr("navCycleMode") navCycleMode.emplace(attr.value); return true;
             default: return false;
         }
         return false;

@@ -106,6 +106,11 @@ namespace OGUI
         std::optional<std::string_view> class_tag;
         std::optional<std::string_view> slot_name;
         std::optional<std::string_view> slot;
+        std::optional<bool> focusable;
+        std::optional<std::string_view> navMode;
+        std::optional<bool> isFocusScope;
+        std::optional<bool> isKeeyScopeFocused;
+        std::optional<std::string_view> navCycleMode;
 
         IXmlFactory_VisualElement()
         {

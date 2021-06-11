@@ -1,5 +1,7 @@
 #pragma once
 #include "OpenGUI/Core/Containers/vector.hpp"
+#include <array>
+#include <cstddef>
 #include <string>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/Style.h"
@@ -11,12 +13,13 @@
 #include "OpenGUI/Event/EventHandler.h"
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Event/FocusEvent.h"
 
 namespace OGUI
 {
 	namespace PrimitiveDraw
 	{
-		struct DrawContext;
+		struct OGUI_API DrawContext;
 	}
 
 	struct Matrix4x4f{};
@@ -48,6 +51,7 @@ namespace OGUI
 	public:
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
+		virtual void DrawDebugPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void ApplyClipping(PrimitiveDraw::DrawContext& Ctx);
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
@@ -59,6 +63,7 @@ namespace OGUI
 		void PushChild(VisualElement* child);
 		void InsertChild(VisualElement* child, int index);
 		void RemoveChild(VisualElement* child);
+		VisualElement* GetRoot();
 
 		std::vector<VisualElement*> _children;
 		
@@ -138,6 +143,64 @@ namespace OGUI
 		EventHandler _eventHandler;
 
 		bool Intersect(Vector2f point);
+#pragma endregion
+
+#pragma region Focused
+	public:
+		bool focusable = false;
+		ENavMode navMode = ENavMode::Automatic;
+
+		void RegisterFocusedEvent();
+
+		// OnPre @return 返回true将阻止KeyboardFocus改变
+		virtual bool OnPreGotKeyboardFocus(struct PreGotKeyboardFocusEvent& event) { return false; };
+		virtual bool OnPreLostKeyboardFocus(struct PreLostKeyboardFocusEvent& event) { return false; };
+		virtual void OnGotKeyboardFocus(struct GotKeyboardFocusEvent& event) {};
+		virtual void OnLostKeyboardFocus(struct LostKeyboardFocusEvent& event) {};
+
+		// OnPre @return 返回true将阻止Focus改变
+		virtual bool OnPreGotFocus(struct PreGotFocusEvent& event) { return false; };
+		virtual bool OnPreLostFocus(struct PreLostFocusEvent& event) { return false; };
+		virtual void OnGotFocus(struct GotFocusEvent& event) {};
+		virtual void OnLostFocus(struct LostFocusEvent& event) {};
+
+		bool OnPreGotKeyboardFocus_Internal(struct PreGotKeyboardFocusEvent& event) { return OnPreGotKeyboardFocus(event); };
+		bool OnPreLostKeyboardFocus_Internal(struct PreLostKeyboardFocusEvent& event) { return OnPreLostKeyboardFocus(event); };
+		bool OnGotKeyboardFocus_Internal(struct GotKeyboardFocusEvent& event);
+		bool OnLostKeyboardFocus_Internal(struct LostKeyboardFocusEvent& event);
+
+		bool OnPreGotFocus_Internal(struct PreGotFocusEvent& event) { return OnPreGotFocus(event); };
+		bool OnPreLostFocus_Internal(struct PreLostFocusEvent& event) { return OnPreLostFocus(event); };
+		bool OnGotFocus_Internal(struct GotFocusEvent& event);
+		bool OnLostFocus_Internal(struct LostFocusEvent& event);
+#pragma endregion
+
+#pragma region FocusScope
+	public:
+		bool isFocusScope = false;
+		// 是否在焦点空间失去焦点后保持 currentFocused
+		bool isKeeyScopeFocused = false;
+		VisualElement* currentFocused = nullptr;
+		ENavCycleMode navCycleMode = ENavCycleMode::None;
+		
+		// 获取当前焦点空间下的所有可聚焦元素
+		std::vector<VisualElement*> GetFocusScopeChildren();
+		VisualElement* GetPrevFocusScope();
+		static void GetRelativeFocusedPath(VisualElement* element, std::vector<VisualElement*>& out);
+#pragma endregion
+
+#pragma region FocusNavigation
+		enum 
+		{
+			NoDebug,
+			Null,
+			CollisionBox,
+			ElementQuad,
+		}FocusNavDebugState = Null;
+		Rect navDebugRect;
+		time_t navDebugLastUpdate = 0;
+
+		VisualElement* FindNextNavTarget(ENavDirection direction);
 #pragma endregion
 	};
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:Root xmlns:engine="OGUI">
+    <engine:Style path="res/test_nav.css"/>
+    <engine:VisualElement name="Scope1" class_tag="FocusScope" isFocusScope="true" navCycleMode="Vertical">
+        <engine:VisualElement name="s1e1" class_tag="Element" focusable="true" />
+        <engine:VisualElement name="s1e2" class_tag="Element" focusable="true" />
+        <engine:VisualElement name="s1e3" class_tag="Element" focusable="true" />
+        <engine:VisualElement name="s1e4" class_tag="Element" focusable="true" />
+    </engine:VisualElement>
+    <engine:VisualElement name="e1" class_tag="Element" focusable="true" />
+    <engine:VisualElement name="e2" class_tag="Element" focusable="true" />
+    <engine:VisualElement name="e3" class_tag="Element" focusable="true" />
+    <engine:VisualElement name="e4" class_tag="Element" focusable="true" />
+    <engine:VisualElement name="Scope2" class_tag="FocusScope" isFocusScope="true" isKeeyScopeFocused="true" navCycleMode="Automatic">
+        <engine:VisualElement class_tag="Element" focusable="true" />
+        <engine:VisualElement class_tag="Element" focusable="true" />
+        <engine:VisualElement class_tag="Element" focusable="true" />
+        <engine:VisualElement class_tag="Element" focusable="true" />
+        <engine:VisualElement class_tag="Element" focusable="true" />
+        <engine:VisualElement class_tag="Element" focusable="true" />
+    </engine:VisualElement>
+</engine:Root>

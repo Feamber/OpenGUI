@@ -227,6 +227,13 @@ namespace OGUI_Xsd
                     if (parentType.AttributeUses.Contains(attr.QualifiedName)) continue;
 
                     String attrTypeName = attr.SchemaTypeName.ToString();
+                    // 判断是否是枚举类型
+                    var typeRestriction = attr.AttributeSchemaType.Content as XmlSchemaSimpleTypeRestriction;
+                    if (typeRestriction != null && typeRestriction.Facets.Count > 0 && typeRestriction.Facets[0] is XmlSchemaEnumerationFacet)
+                    {
+                        attrTypeName = "Enumeration";
+                    }
+
                     XmlAttribute? Parser = null;
                     if (allXmlTypeMap.TryGetValue(attrTypeName,out Parser))
                     {

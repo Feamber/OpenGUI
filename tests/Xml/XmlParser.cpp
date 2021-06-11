@@ -1,4 +1,5 @@
 #include <OpenGUI/Xml/XmlFactoryTool.h>
+#include "OpenGUI/Core/Types.h"
 #include "catch.hpp"
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualElement.h"
@@ -23,6 +24,10 @@ TEST_CASE("XmlParser", "[XmlAsset]")
         auto A = ins->_children[0];
         REQUIRE(A->_name == "A");
         REQUIRE(A->_children[2]->_name == "B3");
+        REQUIRE(A->focusable == true);
+        REQUIRE(A->navMode == ENavMode::Horizontal);
+        REQUIRE(A->isFocusScope == true);
+        REQUIRE(A->navCycleMode == ENavCycleMode::Automatic);
 
         auto B1 = A->_children[0];
         REQUIRE(B1->_name == "B1");

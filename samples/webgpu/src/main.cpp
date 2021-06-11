@@ -1,3 +1,4 @@
+#include "OpenGUI/Style/StyleSelector.h"
 #include "utils.h"
 #include <string.h>
 #include <unordered_map>
@@ -15,6 +16,7 @@
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Event/KeyEvent.h"
+#include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Core/DynamicAtlasResource.h"
 #include "efsw/efsw.hpp"
 
@@ -254,6 +256,7 @@ struct SpdlogLogger : LogInterface
 /**
  * Bare minimum pipeline to draw a triangle using the above shaders.
  */
+ uint8_t white_tex0[1024 * 1024 * 4];
 static void createPipelineAndBuffers() {
 	// compile shaders
 	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
@@ -350,7 +353,13 @@ static void createPipelineAndBuffers() {
 		white_tex->CreateGlyph(u8",");
 		white_tex->CreateGlyph(u8".");
 	}
-	Bitmap bitmap = white_tex->GetAtlas()->GetBitmap();
+	//Bitmap bitmap = white_tex->GetAtlas()->GetBitmap();
+	memset(white_tex0, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
+	Bitmap bitmap = {};
+	bitmap.resource.bytes = white_tex0;
+	bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
+	bitmap.width = 1024; bitmap.height = 1024;
+	bitmap.format = PF_R8G8B8A8;
 	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
 	ogui_textures[t] = *t;
 	default_ogui_texture = t;
@@ -382,8 +391,9 @@ static bool redraw() {
 	if (ReloadXML)
 	{
 		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-		auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-		
+		//auto asset = XmlAsset::LoadXmlFile("res/test.xml");
+		auto asset = XmlAsset::LoadXmlFile("res/test_nav.xml");
+
 		if(asset)
 		{
 			auto newVe = asset->Instantiate();
@@ -394,6 +404,7 @@ static bool redraw() {
 				VisualElement::DestoryTree(ve);
 				ctx.desktops->PushChild(newVe);
 				OnReloaded();
+				ctx._keyboardFocused = ctx.desktops;
 				ctx._layoutDirty = true;
 			}
 		}
@@ -404,7 +415,8 @@ static bool redraw() {
 	else if(ReloadCSS)
 	{
 		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-		auto asset = ParseCSSFile("res/test.css");
+		//auto asset = ParseCSSFile("res/test.css");
+		auto asset = ParseCSSFile("res/test_nav.css");
 		if (asset)
 		{
 			auto ve = ctx.desktops->_children[0];
@@ -507,10 +519,43 @@ public:
 void OnReloaded()
 {
 	auto ve = Context::Get().desktops->_children[0];
+	if (auto child2 = QueryFirst(ve, "#Child2"))
+	{
+		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach)
+				Context::Get().SetFocus(&element);
+
+			using namespace ostr::literal;
+			olog::Info(u"Oh ♂ shit! Child2"_o);
+			return true;
+		};
+
+		child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
+	}
+
+	{
+		std::vector<VisualElement*> tests;
+		QueryAll(ve, ".Element", tests);
+		for (auto [i, test] : ipair(tests))
+		{
+			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+			{
+				if(event.currentPhase == EventRoutePhase::Reach)
+					Context::Get().SetFocus(&element);
+				return true;
+			};
+			test->_eventHandler.Register<PointerDownEvent, handler>(*test);
+		}
+	}
+
 	if (auto child1 = QueryFirst(ve, "#Child1"))
 	{
-		constexpr auto handler = +[](PointerDownEvent& event)
+		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
 		{
+			if(event.currentPhase == EventRoutePhase::Reach)
+				Context::Get().SetFocus(&element);
+
 			using namespace ostr::literal;
 			olog::Info(u"Oh ♂ shit!"_o);
 			return true;
@@ -522,7 +567,7 @@ void OnReloaded()
 			{
 				olog::Info(u"W is Down!"_o);
 			}
-			return true;
+			return false;
 		};
 		constexpr auto handlerUp = +[](KeyUpEvent& event)
 		{
@@ -531,7 +576,7 @@ void OnReloaded()
 			{
 				olog::Info(u"W is up!"_o);
 			}
-			return true;
+			return false;
 		};
 		constexpr auto handlerHold = +[](KeyHoldEvent& event)
 		{
@@ -540,9 +585,9 @@ void OnReloaded()
 			{
 				olog::Info(u"W is Holding!"_o);
 			}
-			return true;
+			return false;
 		};
-		child1->_eventHandler.Register<PointerDownEvent, handler>();
+		child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
 		child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
 		child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
 		child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
@@ -562,7 +607,8 @@ void LoadResource()
 {
 	using namespace OGUI;
 	auto& ctx = Context::Get();
-	auto asset = XmlAsset::LoadXmlFile("res/test.xml");
+	//auto asset = XmlAsset::LoadXmlFile("res/test.xml");
+	auto asset = XmlAsset::LoadXmlFile("res/test_nav.xml");
 	auto ve = asset->Instantiate();
 	ctx.desktops->PushChild(ve);
 	OnReloaded();
@@ -606,6 +652,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 				ctx.logImpl = std::make_unique<SpdlogLogger>();
 				LoadResource();
 
+				ctx.ActivateWindow(ctx.desktops);
 				BuildSDLMap();
 			}
 

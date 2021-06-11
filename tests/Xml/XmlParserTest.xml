@@ -3,7 +3,7 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="../../include/OpenGUI/Xml/Xsd/Main.xsd">
   <engine:Template name="test2" path="XmlParserTest2.xml"/>
-  <engine:VisualElement name="A">
+  <engine:VisualElement name="A" focusable="true" navMode="Horizontal" isFocusScope="true" navCycleMode="Automatic">
     <engine:Instance template_name="test2" name="B1">
       <engine:VisualElement name="B1_1" slot="ss"/>
       <engine:Instance template_name="test2" name="B1_2" slot="ss"/>

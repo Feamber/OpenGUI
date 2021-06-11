@@ -4,8 +4,8 @@
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
-#include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Core/Types.h"
+#include <vector>
 
 
 namespace OGUI
@@ -40,7 +40,24 @@ namespace OGUI
 		//Windows
 		VisualWindow* desktops = nullptr;
 		VisualWindow* dialogs = nullptr;
-		VisualElement* currentFocus = nullptr;
+
+#pragma region FocusNavigation
+		std::vector<EKeyCode> keyNavigation_Up {EKeyCode::W, EKeyCode::Up};
+		std::vector<EKeyCode> keyNavigation_Down {EKeyCode::S, EKeyCode::Down};
+		std::vector<EKeyCode> keyNavigation_Left {EKeyCode::A, EKeyCode::Left};
+		std::vector<EKeyCode> keyNavigation_Right {EKeyCode::D, EKeyCode::Right};
+
+		void OnKeyNavigation(VisualElement* element, ENavDirection direction);
+#pragma endregion
+
+#pragma region FocusController
+		VisualWindow* _currentActivateWindow = nullptr;
+		VisualElement* _keyboardFocused = nullptr;
+		
+		//可能激活失败，比如：在弹出的消息窗口没关闭时没法操作其他窗口
+		bool ActivateWindow(VisualWindow* newWindow);
+		bool SetFocus(VisualElement* element);
+#pragma endregion
 
 		//Systems
 		VisualStyleSystem styleSystem;

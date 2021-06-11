@@ -14,12 +14,12 @@ namespace OGUI
     class VisualElement;
 
     // 实例化 XmlAsset 过程中的上下文
-    struct CreationContext
+    struct OGUI_API CreationContext
     {
-        struct Template
+        struct OGUI_API Template
         {
-            XmlElement &xml_root;
-            class TemplateContainer& template_container;
+            XmlElement *xml_root;
+            class TemplateContainer* template_container;
 
             // key = element-name
             // 当前模板需要覆盖的属性
@@ -30,7 +30,7 @@ namespace OGUI
             // value = path指向的模板root节点
             std::map<Name, XmlElement*> templates_alias;
 
-            Template(XmlElement &xml_root, class TemplateContainer& template_container) :
+            Template(XmlElement *xml_root, class TemplateContainer* template_container) :
                     xml_root(xml_root),
                     template_container(template_container)
             {}
@@ -62,7 +62,7 @@ namespace OGUI
         }
     };
 
-    class IXmlFactory
+    class OGUI_API IXmlFactory
     {
     public:
         Name xml_name;
