@@ -326,7 +326,7 @@ void OGUI::Context::OnKeyNavigation(OGUI::VisualElement* element, ENavDirection 
 	auto nextNavTarget = element->FindNextNavTarget(direction);
 	if(nextNavTarget)
 	{
-		SetFocus(nextNavTarget);
+		SetFocus(nextNavTarget, FocusChangeCause::FocusNavigation);
 	}
 }
 
@@ -341,12 +341,16 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		if(_keyboardFocused)
 		{
 			PreLostKeyboardFocusEvent preLostKeyboardFocusEvent;
+			preLostKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+			preLostKeyboardFocusEvent.causeDescribe = "";
 			preLostKeyboardFocusEvent.currentFocused = _keyboardFocused;
 			preLostKeyboardFocusEvent.newFocused = newKeyboardFocused;
 			if(RouteEvent(_keyboardFocused, preLostKeyboardFocusEvent)) return false;
 		}
 
 		PreGotKeyboardFocusEvent preGotKeyboardFocusEvent;
+		preGotKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+		preGotKeyboardFocusEvent.causeDescribe = "";
 		preGotKeyboardFocusEvent.currentFocused = _keyboardFocused;
 		preGotKeyboardFocusEvent.newFocused = newKeyboardFocused;
 		if(RouteEvent(newKeyboardFocused, preGotKeyboardFocusEvent)) return false;
@@ -357,12 +361,16 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		if(oldKeyboardFocused)
 		{
 			LostKeyboardFocusEvent lostKeyboardFocusEvent;
+			lostKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+			lostKeyboardFocusEvent.causeDescribe = "";
 			lostKeyboardFocusEvent.currentFocused = _keyboardFocused;
 			lostKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
 			RouteEvent(oldKeyboardFocused, lostKeyboardFocusEvent);
 		}
 
 		GotKeyboardFocusEvent gotKeyboardFocusEvent;
+		gotKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+		gotKeyboardFocusEvent.causeDescribe = "";
 		gotKeyboardFocusEvent.currentFocused = _keyboardFocused;
 		gotKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
 		RouteEvent(_keyboardFocused, gotKeyboardFocusEvent);
@@ -372,7 +380,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 	return false;
 }
 
-bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
+bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause cause, std::string describe)
 {
 	if(!element->focusable) return false;
 
@@ -400,6 +408,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 		if(oldFocused && oldFocused != newFocused)
 		{
 			PreLostFocusEvent preLostFocusEvent;
+			preLostFocusEvent.cause = cause;
+			preLostFocusEvent.causeDescribe = describe;
 			preLostFocusEvent.currentFocusedPath = &oldFocusedPath;
 			preLostFocusEvent.newFocusedPath = &newFocusedPath;
 			if(RouteEvent(oldFocused, preLostFocusEvent)) return false;
@@ -410,6 +420,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 	if(oldKeyboardFocus && oldKeyboardFocus != newKeyboardFocus)
 	{
 		PreLostKeyboardFocusEvent preLostKeyboardFocusEvent;
+		preLostKeyboardFocusEvent.cause = cause;
+		preLostKeyboardFocusEvent.causeDescribe = describe;
 		preLostKeyboardFocusEvent.currentFocused = oldKeyboardFocus;
 		preLostKeyboardFocusEvent.newFocused = newKeyboardFocus;
 		if(RouteEvent(oldKeyboardFocus, preLostKeyboardFocusEvent)) return false;
@@ -427,6 +439,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 			prevNewFocused->currentFocused != newFocused)
 		{
 			PreLostFocusEvent preLostFocusEvent;
+			preLostFocusEvent.cause = cause;
+			preLostFocusEvent.causeDescribe = describe;
 			preLostFocusEvent.currentFocusedPath = &oldFocusedPath;
 			preLostFocusEvent.newFocusedPath = &newFocusedPath;
 			if(RouteEvent(prevNewFocused->currentFocused, preLostFocusEvent)) return false;
@@ -450,6 +464,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 				continue;
 
 			PreGotFocusEvent preGotFocusEvent;
+			preGotFocusEvent.cause = cause;
+			preGotFocusEvent.causeDescribe = describe;
 			preGotFocusEvent.currentFocusedPath = &oldFocusedPath;
 			preGotFocusEvent.newFocusedPath = &newFocusedPath;
 			if(RouteEvent(newFocused, preGotFocusEvent)) return false;
@@ -458,6 +474,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 	if(newKeyboardFocus && oldKeyboardFocus != newKeyboardFocus)
 	{
 		PreGotKeyboardFocusEvent preGotKeyboardFocusEvent;
+		preGotKeyboardFocusEvent.cause = cause;
+		preGotKeyboardFocusEvent.causeDescribe = describe;
 		preGotKeyboardFocusEvent.currentFocused = oldKeyboardFocus;
 		preGotKeyboardFocusEvent.newFocused = newKeyboardFocus;
 		if(RouteEvent(newKeyboardFocus, preGotKeyboardFocusEvent)) return false;
@@ -475,6 +493,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 			if(prevOldFocused) prevOldFocused->currentFocused = nullptr; //实际修改状态
 
 			LostFocusEvent lostFocusEvent;
+			lostFocusEvent.cause = cause;
+			lostFocusEvent.causeDescribe = describe;
 			lostFocusEvent.currentFocusedPath = &newFocusedPath;
 			lostFocusEvent.oldFocusedPath = &oldFocusedPath;
 			RouteEvent(oldFocused, lostFocusEvent);
@@ -486,6 +506,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 	if(oldKeyboardFocus && oldKeyboardFocus != newKeyboardFocus)
 	{
 		LostKeyboardFocusEvent lostKeyboardFocusEvent;
+		lostKeyboardFocusEvent.cause = cause;
+		lostKeyboardFocusEvent.causeDescribe = describe;
 		lostKeyboardFocusEvent.currentFocused = newKeyboardFocus;
 		lostKeyboardFocusEvent.oldFocused = oldKeyboardFocus;
 		RouteEvent(oldKeyboardFocus, lostKeyboardFocusEvent);
@@ -503,6 +525,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 			prevNewFocused->currentFocused != newFocused)
 		{
 			LostFocusEvent lostFocusEvent;
+			lostFocusEvent.cause = cause;
+			lostFocusEvent.causeDescribe = describe;
 			lostFocusEvent.currentFocusedPath = &newFocusedPath;
 			lostFocusEvent.oldFocusedPath = &oldFocusedPath;
 			if(RouteEvent(prevNewFocused->currentFocused, lostFocusEvent)) return false;
@@ -528,6 +552,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 			if(prevNewFocused) prevNewFocused->currentFocused = newFocused; //实际修改状态
 
 			GotFocusEvent gotFocusEvent;
+			gotFocusEvent.cause = cause;
+			gotFocusEvent.causeDescribe = describe;
 			gotFocusEvent.currentFocusedPath = &newFocusedPath;
 			gotFocusEvent.oldFocusedPath = &oldFocusedPath;
 			RouteEvent(newFocused, gotFocusEvent);
@@ -538,6 +564,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element)
 		_keyboardFocused = newKeyboardFocus; //实际修改状态
 
 		GotKeyboardFocusEvent gotKeyboardFocusEvent;
+		gotKeyboardFocusEvent.cause = cause;
+		gotKeyboardFocusEvent.causeDescribe = describe;
 		gotKeyboardFocusEvent.currentFocused = newKeyboardFocus;
 		gotKeyboardFocusEvent.oldFocused = oldKeyboardFocus;
 		RouteEvent(newKeyboardFocus, gotKeyboardFocusEvent);

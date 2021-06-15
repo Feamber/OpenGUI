@@ -27,13 +27,19 @@ namespace OGUI
         PF_Count
     };
 
+	enum FocusChangeCause
+    {
+        UserActions,
+        FocusNavigation,
+        ActivateWindow,
+    };
+
 	enum class ENavMode : uint32
 	{
 		None,
 		Horizontal,
 		Vertical,
 		Automatic,
-		Explicit,
 	};
 
 	enum class ENavCycleMode : uint32

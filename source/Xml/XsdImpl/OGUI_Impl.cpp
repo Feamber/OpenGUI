@@ -114,6 +114,10 @@ namespace OGUI
             else if(srt == "Vertical")   new_element.navMode = ENavMode::Vertical;
             else if(srt == "Automatic")  new_element.navMode = ENavMode::Automatic;
         }
+        if(navExplicitUp) new_element.navExplicitUp = navExplicitUp.value();
+        if(navExplicitDown) new_element.navExplicitDown = navExplicitDown.value();
+        if(navExplicitLeft) new_element.navExplicitLeft = navExplicitLeft.value();
+        if(navExplicitRight) new_element.navExplicitRight = navExplicitRight.value();
         if(isFocusScope) new_element.isFocusScope = isFocusScope.value();
         if(isKeeyScopeFocused) new_element.isKeeyScopeFocused = isKeeyScopeFocused.value();
         if(navCycleMode)

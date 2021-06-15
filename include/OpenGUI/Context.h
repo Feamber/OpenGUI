@@ -56,7 +56,7 @@ namespace OGUI
 		
 		//可能激活失败，比如：在弹出的消息窗口没关闭时没法操作其他窗口
 		bool ActivateWindow(VisualWindow* newWindow);
-		bool SetFocus(VisualElement* element);
+		bool SetFocus(VisualElement* element, FocusChangeCause cause = UserActions, std::string describe = "");
 #pragma endregion
 
 		//Systems

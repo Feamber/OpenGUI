@@ -83,6 +83,10 @@ namespace OGUI
         slot.reset();
         focusable.reset();
         navMode.reset();
+        navExplicitUp.reset();
+        navExplicitDown.reset();
+        navExplicitLeft.reset();
+        navExplicitRight.reset();
         isFocusScope.reset();
         isKeeyScopeFocused.reset();
         navCycleMode.reset();
@@ -101,6 +105,10 @@ namespace OGUI
             casestr("slot") slot.emplace(attr.value); return true;
             casestr("focusable") focusable.emplace(attr.value == "true" || attr.value == "1" ? true : false); return true;
             casestr("navMode") navMode.emplace(attr.value); return true;
+            casestr("navExplicitUp") navExplicitUp.emplace(attr.value); return true;
+            casestr("navExplicitDown") navExplicitDown.emplace(attr.value); return true;
+            casestr("navExplicitLeft") navExplicitLeft.emplace(attr.value); return true;
+            casestr("navExplicitRight") navExplicitRight.emplace(attr.value); return true;
             casestr("isFocusScope") isFocusScope.emplace(attr.value == "true" || attr.value == "1" ? true : false); return true;
             casestr("isKeeyScopeFocused") isKeeyScopeFocused.emplace(attr.value == "true" || attr.value == "1" ? true : false); return true;
             casestr("navCycleMode") navCycleMode.emplace(attr.value); return true;

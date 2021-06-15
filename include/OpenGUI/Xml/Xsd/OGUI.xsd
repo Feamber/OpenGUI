@@ -86,6 +86,10 @@
         <xs:attribute name="slot" type="xs:string" use="optional" />
         <xs:attribute name="focusable" type="xs:boolean" use="optional" />
         <xs:attribute name="navMode" type="engine:ENavMode" use="optional" />
+        <xs:attribute name="navExplicitUp" type="xs:string" use="optional" />
+        <xs:attribute name="navExplicitDown" type="xs:string" use="optional" />
+        <xs:attribute name="navExplicitLeft" type="xs:string" use="optional" />
+        <xs:attribute name="navExplicitRight" type="xs:string" use="optional" />
         <xs:attribute name="isFocusScope" type="xs:boolean" use="optional" />
         <xs:attribute name="isKeeyScopeFocused" type="xs:boolean" use="optional" />
         <xs:attribute name="navCycleMode" type="engine:ENavCycleMode" use="optional" />

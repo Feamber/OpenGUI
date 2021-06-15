@@ -150,6 +150,13 @@ namespace OGUI
 		bool focusable = false;
 		ENavMode navMode = ENavMode::Automatic;
 
+		// 当有效时会覆盖正常的方向性导航
+		// 使用的是选择器语法，参考 StyleSelector.h -> QueryFirst()
+		std::string navExplicitUp = "";
+		std::string navExplicitDown = "";
+		std::string navExplicitLeft = "";
+		std::string navExplicitRight = "";
+
 		void RegisterFocusedEvent();
 
 		// OnPre @return 返回true将阻止KeyboardFocus改变

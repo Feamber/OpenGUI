@@ -1,18 +1,26 @@
 #pragma once
+#include <string_view>
 #include <vector>
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/EventBase.h"
 
 namespace OGUI
 {
     class VisualElement;
 
-    struct PreFocusData
+    struct FocusDataBase
+    {
+        FocusChangeCause cause;
+        std::string_view causeDescribe;
+    };
+
+    struct PreFocusData : public FocusDataBase
     {
         const std::vector<VisualElement*>* currentFocusedPath;
         const std::vector<VisualElement*>* newFocusedPath;
     };
 
-    struct PreKeyboardFocusData
+    struct PreKeyboardFocusData : public FocusDataBase
     {
         VisualElement* currentFocused = nullptr;
         VisualElement* newFocused = nullptr;
@@ -42,13 +50,13 @@ namespace OGUI
         static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
     };
 
-    struct FocusData
+    struct FocusData : public FocusDataBase
     {
         const std::vector<VisualElement*>* oldFocusedPath;
         const std::vector<VisualElement*>* currentFocusedPath;
     };
 
-    struct KeyboardFocusData
+    struct KeyboardFocusData : public FocusDataBase
     {
         VisualElement* oldFocused = nullptr;
         VisualElement* currentFocused = nullptr;

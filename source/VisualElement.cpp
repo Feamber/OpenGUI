@@ -1,4 +1,5 @@
 #define DLL_IMPLEMENTATION
+#include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/Math.h"
 #include <type_traits>
@@ -503,6 +504,18 @@ void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, s
 
 OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direction)
 {
+	VisualElement* explicitTarget = nullptr;
+	if(direction == ENavDirection::Up && navExplicitUp != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitUp);
+	else if(direction == ENavDirection::Down && navExplicitDown != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitDown);
+	else if(direction == ENavDirection::Left && navExplicitLeft != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitLeft);
+	else if(direction == ENavDirection::Right && navExplicitRight != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitRight);
+	
+	if(explicitTarget) return explicitTarget;
+
 	struct Quad
 	{
 		Vector2f RU;
@@ -634,9 +647,6 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 	
 	while (currentOrigin) 
 	{
-		// TODO ENavMode::Explicit
-		if(currentOrigin->navMode == ENavMode::Explicit) break;
-
 		if(currentOrigin->navMode == ENavMode::None) break;
 
 		if(currentOrigin->navMode == ENavMode::Horizontal 

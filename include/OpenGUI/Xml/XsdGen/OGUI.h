@@ -108,6 +108,10 @@ namespace OGUI
         std::optional<std::string_view> slot;
         std::optional<bool> focusable;
         std::optional<std::string_view> navMode;
+        std::optional<std::string_view> navExplicitUp;
+        std::optional<std::string_view> navExplicitDown;
+        std::optional<std::string_view> navExplicitLeft;
+        std::optional<std::string_view> navExplicitRight;
         std::optional<bool> isFocusScope;
         std::optional<bool> isKeeyScopeFocused;
         std::optional<std::string_view> navCycleMode;
