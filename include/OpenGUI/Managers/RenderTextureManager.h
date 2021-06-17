@@ -16,7 +16,7 @@ namespace OGUI
             const std::string& url, bool sync = false,
             std::shared_ptr<AsyncBitmap>* bmOut = nullptr);
 
-        void Update();
+        void Update(class WindowContext& windowContext);
     protected:
         std::unordered_map<std::string, std::weak_ptr<AsyncRenderTexture>> 
             render_textures;

@@ -14,6 +14,16 @@
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
 
+OGUI::WindowContext::WindowContext()
+{
+	ui = new VisualWindow();
+};
+
+OGUI::WindowContext::~WindowContext()
+{
+	VisualElement::DestoryTree(ui);
+};
+
 void OGUI::Context::Initialize(
 	InputInterface* I, SystemInterface* S,
 	RenderInterface* R, FileInterface* F,
@@ -22,7 +32,6 @@ void OGUI::Context::Initialize(
 	OASSERT(initialized);
 	inputImpl.reset(I);
 	systemImpl.reset(S);
-	renderImpl.reset(R);
 	if(F)
 	{
 		fileImpl.reset(F);
@@ -99,12 +108,17 @@ namespace OGUI
 	}
 }
 
-void OGUI::Context::Update(const WindowHandle window, float dt)
+OGUI::WindowContext& OGUI::Context::Create(const OGUI::WindowHandle window)
 {
-	auto root = desktops;
-	textureManager->Update();
-	// Update Window
+	return GetOrRegisterWindowContext(window);
+}
+
+void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
+{
 	auto& wctx = GetOrRegisterWindowContext(window);
+	auto root = wctx.GetWindowUI();
+	textureManager->Update(wctx);
+	// Update Window
 	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
 	_deltaTime = dt;
 	animSystem.Update(root);
@@ -113,14 +127,14 @@ void OGUI::Context::Update(const WindowHandle window, float dt)
 	TransformRec(root);
 }
 
-void OGUI::Context::Render(const WindowHandle window)
+void OGUI::Context::Render(const OGUI::WindowHandle window)
 {
-	auto root = desktops;
-	PrimitiveDraw::DrawContext ctx;
 	const auto& wctx = GetWindowContext(window);
+	auto root = wctx.GetWindowUI();
+	PrimitiveDraw::DrawContext ctx;
 	ctx.resolution = Vector2f(wctx.X, wctx.Y);
 	root->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
-	renderImpl->RenderPrimitives(ctx.prims);
+	if(wctx.renderImpl) wctx.renderImpl->RenderPrimitives(ctx.prims);
 }
 
 void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
@@ -128,9 +142,10 @@ void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
 
 }
 
-bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
-	auto root = desktops;
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	if (!root)
 		return false;
 	PointerDownEvent event;
@@ -151,9 +166,10 @@ bool OGUI::Context::OnMouseDown(float windowWidth, float windowHeight, EMouseKey
 	return false;
 }
 
-bool OGUI::Context::OnMouseUp(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
-	auto root = desktops;
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	if (!root)
 		return false;
 	PointerUpEvent event;
@@ -185,34 +201,43 @@ bool OGUI::Context::OnMouseUp(float windowWidth, float windowHeight, EMouseKey b
 	return false;
 }
 
-bool OGUI::Context::OnMouseDoubleClick(EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
 	return false;
 }
 
-bool OGUI::Context::OnMouseMove(bool relative, int32 x, int32 y)
+bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, bool relative, int32 x, int32 y)
 {
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	olog::Info(u"Mouse PosX:%d, PosY:%d"_o, x, y);
 	return false;
 }
 
-bool OGUI::Context::OnMouseMoveHP(bool relative, float x, float y)
+bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative, float x, float y)
 {
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	return false;
 }
 
-bool OGUI::Context::OnMouseWheel(float delta)
+bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
 {
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	olog::Info(u"Mouse WheelY:{}"_o, delta);
 	return false;
 }
 
 static bool gPrevPressed = false;
 
-bool OGUI::Context::OnKeyDown(EKeyCode keyCode)
+bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 {
-	auto root = desktops;
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	if (!root)
 		return false;
 
@@ -257,9 +282,10 @@ bool OGUI::Context::OnKeyDown(EKeyCode keyCode)
 	return false;
 }
 
-bool OGUI::Context::OnKeyUp(EKeyCode keyCode)
+bool OGUI::Context::OnKeyUp(const OGUI::WindowHandle window, EKeyCode keyCode)
 {
-	auto root = desktops;
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 	if (!root)
 		return false;
 
@@ -282,10 +308,6 @@ OGUI::Context::Context()
 
 OGUI::Context::~Context()
 {
-	if (desktops)
-		VisualElement::DestoryTree(desktops);
-	if (dialogs)
-		VisualElement::DestoryTree(dialogs);
 }
 
 OGUI::Context& OGUI::Context::Get()
@@ -302,12 +324,11 @@ OGUI::WindowContext& OGUI::Context::GetOrRegisterWindowContext(const OGUI::Windo
 		if(ctx.window == window)
 			return ctx;
 	}
-	WindowContext newOne = WindowContext();
+	WindowContext& newOne = windowContexts.emplace_back();
 	newOne.window = window;
 	newOne.X = 0;
 	newOne.Y = 0;
-	windowContexts.emplace_back(newOne);
-	return windowContexts[windowContexts.size() - 1];
+	return newOne;
 }
 
 const OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHandle window) const

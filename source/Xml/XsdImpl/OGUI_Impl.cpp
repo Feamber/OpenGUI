@@ -39,9 +39,12 @@ namespace OGUI
         XmlFactoryEmptyCreate(*this, asset, context);
         if(context.is_error) return nullptr;
         //todo: cache css file
-        auto value = ParseCSSFile({path.begin(), path.end()});
+        std::string cssFilePath = {path.begin(), path.end()};
+        auto value = ParseCSSFile(cssFilePath);
         if (!value)
             return nullptr;//todo: log error
+        
+        context.main_asset->all_css_file.push_back(cssFilePath);
         auto target = context.stack.front();
         if (!target)
             return nullptr;//todo: log error
@@ -61,10 +64,24 @@ namespace OGUI
     {
         XmlFactoryEmptyCreate(*this, asset, context);
 
-        auto new_asset = XmlAsset::LoadXmlFile({path.begin(), path.end()});
+        std::shared_ptr<XmlAsset> new_asset;
+        for(const auto& child_asset : context.main_asset->all_child_asset)
+        {
+            if(child_asset->file_path == path)
+            {
+                new_asset = child_asset;
+                break;
+            }
+        }
+        if(!new_asset)
+        {
+            new_asset = XmlAsset::LoadXmlFile({path.begin(), path.end()});
+            context.main_asset->all_child_asset.emplace_back(new_asset);
+            context.main_asset->all_xml_file.push_back(new_asset->file_path);
+        }
+
         if(new_asset)
         {
-            context.main_asset->all_child_asset.emplace_back(new_asset);
             if(!name.empty())
             {
                 auto& templates_alias = context.stack_template.front().templates_alias;

@@ -21,12 +21,19 @@ namespace OGUI
 	{
 		friend class Context;
 	public:
+		WindowContext();
+		~WindowContext();
+
 		inline float GetWindowX() const { return X; }
 		inline float GetWindowY() const { return Y; }
 		inline WindowHandle GetWindowHandle() const { return window; }
+		inline VisualWindow* GetWindowUI() const { return ui; }
+
+		std::shared_ptr<RenderInterface> renderImpl;
 	protected:
 		float X; float Y;
 		WindowHandle window;
+		VisualWindow* ui;
 	};
 
 	class OGUI_API Context
@@ -36,10 +43,6 @@ namespace OGUI
 		~Context();
 		//Initialize
 		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*,BitmapParserInterface*);
-
-		//Windows
-		VisualWindow* desktops = nullptr;
-		VisualWindow* dialogs = nullptr;
 
 #pragma region FocusNavigation
 		std::vector<EKeyCode> keyNavigation_Up {EKeyCode::W, EKeyCode::Up};
@@ -68,21 +71,22 @@ namespace OGUI
 		bool _layoutDirty = true;
 	
 		//APIs
+		WindowContext& Create(const WindowHandle window);
 		void Update(const WindowHandle window, float dt);
 		void Render(const WindowHandle window);
 		void MarkDirty(VisualElement* element, DirtyReason reason);
 
 		//Message Handling
 		//reference : UE4 Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h
-		bool OnMouseDown(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
-		bool OnMouseUp(float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
-		bool OnMouseDoubleClick(EMouseKey button, int32 x, int32 y);
-		bool OnMouseMove(bool relative, int32 x, int32 y);
-		bool OnMouseMoveHP(bool relative, float x, float y);
-		bool OnMouseWheel(float delta);
+		bool OnMouseDown(const WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
+		bool OnMouseUp(const WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
+		bool OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y);
+		bool OnMouseMove(const WindowHandle window, bool relative, int32 x, int32 y);
+		bool OnMouseMoveHP(const WindowHandle window, bool relative, float x, float y);
+		bool OnMouseWheel(const WindowHandle window, float delta);
 
-		bool OnKeyDown(EKeyCode keyCode);
-		bool OnKeyUp(EKeyCode keyCode);
+		bool OnKeyDown(const WindowHandle window, EKeyCode keyCode);
+		bool OnKeyUp(const WindowHandle window, EKeyCode keyCode);
 			
 		static Context& Get();
 		VisualElement* _elementUnderCursor = nullptr;
@@ -92,7 +96,6 @@ namespace OGUI
 		std::unique_ptr<SystemInterface> systemImpl;
 		std::unique_ptr<LogInterface> logImpl;
 		
-		std::unique_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<FileInterface>   fileImpl;
 		std::unique_ptr<BitmapParserInterface>   bmParserImpl;
 		//Components

@@ -5,7 +5,6 @@
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Event/PointerEvent.h"
-extern window::Handle hWnd;
 
 namespace OGUI
 {
@@ -89,14 +88,14 @@ namespace OGUI
 		virtual void ClientToScreen(WindowHandle window, int& x, int& y) override 
 		{
 			POINT p{x, y};
-			::ClientToScreen((HWND)hWnd, &p);
+			::ClientToScreen((HWND)window, &p);
 			x = p.x; y = p.y;
 		};
 
 		virtual void ScreenToClient(WindowHandle window, int& x, int& y) override
 		{
 			POINT p{x, y};
-			::ScreenToClient((HWND)hWnd, &p);
+			::ScreenToClient((HWND)window, &p);
 			x = p.x; y = p.y;
 		};
 

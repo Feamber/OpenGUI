@@ -1,4 +1,5 @@
 #define DLL_IMPLEMENTATION
+#include <type_traits>
 #include "ParseUtils.hpp"
 #include "OpenGUI/Core/Utilities/any_move.hpp"
 #include "peglib.h"
@@ -209,6 +210,8 @@ namespace OGUI
 		std::ifstream ifs(path);
 		std::string content((std::istreambuf_iterator<char>(ifs)),
 			(std::istreambuf_iterator<char>()));
-		return ParseCSS(content);
+		auto styleSheet = ParseCSS(content);
+		if(styleSheet) styleSheet->path = path;
+		return styleSheet;
 	}
 }

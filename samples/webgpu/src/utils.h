@@ -177,7 +177,7 @@ inline static void freeBitMap(OGUI::Bitmap& bm)
 #include "OpenGUI/Context.h"
 static std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 
-inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window)
+inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, void* hWnd)
 {
     using namespace OGUI;
     auto& ctx = OGUI::Context::Get();
@@ -198,7 +198,7 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window)
             int width, height;
             SDL_GetWindowSize(window, &width, &height);
             //olog::info(u"Width: {}, Height: {}"_o.format(width, height));
-            ctx.OnMouseDown((float)width, (float)height, buttonCode, event.button.x, event.button.y);
+            ctx.OnMouseDown(hWnd, (float)width, (float)height, buttonCode, event.button.x, event.button.y);
             break;
         }
         case SDL_MOUSEBUTTONUP:
@@ -215,21 +215,21 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window)
             }
             int width, height;
             SDL_GetWindowSize(window, &width, &height);
-            ctx.OnMouseUp((float)width, (float)height, buttonCode, event.button.x, event.button.y);
+            ctx.OnMouseUp(hWnd, (float)width, (float)height, buttonCode, event.button.x, event.button.y);
             break;
         }
         case SDL_MOUSEMOTION:
         {
             olog::Info(u"MousePos X:{}, Y:{}"_o, event.motion.x, event.motion.y);
             olog::Info(u"MousePos RelX:{}, RelY:{}"_o, event.motion.xrel, event.motion.yrel);
-            ctx.OnMouseMove(true, event.motion.xrel, event.motion.yrel);
+            ctx.OnMouseMove(hWnd, true, event.motion.xrel, event.motion.yrel);
             break;
         }
         case SDL_KEYDOWN:
         {
             //olog::Info(u"KeyDown {}"_o.format(event.key.keysym.sym));
             //olog::Info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
-            ctx.OnKeyDown(gEKeyCodeLut[event.key.keysym.sym]);
+            ctx.OnKeyDown(hWnd, gEKeyCodeLut[event.key.keysym.sym]);
             break;
         }
         case SDL_KEYUP:
@@ -242,14 +242,14 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window)
             {
                 //olog::Info(u"KeyDown {}"_o.format(event.key.keysym.sym));
                 //olog::Info(u"KeyDown(EKeyCode) {}"_o.format(gEKeyCodeLut[event.key.keysym.sym]));
-                ctx.OnKeyUp(gEKeyCodeLut[event.key.keysym.sym]);
+                ctx.OnKeyUp(hWnd, gEKeyCodeLut[event.key.keysym.sym]);
             }
             break;
         }
         case SDL_MOUSEWHEEL:
         {
             //olog::Info(u"MouseWheel Delta:{}"_o.format(event.wheel.y));
-            ctx.OnMouseWheel(event.wheel.y);
+            ctx.OnMouseWheel(hWnd, event.wheel.y);
             break;
         }
         case SDL_QUIT:

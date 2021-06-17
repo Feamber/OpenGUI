@@ -6,6 +6,7 @@
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include <map>
 #include <set>
+#include <vector>
 #include "OpenGUI/Core/Name.h"
 
 namespace OGUI
@@ -55,6 +56,8 @@ namespace OGUI
         class VisualElement* Instantiate();
 
         std::string file_path;
+        std::vector<std::string> all_css_file;
+        std::vector<std::string> all_xml_file;
         std::map<Name, Name> all_namespace;
         XmlElement root;
 

@@ -1,7 +1,12 @@
 #include "OpenGUI/Style/StyleSelector.h"
 #include "utils.h"
+#include <functional>
+#include <filesystem>
+#include <memory>
+#include <string_view>
 #include <string.h>
 #include <unordered_map>
+#include <vector>
 
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/VisualElement.h"
@@ -22,14 +27,11 @@
 
 #include "OpenGUI/Text/FontRendering.h"
 
+
 extern void InstallInput();
 
 using namespace OGUI;
-WGPUDevice device;
-WGPUQueue queue;
-WGPUSwapChain swapchain;
-WGPURenderPipeline pipeline;
-WGPUBindGroupLayout bindGroupLayout;
+
 WGPUSampler sampler;
 std::unique_ptr<Font::TextureFont> white_tex = std::unique_ptr<Font::TextureFont>(
 	Font::TextureFont::TextureFontFromFile(1024, 1024, PF_R8, "Vera.ttf", 128)
@@ -37,7 +39,6 @@ std::unique_ptr<Font::TextureFont> white_tex = std::unique_ptr<Font::TextureFont
 WGPU_OGUI_Texture* default_ogui_texture;
 
 std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
-window::Handle hWnd;
 
 struct BitmapParser final : public OGUI::BitmapParserInterface
 {
@@ -63,9 +64,22 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
     }
 };
 
+class Window;
 class OGUIWebGPURenderer : public OGUI::RenderInterface
 {
 public:
+	WGPUDevice& device;
+	WGPUQueue& queue;
+	WGPUSwapChain& swapchain;
+	WGPURenderPipeline& pipeline;
+	WGPUBindGroupLayout& bindGroupLayout;
+
+	OGUIWebGPURenderer(WGPUDevice& device, WGPUQueue& queue, WGPUSwapChain& swapchain, WGPURenderPipeline& pipeline, WGPUBindGroupLayout& bindGroupLayout) 
+	: device(device), queue(queue), swapchain(swapchain), pipeline(pipeline), bindGroupLayout(bindGroupLayout)
+	{
+
+	}
+
 	virtual ~OGUIWebGPURenderer()
 	{
 		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
@@ -193,15 +207,15 @@ public:
 	{
 
 	}
-	WGPUBuffer vertex_buffer;
-	WGPUBuffer index_buffer;
+	WGPUBuffer vertex_buffer = nullptr;
+	WGPUBuffer index_buffer = nullptr;
 };
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/daily_file_sink.h>
-
 #include <Windows.h>
+
 struct SpdlogLogger : LogInterface
 {
 	SpdlogLogger()
@@ -253,191 +267,20 @@ struct SpdlogLogger : LogInterface
 	}
 };
 
-/**
- * Bare minimum pipeline to draw a triangle using the above shaders.
- */
- uint8_t white_tex0[1024 * 1024 * 4];
-static void createPipelineAndBuffers() {
-	// compile shaders
-	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
-	WGPUShaderModule vertMod = createShader(device, triangle_vert_wgsl);
-	WGPUShaderModule fragMod = createShader(device, triangle_frag_wgsl);
-	
-	// bind group layout (used by both the pipeline layout and uniform bind group, released at the end of this function)
-	WGPUBindGroupLayoutEntry bglEntry[2] = {{}, {}};
-	bglEntry[0].binding = 0;
-	bglEntry[0].visibility = WGPUShaderStage_Fragment;
-	bglEntry[0].type = WGPUBindingType_Undefined;
-	bglEntry[0].texture.sampleType = WGPUTextureSampleType_Float;
-	bglEntry[0].texture.viewDimension = WGPUTextureViewDimension_2D;
-	bglEntry[0].texture.multisampled = false;
-	bglEntry[1].binding = 1;
-	bglEntry[1].visibility = WGPUShaderStage_Fragment;
-	bglEntry[1].type = WGPUBindingType_Undefined;
-	bglEntry[1].sampler.type = WGPUSamplerBindingType_Filtering;
-
-	WGPUBindGroupLayoutDescriptor bglDesc = {};
-	bglDesc.entryCount = 2;
-	bglDesc.entries = bglEntry;
-	bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
-	
-	// pipeline layout (used by the render pipeline, released after its creation)
-	WGPUPipelineLayoutDescriptor layoutDesc = {};
-	layoutDesc.bindGroupLayoutCount = 1;
-	layoutDesc.bindGroupLayouts = &bindGroupLayout;
-	WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(device, &layoutDesc);
-	
-	// begin pipeline set-up
-	WGPURenderPipelineDescriptor desc = {};
-	desc.layout = pipelineLayout;
-	desc.vertexStage.module = vertMod;
-	desc.vertexStage.entryPoint = "main";
-	WGPUProgrammableStageDescriptor fragStage = {};
-	fragStage.module = fragMod;
-	fragStage.entryPoint = "main";
-	desc.fragmentStage = &fragStage;
-	// describe buffer layouts
-	WGPUVertexAttributeDescriptor vertAttrs[3] = {};
-	vertAttrs[0].format = WGPUVertexFormat_Float2;
-	vertAttrs[0].offset = 0;
-	vertAttrs[0].shaderLocation = 0;
-	vertAttrs[1].format = WGPUVertexFormat_Float2;
-	vertAttrs[1].offset = 2 * sizeof(float);
-	vertAttrs[1].shaderLocation = 1;
-	vertAttrs[2].format = WGPUVertexFormat_Float4;
-	vertAttrs[2].offset = 4 * sizeof(float);
-	vertAttrs[2].shaderLocation = 2;
-
-	WGPUVertexBufferLayoutDescriptor vertDesc = {};
-	vertDesc.arrayStride = 8 * sizeof(float);
-	vertDesc.attributeCount = 3;
-	vertDesc.attributes = vertAttrs;
-	WGPUVertexStateDescriptor vertState = {};
-	vertState.vertexBufferCount = 1;
-	vertState.vertexBuffers = &vertDesc;
-	desc.vertexState = &vertState;
-	desc.primitiveTopology = WGPUPrimitiveTopology_TriangleList;
-	desc.sampleCount = 1;
-	// describe blend
-	WGPUBlendDescriptor blendDesc = {};
-	blendDesc.operation = WGPUBlendOperation_Add;
-	blendDesc.srcFactor = WGPUBlendFactor_SrcAlpha;
-	blendDesc.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
-	WGPUColorStateDescriptor colorDesc = {};
-	colorDesc.format = webgpu::getSwapChainFormat(device);
-	colorDesc.alphaBlend = blendDesc;
-	colorDesc.colorBlend = blendDesc;
-	colorDesc.writeMask = WGPUColorWriteMask_All;
-	desc.colorStateCount = 1;
-	desc.colorStates = &colorDesc;
-	desc.sampleMask = 0xFFFFFFFF; // <-- Note: this currently causes Emscripten to fail (sampleMask ends up as -1, which trips an assert)
-	pipeline = wgpuDeviceCreateRenderPipeline(device, &desc);
-	// partial clean-up (just move to the end, no?)
-	wgpuPipelineLayoutRelease(pipelineLayout);
-	wgpuShaderModuleRelease(fragMod);
-	wgpuShaderModuleRelease(vertMod);
-
-	// Font Test
-	{
-		white_tex->CreateGlyph(u8"a");
-		white_tex->CreateGlyph(u8"b");
-		white_tex->CreateGlyph(u8"c");
-		white_tex->CreateGlyph(u8"d");
-		white_tex->CreateGlyph(u8"e");
-		white_tex->CreateGlyph(u8"f");
-		white_tex->CreateGlyph(u8"g");
-		white_tex->CreateGlyph(u8"1");
-		white_tex->CreateGlyph(u8"2");
-		white_tex->CreateGlyph(u8"3");
-		white_tex->CreateGlyph(u8"4");
-		white_tex->CreateGlyph(u8",");
-		white_tex->CreateGlyph(u8".");
-	}
-	//Bitmap bitmap = white_tex->GetAtlas()->GetBitmap();
-	memset(white_tex0, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
-	Bitmap bitmap = {};
-	bitmap.resource.bytes = white_tex0;
-	bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
-	bitmap.width = 1024; bitmap.height = 1024;
-	bitmap.format = PF_R8G8B8A8;
-	WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
-	ogui_textures[t] = *t;
-	default_ogui_texture = t;
-
-	WGPUSamplerDescriptor sampDesc = {};
-	sampDesc.addressModeU = WGPUAddressMode_ClampToEdge;
-	sampDesc.addressModeV = WGPUAddressMode_ClampToEdge;
-	sampDesc.addressModeW = WGPUAddressMode_ClampToEdge;
-	sampDesc.magFilter = WGPUFilterMode_Nearest;
-	sampDesc.minFilter = WGPUFilterMode_Nearest;
-	sampDesc.mipmapFilter = WGPUFilterMode_Nearest;
-	sampDesc.lodMinClamp = 0;
-	sampDesc.lodMaxClamp = 1000.f;
-	sampDesc.maxAnisotropy = 1.f;
-	sampler = wgpuDeviceCreateSampler(device, &sampDesc);
-}
-
-bool ReloadCSS = false;
-bool ReloadXML = false;
-void OnReloaded();
-/**
- * Draws using the above pipeline and buffers.
- */
-static bool redraw() {
-	static std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
-	auto& ctx = OGUI::Context::Get();
-	std::chrono::time_point now = std::chrono::high_resolution_clock::now();
-	using namespace ostr::literal;
-	if (ReloadXML)
-	{
-		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-		//auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-		auto asset = XmlAsset::LoadXmlFile("res/test_nav.xml");
-
-		if(asset)
-		{
-			auto newVe = asset->Instantiate();
-			if (newVe)
-			{
-				auto ve = ctx.desktops->_children[0];
-				ctx.desktops->RemoveChild(ve);
-				VisualElement::DestoryTree(ve);
-				ctx.desktops->PushChild(newVe);
-				OnReloaded();
-				ctx._keyboardFocused = ctx.desktops;
-				ctx._layoutDirty = true;
-			}
-		}
-		ReloadXML = false;
-		ReloadCSS = false;
-		olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-	}
-	else if(ReloadCSS)
-	{
-		std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-		//auto asset = ParseCSSFile("res/test.css");
-		auto asset = ParseCSSFile("res/test_nav.css");
-		if (asset)
-		{
-			auto ve = ctx.desktops->_children[0];
-			*ve->_styleSheets[0] = asset.value();
-			ve->_styleSheets[0]->Initialize();
-			ctx._layoutDirty = true;
-			ctx.styleSystem.InvalidateCache();
-			ve->_selectorDirty = true;
-		}
-		olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-		ReloadCSS = false;
-	}
-	float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
-	prev = now;
-	ctx.Update(hWnd, deltaTime);
-	ctx.Render(hWnd);
-	return true;
-}
-
 struct WGPURenderer : RenderInterface
 {
+	WGPUDevice& device;
+	WGPUQueue& queue;
+	WGPUSwapChain& swapchain;
+	WGPURenderPipeline& pipeline;
+	WGPUBindGroupLayout& bindGroupLayout;
+
+	WGPURenderer(WGPUDevice& device, WGPUQueue& queue, WGPUSwapChain& swapchain, WGPURenderPipeline& pipeline, WGPUBindGroupLayout& bindGroupLayout) 
+	: device(device), queue(queue), swapchain(swapchain), pipeline(pipeline), bindGroupLayout(bindGroupLayout)
+	{
+
+	}
+
 	virtual PersistantPrimitiveHandle RegisterPrimitive(
 		Vertex* vertices, uint32_t num_vertices,
 		uint16_t* indices, uint32_t num_indices)
@@ -450,7 +293,7 @@ struct WGPURenderer : RenderInterface
 	{
 		((PrimDrawList&)list).ValidateAndBatch();
 
-		OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer();
+		OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer(device, queue, swapchain, pipeline, bindGroupLayout);
 		renderer->RenderPrimitives(list);
 		delete renderer;
 	};
@@ -484,192 +327,72 @@ struct WGPURenderer : RenderInterface
 class UpdateListener : public efsw::FileWatchListener
 {
 public:
-	UpdateListener() {}
+	std::function<void(efsw::WatchID, const std::string&, const std::string&, efsw::Action, std::string)> handle;
+
+	UpdateListener() {};
 
 	void handleFileAction(efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
 	{
-		switch (action)
-		{
-			case efsw::Actions::Add:
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added" << std::endl;
-				break;
-			case efsw::Actions::Delete:
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
-				break;
-			case efsw::Actions::Modified:
-				if (filename == "test_nav.css")
-				{
-					ReloadCSS = true;
-				}
-				if (filename == "test_nav.xml" )
-				{
-					ReloadXML = true;
-				}
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified" << std::endl;
-				break;
-			case efsw::Actions::Moved:
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from (" << oldFilename << ")" << std::endl;
-				break;
-			default:
-				std::cout << "Should never happen!" << std::endl;
-		}
+		handle(watchid, dir, filename, action, oldFilename);
 	}
 };
 
-void OnReloaded()
+//TODO 现在还是只支持一个窗口，还需要等待渲染接口和hWnd支持多窗口
+class Window
 {
-	auto ve = Context::Get().desktops->_children[0];
-	if (auto child2 = QueryFirst(ve, "#Child2"))
-	{
-		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach)
-				Context::Get().SetFocus(&element);
-
-			using namespace ostr::literal;
-			olog::Info(u"Oh ♂ shit! Child2"_o);
-			return true;
-		};
-
-		child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
-	}
-
-	{
-		std::vector<VisualElement*> tests;
-		QueryAll(ve, ".Element", tests);
-		for (auto [i, test] : ipair(tests))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-				return true;
-			};
-			test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-		}
-	}
-
-	if (auto child1 = QueryFirst(ve, "#Child1"))
-	{
-		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach)
-				Context::Get().SetFocus(&element);
-
-			using namespace ostr::literal;
-			olog::Info(u"Oh ♂ shit!"_o);
-			return true;
-		};
-		constexpr auto handlerDown = +[](KeyDownEvent& event)
-		{
-			using namespace ostr::literal;
-			if (event.key == EKeyCode::W)
-			{
-				olog::Info(u"W is Down!"_o);
-			}
-			return false;
-		};
-		constexpr auto handlerUp = +[](KeyUpEvent& event)
-		{
-			using namespace ostr::literal;
-			if (event.key == EKeyCode::W)
-			{
-				olog::Info(u"W is up!"_o);
-			}
-			return false;
-		};
-		constexpr auto handlerHold = +[](KeyHoldEvent& event)
-		{
-			using namespace ostr::literal;
-			if (event.key == EKeyCode::W)
-			{
-				olog::Info(u"W is Holding!"_o);
-			}
-			return false;
-		};
-		child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
-		child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
-		child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
-		child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
-	}
-	{
-		std::vector<VisualElement*> tests;
-		QueryAll(ve, ".Test", tests);
-		for (auto [i, test] : ipair(tests))
-			if (i % 2 == 0)
-				test->_styleClasses.push_back("Bigger");
-	}
-
-	ve->_pseudoMask |= (int)PseudoStates::Root;
-}
-
-void LoadResource()
-{
-	using namespace OGUI;
-	auto& ctx = Context::Get();
-	//auto asset = XmlAsset::LoadXmlFile("res/test.xml");
-	auto asset = XmlAsset::LoadXmlFile("res/test_nav.xml");
-	auto ve = asset->Instantiate();
-	ctx.desktops->PushChild(ve);
-	OnReloaded();
-	static efsw::FileWatcher fileWatcher;
-	static UpdateListener listener;
-	efsw::WatchID watchID = fileWatcher.addWatch("res", &listener, true);
-	fileWatcher.watch();
-}
-
-int main(int /*argc*/, char* /*argv*/[]) {
-	int window_width = WINDOW_WIN_W;
-	int window_height = WINDOW_WIN_H;
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
-		return -1;
-	}
-	SDL_Window* window = SDL_CreateWindow("Demo",
-		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		window_width, window_height, 0
-	);
+public:
+	SDL_Window* window;
 	SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version);
-	SDL_GetWindowWMInfo(window, &wmInfo);
+	WindowContext* cWnd;
+	window::Handle hWnd;
+	WGPUDevice device;
+	WGPUQueue queue;
+	WGPUSwapChain swapchain;
+	WGPURenderPipeline pipeline;
+	WGPUBindGroupLayout bindGroupLayout;
+
+	efsw::FileWatcher fileWatcher;
+	UpdateListener listener;
+
+	std::string mainXmlFile;
+	std::vector<std::string> allCssFile;
+    std::vector<std::string> allXmlFile;
+
+	// Bare minimum pipeline to draw a triangle using the above shaders.
+ 	uint8_t white_tex0[1024 * 1024 * 4];
+
+	Window(int width, int height, const char *title, const char *xmlFile)
+	{
+		window = SDL_CreateWindow(title,
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			width, height, 0
+		);
+
+		SDL_VERSION(&wmInfo.version);
+		SDL_GetWindowWMInfo(window, &wmInfo);
+
 #if defined(_WIN32) || defined(_WIN64)
-	hWnd = (window::Handle)wmInfo.info.win.window;
+		hWnd = (window::Handle)wmInfo.info.win.window;
 #endif
-	if (hWnd) {
-		if (device = webgpu::create(hWnd);device) {
-			queue = wgpuDeviceGetDefaultQueue(device);
-			swapchain = webgpu::createSwapChain(device, window_width, window_height);
-			createPipelineAndBuffers();
-			InstallInput();
-			{
-				using namespace OGUI;
-				using namespace ostr::literal;
-				auto& ctx = Context::Get();
-				ctx.renderImpl = std::make_unique<WGPURenderer>();
-				ctx.bmParserImpl = std::make_unique<BitmapParser>();
-				ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-				ctx.desktops = new VisualWindow;
-				ctx.logImpl = std::make_unique<SpdlogLogger>();
-				LoadResource();
 
-				ctx.ActivateWindow(ctx.desktops);
-				BuildSDLMap();
-			}
+		if (hWnd)
+		{
+                  if (device = webgpu::create(hWnd); device) {
+                    queue = wgpuDeviceGetDefaultQueue(device);
+                    swapchain = webgpu::createSwapChain(device, width, height);
+                    createPipelineAndBuffers();
 
-			// main loop
-			bool done = false;
-			while(!done)
-			{
-				using namespace ostr::literal;
+                    using namespace OGUI;
+                    auto &ctx = Context::Get();
+                    cWnd = &ctx.Create(hWnd);
+					cWnd->renderImpl = std::make_shared<WGPURenderer>(device, queue, swapchain, pipeline, bindGroupLayout);
+                    LoadResource(xmlFile);
+                  }
+                }
+	};
 
-				SDL_Event event;
-				while (SDL_PollEvent(&event)) 
-				{
-					done = !SDLEventHandler(event, window);
-				}
-				redraw();
-			}
-
+	~Window()
+	{
 		#ifndef __EMSCRIPTEN__
 			// last bit of clean-up
 			wgpuSamplerRelease(sampler);
@@ -683,9 +406,378 @@ int main(int /*argc*/, char* /*argv*/[]) {
 			wgpuQueueRelease(queue);
 			//wgpuDeviceRelease(device);
 		#endif
-		}
+
 		SDL_DestroyWindow(window);
-		SDL_Quit();
 	}
+
+	bool Update()
+	{
+		std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
+		auto& ctx = OGUI::Context::Get();
+		std::chrono::time_point now = std::chrono::high_resolution_clock::now();
+		using namespace ostr::literal;
+		float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
+		prev = now;
+		ctx.Update(hWnd, deltaTime);
+		ctx.Render(hWnd);
+		return true;
+	};
+
+	void OnReloaded()
+	{
+		auto ve = cWnd->GetWindowUI()->_children[0];
+		if (auto child2 = QueryFirst(ve, "#Child2"))
+		{
+			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+			{
+				if(event.currentPhase == EventRoutePhase::Reach)
+					Context::Get().SetFocus(&element);
+
+				using namespace ostr::literal;
+				olog::Info(u"Oh ♂ shit! Child2"_o);
+				return true;
+			};
+
+			child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
+		}
+
+		{
+			std::vector<VisualElement*> tests;
+			QueryAll(ve, ".Element", tests);
+			for (auto [i, test] : ipair(tests))
+			{
+				constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+				{
+					if(event.currentPhase == EventRoutePhase::Reach)
+						Context::Get().SetFocus(&element);
+					return true;
+				};
+				test->_eventHandler.Register<PointerDownEvent, handler>(*test);
+			}
+		}
+
+		if (auto child1 = QueryFirst(ve, "#Child1"))
+		{
+			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+			{
+				if(event.currentPhase == EventRoutePhase::Reach)
+					Context::Get().SetFocus(&element);
+
+				using namespace ostr::literal;
+				olog::Info(u"Oh ♂ shit!"_o);
+				return true;
+			};
+			constexpr auto handlerDown = +[](KeyDownEvent& event)
+			{
+				using namespace ostr::literal;
+				if (event.key == EKeyCode::W)
+				{
+					olog::Info(u"W is Down!"_o);
+				}
+				return false;
+			};
+			constexpr auto handlerUp = +[](KeyUpEvent& event)
+			{
+				using namespace ostr::literal;
+				if (event.key == EKeyCode::W)
+				{
+					olog::Info(u"W is up!"_o);
+				}
+				return false;
+			};
+			constexpr auto handlerHold = +[](KeyHoldEvent& event)
+			{
+				using namespace ostr::literal;
+				if (event.key == EKeyCode::W)
+				{
+					olog::Info(u"W is Holding!"_o);
+				}
+				return false;
+			};
+			child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
+			child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
+			child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
+			child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
+		}
+		{
+			std::vector<VisualElement*> tests;
+			QueryAll(ve, ".Test", tests);
+			for (auto [i, test] : ipair(tests))
+				if (i % 2 == 0)
+					test->_styleClasses.push_back("Bigger");
+		}
+
+		ve->_pseudoMask |= (int)PseudoStates::Root;
+	}
+
+	void LoadResource(const char *xmlFile)
+	{
+		using namespace OGUI;
+		auto& ctx = Context::Get();
+		auto asset = XmlAsset::LoadXmlFile(xmlFile);
+		auto ve = asset->Instantiate();
+
+		mainXmlFile = xmlFile;
+		allCssFile = asset->all_css_file;
+		allXmlFile = asset->all_xml_file;
+
+		for(auto child : cWnd->GetWindowUI()->_children)
+		{
+			cWnd->GetWindowUI()->RemoveChild(child);
+			VisualElement::DestoryTree(child);
+		}
+		cWnd->GetWindowUI()->PushChild(ve);
+		OnReloaded();
+
+		listener.handle = [this](efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
+		{
+			auto& ctx = Context::Get();
+			switch (action)
+			{
+				case efsw::Actions::Add:
+					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added" << std::endl;
+					break;
+				case efsw::Actions::Delete:
+					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
+					break;
+				case efsw::Actions::Modified:
+				{
+					auto path = std::filesystem::path(dir.substr(0, dir.length() - 1) + filename);
+					if (find(allXmlFile.begin(), allXmlFile.end(), path) != allXmlFile.end())
+					{
+						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
+						auto asset = XmlAsset::LoadXmlFile(mainXmlFile);
+
+						if(asset)
+						{
+							auto newVe = asset->Instantiate();
+							if (newVe)
+							{
+								for(auto child : cWnd->GetWindowUI()->_children)
+								{
+									cWnd->GetWindowUI()->RemoveChild(child);
+									VisualElement::DestoryTree(child);
+								}
+								cWnd->GetWindowUI()->PushChild(newVe);
+								OnReloaded();
+								ctx._layoutDirty = true;
+							}
+						}
+						olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+					}
+					else if (find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
+					{
+						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
+						auto asset = ParseCSSFile(path.string());
+						if (asset)
+						{
+							std::vector<VisualElement*> current {cWnd->GetWindowUI()->_children};
+							std::vector<VisualElement*> next;
+							while (current.size() > 0) 
+							{
+								for (auto element : current)
+								{
+									for(auto& styleSheet : element->_styleSheets)
+									{
+										if(styleSheet->path == path)
+										{
+											*styleSheet = asset.value();
+											styleSheet->Initialize();
+											element->_selectorDirty = true;
+										}
+									}
+
+									next.insert(next.end(), element->_children.begin(), element->_children.end());
+								}
+								current.clear();
+								std::swap(current, next);
+							}
+							ctx._layoutDirty = true;
+							ctx.styleSystem.InvalidateCache();
+						}
+						olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+					}
+					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified" << std::endl;
+					break;
+				}
+				case efsw::Actions::Moved:
+					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from (" << oldFilename << ")" << std::endl;
+					break;
+				default:
+					std::cout << "Should never happen!" << std::endl;
+			}
+		};
+
+		for(auto dir : fileWatcher.directories())
+			fileWatcher.removeWatch(dir);
+		for(auto filePath : allCssFile)
+			fileWatcher.addWatch(std::filesystem::path(filePath).remove_filename().string(), &listener, true);
+		for(auto filePath : allXmlFile)
+			fileWatcher.addWatch(std::filesystem::path(filePath).remove_filename().string(), &listener, true);
+
+		fileWatcher.watch();
+	}
+
+	void createPipelineAndBuffers()
+	{
+		// compile shaders
+		// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
+		WGPUShaderModule vertMod = createShader(device, triangle_vert_wgsl);
+		WGPUShaderModule fragMod = createShader(device, triangle_frag_wgsl);
+
+		// bind group layout (used by both the pipeline layout and uniform bind group, released at the end of this function)
+		WGPUBindGroupLayoutEntry bglEntry[2] = {{}, {}};
+		bglEntry[0].binding = 0;
+		bglEntry[0].visibility = WGPUShaderStage_Fragment;
+		bglEntry[0].type = WGPUBindingType_Undefined;
+		bglEntry[0].texture.sampleType = WGPUTextureSampleType_Float;
+		bglEntry[0].texture.viewDimension = WGPUTextureViewDimension_2D;
+		bglEntry[0].texture.multisampled = false;
+		bglEntry[1].binding = 1;
+		bglEntry[1].visibility = WGPUShaderStage_Fragment;
+		bglEntry[1].type = WGPUBindingType_Undefined;
+		bglEntry[1].sampler.type = WGPUSamplerBindingType_Filtering;
+
+		WGPUBindGroupLayoutDescriptor bglDesc = {};
+		bglDesc.entryCount = 2;
+		bglDesc.entries = bglEntry;
+		bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
+
+		// pipeline layout (used by the render pipeline, released after its creation)
+		WGPUPipelineLayoutDescriptor layoutDesc = {};
+		layoutDesc.bindGroupLayoutCount = 1;
+		layoutDesc.bindGroupLayouts = &bindGroupLayout;
+		WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(device, &layoutDesc);
+
+		// begin pipeline set-up
+		WGPURenderPipelineDescriptor desc = {};
+		desc.layout = pipelineLayout;
+		desc.vertexStage.module = vertMod;
+		desc.vertexStage.entryPoint = "main";
+		WGPUProgrammableStageDescriptor fragStage = {};
+		fragStage.module = fragMod;
+		fragStage.entryPoint = "main";
+		desc.fragmentStage = &fragStage;
+		// describe buffer layouts
+		WGPUVertexAttributeDescriptor vertAttrs[3] = {};
+		vertAttrs[0].format = WGPUVertexFormat_Float2;
+		vertAttrs[0].offset = 0;
+		vertAttrs[0].shaderLocation = 0;
+		vertAttrs[1].format = WGPUVertexFormat_Float2;
+		vertAttrs[1].offset = 2 * sizeof(float);
+		vertAttrs[1].shaderLocation = 1;
+		vertAttrs[2].format = WGPUVertexFormat_Float4;
+		vertAttrs[2].offset = 4 * sizeof(float);
+		vertAttrs[2].shaderLocation = 2;
+
+		WGPUVertexBufferLayoutDescriptor vertDesc = {};
+		vertDesc.arrayStride = 8 * sizeof(float);
+		vertDesc.attributeCount = 3;
+		vertDesc.attributes = vertAttrs;
+		WGPUVertexStateDescriptor vertState = {};
+		vertState.vertexBufferCount = 1;
+		vertState.vertexBuffers = &vertDesc;
+		desc.vertexState = &vertState;
+		desc.primitiveTopology = WGPUPrimitiveTopology_TriangleList;
+		desc.sampleCount = 1;
+		// describe blend
+		WGPUBlendDescriptor blendDesc = {};
+		blendDesc.operation = WGPUBlendOperation_Add;
+		blendDesc.srcFactor = WGPUBlendFactor_SrcAlpha;
+		blendDesc.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
+		WGPUColorStateDescriptor colorDesc = {};
+		colorDesc.format = webgpu::getSwapChainFormat(device);
+		colorDesc.alphaBlend = blendDesc;
+		colorDesc.colorBlend = blendDesc;
+		colorDesc.writeMask = WGPUColorWriteMask_All;
+		desc.colorStateCount = 1;
+		desc.colorStates = &colorDesc;
+		desc.sampleMask = 0xFFFFFFFF; // <-- Note: this currently causes Emscripten to fail (sampleMask ends up as -1, which trips an assert)
+		pipeline = wgpuDeviceCreateRenderPipeline(device, &desc);
+		// partial clean-up (just move to the end, no?)
+		wgpuPipelineLayoutRelease(pipelineLayout);
+		wgpuShaderModuleRelease(fragMod);
+		wgpuShaderModuleRelease(vertMod);
+
+		// Font Test
+		{
+			white_tex->CreateGlyph(u8"a");
+			white_tex->CreateGlyph(u8"b");
+			white_tex->CreateGlyph(u8"c");
+			white_tex->CreateGlyph(u8"d");
+			white_tex->CreateGlyph(u8"e");
+			white_tex->CreateGlyph(u8"f");
+			white_tex->CreateGlyph(u8"g");
+			white_tex->CreateGlyph(u8"1");
+			white_tex->CreateGlyph(u8"2");
+			white_tex->CreateGlyph(u8"3");
+			white_tex->CreateGlyph(u8"4");
+			white_tex->CreateGlyph(u8",");
+			white_tex->CreateGlyph(u8".");
+		}
+		//Bitmap bitmap = white_tex->GetAtlas()->GetBitmap();
+		memset(white_tex0, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
+		Bitmap bitmap = {};
+		bitmap.resource.bytes = white_tex0;
+		bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
+		bitmap.width = 1024; bitmap.height = 1024;
+		bitmap.format = PF_R8G8B8A8;
+		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
+		ogui_textures[t] = *t;
+		default_ogui_texture = t;
+
+		WGPUSamplerDescriptor sampDesc = {};
+		sampDesc.addressModeU = WGPUAddressMode_ClampToEdge;
+		sampDesc.addressModeV = WGPUAddressMode_ClampToEdge;
+		sampDesc.addressModeW = WGPUAddressMode_ClampToEdge;
+		sampDesc.magFilter = WGPUFilterMode_Nearest;
+		sampDesc.minFilter = WGPUFilterMode_Nearest;
+		sampDesc.mipmapFilter = WGPUFilterMode_Nearest;
+		sampDesc.lodMinClamp = 0;
+		sampDesc.lodMaxClamp = 1000.f;
+		sampDesc.maxAnisotropy = 1.f;
+		sampler = wgpuDeviceCreateSampler(device, &sampDesc);
+	}
+};
+
+int main(int /*argc*/, char* /*argv*/[]) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
+		return -1;
+	}
+
+	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	// TODO 现在还不能多窗口
+	// Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
+
+	InstallInput();
+	{
+		using namespace OGUI;
+		using namespace ostr::literal;
+		auto& ctx = Context::Get();
+		ctx.bmParserImpl = std::make_unique<BitmapParser>();
+		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
+		ctx.logImpl = std::make_unique<SpdlogLogger>();
+	}
+	BuildSDLMap();
+
+	// main loop
+	bool done = false;
+	while(!done)
+	{
+		using namespace ostr::literal;
+
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) 
+		{
+			done = !SDLEventHandler(event, win1->window, win1->hWnd);
+		}
+		win1->Update();
+		//win2->Update();
+	}
+
+	delete win1;
+	//delete win2;
+	SDL_Quit();
 	return 0;
 }

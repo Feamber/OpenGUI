@@ -379,7 +379,10 @@ OGUI::LogInterface::~LogInterface()
 OGUI::AsyncImage::~AsyncImage()
 {
     auto& ctx = Context::Get();
-    ctx.renderImpl->ReleaseTexture(_handle); // Release from RenderDevice.
+    for(auto&& windowContext : ctx.windowContexts)
+    {
+        windowContext.renderImpl->ReleaseTexture(_handle); 
+    }
 }
 
 OGUI::AsyncRenderTexture::AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle, ERenderTextureType type)

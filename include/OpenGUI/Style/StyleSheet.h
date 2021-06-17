@@ -36,6 +36,8 @@ namespace OGUI
 
 	struct StyleSheet
 	{
+		std::string path;
+
 		StyleSheetStorage storage;
 		std::vector<StyleRule> styleRules;
 		std::vector<StyleComplexSelector> styleSelectors;

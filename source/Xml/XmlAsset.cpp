@@ -138,6 +138,7 @@ namespace OGUI {
 
         auto shared_asset = std::make_shared<XmlAsset>(file_path);
         XmlAsset *asset = shared_asset.get();
+        asset->all_xml_file.push_back(file_path);
         std::vector<std::pair<XMLNode *, XmlElement *>> current_layer = {{xml_root, &asset->root}};
         std::vector<std::pair<XMLNode *, XmlElement *>> next_layer;
         while (!current_layer.empty()) {
@@ -225,6 +226,7 @@ namespace OGUI {
 
     VisualElement* XmlAsset::Instantiate()
     {
+        all_css_file.clear();
         CreationContext new_context{};
         new_context.main_asset = this;
         auto new_template = ParseTemplate(root, new_context);
