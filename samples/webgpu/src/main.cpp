@@ -770,7 +770,11 @@ int main(int /*argc*/, char* /*argv*/[]) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) 
 		{
-			done = !SDLEventHandler(event, win1->window, win1->hWnd);
+			// TODO 关闭事件中没有窗口id？ 导致现在关闭没反应
+			if(SDL_GetWindowID(win1->window) == event.window.windowID)
+				done = !SDLEventHandler(event, win1->window, win1->hWnd);
+			//else if (SDL_GetWindowID(win2->window) == event.window.windowID)
+			// 	done = !SDLEventHandler(event, win2->window, win2->hWnd);
 		}
 		win1->Update();
 		//win2->Update();
