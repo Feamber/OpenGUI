@@ -381,7 +381,7 @@ OGUI::AsyncImage::~AsyncImage()
     auto& ctx = Context::Get();
     for(auto&& windowContext : ctx.windowContexts)
     {
-        windowContext.renderImpl->ReleaseTexture(_handle); 
+        windowContext->renderImpl->ReleaseTexture(_handle); 
     }
 }
 

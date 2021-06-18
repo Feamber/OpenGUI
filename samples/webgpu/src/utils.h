@@ -220,8 +220,6 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, v
         }
         case SDL_MOUSEMOTION:
         {
-            olog::Info(u"MousePos X:{}, Y:{}"_o, event.motion.x, event.motion.y);
-            olog::Info(u"MousePos RelX:{}, RelY:{}"_o, event.motion.xrel, event.motion.yrel);
             ctx.OnMouseMove(hWnd, true, event.motion.xrel, event.motion.yrel);
             break;
         }

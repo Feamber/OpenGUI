@@ -33,22 +33,22 @@
 #pragma comment(lib, "vulkan-1.lib")
 #endif
 
-namespace impl {
-/*
- * NOTE: keeping these here for a single device/window until I work out more.
- */
+namespace webgpu
+{
+	struct instance
+	{
 
 /*
  * Chosen backend type for \c #device.
  */
-WGPUBackendType backend;
+		WGPUBackendType backend;
 
 /*
  * WebGPU graphics API-specific device, created from a \c dawn_native::Adapter
  * and optional feature requests. This should wrap the same underlying device
  * for the same configuration.
  */
-WGPUDevice device;
+		WGPUDevice device;
 
 /*
  * Something needs to hold onto this since the address is passed to the WebGPU
@@ -61,20 +61,27 @@ WGPUDevice device;
  * Is the struct copied or does it need holding for the lifecycle of the swap
  * chain, i.e. can it just be a temporary?
  * 
- * After calling wgpuSwapChainRelease() does it also call swapImpl::Destroy()
+ * After calling wgpuSwapChainRelease() does it also call swapi->Destroy()
  * to delete the underlying NativeSwapChainImpl(), invalidating this struct?
  */
-static DawnSwapChainImplementation swapImpl;
+		DawnSwapChainImplementation swapImpl;
 
 /*
  * Preferred swap chain format, obtained in the browser via a promise to
  * GPUCanvasContext::getSwapChainPreferredFormat(). In Dawn we can call this
- * directly in NativeSwapChainImpl::GetPreferredFormat() (which is hard-coded
+ * directly in NativeSwapChaini->GetPreferredFormat() (which is hard-coded
  * with D3D, for example, to RGBA8Unorm, but queried for others). For the D3D
  * back-end calling wgpuSwapChainConfigure ignores the passed preference and
  * asserts if it's not the preferred choice.
  */
-static WGPUTextureFormat swapPref;
+		WGPUTextureFormat swapPref;
+	};
+}
+
+namespace impl {
+/*
+ * NOTE: keeping these here for a single device/window until I work out more.
+ */
 
 //********************************** Helpers *********************************/
 
@@ -141,30 +148,30 @@ static VkSurfaceKHR createVkSurface(WGPUDevice device, window::Handle window) {
  * Creates an API-specific swap chain implementation in \c #swapImpl and stores
  * the \c #swapPref.
  */
-static void initSwapChain(WGPUBackendType backend, WGPUDevice device, window::Handle window) {
+static void initSwapChain(webgpu::instance* i, WGPUBackendType backend, WGPUDevice device, window::Handle window) {
 	switch (backend) {
 #ifdef DAWN_ENABLE_BACKEND_D3D12
 	case WGPUBackendType_D3D12:
-		if (impl::swapImpl.userData == nullptr) {
-			impl::swapImpl = dawn_native::d3d12::CreateNativeSwapChainImpl(
-							 impl::device, reinterpret_cast<HWND>(window));
-			impl::swapPref = dawn_native::d3d12::GetNativeSwapChainPreferredFormat(&impl::swapImpl);
+		if (i->swapImpl.userData == nullptr) {
+			i->swapImpl = dawn_native::d3d12::CreateNativeSwapChainImpl(
+							 i->device, reinterpret_cast<HWND>(window));
+			i->swapPref = dawn_native::d3d12::GetNativeSwapChainPreferredFormat(&i->swapImpl);
 		}
 		break;
 #endif
 #ifdef DAWN_ENABLE_BACKEND_VULKAN
 	case WGPUBackendType_Vulkan:
-		if (impl::swapImpl.userData == nullptr) {
-			impl::swapImpl = dawn_native::vulkan::CreateNativeSwapChainImpl(
-							 impl::device, createVkSurface(device, window));
-			impl::swapPref = dawn_native::vulkan::GetNativeSwapChainPreferredFormat(&impl::swapImpl);
+		if (i->swapImpl.userData == nullptr) {
+			i->swapImpl = dawn_native::vulkan::CreateNativeSwapChainImpl(
+							 i->device, createVkSurface(device, window));
+			i->swapPref = dawn_native::vulkan::GetNativeSwapChainPreferredFormat(&i->swapImpl);
 		}
 		break;
 #endif
 	default:
-		if (impl::swapImpl.userData == nullptr) {
-			impl::swapImpl = dawn_native::null::CreateNativeSwapChainImpl();
-			impl::swapPref = WGPUTextureFormat_Undefined;
+		if (i->swapImpl.userData == nullptr) {
+			i->swapImpl = dawn_native::null::CreateNativeSwapChainImpl();
+			i->swapPref = WGPUTextureFormat_Undefined;
 		}
 		break;
 	}
@@ -182,7 +189,7 @@ static void printError(WGPUErrorType /*type*/, const char* message, void*) {
 
 //******************************** Public API ********************************/
 
-WGPUDevice webgpu::create(window::Handle window, WGPUBackendType type) {
+webgpu::instance* webgpu::create(window::Handle window, WGPUBackendType type) {
 	if (type > WGPUBackendType_OpenGLES) {
 	#ifdef DAWN_ENABLE_BACKEND_D3D12
 		type = WGPUBackendType_D3D12;
@@ -192,43 +199,54 @@ WGPUDevice webgpu::create(window::Handle window, WGPUBackendType type) {
 	#endif
 	#endif
 	}
+	webgpu::instance* i = new webgpu::instance{};
 	/*
 	 * First go at this. We're only creating one global device/swap chain so far.
 	 */
 	if (dawn_native::Adapter adapter = impl::requestAdapter(type)) {
 		wgpu::AdapterProperties properties;
 		adapter.GetProperties(&properties);
-		impl::backend = static_cast<WGPUBackendType>(properties.backendType);
-		impl::device  = adapter.CreateDevice();
-		impl::initSwapChain(impl::backend, impl::device, window);
+		i->backend = static_cast<WGPUBackendType>(properties.backendType);
+		i->device  = adapter.CreateDevice();
+		impl::initSwapChain(i, i->backend, i->device, window);
 		DawnProcTable procs(dawn_native::GetProcs());
-		procs.deviceSetUncapturedErrorCallback(impl::device, impl::printError, nullptr);
+		procs.deviceSetUncapturedErrorCallback(i->device, impl::printError, nullptr);
 		dawnProcSetProcs(&procs);
 	}
-	return impl::device;
+	return i;
 }
 
-WGPUSwapChain webgpu::createSwapChain(WGPUDevice device, float width, float height) {
+WGPUSwapChain webgpu::createSwapChain(webgpu::instance* i, float width, float height) {
 	WGPUSwapChainDescriptor swapDesc = {};
 	/*
 	 * Currently failing (probably because the nextInChain needs setting up, and
 	 * also with the correct WGPUSType_* for the platform).
 	 *
 	swapDesc.usage  = WGPUTextureUsage_OutputAttachment;
-	swapDesc.format = impl::swapPref;
+	swapDesc.format = i->swapPref;
 	swapDesc.width  = 800;
 	swapDesc.height = 450;
 	swapDesc.presentMode = WGPUPresentMode_Mailbox;
 	 */
-	swapDesc.implementation = reinterpret_cast<uintptr_t>(&impl::swapImpl);
-	WGPUSwapChain swapchain = wgpuDeviceCreateSwapChain(device, nullptr, &swapDesc);
+	swapDesc.implementation = reinterpret_cast<uintptr_t>(&i->swapImpl);
+	WGPUSwapChain swapchain = wgpuDeviceCreateSwapChain(i->device, nullptr, &swapDesc);
 	/*
 	 * Currently failing on hi-DPI (with Vulkan).
 	 */
-	wgpuSwapChainConfigure(swapchain, impl::swapPref, WGPUTextureUsage_OutputAttachment, width, height);
+	wgpuSwapChainConfigure(swapchain, i->swapPref, WGPUTextureUsage_OutputAttachment, width, height);
 	return swapchain;
 }
 
-WGPUTextureFormat webgpu::getSwapChainFormat(WGPUDevice /*device*/) {
-	return impl::swapPref;
+WGPUTextureFormat webgpu::getSwapChainFormat(webgpu::instance* i) {
+	return i->swapPref;
+}
+
+WGPUDevice webgpu::getDevice(webgpu::instance* i)
+{
+	return i->device;
+}
+
+void webgpu::release(webgpu::instance* i)
+{
+	delete i;
 }

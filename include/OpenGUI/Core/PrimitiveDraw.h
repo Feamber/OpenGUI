@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Context.h"
 #include "Types.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include <optional>
@@ -75,6 +76,7 @@ namespace OGUI
 	{
 		struct OGUI_API DrawContext
 		{
+			WindowContext& Window;
 			PrimDrawList prims;
 			Vector2f     resolution = Vector2f(0.f, 0.f);
 		}; 

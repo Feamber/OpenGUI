@@ -36,7 +36,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 		//start new load
 		if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != _style.backgroundImage)
 		{
-			backgroundImageResource = Context::Get().textureManager->RequireFromFileSystem(_style.backgroundImage);
+			backgroundImageResource = Ctx.Window.textureManager->RequireFromFileSystem(_style.backgroundImage);
 			backgroundImageUrl = _style.backgroundImage;
 		}
 	}

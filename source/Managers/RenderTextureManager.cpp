@@ -47,9 +47,8 @@ shared_ptr<AsyncRenderTexture> RenderTextureManager::RequireFromFileSystem(
     return tex_locked;
 }
 
-void RenderTextureManager::Update(WindowContext& windowContext)
+void RenderTextureManager::Update()
 {
-    auto& ctx = Context::Get();
     // compile bitmaps to render_textures.
     std::vector<std::string> uploadeds;
     for(auto&& [url, file] : files)
@@ -61,7 +60,6 @@ void RenderTextureManager::Update(WindowContext& windowContext)
             tex_locked->device_image->_handle 
                 = windowContext.renderImpl->RegisterTexture(file->GetBitmap());
             tex_locked->device_image->is_ready = true;
-            auto uc = file.use_count();
             file.reset();
             uploadeds.push_back(url);
         }

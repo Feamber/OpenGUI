@@ -75,3 +75,11 @@
 #s2e2{
     background-color: chartreuse;
 }
+
+#s2e2:focus{
+    background-color:red;
+}
+
+#s2e2:keyboardFocus{
+    background-color:darkorchid;
+}

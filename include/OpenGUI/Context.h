@@ -5,6 +5,8 @@
 #include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/Types.h"
+#include <algorithm>
+#include <memory>
 #include <vector>
 
 
@@ -30,6 +32,7 @@ namespace OGUI
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
 		std::shared_ptr<RenderInterface> renderImpl;
+		std::unique_ptr<RenderTextureManager> textureManager;
 	protected:
 		float X; float Y;
 		WindowHandle window;
@@ -100,13 +103,12 @@ namespace OGUI
 		std::unique_ptr<BitmapParserInterface>   bmParserImpl;
 		//Components
 		std::unique_ptr<IOThread>        ioThread;
-		std::unique_ptr<RenderTextureManager> textureManager;
-		std::vector<WindowContext>       windowContexts; // Update Per Frame
+		std::vector<std::unique_ptr<WindowContext>>       windowContexts; // Update Per Frame
 		//States
 		bool initialized = false;
 		int pointerDownCount = 0;
 	protected:
-		const WindowContext& GetWindowContext(const WindowHandle window) const;
+		WindowContext& GetWindowContext(const WindowHandle window);
 		WindowContext& GetOrRegisterWindowContext(const WindowHandle window);
 	};
 }

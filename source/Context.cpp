@@ -16,12 +16,14 @@
 
 OGUI::WindowContext::WindowContext()
 {
+	textureManager = std::make_unique<RenderTextureManager>(*this);
 	ui = new VisualWindow();
 };
 
 OGUI::WindowContext::~WindowContext()
 {
-	VisualElement::DestoryTree(ui);
+	if(ui)
+		VisualElement::DestoryTree(ui);
 };
 
 void OGUI::Context::Initialize(
@@ -117,7 +119,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 {
 	auto& wctx = GetOrRegisterWindowContext(window);
 	auto root = wctx.GetWindowUI();
-	textureManager->Update(wctx);
+	wctx.textureManager->Update();
 	// Update Window
 	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
 	_deltaTime = dt;
@@ -129,9 +131,9 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 
 void OGUI::Context::Render(const OGUI::WindowHandle window)
 {
-	const auto& wctx = GetWindowContext(window);
+	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
-	PrimitiveDraw::DrawContext ctx;
+	PrimitiveDraw::DrawContext ctx{wctx};
 	ctx.resolution = Vector2f(wctx.X, wctx.Y);
 	root->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 	if(wctx.renderImpl) wctx.renderImpl->RenderPrimitives(ctx.prims);
@@ -302,7 +304,6 @@ bool OGUI::Context::OnKeyUp(const OGUI::WindowHandle window, EKeyCode keyCode)
 OGUI::Context::Context()
 {
 	ioThread = std::make_unique<IOThread>();
-	textureManager = std::make_unique<RenderTextureManager>();
 	logImpl = std::make_unique<StdOutputLog>();
 }
 
@@ -316,27 +317,27 @@ OGUI::Context& OGUI::Context::Get()
 	return ctx;
 }
 
-static const OGUI::WindowContext NULL_WINDOW_CONTEXT = OGUI::WindowContext();
+static OGUI::WindowContext NULL_WINDOW_CONTEXT = OGUI::WindowContext();
 OGUI::WindowContext& OGUI::Context::GetOrRegisterWindowContext(const OGUI::WindowHandle window)
 {
 	for(auto&& ctx : windowContexts)
 	{
-		if(ctx.window == window)
-			return ctx;
+		if(ctx->window == window)
+			return *ctx.get();
 	}
-	WindowContext& newOne = windowContexts.emplace_back();
+	WindowContext& newOne = *windowContexts.emplace_back(std::make_unique<WindowContext>()).get();
 	newOne.window = window;
 	newOne.X = 0;
 	newOne.Y = 0;
 	return newOne;
 }
 
-const OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHandle window) const
+OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHandle window)
 {
-	for(const auto& ctx : windowContexts)
+	for(auto& ctx : windowContexts)
 	{
-		if(ctx.window == window)
-			return ctx;
+		if(ctx->window == window)
+			return *ctx.get();
 	}
 	// warn("window context not found")
 	return NULL_WINDOW_CONTEXT;

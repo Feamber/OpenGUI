@@ -26,19 +26,12 @@
 #include "efsw/efsw.hpp"
 
 #include "OpenGUI/Text/FontRendering.h"
+#include "webgpu.h"
 
 
 extern void InstallInput();
 
 using namespace OGUI;
-
-WGPUSampler sampler;
-std::unique_ptr<Font::TextureFont> white_tex = std::unique_ptr<Font::TextureFont>(
-	Font::TextureFont::TextureFontFromFile(1024, 1024, PF_R8, "Vera.ttf", 128)
-);
-WGPU_OGUI_Texture* default_ogui_texture;
-
-std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 
 struct BitmapParser final : public OGUI::BitmapParserInterface
 {
@@ -65,250 +58,7 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 };
 
 class Window;
-class OGUIWebGPURenderer : public OGUI::RenderInterface
-{
-public:
-	WGPUDevice& device;
-	WGPUQueue& queue;
-	WGPUSwapChain& swapchain;
-	WGPURenderPipeline& pipeline;
-	WGPUBindGroupLayout& bindGroupLayout;
 
-	OGUIWebGPURenderer(WGPUDevice& device, WGPUQueue& queue, WGPUSwapChain& swapchain, WGPURenderPipeline& pipeline, WGPUBindGroupLayout& bindGroupLayout) 
-	: device(device), queue(queue), swapchain(swapchain), pipeline(pipeline), bindGroupLayout(bindGroupLayout)
-	{
-
-	}
-
-	virtual ~OGUIWebGPURenderer()
-	{
-		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
-		if(index_buffer) wgpuBufferRelease(index_buffer);
-	}
-	PersistantPrimitiveHandle RegisterPrimitive(
-		Vertex* vertices, uint32_t num_vertices,
-		uint16_t* indices, uint32_t num_indices)
-	{
-		return nullptr;
-	}
-	
-	void ReleasePrimitive(PersistantPrimitiveHandle primitive)
-	{
-		
-	}
-
-	void RenderPrimitives(const PrimDrawList& list)
-	{
-		if(list.command_list.size() <= 0) return;
-		// upload buffer
-		if(vertex_buffer) 
-			wgpuBufferRelease(vertex_buffer);
-		if(index_buffer) 
-			wgpuBufferRelease(index_buffer);
-
-		vertex_buffer = createBuffer(device, queue,
-			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
-		index_buffer = createBuffer(device, queue,
-			list.indices.data(), list.indices.size() * sizeof(uint16_t), WGPUBufferUsage_Index);
-
-		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
-		WGPURenderPassColorAttachmentDescriptor colorDesc = {};
-		colorDesc.attachment = backBufView;
-		colorDesc.loadOp  = WGPULoadOp_Clear;
-		colorDesc.storeOp = WGPUStoreOp_Store;
-		colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
-		WGPURenderPassDescriptor renderPass = {};
-		renderPass.colorAttachmentCount = 1;
-		renderPass.colorAttachments = &colorDesc;
-		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
-		WGPURenderPassEncoder pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
-		// draw the triangle (comment these five lines to simply clear the screen)
-		wgpuRenderPassEncoderSetPipeline(pass, pipeline);
-
-		int last_index = -1;
-		for(auto& cmd : list.command_list)
-		{
-			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
-			if(last_cmd.texture != cmd.texture || last_index < 0)
-			{
-				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
-				if(!texture)
-					texture = default_ogui_texture;
-				if(!texture->bind_group)
-				{
-					// update texture binding
-					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
-					bgEntry[0].binding = 0;
-					bgEntry[0].textureView 
-						= texture->texture? texture->texture_view : default_ogui_texture->texture_view;
-					bgEntry[1].binding = 1;
-					bgEntry[1].sampler = sampler;
-					WGPUBindGroupDescriptor bgDesc = {};
-					bgDesc.layout = bindGroupLayout;
-					bgDesc.entryCount = 2;
-					bgDesc.entries = bgEntry;
-					texture->bind_group = wgpuDeviceCreateBindGroup(device, &bgDesc);
-				}
-				wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
-			}
-			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
-				cmd.vertex_offset * sizeof(Vertex),
-				0
-			);
-			wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
-				cmd.index_offset * sizeof(uint16_t),
-				0
-			);
-			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
-			last_index++;
-		}
-
-		wgpuRenderPassEncoderEndPass(pass);
-		wgpuRenderPassEncoderRelease(pass);														// release pass
-		WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
-		wgpuCommandEncoderRelease(encoder);														// release encoder
-
-		wgpuQueueSubmit(queue, 1, &commands);
-		wgpuCommandBufferRelease(commands);														// release commands
-	#ifndef __EMSCRIPTEN__
-		/*
-		* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
-		*/
-		wgpuSwapChainPresent(swapchain);
-	#endif
-		wgpuTextureViewRelease(backBufView);													
-	}
-
-	void RenderPrimitives(const PersistantPrimDrawList&)
-	{
-		
-	}
-
-	TextureHandle RegisterTexture(const Bitmap& bitmap)
-	{
-		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
-		ogui_textures[t] = *t;
-		return t;
-	}
-
-	void ReleaseTexture(TextureHandle h)
-	{
-		if(h)
-			ogui_textures.erase(h);
-		ogui_textures[h].Release();
-	}
-
-	void SetScissor(const Scissor scissor)
-	{
-
-	}
-
-	void ResetScissor()
-	{
-
-	}
-	WGPUBuffer vertex_buffer = nullptr;
-	WGPUBuffer index_buffer = nullptr;
-};
-
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/daily_file_sink.h>
-#include <Windows.h>
-
-struct SpdlogLogger : LogInterface
-{
-	SpdlogLogger()
-	{
-		auto console_sink = get_console_sink();
-		console_sink->set_level(spdlog::level::info);
-		console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
-
-		auto file_sink = get_file_sink();
-		file_sink->set_level(spdlog::level::trace);
-		file_sink->set_pattern("[%Y-%m-%d %z %X.(%F)] [%^%l%$] [%P.%t] %v");
-
-		auto logger = std::make_shared<spdlog::logger>("logger_default", spdlog::sinks_init_list{ console_sink, file_sink });
-		logger->set_level(spdlog::level::trace);
-		logger->flush_on(spdlog::level::info);
-		spdlog::set_default_logger(logger);
-
-		SetConsoleOutputCP(65001);
-	}
-
-	virtual void Log(olog::Level l, ostr::string_view msg)
-	{
-		std::wstring str(msg.raw().cbegin(), msg.raw().cend());
-		spdlog::level::level_enum spdlevel = 
-		[l]
-		{
-			if (l == olog::Level::None) return spdlog::level::off;
-			return (spdlog::level::level_enum)((uint8_t)l - 1);
-		}();
-		spdlog::log(spdlevel, std::wstring_view(str));
-	}
-
-	std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> get_console_sink()
-	{
-		static std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> _static = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-		return _static;
-	}
-
-	std::shared_ptr<spdlog::sinks::daily_file_sink_mt> get_file_sink()
-	{
-		static std::shared_ptr<spdlog::sinks::daily_file_sink_mt> _static = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
-			"Daily.log",        // file name
-			0,                  // hour
-			0,                  // minute
-			false,              // truncate
-			7                   // max files
-			);
-		return _static;
-	}
-};
-
-struct WGPURenderer : RenderInterface
-{
-	WGPUDevice& device;
-	WGPUQueue& queue;
-	WGPUSwapChain& swapchain;
-	WGPURenderPipeline& pipeline;
-	WGPUBindGroupLayout& bindGroupLayout;
-
-	WGPURenderer(WGPUDevice& device, WGPUQueue& queue, WGPUSwapChain& swapchain, WGPURenderPipeline& pipeline, WGPUBindGroupLayout& bindGroupLayout) 
-	: device(device), queue(queue), swapchain(swapchain), pipeline(pipeline), bindGroupLayout(bindGroupLayout)
-	{
-
-	}
-
-	virtual PersistantPrimitiveHandle RegisterPrimitive(
-		Vertex* vertices, uint32_t num_vertices,
-		uint16_t* indices, uint32_t num_indices)
-	{
-		return nullptr;
-	};
-	virtual void ReleasePrimitive(PersistantPrimitiveHandle primitive) {};
-
-	virtual void RenderPrimitives(const struct PrimDrawList& list)
-	{
-		((PrimDrawList&)list).ValidateAndBatch();
-
-		OGUIWebGPURenderer* renderer = new OGUIWebGPURenderer(device, queue, swapchain, pipeline, bindGroupLayout);
-		renderer->RenderPrimitives(list);
-		delete renderer;
-	};
-	virtual void RenderPrimitives(const struct PersistantPrimDrawList&) {};
-
-	virtual TextureHandle RegisterTexture(const Bitmap& bm) 
-	{
-		 return createTexture(device, queue, bm); 
-	};
-	virtual void ReleaseTexture(TextureHandle) {};
-
-	virtual void SetScissor(const Scissor scissor) {};
-	virtual void ResetScissor() {};
-
-};
 
 
 #define SDL_MAIN_NEEDED
@@ -337,6 +87,9 @@ public:
 	}
 };
 
+class OGUIWebGPURenderer;
+std::shared_ptr<OGUIWebGPURenderer> MakeRenderer(class Window& window);
+
 //TODO 现在还是只支持一个窗口，还需要等待渲染接口和hWnd支持多窗口
 class Window
 {
@@ -350,6 +103,10 @@ public:
 	WGPUSwapChain swapchain;
 	WGPURenderPipeline pipeline;
 	WGPUBindGroupLayout bindGroupLayout;
+	WGPUSampler sampler;
+	WGPU_OGUI_Texture* default_ogui_texture;
+	std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
+	webgpu::instance* wgpu;
 
 	efsw::FileWatcher fileWatcher;
 	UpdateListener listener;
@@ -377,18 +134,20 @@ public:
 
 		if (hWnd)
 		{
-                  if (device = webgpu::create(hWnd); device) {
-                    queue = wgpuDeviceGetDefaultQueue(device);
-                    swapchain = webgpu::createSwapChain(device, width, height);
-                    createPipelineAndBuffers();
+			if(wgpu = webgpu::create(hWnd); wgpu)
+			{
+				device = getDevice(wgpu);
+				queue = wgpuDeviceGetDefaultQueue(device);
+				swapchain = webgpu::createSwapChain(wgpu, width, height);
+				createPipelineAndBuffers();
 
-                    using namespace OGUI;
-                    auto &ctx = Context::Get();
-                    cWnd = &ctx.Create(hWnd);
-					cWnd->renderImpl = std::make_shared<WGPURenderer>(device, queue, swapchain, pipeline, bindGroupLayout);
-                    LoadResource(xmlFile);
-                  }
-                }
+				using namespace OGUI;
+				auto &ctx = Context::Get();
+				cWnd = &ctx.Create(hWnd);
+				cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(MakeRenderer(*this));
+				LoadResource(xmlFile);
+			}
+        }
 	};
 
 	~Window()
@@ -405,14 +164,15 @@ public:
 			wgpuSwapChainRelease(swapchain);
 			wgpuQueueRelease(queue);
 			//wgpuDeviceRelease(device);
+			webgpu::release(wgpu);
 		#endif
-
+		
 		SDL_DestroyWindow(window);
 	}
 
 	bool Update()
 	{
-		std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
+		static std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
 		auto& ctx = OGUI::Context::Get();
 		std::chrono::time_point now = std::chrono::high_resolution_clock::now();
 		using namespace ostr::literal;
@@ -686,7 +446,7 @@ public:
 		blendDesc.srcFactor = WGPUBlendFactor_SrcAlpha;
 		blendDesc.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
 		WGPUColorStateDescriptor colorDesc = {};
-		colorDesc.format = webgpu::getSwapChainFormat(device);
+		colorDesc.format = webgpu::getSwapChainFormat(wgpu);
 		colorDesc.alphaBlend = blendDesc;
 		colorDesc.colorBlend = blendDesc;
 		colorDesc.writeMask = WGPUColorWriteMask_All;
@@ -699,23 +459,6 @@ public:
 		wgpuShaderModuleRelease(fragMod);
 		wgpuShaderModuleRelease(vertMod);
 
-		// Font Test
-		{
-			white_tex->CreateGlyph(u8"a");
-			white_tex->CreateGlyph(u8"b");
-			white_tex->CreateGlyph(u8"c");
-			white_tex->CreateGlyph(u8"d");
-			white_tex->CreateGlyph(u8"e");
-			white_tex->CreateGlyph(u8"f");
-			white_tex->CreateGlyph(u8"g");
-			white_tex->CreateGlyph(u8"1");
-			white_tex->CreateGlyph(u8"2");
-			white_tex->CreateGlyph(u8"3");
-			white_tex->CreateGlyph(u8"4");
-			white_tex->CreateGlyph(u8",");
-			white_tex->CreateGlyph(u8".");
-		}
-		//Bitmap bitmap = white_tex->GetAtlas()->GetBitmap();
 		memset(white_tex0, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
 		Bitmap bitmap = {};
 		bitmap.resource.bytes = white_tex0;
@@ -740,15 +483,221 @@ public:
 	}
 };
 
-int main(int /*argc*/, char* /*argv*/[]) {
+
+class OGUIWebGPURenderer : public OGUI::RenderInterface
+{
+public:
+	Window& window;
+
+	OGUIWebGPURenderer(Window& window) 
+	: window(window)
+	{
+
+	}
+
+	virtual ~OGUIWebGPURenderer()
+	{
+		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
+		if(index_buffer) wgpuBufferRelease(index_buffer);
+	}
+	PersistantPrimitiveHandle RegisterPrimitive(
+		Vertex* vertices, uint32_t num_vertices,
+		uint16_t* indices, uint32_t num_indices)
+	{
+		return nullptr;
+	}
+	
+	void ReleasePrimitive(PersistantPrimitiveHandle primitive)
+	{
+		
+	}
+
+	void RenderPrimitives(const PrimDrawList& list)
+	{
+		((PrimDrawList&)list).ValidateAndBatch();
+		if(list.command_list.size() <= 0) return;
+		// upload buffer
+		if(vertex_buffer) 
+			wgpuBufferRelease(vertex_buffer);
+		if(index_buffer) 
+			wgpuBufferRelease(index_buffer);
+
+		vertex_buffer = createBuffer(window.device, window.queue,
+			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
+		index_buffer = createBuffer(window.device, window.queue,
+			list.indices.data(), list.indices.size() * sizeof(uint16_t), WGPUBufferUsage_Index);
+
+		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(window.swapchain);			// create textureView
+		WGPURenderPassColorAttachmentDescriptor colorDesc = {};
+		colorDesc.attachment = backBufView;
+		colorDesc.loadOp  = WGPULoadOp_Clear;
+		colorDesc.storeOp = WGPUStoreOp_Store;
+		colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
+		WGPURenderPassDescriptor renderPass = {};
+		renderPass.colorAttachmentCount = 1;
+		renderPass.colorAttachments = &colorDesc;
+		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(window.device, nullptr);			// create encoder
+		WGPURenderPassEncoder pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
+		// draw the triangle (comment these five lines to simply clear the screen)
+		wgpuRenderPassEncoderSetPipeline(pass, window.pipeline);
+
+		int last_index = -1;
+		for(auto& cmd : list.command_list)
+		{
+			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
+			if(last_cmd.texture != cmd.texture || last_index < 0)
+			{
+				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
+				if(!texture)
+					texture = window.default_ogui_texture;
+				if(!texture->bind_group)
+				{
+					// update texture binding
+					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
+					bgEntry[0].binding = 0;
+					bgEntry[0].textureView 
+						= texture->texture? texture->texture_view : window.default_ogui_texture->texture_view;
+					bgEntry[1].binding = 1;
+					bgEntry[1].sampler = window.sampler;
+					WGPUBindGroupDescriptor bgDesc = {};
+					bgDesc.layout = window.bindGroupLayout;
+					bgDesc.entryCount = 2;
+					bgDesc.entries = bgEntry;
+					texture->bind_group = wgpuDeviceCreateBindGroup(window.device, &bgDesc);
+				}
+				wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
+			}
+			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
+				cmd.vertex_offset * sizeof(Vertex),
+				0
+			);
+			wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
+				cmd.index_offset * sizeof(uint16_t),
+				0
+			);
+			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
+			last_index++;
+		}
+
+		wgpuRenderPassEncoderEndPass(pass);
+		wgpuRenderPassEncoderRelease(pass);														// release pass
+		WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
+		wgpuCommandEncoderRelease(encoder);														// release encoder
+
+		wgpuQueueSubmit(window.queue, 1, &commands);
+		wgpuCommandBufferRelease(commands);														// release commands
+	#ifndef __EMSCRIPTEN__
+		/*
+		* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
+		*/
+		wgpuSwapChainPresent(window.swapchain);
+	#endif
+		wgpuTextureViewRelease(backBufView);													
+	}
+
+	void RenderPrimitives(const PersistantPrimDrawList&)
+	{
+		
+	}
+
+	TextureHandle RegisterTexture(const Bitmap& bitmap)
+	{
+		WGPU_OGUI_Texture* t = createTexture(window.device, window.queue, bitmap);
+		window.ogui_textures[t] = *t;
+		return t;
+	}
+
+	void ReleaseTexture(TextureHandle h)
+	{
+		if(h)
+			window.ogui_textures.erase(h);
+		window.ogui_textures[h].Release();
+	}
+
+	void SetScissor(const Scissor scissor)
+	{
+
+	}
+
+	void ResetScissor()
+	{
+
+	}
+	WGPUBuffer vertex_buffer = nullptr;
+	WGPUBuffer index_buffer = nullptr;
+};
+
+
+std::shared_ptr<OGUIWebGPURenderer> MakeRenderer(class Window& window)
+{
+	return std::make_shared<OGUIWebGPURenderer>(window);
+}
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/daily_file_sink.h>
+#include <Windows.h>
+
+struct SpdlogLogger : LogInterface
+{
+	SpdlogLogger()
+	{
+		auto console_sink = get_console_sink();
+		console_sink->set_level(spdlog::level::info);
+		console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
+
+		auto file_sink = get_file_sink();
+		file_sink->set_level(spdlog::level::trace);
+		file_sink->set_pattern("[%Y-%m-%d %z %X.(%F)] [%^%l%$] [%P.%t] %v");
+
+		auto logger = std::make_shared<spdlog::logger>("logger_default", spdlog::sinks_init_list{ console_sink, file_sink });
+		logger->set_level(spdlog::level::trace);
+		logger->flush_on(spdlog::level::info);
+		spdlog::set_default_logger(logger);
+
+		SetConsoleOutputCP(65001);
+	}
+
+	virtual void Log(olog::Level l, ostr::string_view msg)
+	{
+		std::wstring str(msg.raw().cbegin(), msg.raw().cend());
+		spdlog::level::level_enum spdlevel = 
+		[l]
+		{
+			if (l == olog::Level::None) return spdlog::level::off;
+			return (spdlog::level::level_enum)((uint8_t)l - 1);
+		}();
+		spdlog::log(spdlevel, std::wstring_view(str));
+	}
+
+	std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> get_console_sink()
+	{
+		static std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> _static = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+		return _static;
+	}
+
+	std::shared_ptr<spdlog::sinks::daily_file_sink_mt> get_file_sink()
+	{
+		static std::shared_ptr<spdlog::sinks::daily_file_sink_mt> _static = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+			"Daily.log",        // file name
+			0,                  // hour
+			0,                  // minute
+			false,              // truncate
+			7                   // max files
+			);
+		return _static;
+	}
+};
+
+
+/*
+int main(int , char* []) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
 	}
 
 	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-	// TODO 现在还不能多窗口
-	// Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	InstallInput();
 	{
@@ -762,12 +711,12 @@ int main(int /*argc*/, char* /*argv*/[]) {
 	BuildSDLMap();
 
 	// main loop
-	while(win1 /*|| win2*/)
+	while(win1)
 	{
 		using namespace ostr::literal;
 
 		SDL_Event event;
-		while (SDL_PollEvent(&event) && (win1 /*|| win2*/)) 
+		while (SDL_PollEvent(&event) && (win1)) 
 		{
 			olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			// TODO 关闭事件中没有窗口id？ 导致现在关闭没反应
@@ -779,17 +728,67 @@ int main(int /*argc*/, char* /*argv*/[]) {
 					win1 = nullptr;
 				}
 			}
-			//else if(SDL_GetWindowID(win2->window) == event.window.windowID)
-			// {
-			// 	if(!SDLEventHandler(event, win2->window, win2->hWnd))
-			// 	{
-			// 		delete win2;
-			// 		win2 = nullptr;
-			// 	}
-			// }
 		}
 		if(win1) win1->Update();
-		//if(win2) win2->Update();
+	}
+
+	
+	//delete win2;
+	SDL_Quit();
+	return 0;
+}
+*/
+
+int main(int , char* []) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
+		return -1;
+	}
+
+	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	// TODO 现在还不能多窗口
+	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
+
+	InstallInput();
+	{
+		using namespace OGUI;
+		using namespace ostr::literal;
+		auto& ctx = Context::Get();
+		ctx.bmParserImpl = std::make_unique<BitmapParser>();
+		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
+		ctx.logImpl = std::make_unique<SpdlogLogger>();
+	}
+	BuildSDLMap();
+
+	// main loop
+	while(win1 || win2)
+	{
+		using namespace ostr::literal;
+
+		SDL_Event event;
+		while (SDL_PollEvent(&event) && (win1 || win2)) 
+		{
+			olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
+			// TODO 关闭事件中没有窗口id？ 导致现在关闭没反应
+			if(win1 && SDL_GetWindowID(win1->window) == event.window.windowID)
+			{
+				if(!SDLEventHandler(event, win1->window, win1->hWnd))
+				{
+					delete win1;
+					win1 = nullptr;
+				}
+			}
+			else if(win2 && SDL_GetWindowID(win2->window) == event.window.windowID)
+			{
+				if(!SDLEventHandler(event, win2->window, win2->hWnd))
+				{
+					delete win2;
+					win2 = nullptr;
+				}
+			}
+		}
+		if(win1) win1->Update();
+		if(win2) win2->Update();
 	}
 
 	
