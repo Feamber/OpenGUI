@@ -115,6 +115,24 @@ OGUI::WindowContext& OGUI::Context::Create(const OGUI::WindowHandle window)
 	return GetOrRegisterWindowContext(window);
 }
 
+void OGUI::Context::Remove(const OGUI::WindowHandle window)
+{
+	for(int i = 0; i < windowContexts.size(); ++i)
+	{
+		auto&& ctx = windowContexts[i];
+		if(ctx->window == window)
+		{
+			if(_currentActivateWindow == ctx->GetWindowUI())
+			{
+				_currentActivateWindow = nullptr;
+				_keyboardFocused = nullptr;
+			}
+			windowContexts.erase(windowContexts.begin() + i);
+			return;
+		}
+	}
+}
+
 void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 {
 	auto& wctx = GetOrRegisterWindowContext(window);

@@ -152,6 +152,9 @@ public:
 
 	~Window()
 	{
+		auto& ctx = OGUI::Context::Get();
+		ctx.Remove(hWnd);
+
 		#ifndef __EMSCRIPTEN__
 			// last bit of clean-up
 			wgpuSamplerRelease(sampler);
@@ -497,8 +500,8 @@ public:
 
 	virtual ~OGUIWebGPURenderer()
 	{
-		//if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
-		//if(index_buffer) wgpuBufferRelease(index_buffer);
+		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
+		if(index_buffer) wgpuBufferRelease(index_buffer);
 	}
 	PersistantPrimitiveHandle RegisterPrimitive(
 		Vertex* vertices, uint32_t num_vertices,

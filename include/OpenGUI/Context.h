@@ -75,6 +75,7 @@ namespace OGUI
 	
 		//APIs
 		WindowContext& Create(const WindowHandle window);
+		void Remove(const WindowHandle window);
 		void Update(const WindowHandle window, float dt);
 		void Render(const WindowHandle window);
 		void MarkDirty(VisualElement* element, DirtyReason reason);
