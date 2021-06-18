@@ -100,8 +100,8 @@ namespace OGUI
 		std::unique_ptr<BitmapParserInterface>   bmParserImpl;
 		//Components
 		std::unique_ptr<IOThread>        ioThread;
-		std::vector<WindowContext>       windowContexts; // Update Per Frame
 		std::unique_ptr<RenderTextureManager> textureManager;
+		std::vector<WindowContext>       windowContexts; // Update Per Frame
 		//States
 		bool initialized = false;
 		int pointerDownCount = 0;

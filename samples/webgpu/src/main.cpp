@@ -762,25 +762,37 @@ int main(int /*argc*/, char* /*argv*/[]) {
 	BuildSDLMap();
 
 	// main loop
-	bool done = false;
-	while(!done)
+	while(win1 /*|| win2*/)
 	{
 		using namespace ostr::literal;
 
 		SDL_Event event;
-		while (SDL_PollEvent(&event)) 
+		while (SDL_PollEvent(&event) && (win1 /*|| win2*/)) 
 		{
+			olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			// TODO 关闭事件中没有窗口id？ 导致现在关闭没反应
-			if(SDL_GetWindowID(win1->window) == event.window.windowID)
-				done = !SDLEventHandler(event, win1->window, win1->hWnd);
-			//else if (SDL_GetWindowID(win2->window) == event.window.windowID)
-			// 	done = !SDLEventHandler(event, win2->window, win2->hWnd);
+			if(win1 && SDL_GetWindowID(win1->window) == event.window.windowID)
+			{
+				if(!SDLEventHandler(event, win1->window, win1->hWnd))
+				{
+					delete win1;
+					win1 = nullptr;
+				}
+			}
+			//else if(SDL_GetWindowID(win2->window) == event.window.windowID)
+			// {
+			// 	if(!SDLEventHandler(event, win2->window, win2->hWnd))
+			// 	{
+			// 		delete win2;
+			// 		win2 = nullptr;
+			// 	}
+			// }
 		}
-		win1->Update();
-		//win2->Update();
+		if(win1) win1->Update();
+		//if(win2) win2->Update();
 	}
 
-	delete win1;
+	
 	//delete win2;
 	SDL_Quit();
 	return 0;

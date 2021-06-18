@@ -252,8 +252,9 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, v
             ctx.OnMouseWheel(hWnd, event.wheel.y);
             break;
         }
-        case SDL_QUIT:
-            return false;
+        case SDL_WINDOWEVENT:
+			if(event.window.event == SDL_WINDOWEVENT_CLOSE)
+            	return false;
     }
     return true;
 }
