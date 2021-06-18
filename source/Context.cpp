@@ -147,7 +147,6 @@ void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
 bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
 	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
 	if (!root)
 		return false;
 	PointerDownEvent event;
@@ -171,7 +170,6 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWid
 bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
 	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
 	if (!root)
 		return false;
 	PointerUpEvent event;
@@ -205,31 +203,27 @@ bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, float windowWidth
 
 bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
-	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
+	//auto root = GetWindowContext(window).GetWindowUI();
 	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
 	return false;
 }
 
 bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, bool relative, int32 x, int32 y)
 {
-	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
+	//auto root = GetWindowContext(window).GetWindowUI();
 	olog::Info(u"Mouse PosX:%d, PosY:%d"_o, x, y);
 	return false;
 }
 
 bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative, float x, float y)
 {
-	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
+	//auto root = GetWindowContext(window).GetWindowUI();
 	return false;
 }
 
 bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
 {
 	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
 	olog::Info(u"Mouse WheelY:{}"_o, delta);
 	return false;
 }
@@ -239,7 +233,6 @@ static bool gPrevPressed = false;
 bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 {
 	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
 	if (!root)
 		return false;
 
@@ -287,7 +280,6 @@ bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 bool OGUI::Context::OnKeyUp(const OGUI::WindowHandle window, EKeyCode keyCode)
 {
 	auto root = GetWindowContext(window).GetWindowUI();
-	ActivateWindow(root);
 	if (!root)
 		return false;
 
@@ -299,6 +291,12 @@ bool OGUI::Context::OnKeyUp(const OGUI::WindowHandle window, EKeyCode keyCode)
 	gPrevPressed = false;
 
 	return false;
+}
+
+void OGUI::Context::OnActivateWindow(const OGUI::WindowHandle window)
+{
+	auto root = GetWindowContext(window).GetWindowUI();
+	ActivateWindow(root);
 }
 
 OGUI::Context::Context()

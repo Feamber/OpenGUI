@@ -251,7 +251,9 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, v
             break;
         }
         case SDL_WINDOWEVENT:
-			if(event.window.event == SDL_WINDOWEVENT_CLOSE)
+			if(event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+				ctx.OnActivateWindow(hWnd);
+			else if(event.window.event == SDL_WINDOWEVENT_CLOSE)
             	return false;
     }
     return true;

@@ -90,6 +90,8 @@ namespace OGUI
 
 		bool OnKeyDown(const WindowHandle window, EKeyCode keyCode);
 		bool OnKeyUp(const WindowHandle window, EKeyCode keyCode);
+
+		void OnActivateWindow(const WindowHandle window);
 			
 		static Context& Get();
 		VisualElement* _elementUnderCursor = nullptr;
