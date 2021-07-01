@@ -35,10 +35,10 @@
     <xs:complexContent mixed="false">
       <xs:restriction base="xs:anyType">
         <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:Style" />
           <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:Template" />
           <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:VisualElement" />
           <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:Text" />
-          <xs:element minOccurs="0" maxOccurs="unbounded" ref="engine:Style" />
         </xs:sequence>
       </xs:restriction>
     </xs:complexContent>

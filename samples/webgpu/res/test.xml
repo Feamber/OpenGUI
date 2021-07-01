@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<engine:Root xmlns:engine="OGUI">
+<engine:Root xmlns:engine="OGUI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="../../../include/OpenGUI/Xml/Xsd/Main.xsd">
     <engine:Style path="res/test.css"/>
     <engine:VisualElement name="Child1" focusable="true" style="height:200px;width:200px;" class_tag="Child"/> 
     <engine:VisualElement name="Child2" focusable="true" class_tag="Child"/> 

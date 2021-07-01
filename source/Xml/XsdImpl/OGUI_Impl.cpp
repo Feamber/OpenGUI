@@ -4,6 +4,7 @@
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
+#include "OpenGUI/Context.h"
 
 namespace FactoryTool
 {
@@ -122,6 +123,8 @@ namespace OGUI
 
     bool IXmlFactory_VisualElement::InitAttribute(VisualElement &new_element, const XmlElement &asset, CreationContext &context)
     {
+        auto& propeManager = Context::Get().propeManager;
+
         if(focusable) new_element.focusable = focusable.value();
         if(navMode)
         {
@@ -145,20 +148,32 @@ namespace OGUI
             else if(srt == "Vertical")   new_element.navCycleMode = ENavCycleMode::Vertical;
             else if(srt == "Automatic")  new_element.navCycleMode = ENavCycleMode::Automatic;
         }
-        if(name.has_value()) new_element._name = name.value();
-        if(path.has_value()) new_element._path = path.value();
-        if(style.has_value()) new_element.InitInlineStyle(style.value());
-        if(class_tag.has_value())
+        
+        if(name) new_element._name = name.value();
+        else if(name_bind)
+        {
+            new_element._allListenHandle.push_back(propeManager.ListenProperty(PropertyPath::Make(name_bind.value()), 
+			[&new_element](const PropeChangeCause cause, Property& listenTarget)
+			{
+				if(!(cause == PropeChangeCause::PropeChange || cause == PropeChangeCause::RegisterProperty))
+					return;
+				listenTarget.TryTypeConv(&new_element._name);
+			}));
+        }
+
+        if(path) new_element._path = path.value();
+        if(style) new_element.InitInlineStyle(style.value());
+        if(class_tag)
             FactoryTool::split({class_tag.value().begin(), class_tag.value().end()}, new_element._styleClasses, ",");
 
-        if(slot_name.has_value())
+        if(slot_name)
         {
             std::string _slot_name = {slot_name.value().begin(), slot_name.value().end()};
             auto template_container = context.stack_template.front().template_container;
             template_container->slots[_slot_name] = &new_element;
         }
 
-        if(slot.has_value())
+        if(slot)
         {
             std::string _slot = {slot.value().begin(), slot.value().end()};
             auto parent_node = context.stack.front();

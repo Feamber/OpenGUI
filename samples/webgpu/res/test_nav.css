@@ -83,3 +83,29 @@
 #s2e2:keyboardFocus{
     background-color:darkorchid;
 }
+
+
+/* 数据绑定测试 */
+#test1{
+    background-color:cornflowerblue;
+}
+
+#test1:focus{
+    background-color:rgb(212, 124, 124);
+}
+
+#test1:keyboardFocus{
+    background-color:rgb(172, 137, 189);
+}
+
+#test2{
+    background-color:rgb(100, 237, 180);
+}
+
+#test2:focus{
+    background-color:rgb(58, 8, 8);
+}
+
+#test2:keyboardFocus{
+    background-color:rgb(40, 1, 59);
+}

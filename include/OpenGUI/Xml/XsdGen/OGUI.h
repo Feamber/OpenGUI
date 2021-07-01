@@ -37,6 +37,7 @@ namespace OGUI
     {
     public:
         std::string_view path;
+        std::optional<std::string_view> path_bind;
 
         IXmlFactory_Style()
         {
@@ -58,7 +59,9 @@ namespace OGUI
     {
     public:
         std::string_view name;
+        std::optional<std::string_view> name_bind;
         std::string_view path;
+        std::optional<std::string_view> path_bind;
 
         IXmlFactory_Template()
         {
@@ -80,6 +83,7 @@ namespace OGUI
     {
     public:
         std::string_view element_name;
+        std::optional<std::string_view> element_name_bind;
 
         IXmlFactory_AttributeOverrides()
         {
@@ -101,20 +105,35 @@ namespace OGUI
     {
     public:
         std::optional<std::string_view> name;
+        std::optional<std::string_view> name_bind;
         std::optional<std::string_view> path;
+        std::optional<std::string_view> path_bind;
         std::optional<std::string_view> style;
+        std::optional<std::string_view> style_bind;
         std::optional<std::string_view> class_tag;
+        std::optional<std::string_view> class_tag_bind;
         std::optional<std::string_view> slot_name;
+        std::optional<std::string_view> slot_name_bind;
         std::optional<std::string_view> slot;
+        std::optional<std::string_view> slot_bind;
         std::optional<bool> focusable;
+        std::optional<std::string_view> focusable_bind;
         std::optional<std::string_view> navMode;
+        std::optional<std::string_view> navMode_bind;
         std::optional<std::string_view> navExplicitUp;
+        std::optional<std::string_view> navExplicitUp_bind;
         std::optional<std::string_view> navExplicitDown;
+        std::optional<std::string_view> navExplicitDown_bind;
         std::optional<std::string_view> navExplicitLeft;
+        std::optional<std::string_view> navExplicitLeft_bind;
         std::optional<std::string_view> navExplicitRight;
+        std::optional<std::string_view> navExplicitRight_bind;
         std::optional<bool> isFocusScope;
+        std::optional<std::string_view> isFocusScope_bind;
         std::optional<bool> isKeeyScopeFocused;
+        std::optional<std::string_view> isKeeyScopeFocused_bind;
         std::optional<std::string_view> navCycleMode;
+        std::optional<std::string_view> navCycleMode_bind;
 
         IXmlFactory_VisualElement()
         {
@@ -136,6 +155,7 @@ namespace OGUI
     {
     public:
         std::string_view template_name;
+        std::optional<std::string_view> template_name_bind;
 
         IXmlFactory_Instance()
         {

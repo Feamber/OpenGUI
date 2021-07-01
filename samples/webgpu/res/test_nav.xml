@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<engine:Root xmlns:engine="OGUI">
+<engine:Root xmlns:engine="OGUI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="../../../include/OpenGUI/Xml/Xsd/Main.xsd">
     <engine:Style path="res/test_nav.css"/>
     <engine:VisualElement name="Scope1" class_tag="FocusScope" isFocusScope="true" navCycleMode="Vertical">
-        <engine:VisualElement name="s1e1" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="s1e2" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="s1e3" class_tag="Element" focusable="true" />
+        <engine:VisualElement name="$GName" class_tag="Element" focusable="true" />
+        <engine:VisualElement name="$GName2" class_tag="Element" focusable="true" />
+        <engine:VisualElement name="$GName" class_tag="Element" focusable="true" />
         <engine:VisualElement name="s1e4" class_tag="Element" focusable="true" />
+        <engine:VisualElement name="$GName" class_tag="Element" focusable="true" />
     </engine:VisualElement>
     <engine:VisualElement name="e1" class_tag="Element" focusable="true" />
     <engine:VisualElement name="e2" class_tag="Element" focusable="true" />
@@ -17,6 +20,6 @@
         <engine:VisualElement name="s2e3" class_tag="Element" focusable="true" />
         <engine:VisualElement name="s2e4" class_tag="Element" focusable="true" />
         <engine:VisualElement name="s2e5" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="s2e6" class_tag="Element" focusable="true" />
+        <engine:VisualElement isFocusScope="true" name="s2e6" class_tag="Element" focusable="true" />
     </engine:VisualElement>
 </engine:Root>
