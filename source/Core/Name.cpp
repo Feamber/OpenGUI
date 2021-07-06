@@ -70,8 +70,8 @@ namespace OGUI
 		: _entry(0)
 	{}
 
-	Name::Name(EName e)
-		: _entry(std::underlying_type_t<EName>(e))
+	Name::Name(SpecialName e)
+		: _entry(std::underlying_type_t<SpecialName>(e))
 	{}
 
 	Name::Name(ostr::string_view sv)

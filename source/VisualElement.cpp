@@ -643,8 +643,8 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 	auto currentWorldTransform = currentOrigin->_worldTransform;
 	auto currentWorldPosition = currentOrigin->_worldPosition;
 	bool isCycleMode = false;
-	std::vector<VisualElement*> ignore;
-	ignore.push_back(this);
+	std::vector<VisualElement*> ignore_;
+	ignore_.push_back(this);
 	
 	while (currentOrigin) 
 	{
@@ -667,8 +667,8 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 		for(auto element : currentScope)
 		{
 			// 先比较距离(只和最近的比，防止很多连续相近的)，当两个距离很接近时，就比较垂直方向占比
-			if(find(ignore.begin(), ignore.end(), element) != ignore.end()) continue;
-			ignore.push_back(element);
+			if(find(ignore_.begin(), ignore_.end(), element) != ignore_.end()) continue;
+			ignore_.push_back(element);
 
 			auto elementQuad = Quad(element).ToBoundingBox();
 			if(FocusNavDebugState != NoDebug)
@@ -742,19 +742,19 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 		else if(!isCycleMode && prevFocusScope && prevFocusScope->navCycleMode == ENavCycleMode::Horizontal && (direction == ENavDirection::Left || direction == ENavDirection::Right))
 		{
 			isCycleMode = true;
-			ignore.clear();
+			ignore_.clear();
 			direction = direction == ENavDirection::Left ? ENavDirection::Right : ENavDirection::Left;
 		}
 		else if(!isCycleMode && prevFocusScope && prevFocusScope->navCycleMode == ENavCycleMode::Vertical && (direction == ENavDirection::Down || direction == ENavDirection::Up))
 		{
 			isCycleMode = true;
-			ignore.clear();
+			ignore_.clear();
 			direction = direction == ENavDirection::Down ? ENavDirection::Up : ENavDirection::Down;
 		}
 		else if(!isCycleMode && prevFocusScope && prevFocusScope->navCycleMode == ENavCycleMode::Automatic)
 		{
 			isCycleMode = true;
-			ignore.clear();
+			ignore_.clear();
 			if(direction == ENavDirection::Up) direction = ENavDirection::Down;
 			else if(direction == ENavDirection::Down) direction = ENavDirection::Up;	
 			else if(direction == ENavDirection::Left) direction = ENavDirection::Right;	
@@ -770,7 +770,7 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 			auto nextCollision = currentCollision->GetPrevFocusScope();
 			if(nextCollision == nullptr || currentCollision == nextCollision) return nullptr;
 			currentCollision = nextCollision;
-			ignore.clear();
+			ignore_.clear();
 		}
 	}
 

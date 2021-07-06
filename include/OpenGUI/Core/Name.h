@@ -36,7 +36,7 @@ namespace OGUI
 	ENAME_USAGE(None),	\
 	ENAME_USAGE(Test)
 
-	enum class EName : uint8_t
+	enum class SpecialName : uint8_t
 	{
 #define ENAME_USAGE(e) e
 		ENAME
@@ -47,7 +47,7 @@ namespace OGUI
 	{
 	public:
 		Name();
-		Name(EName e);
+		Name(SpecialName e);
 		Name(const ostr::string& str);
 		Name(ostr::string_view sv);
 		Name(const Name& other) = default;
@@ -109,7 +109,7 @@ namespace OGUI
 	{
 		[[nodiscard]] inline Name operator""_name(const char16_t* str, size_t len) noexcept
 		{
-			return (EName)NamePool::Get().MakeLiteral(str);
+			return (SpecialName)NamePool::Get().MakeLiteral(str);
 		}
 	}
 }

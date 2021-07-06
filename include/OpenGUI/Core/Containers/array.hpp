@@ -4,7 +4,7 @@
 namespace OGUI
 {
     using std::array;
-    namespace detail
+    namespace arrayDetail
     {
         template <typename T, std::size_t ... Is>
         constexpr std::array<T, sizeof...(Is)>
@@ -18,6 +18,6 @@ namespace OGUI
     template <typename T, std::size_t N>
     constexpr std::array<T, N> create_array(T&& value)
     {
-        return detail::create_array(std::forward<T>(value), std::make_index_sequence<N>());
+        return arrayDetail::create_array(std::forward<T>(value), std::make_index_sequence<N>());
     }
 }

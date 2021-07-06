@@ -1,3 +1,4 @@
+#pragma once
 #include "OpenGUI/VisualElement.h"
 
 namespace OGUI

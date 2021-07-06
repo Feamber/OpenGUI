@@ -8,13 +8,13 @@ TEST_CASE("Name", "NameTest")
     using namespace OGUI;
     Name n_empty;
     REQUIRE(n_empty.ToStringView() == u"None"_o);
-    REQUIRE(n_empty.ToStringView() == Name(EName::None).ToStringView());
-    REQUIRE(n_empty.Compare_Id(Name(EName::None)) == 0);
+    REQUIRE(n_empty.ToStringView() == Name(SpecialName::None).ToStringView());
+    REQUIRE(n_empty.Compare_Id(Name(SpecialName::None)) == 0);
     REQUIRE(n_empty.Compare_Id(Name("")) == 0);
     REQUIRE(n_empty.Compare_Id("") == 0);
     REQUIRE(n_empty.IsNone());
 
-    Name n_test(EName::Test);
+    Name n_test(SpecialName::Test);
     REQUIRE(n_test != n_empty);
     REQUIRE(!n_test.IsNone());
 

@@ -321,6 +321,10 @@ namespace OGUI_Xsd
                 .Replace("{Include}", AllIncludeH)
                 .Replace("{Namespace}", namespaceName)
                 .Replace("{Content}", AllXmlFactoryClassH);
+            if(namespaceName != "OGUI")
+                OutH = OutH.Replace("{Using}", "using namespace OGUI;");
+            else
+                OutH = OutH.Replace("{Using}", "");
 
             OutCpp = Resources.XmlFactoryCppFile
                 .Replace("{Include}", AllIncludeCpp)

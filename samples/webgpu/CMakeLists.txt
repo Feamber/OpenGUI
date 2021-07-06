@@ -4,7 +4,7 @@ download_and_extract2(
     URL ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/common/OGUI_Xsd.zip
     FILENAME ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.zip
     HASH_TYPE SHA1
-    HASH a59eb7d7d68d02d7782928679c2c162a1f5a5433
+    HASH 5b0947b8f2f949d42ed61d51e0c169f5c465bcfb
     EXTRACT_DIR ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/
 )
 	

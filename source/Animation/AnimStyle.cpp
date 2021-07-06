@@ -73,7 +73,7 @@ void OGUI::AnimationStyle::ApplyProperties(std::vector<OGUI::AnimationStyle>& se
 	}
 }
 
-namespace OGUI
+namespace OGUI::AnimStyle
 {
 	template<class T>
 	void Assign(T& field, const T& value)
@@ -125,7 +125,7 @@ namespace OGUI
 
 }
 
-void OGUI::AnimationStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props)
+void OGUI::AnimationStyle::ApplyProperties(const StyleSheetStorage& sheet_, const gsl::span<StyleProperty>& props)
 {
 	for (auto& prop : props)
 	{
@@ -133,9 +133,9 @@ void OGUI::AnimationStyle::ApplyProperties(const StyleSheetStorage& sheet, const
 		if(prop.id == StylePropertyId::name) \
 		{ \
 			if(prop.keyword) \
-				GetGlobalProperty<type>(name, prop); \
+				AnimStyle::GetGlobalProperty<type>(name, prop); \
 			else \
-				GetProperty<type>(name, prop, sheet); \
+				AnimStyle::GetProperty<type>(name, prop, sheet_); \
 			continue; \
 		}
 		ANIMPROP(GEN)
@@ -210,9 +210,9 @@ namespace OGUI
 			if (prop.id == StylePropertyId::animTimingFunction)
 			{
 				if (prop.keyword) 
-					GetGlobalProperty<AnimTimingFunction>(field, prop);
+					AnimStyle::GetGlobalProperty<AnimTimingFunction>(field, prop);
 				else 
-					GetProperty<AnimTimingFunction>(field, prop, sheet);
+					AnimStyle::GetProperty<AnimTimingFunction>(field, prop, sheet);
 				return;
 			}
 	}
@@ -358,17 +358,17 @@ void OGUI::Style::ApplyAnimation(const AnimationStyle& anim, const AnimRunContex
 					l++;
 				if(l < an && ap[l].id == fp[r].id)
 				{
-					float alpha = (percentage - ap[l].percentage) / (p - ap[l].percentage);
-					alpha = ApplyTimingFunction(timeFunction, alpha);
-					alpha = std::clamp(alpha, 0.f, 1.f);
-					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
+					float alpha_ = (percentage - ap[l].percentage) / (p - ap[l].percentage);
+					alpha_ = ApplyTimingFunction(timeFunction, alpha_);
+					alpha_ = std::clamp(alpha, 0.f, 1.f);
+					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha_);
 				}
 				else
 				{
-					float alpha = percentage / p;
-					alpha = ApplyTimingFunction(timeFunction, alpha);
-					alpha = std::clamp(alpha, 0.f, 1.f);
-					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha);
+					float alpha_ = percentage / p;
+					alpha_ = ApplyTimingFunction(timeFunction, alpha_);
+					alpha_ = std::clamp(alpha_, 0.f, 1.f);
+					LerpPropertiesFast(sheet->storage, {&fp[r], 1}, parent, alpha_);
 				}
 				lerped.set((int)fp[r].id);
 			}

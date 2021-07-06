@@ -32,7 +32,7 @@ void OGUI::Style::InheritData(Style& parent)
 #undef GEN
 }
 
-namespace OGUI
+namespace OGUI::StyleTool
 {
 	template<class T>
 	void Assign(T& field, const T& value)
@@ -127,9 +127,9 @@ void OGUI::Style::ApplyPropertiesFast(const StyleSheetStorage& sheet, const gsl:
 		case StylePropertyId::name: \
 		{ \
 			if(prop.keyword) \
-				GetGlobalProperty<type>(name, prop, parent); \
+				StyleTool::GetGlobalProperty<type>(name, prop, parent); \
 			else \
-				GetProperty<type>(name, prop, sheet); \
+				StyleTool::GetProperty<type>(name, prop, sheet); \
 			continue; \
 		}
 		STYLEPROP(GEN)
@@ -236,9 +236,9 @@ void OGUI::Style::LerpPropertiesFast(const StyleSheetStorage& sheet, const gsl::
 		case StylePropertyId::name: { \
 			type value = name; \
 			if(prop.keyword) \
-				GetGlobalProperty<type>(value, prop, parent); \
+				StyleTool::GetGlobalProperty<type>(value, prop, parent); \
 			else \
-				GetProperty<type>(value, prop, sheet); \
+				StyleTool::GetProperty<type>(value, prop, sheet); \
 			name = Lerp(name, value, alpha); \
 			continue; \
 		}

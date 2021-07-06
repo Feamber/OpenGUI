@@ -317,18 +317,18 @@ namespace ofmt {
 
 _NS_OSTR_END
 
-template<>
-struct fmt::formatter<ostr::string, char16_t>
-{
-	template<typename ParseContext>
-	constexpr auto parse(ParseContext& ctx)
-	{
-		return ctx.begin();
-	}
+// template<>
+// struct fmt::formatter<ostr::string, char16_t>
+// {
+// 	template<typename ParseContext>
+// 	constexpr auto parse(ParseContext& ctx)
+// 	{
+// 		return ctx.begin();
+// 	}
 
-	template<typename FormatContext>
-	auto format(ostr::string str, FormatContext& ctx)
-	{
-		return fmt::format_to(ctx.out(), u"{}", str.raw());
-	}
-};
+// 	template<typename FormatContext>
+// 	auto format(ostr::string str, FormatContext& ctx)
+// 	{
+// 		return fmt::format_to(ctx.out(), u"{}", str.raw());
+// 	}
+// };

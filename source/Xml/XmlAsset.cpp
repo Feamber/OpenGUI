@@ -107,7 +107,7 @@ namespace OGUI {
         if (find != namespace_map.end()) {
             return find->second;
         }
-        return EName::None;
+        return SpecialName::None;
     }
 
     std::shared_ptr<XmlAsset> XmlAsset::LoadXmlFile(const std::string &file_path) {
@@ -362,10 +362,10 @@ namespace OGUI {
         attributes.emplace_back(attr_name, attr_value);
     }
 
-    const XmlAttribute *XmlElement::FindAttribute(const Name &name) const
+    const XmlAttribute *XmlElement::FindAttribute(const Name &name_) const
     {
         for (auto &attr : attributes) {
-            if (attr.name == name) return &attr;
+            if (attr.name == name_) return &attr;
         }
         return nullptr;
     }

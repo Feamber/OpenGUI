@@ -7,11 +7,11 @@ namespace boost::hana
 	template <typename Iterable, typename T>
 	constexpr auto index_of(Iterable const& iterable, T const& element)
 	{
-		auto size = decltype(hana::size(iterable)){};
+		auto size_ = decltype(hana::size(iterable)){};
 		auto dropped = decltype(hana::size(
 			hana::drop_while(iterable, hana::not_equal.to(element))
 		)){};
-		return size - dropped;
+		return size_ - dropped;
 	}
 }
 

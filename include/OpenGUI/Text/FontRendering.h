@@ -1,4 +1,5 @@
 // Reference: https://github.com/rougier/freetype-gl/blob/master/texture-font.h
+#ifndef UE4Runtime
 #pragma once
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/Math/Vector.h"
@@ -232,3 +233,4 @@ namespace Font
     };
 }
 }
+#endif

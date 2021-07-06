@@ -1,3 +1,4 @@
+#ifndef UE4Runtime
 #pragma once
 #include "OpenGUI/Text/FontRendering.h"
 #include <atomic>
@@ -46,3 +47,4 @@ protected:
 	std::mutex glyph_queue_mutex;
 };
 }
+#endif

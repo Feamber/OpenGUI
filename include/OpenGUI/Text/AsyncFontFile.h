@@ -1,3 +1,4 @@
+#ifndef UE4Runtime
 #pragma once
 #include "OpenGUI/Core/AsyncFile.h"
 #include "FontRendering.h"
@@ -15,3 +16,4 @@ namespace OGUI
 
     // auto word = FontManager::Get().Require("font_name", u8"${character}", ft_size);
 }
+#endif

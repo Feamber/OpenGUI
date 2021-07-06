@@ -11,7 +11,7 @@
 
 namespace OGUI
 {
-	using namespace OGUI;
+
     class OGUI_API IXmlFactory_Root : public OGUI::IXmlFactory
     {
     public:

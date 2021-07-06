@@ -1,3 +1,4 @@
+#ifndef UE4Runtime
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Text/FontRendering.h"
 #include "OpenGUI/Core/DynamicAtlasResource.h"
@@ -6,6 +7,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_STROKER_H
+#include FT_ERRORS_H
 // #include FT_ADVANCES_H
 #include FT_LCD_FILTER_H
 #include <stdint.h>
@@ -322,14 +324,14 @@ bool TextureFont::LoadGlyph(const char* codepoint)
      */
     if( !codepoint )
     {
-        Vector4i region = atlas->AllocateRegion(5u, 5u);
-        TextureGlyph* glyph = new TextureGlyph();
+        Vector4i region_ = atlas->AllocateRegion(5u, 5u);
+        TextureGlyph* glyph_ = new TextureGlyph();
         static unsigned char data[4*4*3] = 
         {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
          -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
          -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
          -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
-        if ( region[0] < 0 )
+        if (region_[0] < 0 )
         {
             fprintf( stderr, 
                 "Texture atlas is full (line %d)\n",  __LINE__ );
@@ -337,13 +339,13 @@ bool TextureFont::LoadGlyph(const char* codepoint)
             FT_Done_FreeType( library );
             return false;
         }
-        atlas->SetRegion(region[0], region[1], 4, 4, data, 0);
-        glyph->codepoint = -1;
-        glyph->s0 = (region[0] + 2)/(float)atlas->width();
-        glyph->t0 = (region[1] + 2)/(float)atlas->height();
-        glyph->s1 = (region[0] + 3)/(float)atlas->width();
-        glyph->t1 = (region[1] + 3)/(float)atlas->height();
-        glyphs.emplace_back(glyph);
+        atlas->SetRegion(region_[0], region_[1], 4, 4, data, 0);
+        glyph_->codepoint = -1;
+        glyph_->s0 = (region_[0] + 2)/(float)atlas->width();
+        glyph_->t0 = (region_[1] + 2)/(float)atlas->height();
+        glyph_->s1 = (region_[0] + 3)/(float)atlas->width();
+        glyph_->t1 = (region_[1] + 3)/(float)atlas->height();
+        glyphs.emplace_back(glyph_);
 
         FT_Done_Face(face);
         FT_Done_FreeType(library);
@@ -497,27 +499,27 @@ cleanup_stroker:
         int top;
         int right;
         int bottom;
-    } padding = { 0, 0, 1, 1 };
+    } padding_ = { 0, 0, 1, 1 };
 
     if( self->render_mode == ERenderMode::SDF )
     {
-        padding.top = 1;
-        padding.left = 1;
+        padding_.top = 1;
+        padding_.left = 1;
     }
 
     if( self->padding != 0 )
     {
-        padding.top += self->padding;
-        padding.left += self->padding;
-        padding.right += self->padding;
-        padding.bottom += self->padding;
+        padding_.top += self->padding;
+        padding_.left += self->padding;
+        padding_.right += self->padding;
+        padding_.bottom += self->padding;
     }
 
     size_t src_w = ft_bitmap.width/self->atlas->depth();
     size_t src_h = ft_bitmap.rows;
 
-    size_t tgt_w = src_w + padding.left + padding.right;
-    size_t tgt_h = src_h + padding.top + padding.bottom;
+    size_t tgt_w = src_w + padding_.left + padding_.right;
+    size_t tgt_h = src_h + padding_.top + padding_.bottom;
 
     region = atlas->AllocateRegion( tgt_w, tgt_h );
 
@@ -535,7 +537,7 @@ cleanup_stroker:
     uint8_t* buffer = (uint8_t*)calloc( 
         tgt_w * tgt_h * self->atlas->depth(), sizeof(uint8_t) 
     );
-    uint8_t* dst_ptr = buffer + (padding.top * tgt_w + padding.left) * self->atlas->depth();
+    uint8_t* dst_ptr = buffer + (padding_.top * tgt_w + padding_.left) * self->atlas->depth();
     uint8_t* src_ptr = ft_bitmap.buffer;
     for( i = 0; i < src_h; i++ )
     {
@@ -628,3 +630,4 @@ TextureFont* TextureFont::TextureFontFromFile(
     }
     return self;
 }
+#endif

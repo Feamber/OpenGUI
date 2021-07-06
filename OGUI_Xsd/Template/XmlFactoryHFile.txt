@@ -11,6 +11,6 @@
 
 namespace {Namespace}
 {
-	using namespace OGUI;
+{Using}
 {Content}
 }

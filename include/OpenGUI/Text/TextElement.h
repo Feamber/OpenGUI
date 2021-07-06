@@ -1,3 +1,4 @@
+#ifndef UE4Runtime
 #pragma once
 
 //https://www.w3.org/TR/2021/CRD-css-text-3-20210316
@@ -74,3 +75,4 @@ F(textOverflow, TextOverflow, "text-overflow", TextOverflow::Clip)\
         std::vector<Content> _contents;
     };
 }
+#endif

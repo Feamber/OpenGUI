@@ -4,8 +4,7 @@
 #include <algorithm>
 #include <iterator> // For std::forward_iterator_tag
 #include <cstddef>  // For std::ptrdiff_t
-#include "fmt/format.h"
-
+//#include "fmt/format.h"
 #include "definitions.h"
 #include "types.h"
 #include "format.h"
@@ -275,18 +274,3 @@ namespace ofmt {
 
 _NS_OSTR_END 
 
-template<>
-struct fmt::formatter<ostr::string_view, char16_t>
-{
-	template<typename ParseContext>
-	constexpr auto parse(ParseContext& ctx)
-	{
-		return ctx.begin();
-	}
-
-	template<typename FormatContext>
-	auto format(ostr::string_view sv, FormatContext& ctx)
-	{
-		return fmt::format_to(ctx.out(), u"{}", sv.raw());
-	}
-};
