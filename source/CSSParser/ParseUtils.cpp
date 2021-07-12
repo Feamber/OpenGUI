@@ -328,7 +328,7 @@ namespace OGUI
 		if (!FromString(anglestr, value))
 			throw peg::parse_error("invalid number.");
 		if (angleType == 1)
-			value = value / math::PI;// rad2deg(value);
+			value = value / math::PI_;// rad2deg(value);
 		else if (angleType == 2)
 			value = value * 0.9;// grad2deg(value);
 		else if (angleType == 3)
@@ -977,7 +977,7 @@ namespace OGUI
 
 					parser["ANGLE"] = [](SemanticValues& vs)
 					{
-						return FromAngle(vs.token()) / 180 * math::PI;
+						return FromAngle(vs.token()) / 180 * math::PI_;
 					};
 #define ARG(n) any_move<float>(vs[n])
 					parser["Rotate"] = [](SemanticValues& vs) -> tt { return {{},						ARG(0),	{}}; };

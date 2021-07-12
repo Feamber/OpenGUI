@@ -83,7 +83,7 @@ namespace OGUI
         list.vertices.emplace_back(Vertex{ params.pos, uvCenter, params.color });
 
         // add border 
-        double DeltaDegree = math::PI * 2 / sampleCount;
+        double DeltaDegree = math::PI_ * 2 / sampleCount;
         for (int i = 0; i < sampleCount; ++i)
         {
 			// add vertex 
@@ -199,8 +199,8 @@ namespace OGUI
                 Rect{Vector2f(params.uv.min.X, params.uv.max.Y - radius[0] * uvS.Y * 2), Vector2f(params.uv.min.X + radius[0] * uvS.X * 2, params.uv.max.Y)},
                 params.color,
                 radius[0],
-                math::PI / 2,
-                math::PI / 2};
+                math::PI_ / 2,
+                math::PI_ / 2};
         }
         if (radius[1] > 0.f)
         {
@@ -215,7 +215,7 @@ namespace OGUI
                 Rect{Vector2f(params.uv.max.X - radius[1] * uvS.X * 2, params.uv.max.Y - radius[0] * uvS.Y * 2), params.uv.max},
                 params.color,
                 radius[1],
-                math::PI / 2,
+                math::PI_ / 2,
                 0};
         }
         if (radius[2] > 0.f)
@@ -231,8 +231,8 @@ namespace OGUI
                 Rect{Vector2f(params.uv.max.X - radius[2] * uvS.X * 2, params.uv.min.Y), Vector2f(params.uv.max.X, params.uv.min.Y + radius[2] * uvS.Y * 2)},
                 params.color,
                 radius[2],
-                math::PI / 2,
-                -math::PI / 2};
+                math::PI_ / 2,
+                -math::PI_ / 2};
         }
         if (radius[3] > 0.f)
         {
@@ -247,8 +247,8 @@ namespace OGUI
                 Rect{params.uv.min, Vector2f(params.uv.min.X + radius[3] * uvS.X * 2, params.uv.min.Y + radius[3] * uvS.Y * 2)},
                 params.color,
                 radius[3],
-                math::PI / 2,
-                -math::PI};
+                math::PI_ / 2,
+                -math::PI_};
         }
         {
             Rect rect = {Vector2f{prect.min.X + radius[0], prect.min.Y + radius[3]}, Vector2f{prect.max.X - radius[2], prect.max.Y - radius[1]}};
@@ -316,28 +316,28 @@ namespace OGUI
             Rect{Vector2f(params.uv.min.X, centerRectUV.max.Y), Vector2f(centerRectUV.min.X, params.uv.max.Y)},
             params.color,
             radius,
-			math::PI / 2,
-            math::PI / 2 });
+			math::PI_ / 2,
+            math::PI_ / 2 });
 		FanShape(list, {
 			Vector2f(centerRect.max.X, centerRect.max.Y),
 			Rect{Vector2f(centerRectUV.max.X, centerRectUV.max.Y), Vector2f(centerRectUV.max.X, centerRectUV.max.Y)},
 			params.color,
             radius,
-			math::PI / 2,
+			math::PI_ / 2,
 			0 });
 		FanShape(list, {
 			Vector2f(centerRect.min.X, centerRect.min.Y),
 			Rect{Vector2f(params.uv.min.X, params.uv.min.Y), Vector2f(centerRectUV.min.X, centerRectUV.min.Y)},
 			params.color,
             radius,
-			math::PI / 2,
-			-math::PI });
+			math::PI_ / 2,
+			-math::PI_ });
 		FanShape(list, {
 			Vector2f(centerRect.max.X, centerRect.min.Y),
 			Rect{Vector2f(centerRectUV.min.X, params.uv.min.Y), Vector2f(params.uv.max.X, centerRectUV.min.Y)},
 			params.color,
             radius,
-			math::PI / 2,
-			-math::PI / 2 });
+			math::PI_ / 2,
+			-math::PI_ / 2 });
     }
 }

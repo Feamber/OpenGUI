@@ -29,6 +29,8 @@ namespace OGUI
 
 		inline float GetWindowX() const { return X; }
 		inline float GetWindowY() const { return Y; }
+		inline void SetWindowX(float newX) { X = newX; }
+		inline void SetWindowY(float newY) { Y = newY; }
 		inline WindowHandle GetWindowHandle() const { return window; }
 		inline VisualWindow* GetWindowUI() const { return ui; }
 

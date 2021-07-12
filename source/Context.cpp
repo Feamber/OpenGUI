@@ -164,6 +164,7 @@ void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
 
 bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
+	olog::Info(u"OnMouseDown PosX:{0}, PosY:{1}"_o, x, y);
 	auto root = GetWindowContext(window).GetWindowUI();
 	if (!root)
 		return false;
@@ -229,7 +230,7 @@ bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKe
 bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, bool relative, int32 x, int32 y)
 {
 	//auto root = GetWindowContext(window).GetWindowUI();
-	olog::Info(u"Mouse PosX:%d, PosY:%d"_o, x, y);
+	//olog::Info(u"Mouse PosX:{0}, PosY:{1}"_o, x, y);
 	return false;
 }
 

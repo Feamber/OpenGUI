@@ -6,9 +6,9 @@ namespace OGUI
 namespace math
 {
 	// const values 
-	static constexpr float PI = 3.1415926535897932f;
-	static constexpr float INV_PI = 0.31830988618f;
-	static constexpr float HALF_PI = 1.57079632679f;
+	static constexpr float PI_ = 3.1415926535897932f;
+	static constexpr float INV_PI_ = 0.31830988618f;
+	static constexpr float HALF_PI_ = 1.57079632679f;
 
 	static constexpr float SQRT_2 = 1.4142135623730950488016887242097f;
 	static constexpr float SQRT_3 = 1.7320508075688772935274463415059f;
@@ -145,23 +145,23 @@ namespace math
 	{
 
 		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
-		float quotient = (INV_PI * 0.5f) * v;
+		float quotient = (INV_PI_ * 0.5f) * v;
 		if (v >= 0.0f) {
 			quotient = (float)((int)(quotient + 0.5f));
 		}
 		else {
 			quotient = (float)((int)(quotient - 0.5f));
 		}
-		float y = v - (2.0f * PI) * quotient;
+		float y = v - (2.0f * PI_) * quotient;
 
 		// Map y to [-pi/2,pi/2] with sin(y) = sin(Value).
 		float sign;
-		if (y > HALF_PI) {
-			y = PI - y;
+		if (y > HALF_PI_) {
+			y = PI_ - y;
 			sign = -1.0f;
 		}
-		else if (y < -HALF_PI) {
-			y = -PI - y;
+		else if (y < -HALF_PI_) {
+			y = -PI_ - y;
 			sign = -1.0f;
 		}
 		else {
@@ -178,10 +178,10 @@ namespace math
 		outCos = sign * p;
 	}
 
-	// Note:  We use FASTASIN_HALF_PI instead of HALF_PI inside of FastASin(), since it was the value that accompanied the minimax coefficients below.
+	// Note:  We use FASTASIN_HALF_PI instead of HALF_PI_ inside of FastASin(), since it was the value that accompanied the minimax coefficients below.
 // It is important to use exactly the same value in all places inside this function to ensure that FastASin(0.0f) == 0.0f.
 // For comparison:
-//		HALF_PI				== 1.57079632679f == 0x3fC90FDB
+//		HALF_PI_				== 1.57079632679f == 0x3fC90FDB
 //		FASTASIN_HALF_PI	== 1.5707963050f  == 0x3fC90FDA
 #define FASTASIN_HALF_PI (1.5707963050f)
 	/**
