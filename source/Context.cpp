@@ -151,10 +151,10 @@ void OGUI::Context::Render(const OGUI::WindowHandle window)
 {
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
-	PrimitiveDraw::DrawContext ctx{wctx};
-	ctx.resolution = Vector2f(wctx.X, wctx.Y);
-	root->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
-	if(wctx.renderImpl) wctx.renderImpl->RenderPrimitives(ctx.prims);
+	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
+	wctx.currentDrawCtx->resolution = Vector2f(wctx.X, wctx.Y);
+	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
+	if(wctx.renderImpl) wctx.renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims);
 }
 
 void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)

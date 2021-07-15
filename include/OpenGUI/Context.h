@@ -10,9 +10,13 @@
 #include <memory>
 #include <vector>
 
-
 namespace OGUI
 {
+	namespace PrimitiveDraw
+	{
+		struct DrawContext;
+	};
+
 	class VisualElement;
 	class VisualWindow;
 	class IOThread;
@@ -34,6 +38,7 @@ namespace OGUI
 		inline WindowHandle GetWindowHandle() const { return window; }
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
+		std::shared_ptr<PrimitiveDraw::DrawContext> currentDrawCtx;
 		std::shared_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<RenderTextureManager> textureManager;
 	protected:

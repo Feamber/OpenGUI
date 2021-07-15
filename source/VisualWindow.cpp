@@ -3,6 +3,6 @@
 
 OGUI::VisualWindow::VisualWindow()
 {
-    _pseudoMask |= (uint32_t)PseudoStates::Root;
+    //_pseudoMask |= (uint32_t)PseudoStates::Root;
     isFocusScope = true;
 }
