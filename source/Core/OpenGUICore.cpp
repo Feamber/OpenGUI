@@ -66,6 +66,11 @@ BitmapParserInterface::~BitmapParserInterface()
 
 }
 
+std::string FileInterface::ToFullPath(const char* path)
+{
+    return path;
+}
+
 FileHandle FileInterface::Open(const char* path)
 {
     return ::fopen(path, "rb");

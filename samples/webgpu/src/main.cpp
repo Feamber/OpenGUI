@@ -700,18 +700,22 @@ int main(int , char* []) {
 		return -1;
 	}
 
-	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-
+	using namespace OGUI;
+	using namespace ostr::literal;
+	auto& ctx = Context::Get();
 	InstallInput();
 	{
-		using namespace OGUI;
-		using namespace ostr::literal;
-		auto& ctx = Context::Get();
 		ctx.bmParserImpl = std::make_unique<BitmapParser>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.logImpl = std::make_unique<SpdlogLogger>();
+		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
+		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
+		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
+		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 	BuildSDLMap();
+
+	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 
 	// main loop
 	while(win1)
@@ -748,13 +752,11 @@ int main(int , char* []) {
 		return -1;
 	}
 
-	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
-
 	ostr::string dataBindTest = "test1";
 	ostr::string dataBindTest2 = "test2";
 	ostr::string dataBindTest3 = "test1";
 	ostr::string dataBindTest4 = "test2";
+	
 	using namespace OGUI;
 	using namespace ostr::literal;
 	auto& ctx = Context::Get();
@@ -769,6 +771,9 @@ int main(int , char* []) {
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 	BuildSDLMap();
+
+	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop
 	while(win1 || win2)

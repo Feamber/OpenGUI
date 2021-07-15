@@ -40,7 +40,7 @@ namespace OGUI
         XmlFactoryEmptyCreate(*this, asset, context);
         if(context.is_error) return nullptr;
         //todo: cache css file
-        std::string cssFilePath = {path.begin(), path.end()};
+        std::string cssFilePath = Context::Get().fileImpl->ToFullPath(std::string(path.begin(), path.end()).c_str());
         auto value = ParseCSSFile(cssFilePath);
         if (!value)
             return nullptr;//todo: log error

@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGUI/Core/Types.h"
 #include <string_view>
+#include <string.h>
 #include "OpenGUI/Core/open_string.h"
 #include "OpenGUI/Core/olog.h"
 
@@ -8,11 +9,10 @@ namespace OGUI
 {
     using FileHandle = void*;
 	using WindowHandle = void*;
-	
+
     struct OGUI_API SystemInterface
 	{
 		virtual ~SystemInterface();
-		virtual void log(std::string_view str) = 0;
 	};
 
     struct OGUI_API InputInterface
@@ -36,6 +36,7 @@ namespace OGUI
     struct OGUI_API FileInterface
 	{
 		virtual ~FileInterface();
+		virtual std::string ToFullPath(const char* path);
 		virtual FileHandle Open(const char* path);
 		virtual void Close(FileHandle file);
 		virtual size_t Read(void* buffer, size_t size, FileHandle file);
