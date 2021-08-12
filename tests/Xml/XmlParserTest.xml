@@ -14,5 +14,6 @@
     <engine:Instance template_name="test2" name="B2"/>
     <engine:VisualElement name="B3"/>
   </engine:VisualElement>
+  <engine:VisualElement>66666</engine:VisualElement>
   <engine:Text name="Text">aaaa<engine:VisualElement><engine:Text>ssss</engine:Text></engine:VisualElement>bbbb</engine:Text>
 </engine:Root>

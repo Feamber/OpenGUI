@@ -75,6 +75,7 @@ YGFloatOptional YGFloatOptionalMax(YGFloatOptional op1, YGFloatOptional op2) {
   if (op2 > op1) {
     return op2;
   }
+  return op1;
 }
 
 void throwLogicalErrorWithMessage(const char* message) {
