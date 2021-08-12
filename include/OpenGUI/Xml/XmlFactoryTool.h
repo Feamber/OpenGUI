@@ -18,17 +18,10 @@ namespace OGUI
     class OGUI_API TextVisualElement : public VisualElement
     {
     public:
+        std::vector<ostr::string> _texts;
+        
         virtual std::string_view GetTypeName() { return "Text"; }
         virtual std::string_view GetFullTypeName() { return "OGUI::Text"; }
-    };
-
-    class OGUI_API TextValue : public VisualElement
-    {
-    public:
-        std::string text;
-
-        virtual std::string_view GetTypeName() { return "TextValue"; }
-        virtual std::string_view GetFullTypeName() { return "OGUI::TextValue"; }
     };
 
     // 这是专门用来解析字符串节点的特殊控件

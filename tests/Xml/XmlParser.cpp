@@ -15,14 +15,12 @@ TEST_CASE("XmlParser", "[XmlAsset]")
         VisualElement* ins = asset->Instantiate();
         REQUIRE(ins);
 
-        auto Ve666 = ins->_children[1];
-        REQUIRE(((TextValue*)Ve666->_children[0])->text == "66666");
-
-        auto Text = ins->_children[2];
+        auto Text = (TextVisualElement*)ins->_children[1];
         REQUIRE(Text->_name == "Text");
-        REQUIRE(((TextValue*)Text->_children[0])->text == "aaaa");
-        REQUIRE(((TextValue*)Text->_children[1]->_children[0]->_children[0])->text == "ssss");
-        REQUIRE(((TextValue*)Text->_children[2])->text == "bbbb");
+        REQUIRE(Text->_texts[0] == "aaaa");
+        auto TextChild = (TextVisualElement*)(Text->_children[0]->_children[0]);
+        REQUIRE(TextChild->_texts[0] == "ssss");
+        REQUIRE(Text->_texts[1] == "bbbb");
 
         auto A = ins->_children[0];
         REQUIRE(A->_name == "A");

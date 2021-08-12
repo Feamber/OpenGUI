@@ -17,13 +17,15 @@ namespace OGUI
 
     VisualElement* IXmlFactory_TextValue::Create(const XmlElement& asset, CreationContext& context)
     {
-        return XmlFactoryCreate<IXmlFactory_TextValue, TextValue>(*this, asset, context);
+        auto textVisualElement = dynamic_cast<OGUI::TextVisualElement*>(context.stack.front());
+        if (textVisualElement)
+            textVisualElement->_texts.push_back(asset.text);
+        return nullptr;
     }
 
     bool IXmlFactory_TextValue::InitAttribute(VisualElement &new_element, const XmlElement &asset, CreationContext &context)
     {
-        ((TextValue&)new_element).text = asset.text;
-        return IXmlFactory_VisualElement::InitAttribute(new_element, asset, context);
+        return true;
     }
 }
 
