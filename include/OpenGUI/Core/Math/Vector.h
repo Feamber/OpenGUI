@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "OpenGUI/Core/Containers/span.hpp"
 #include "OpenGUI/Core/Containers/array.hpp"
+#include "OpenGUI/Core/Math/ScalarMath.h"
 
 namespace OGUI
 {
@@ -168,6 +169,7 @@ namespace OGUI
 		};
     };
     using Vector2f = Vector<float, 2u>;
+    using Vector2i = Vector<int32_t, 2u>;
     struct Rect
     {
         Vector2f min;

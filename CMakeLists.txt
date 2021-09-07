@@ -79,10 +79,12 @@ target_include_directories(OpenGUI
     include
     include/External
     include/External/yoga
+    include/External/icu/common
+    include/External/harfbuzz
     ${PLATFORM_INCLUDES}
 )
 target_link_libraries(OpenGUI 
-    PUBLIC fmt freetype harfbuzz
+    PUBLIC fmt freetype harfbuzz icucommon
 )
 
 if(OPENGUI_USE_FREETYPE OR OPENGUI_USE_HARFBUZZ OR OPENGUI_USE_ICU)

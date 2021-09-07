@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/Types.h"
 #include <string_view>
 #include <string.h>
@@ -51,6 +52,7 @@ namespace OGUI
 		virtual ~BitmapParserInterface();
 
 		virtual Bitmap LoadFromFile(const FileHandle file) = 0;
+		virtual Bitmap LoadFromMemory(const void* buffer, size_t length) = 0;
 		virtual void Free(Bitmap bm) = 0;
 	};
 
@@ -73,12 +75,17 @@ namespace OGUI
         virtual void RenderPrimitives(const struct PrimDrawList&) = 0;
         virtual void RenderPrimitives(const struct PersistantPrimDrawList&) = 0;
 
-		//virtual RenderTargetViewHandle RegisterRenderTargetView(const Bitmap&) = 0;
-		//virtual RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) = 0;		
-		//virtual void ReleaseRenderTargetView(RenderTargetViewHanle) = 0;
+		virtual RenderTargetViewHandle RegisterRenderTargetView(const Bitmap&) = 0;
+		virtual RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) = 0;		
+		virtual void ReleaseRenderTargetView(RenderTargetViewHandle) = 0;
 
         virtual TextureHandle RegisterTexture(const Bitmap&) = 0;
+		virtual void UpdateTexture(TextureHandle, const Bitmap&) = 0;
         virtual void ReleaseTexture(TextureHandle) = 0;
+
+		virtual Vector2f GetSize(RenderTargetViewHandle) = 0;
+		virtual void Blit(RenderTargetViewHandle rt, Rect dstRegion, TextureHandle texture, Rect srcRegion) = 0;
+		virtual void Fill(RenderTargetViewHandle rt, Rect region, Color4f color) = 0;
 
         virtual void SetScissor(const Scissor scissor) = 0;
         virtual void ResetScissor() = 0;

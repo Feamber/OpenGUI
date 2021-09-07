@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cmath>
+#include "OpenGUI/Configure.h"
 
 namespace OGUI
 {

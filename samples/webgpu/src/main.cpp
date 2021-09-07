@@ -51,6 +51,21 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 
 		return bm;
     }
+	inline virtual Bitmap LoadFromMemory(const void* buffer, size_t length)
+    {
+		Bitmap bm = {};
+		int x, y, n;
+		stbi_info_from_memory((const stbi_uc*)buffer, length, &x, &y, &n);
+		bm.format = n == 1 ? PF_R8 : OGUI::PF_R8G8B8A8;
+		const auto channels = (n == 1) ? 1 : 4;
+		auto data = stbi_load_from_memory((const stbi_uc*)buffer, length, &x, &y, &n, channels);
+		bm.resource.bytes = data;
+		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
+		bm.height = y;
+		bm.width = x;
+
+		return bm;
+    }
     inline void Free(Bitmap bm)
     {
         stbi_image_free(bm.resource.bytes);
@@ -90,7 +105,6 @@ public:
 class OGUIWebGPURenderer;
 std::shared_ptr<OGUIWebGPURenderer> MakeRenderer(class Window& window);
 
-//TODO 现在还是只支持一个窗口，还需要等待渲染接口和hWnd支持多窗口
 class Window
 {
 public:
@@ -610,11 +624,46 @@ public:
 		return t;
 	}
 
+	void UpdateTexture(TextureHandle, const Bitmap &) override
+	{
+
+	}
+
 	void ReleaseTexture(TextureHandle h)
 	{
 		if(h)
 			window.ogui_textures.erase(h);
 		window.ogui_textures[h].Release();
+	}
+
+	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap &) override
+	{
+		return nullptr;
+	}
+
+	RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) override
+	{
+		return nullptr;
+	}
+
+	void ReleaseRenderTargetView(RenderTargetViewHandle) override
+	{
+
+	}
+
+	void Blit(RenderTargetViewHandle rt, Rect dstRegion, TextureHandle texture, Rect srcRegion) override
+	{
+
+	}
+
+	void Fill(RenderTargetViewHandle rt, Rect region, Color4f color) override
+	{
+
+	}
+
+	Vector2f GetSize(RenderTargetViewHandle) override
+	{
+		return {0, 0};
 	}
 
 	void SetScissor(const Scissor scissor)
@@ -773,7 +822,7 @@ int main(int , char* []) {
 	BuildSDLMap();
 
 	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
+	Window* win2 = nullptr;//new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop
 	while(win1 || win2)
