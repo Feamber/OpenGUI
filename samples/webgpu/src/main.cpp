@@ -33,6 +33,32 @@ extern void InstallInput();
 
 using namespace OGUI;
 
+OGUI::PixelFormat CountToFormat(size_t n)
+{
+	switch (n) {
+	case 1 :
+		return PF_R8;
+	case 2 :
+		return PF_R8A8;
+	case 4 :
+		return PF_R8G8B8A8;
+	}
+	return PF_R8G8B8A8;
+}
+
+size_t FormatToCount(OGUI::PixelFormat f)
+{
+	switch (f) {
+	case PF_R8 :
+		return 1;
+	case PF_R8A8 :
+		return 2;
+	case PF_R8G8B8A8 :
+		return 4;
+	}
+	return 4;
+}
+
 struct BitmapParser final : public OGUI::BitmapParserInterface
 {
     inline Bitmap LoadFromFile(const FileHandle file)
@@ -40,9 +66,8 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 		Bitmap bm = {};
 		int x, y, n;
 		stbi_info_from_file((FILE*)file, &x, &y, &n);
-		bm.format = n == 1 ? PF_R8 : OGUI::PF_R8G8B8A8;
-		const auto channels = (n == 1) ? 1 : 4;
-
+		bm.format = CountToFormat(n);
+		const auto channels = FormatToCount(bm.format);
 		auto data = stbi_load_from_file((FILE*)file, &x, &y, &n, channels);
 		bm.resource.bytes = data;
 		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
@@ -56,8 +81,8 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 		Bitmap bm = {};
 		int x, y, n;
 		stbi_info_from_memory((const stbi_uc*)buffer, length, &x, &y, &n);
-		bm.format = n == 1 ? PF_R8 : OGUI::PF_R8G8B8A8;
-		const auto channels = (n == 1) ? 1 : 4;
+		bm.format = CountToFormat(n);
+		const auto channels = FormatToCount(bm.format);
 		auto data = stbi_load_from_memory((const stbi_uc*)buffer, length, &x, &y, &n, channels);
 		bm.resource.bytes = data;
 		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
@@ -624,9 +649,9 @@ public:
 		return t;
 	}
 
-	void UpdateTexture(TextureHandle, const Bitmap &) override
+	void UpdateTexture(TextureHandle t, const Bitmap& bitmap) override
 	{
-
+		updateTexture(window.device, window.queue, &window.ogui_textures[t], bitmap);
 	}
 
 	void ReleaseTexture(TextureHandle h)
@@ -647,16 +672,6 @@ public:
 	}
 
 	void ReleaseRenderTargetView(RenderTargetViewHandle) override
-	{
-
-	}
-
-	void Blit(RenderTargetViewHandle rt, Rect dstRegion, TextureHandle texture, Rect srcRegion) override
-	{
-
-	}
-
-	void Fill(RenderTargetViewHandle rt, Rect region, Color4f color) override
 	{
 
 	}
@@ -821,8 +836,8 @@ int main(int , char* []) {
 	}
 	BuildSDLMap();
 
-	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-	Window* win2 = nullptr;//new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
+	Window* win1 = nullptr;//new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop
 	while(win1 || win2)

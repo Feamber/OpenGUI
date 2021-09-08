@@ -34,6 +34,8 @@
 #include <stdlib.h>
 #include <cstdint>
 
+namespace godot
+{
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
 #endif
@@ -4231,4 +4233,5 @@ String String::unquote() const {
 	}
 
 	return substr(1, length() - 2);
+}
 }

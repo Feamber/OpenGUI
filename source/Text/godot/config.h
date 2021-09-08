@@ -9,6 +9,10 @@
 #include <unordered_map>
 #include <cinttypes>
 #include <memory>
+namespace godot{
+#if defined(_WIN32) || defined(_WIN64)
+#define WINDOWS_ENABLED
+#endif
 #define _ALWAYS_INLINE_ OGUI_FORCEINLINE
 #define _FORCE_INLINE_ OGUI_FORCEINLINE
 // Turn argument to string constant:
@@ -303,3 +307,4 @@ class TextServer* get_text_server();
 #define TS get_text_server()
 
 #define MODULE_FREETYPE_ENABLED
+}

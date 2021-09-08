@@ -31,6 +31,7 @@
 #include "config.h"
 #include "vector2.h"
 
+namespace godot{
 
 struct Rect2 {
 	Point2 position;
@@ -46,3 +47,4 @@ struct Rect2 {
 			size(p_size) {
 	}
 };
+}

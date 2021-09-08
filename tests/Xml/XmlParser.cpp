@@ -5,7 +5,7 @@
 #include "OpenGUI/VisualElement.h"
 
 #include <fstream>
-
+/*
 TEST_CASE("XmlParser", "[XmlAsset]")
 {
     using namespace OGUI;
@@ -45,4 +45,6 @@ TEST_CASE("XmlParser", "[XmlAsset]")
         REQUIRE(BBB->_name == "BBB");
         REQUIRE(BBB->_children[0]->_name == "BB2_1");
     // }
+    
 }
+*/

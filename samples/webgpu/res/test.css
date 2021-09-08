@@ -7,9 +7,9 @@
     flex-wrap: wrap;
     background-color:rgb(255, 255, 255, 0.8);
     background-image:url(res/test4.jpg);
-    animation-name: t360;
+    /*animation-name: t360;
     animation-duration: 10s;
-    animation-iteration-count: infinite;
+    animation-iteration-count: infinite;*/
 }
 
 .Test{
@@ -46,18 +46,11 @@
     height:116px;width:180px;background-image:url(res/test3.jpg);
 }
 
-.Child::before {
+#Child2::before {
     width:50px;
     height:50px;
     margin:10px;
     background-image:url(res/UELogo.png);
-}
-
-#Child1::before {
-    transform: translate(-20px, -40px);
-}
-
-#Child2::before {
     transform: scale(0.8, 0.8) translate(5px, -5px);
 }
 

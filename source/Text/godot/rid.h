@@ -30,6 +30,7 @@
 
 #pragma once
 #include "config.h"
+namespace godot{
 class RID_AllocBase;
 
 class RID {
@@ -69,3 +70,4 @@ public:
 
 	_ALWAYS_INLINE_ RID() {}
 };
+}

@@ -24,6 +24,7 @@ namespace OGUI
         PF_R8G8B8A8, PF_R16G16B16A16,
         PF_R8G8B8A8_SRGB, 
         PF_R8, PF_R16, PF_R32,
+		PF_R8A8,
         PF_Count
     };
 

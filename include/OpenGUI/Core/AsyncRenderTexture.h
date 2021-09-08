@@ -18,7 +18,7 @@ namespace OGUI
 			return is_ready;
 		}
 	protected:
-		TextureHandle _handle;
+		TextureHandle _handle = nullptr;
 		std::atomic_bool is_ready;
 	};
 

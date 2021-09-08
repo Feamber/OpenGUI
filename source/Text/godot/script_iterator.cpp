@@ -30,6 +30,7 @@
 #define DLL_IMPLEMENTATION
 #include "script_iterator.h"
 
+using namespace godot;
 bool ScriptIterator::same_script(int32_t p_script_one, int32_t p_script_two) {
 	return p_script_one <= USCRIPT_INHERITED || p_script_two <= USCRIPT_INHERITED || p_script_one == p_script_two;
 }

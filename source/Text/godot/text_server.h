@@ -38,7 +38,7 @@
 #include "rid_owner.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include <stdint.h>
-using real_t = float;
+namespace godot{
 
 class TextServer {
 
@@ -189,7 +189,7 @@ public:
 			Vector<RID> fonts;
 			int font_size = 0;
 
-			Variant embedded_key;
+			Variant embedded_key = nullptr;
 
 			String language;
 			Map<uint32_t, double> features;
@@ -466,3 +466,4 @@ public:
 };
 
 //#define TS TextServerManager::get_primary_interface()
+}

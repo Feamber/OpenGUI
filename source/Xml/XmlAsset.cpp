@@ -1,6 +1,8 @@
+
 #define DLL_IMPLEMENTATION
 #include <fstream>
 #include <iostream>
+#include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Xml/XmlFactoryRegistry.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Xml/XmlAsset.h"
@@ -334,13 +336,25 @@ namespace OGUI {
 
         auto new_element = factory->Create(xml_element, context);
         if (new_element != nullptr) {
+            OGUI::TextElement* new_text_element = nullptr;
+            if(new_element->IsA("OGUI::TextElement"))
+                new_text_element = static_cast<OGUI::TextElement*>(new_element);
             context.stack.push_front(new_element);
             for(auto& child : xml_element.children)
             {
                 auto new_child_element = ParseElement(child, context);
                 if (new_child_element != nullptr && new_child_element->GetHierachyParent() == nullptr)
-                    new_element->PushChild(new_child_element);
-
+                {
+                    if(new_text_element)
+                    {
+                        if(new_text_element->IsA("OGUI::TextElement"))
+                            new_text_element->_inlines.push_back(static_cast<OGUI::TextElement*>(new_child_element));
+                        else
+                            new_text_element->_inlines.push_back(new_child_element);
+                    }
+                    else
+                        new_element->PushChild(new_child_element);
+                }
                 if (context.is_error) break;
             }
             context.stack.pop_front();

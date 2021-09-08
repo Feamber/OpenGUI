@@ -33,6 +33,7 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Context.h"
 
+using namespace godot;
 #ifdef ICU_STATIC_DATA
 #include "thirdparty/icu4c/icudata.gen.h"
 #endif
@@ -1036,15 +1037,15 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
 	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
 
-	int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
-	OGUI::PixelFormat require_format = color_size == 4 ? OGUI::PixelFormat::PF_R8G8B8A8 : OGUI::PixelFormat::PF_R8; //TODO: ???
-
+	int color_size = 4;//bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
+	//OGUI::PixelFormat require_format = color_size == 4 ? OGUI::PixelFormat::PF_R8G8B8A8 : OGUI::PixelFormat::PF_R8A8;
+	OGUI::PixelFormat require_format = OGUI::PixelFormat::PF_R8G8B8A8;
 	FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh);
 	ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
 
 	// Fit character in char texture.
 
-	FontTexture &tex = p_data->textures.data()[tex_pos.index];
+	FontTexture &tex = p_data->textures[tex_pos.index];
 
 	{
 		uint8_t *wr = tex.imgdata.ptrw();
@@ -1057,13 +1058,22 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 					case FT_PIXEL_MODE_MONO: {
 						int byte = i * bitmap.pitch + (j >> 3);
 						int bit = 1 << (7 - (j % 8));
+						//wr[ofs + 0] = 255; //grayscale as 1
+						//wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
+
 						wr[ofs + 0] = 255; //grayscale as 1
-						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
+						wr[ofs + 1] = 255; //grayscale as 1
+						wr[ofs + 2] = 255; //grayscale as 1
+						wr[ofs + 3] = (bitmap.buffer[byte] & bit) ? 255 : 0;
 					} break;
 					case FT_PIXEL_MODE_GRAY:
+						//wr[ofs + 0] = 255; //grayscale as 1
+						//wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
+						
 						wr[ofs + 0] = 255; //grayscale as 1
-						wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
-						//wr[ofs + 1] = 100;
+						wr[ofs + 1] = 255; //grayscale as 1
+						wr[ofs + 2] = 255; //grayscale as 1
+						wr[ofs + 3] = bitmap.buffer[i * bitmap.pitch + j];
 						break;
 					case FT_PIXEL_MODE_BGRA: {
 						int ofs_color = i * bitmap.pitch + (j << 2);
@@ -1099,7 +1109,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 
 	// Update height array.
 	for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
-		tex.offsets.data()[k] = tex_pos.y + mh;
+		tex.offsets[k] = tex_pos.y + mh;
 	}
 
 	FontGlyph chr;
@@ -1110,6 +1120,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
 	chr.rect.position = (Vector2(xofs, -yofs) * p_data->scale / p_data->oversampling).round();
 	chr.rect.size = chr.uv_rect.size * p_data->scale / p_data->oversampling;
+	auto tex_size = Vector2{(real_t)tex.texture_w, (real_t)tex.texture_h};
+	chr.uv_rect.position /= tex_size; chr.uv_rect.size /= tex_size;
 	return chr;
 }
 #endif
@@ -2603,7 +2615,7 @@ void TextServerAdvanced::font_draw_glyph(RID p_font_rid, OGUI::PrimDrawList& lis
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-            auto texture = fd->cache[size]->textures[gl.texture_idx].texture;
+            auto& texture = fd->cache[size]->textures[gl.texture_idx].texture;
 #ifdef MODULE_MSDFGEN_ENABLED
             if (fd->msdf) {
                 Point2 cpos = p_pos;
@@ -2644,7 +2656,7 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, OGUI::PrimDrawL
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-            auto texture = fd->cache[size]->textures[gl.texture_idx].texture;
+            auto& texture = fd->cache[size]->textures[gl.texture_idx].texture;
 #ifdef MODULE_MSDFGEN_ENABLED
             RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
             if (fd->msdf) {

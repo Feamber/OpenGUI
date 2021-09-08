@@ -36,6 +36,7 @@
 #include <typeinfo>
 #include <atomic>
 
+namespace godot{
 template <class T>
 class SafeNumeric {
 	std::atomic<T> value;
@@ -590,3 +591,4 @@ public:
 	RID_Owner(uint32_t p_target_chunk_byte_size = 65536) :
 			alloc(p_target_chunk_byte_size) {}
 };
+}

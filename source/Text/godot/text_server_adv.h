@@ -68,6 +68,7 @@
 #include <hb-icu.h>
 #include <hb.h>
 
+namespace godot{
 class ThreadWorkPool
 {
 public:
@@ -76,7 +77,7 @@ public:
 
 struct TextureRef
 {
-	OGUI::TextureHandle handle;
+	OGUI::TextureHandle handle = nullptr;
 	std::shared_ptr<OGUI::RenderInterface> renderImpl;
 	~TextureRef()
 	{
@@ -87,7 +88,7 @@ struct TextureRef
 
 class TextServerAdvanced : public TextServer {
 	_THREAD_SAFE_CLASS_
-
+public:
 	static String interface_name;
 	static uint32_t interface_features;
 
@@ -505,3 +506,4 @@ public:
 	TextServerAdvanced();
 	~TextServerAdvanced();
 };
+}

@@ -31,7 +31,7 @@
 #include "text_paragraph.h"
 #include "text_server_adv.h"
 #include "font.h"
-
+using namespace godot;
 void TextParagraph::_shape_lines() {
 	if (lines_dirty) {
 		for (int i = 0; i < lines_rid.size(); i++) {
@@ -62,10 +62,7 @@ void TextParagraph::_shape_lines() {
 			for (int i = 0; i < line_breaks.size(); i++) {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
-				if (v_offset < h) {
-					TS->free(line);
-					break;
-				}
+				
 				if (!tab_stops.is_empty()) {
 					TS->shaped_text_tab_align(line, tab_stops);
 				}
@@ -73,6 +70,9 @@ void TextParagraph::_shape_lines() {
 				v_offset -= h;
 				start = line_breaks[i].y;
 				lines_rid.push_back(line);
+				if (v_offset < 0) {
+					break;
+				}
 			}
 		}
 		// Use fixed for the rest of lines.
@@ -216,7 +216,7 @@ TextServer::Orientation TextParagraph::get_orientation() const {
 }
 
 bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
-	ERR_FAIL_COND_V(p_fonts, false);
+	ERR_FAIL_COND_V(!p_fonts, false);
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
 	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
@@ -231,7 +231,7 @@ void TextParagraph::clear_dropcap() {
 }
 
 bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
-	ERR_FAIL_COND_V(p_fonts, false);
+	ERR_FAIL_COND_V(!p_fonts, false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
@@ -464,18 +464,18 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
-			if (i <= dropcap_lines) {
-				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
-					ofs.x -= h_offset;
+			if (i < dropcap_lines) {
+				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR || TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_AUTO) {
+					ofs.x += h_offset;
 				}
 				l_width -= h_offset;
 			}
 		} else {
 			ofs.y = p_pos.y;
 			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
-			if (i <= dropcap_lines) {
-				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
-					ofs.x -= h_offset;
+			if (i < dropcap_lines) {
+				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR || TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_AUTO) {
+					ofs.x += h_offset;
 				}
 				l_width -= h_offset;
 			}
@@ -558,7 +558,7 @@ void TextParagraph::draw_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos,
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
 			if (i <= dropcap_lines) {
 				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
-					ofs.x -= h_offset;
+					ofs.x += h_offset;
 				}
 				l_width -= h_offset;
 			}
@@ -567,7 +567,7 @@ void TextParagraph::draw_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos,
 			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
 			if (i <= dropcap_lines) {
 				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
-					ofs.x -= h_offset;
+					ofs.x += h_offset;
 				}
 				l_width -= h_offset;
 			}

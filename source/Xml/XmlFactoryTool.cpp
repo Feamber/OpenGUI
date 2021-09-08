@@ -1,5 +1,7 @@
+#include <memory>
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Xml/XmlFactoryTool.h"
+#include "OpenGUI/Text/TextElement.h"
 
 namespace OGUI
 {
@@ -17,9 +19,9 @@ namespace OGUI
 
     VisualElement* IXmlFactory_TextValue::Create(const XmlElement& asset, CreationContext& context)
     {
-        auto textVisualElement = dynamic_cast<OGUI::TextVisualElement*>(context.stack.front());
+        auto textVisualElement = dynamic_cast<OGUI::TextElement*>(context.stack.front());
         if (textVisualElement)
-            textVisualElement->_texts.push_back(asset.text);
+            textVisualElement->_inlines.push_back(ostr::string(asset.text));
         return nullptr;
     }
 

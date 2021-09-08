@@ -30,6 +30,7 @@
 #define DLL_IMPLEMENTATION
 #include "font.h"
 
+using namespace godot;
 void FontData::emit_changed()
 {
 	for(auto font : fonts)
@@ -610,19 +611,19 @@ Set<uint32_t> Font::get_feature_list() const {
 }
 
 void Font::add_data(const Ref<FontData> &p_data) {
-	ERR_FAIL_COND(p_data);
+	ERR_FAIL_COND(!p_data);
 	data.push_back(p_data);
 	rids.push_back(RID());
 
     if (data[data.size() - 1]) {
-		data[data.size() - 1]->fonts.remove(this);
+		data[data.size() - 1]->fonts.push_back(this);
 	}
 
 	emit_changed();
 }
 
 void Font::set_data(int p_idx, const Ref<FontData> &p_data) {
-	ERR_FAIL_COND(p_data);
+	ERR_FAIL_COND(!p_data);
 	ERR_FAIL_INDEX(p_idx, data.size());
 
     if (data[p_idx]) {

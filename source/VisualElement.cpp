@@ -96,6 +96,11 @@ void OGUI::VisualElement::CreateYogaNode()
 	YGNodeSetContext(_ygnode, this);
 }
 
+void OGUI::VisualElement::GetChildren(std::vector<VisualElement *>& children)
+{
+	children.insert(children.end(), _children.begin(), _children.end());
+}
+
 OGUI::VisualElement::VisualElement()
 {
 	CreateYogaNode();

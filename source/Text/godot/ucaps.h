@@ -30,6 +30,7 @@
 
 #pragma once
 
+namespace godot{
 //satan invented unicode?
 #define CAPS_LEN 666
 
@@ -1409,4 +1410,5 @@ static int _find_lower(int ch) {
 	}
 
 	return ch;
+}
 }

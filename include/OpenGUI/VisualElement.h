@@ -59,6 +59,7 @@ namespace OGUI
 		std::string _name;
         std::string _path;
 		static void DestoryTree(VisualElement* element);
+		virtual void GetChildren(std::vector<VisualElement*>& children);
 
 #pragma region Hierachy
 		void PushChild(VisualElement* child);

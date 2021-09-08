@@ -32,6 +32,7 @@
 #include "config.h"
 #include "error_macros.h"
 
+namespace godot{
 template<class T>
 class CowData
 {
@@ -595,9 +596,6 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context = "");
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 
-bool is_symbol(char32_t c);
-bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
-
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
 }
 
@@ -616,4 +614,5 @@ _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
 	Vector<String> arr;
 	sarray_add_str(arr, p_args...);
 	return arr;
+}
 }

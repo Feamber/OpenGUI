@@ -30,7 +30,7 @@
 
 #pragma once
 #include "config.h"
-
+namespace godot{
 struct Vector3i {
 	enum Axis {
 		AXIS_X,
@@ -91,3 +91,4 @@ struct Vector3 {
 		z = p_z;
 	}
 };
+}

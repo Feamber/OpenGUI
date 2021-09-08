@@ -35,6 +35,7 @@
 
 #include <mutex>
 
+namespace godot{
 template <class StdMutexT>
 class MutexImpl {
 	mutable StdMutexT mutex;
@@ -75,9 +76,10 @@ extern template class MutexImpl<std::recursive_mutex>;
 extern template class MutexImpl<std::mutex>;
 extern template class MutexLock<MutexImpl<std::recursive_mutex>>;
 extern template class MutexLock<MutexImpl<std::mutex>>;
-
+}
 #else
 
+namespace godot{
 class FakeMutex {
 	FakeMutex() {}
 };
@@ -98,7 +100,7 @@ public:
 
 using Mutex = MutexImpl<FakeMutex>;
 using BinaryMutex = MutexImpl<FakeMutex>; // Non-recursive, handle with care
-
+}
 #endif // !NO_THREADS
 
 

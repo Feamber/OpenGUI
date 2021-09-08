@@ -30,6 +30,7 @@
 
 #pragma once
 #include "config.h"
+namespace godot{
 struct Color {
 	union {
 		struct {
@@ -74,3 +75,4 @@ struct Color {
 		a = p_a;
 	}
 };
+}

@@ -33,6 +33,7 @@
 #include "text_server.h"
 #include <memory>
 
+namespace godot{
 /*************************************************************************/
 class Font;
 class FontData {
@@ -255,4 +256,4 @@ public:
 	Font();
 	~Font();
 };
-
+}

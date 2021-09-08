@@ -35,6 +35,7 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Interface/Interfaces.h"
 
+using namespace godot;
 /*************************************************************************/
 
 bool TextServer::Glyph::operator==(const Glyph &p_a) const {
@@ -978,7 +979,11 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 	using namespace OGUI::PrimitiveDraw;
 	BoxParams params;
 	params.rect = math_cast(p_rect);
-	params.uv = math_cast(p_src_rect);
+	auto srcRect = p_src_rect;
+	srcRect.position.y = 1 - p_src_rect.position.y ;
+	srcRect.size.y = - p_src_rect.size.y;
+	params.uv = math_cast(srcRect);
+	params.color = math_cast(p_modulate);
 	PrimitiveDraw<BoxShape>(p_texture, list, params);
 }
 
@@ -987,6 +992,6 @@ void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_r
 	using namespace OGUI::PrimitiveDraw;
 	BoxParams params;
 	params.rect = math_cast(p_rect);
-	params.color = OGUI::Color4f{p_color.r, p_color.g, p_color.b, p_color.a};
+	params.color = math_cast(p_color);
 	PrimitiveDraw<BoxShape>(nullptr, list, params);
 }

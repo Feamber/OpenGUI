@@ -42,6 +42,7 @@
 #include <hb-icu.h>
 #include <hb.h>
 
+namespace godot{
 class ScriptIterator {
 public:
 	struct ScriptRange {
@@ -59,3 +60,4 @@ public:
 };
 
 #endif //SCRIPT_ITERATOR_H
+}

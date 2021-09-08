@@ -4,6 +4,8 @@
 #include "text_server_adv.h"
 #include <cstdlib>
 
+namespace godot
+{
 void memfree(void* p_ptr)
 {
 	std::free(p_ptr);
@@ -25,4 +27,5 @@ class TextServer* get_text_server()
 {
     static TextServerAdvanced instance;
     return &instance;
+}
 }

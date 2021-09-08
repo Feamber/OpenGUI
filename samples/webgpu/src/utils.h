@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGUI/Core/Types.h"
+#include "dawn/webgpu.h"
 #include "stb_image.h"
 #include "webgpu.h"
 #include "OpenGUI/Interface/Interfaces.h"
@@ -75,6 +76,7 @@ inline static WGPUTextureFormat translate(OGUI::PixelFormat format)
     case OGUI::PixelFormat::PF_R8G8B8A8: return WGPUTextureFormat_RGBA8Unorm;
     case OGUI::PixelFormat::PF_R16G16B16A16: return WGPUTextureFormat_RGBA16Float;
     case OGUI::PixelFormat::PF_R8G8B8A8_SRGB: return WGPUTextureFormat_RGBA8UnormSrgb;
+	case OGUI::PixelFormat::PF_R8A8: return WGPUTextureFormat_RG8Unorm;
     case OGUI::PixelFormat::PF_R8: return WGPUTextureFormat_R8Unorm;
     case OGUI::PixelFormat::PF_R16: return WGPUTextureFormat_R16Uint;
     case OGUI::PixelFormat::PF_R32: return WGPUTextureFormat_R32Uint;
@@ -89,6 +91,7 @@ inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
     case OGUI::PixelFormat::PF_R8G8B8A8: return 4;
     case OGUI::PixelFormat::PF_R16G16B16A16: return 8;
     case OGUI::PixelFormat::PF_R8G8B8A8_SRGB: return 4;
+	case OGUI::PixelFormat::PF_R8A8: return 2;
     case OGUI::PixelFormat::PF_R8: return 1;
     case OGUI::PixelFormat::PF_R16: return 2;
     case OGUI::PixelFormat::PF_R32: return 4;
@@ -153,6 +156,27 @@ inline static WGPU_OGUI_Texture* createTexture(
 	result->texture_view = wgpuTextureCreateView(tex, &viewDesc);
 
     return result;
+}
+
+inline static void updateTexture(
+    WGPUDevice device, WGPUQueue queue, WGPU_OGUI_Texture* texture,
+    const OGUI::Bitmap& bitmap
+)
+{
+
+    WGPUTextureCopyView cpyView = {};
+    cpyView.texture = texture->texture;
+    cpyView.mipLevel = 0;
+    cpyView.origin = { 0, 0, 0 };
+    cpyView.aspect = WGPUTextureAspect_All;
+
+    WGPUTextureDataLayout dtLayout = {};
+    dtLayout.offset = 0;
+    dtLayout.bytesPerRow = bitmap.width * size_in_bytes(bitmap.format);
+    dtLayout.rowsPerImage = bitmap.height;
+
+    WGPUExtent3D writeSize = {bitmap.width, bitmap.height, 1};
+    wgpuQueueWriteTexture(queue, &cpyView, bitmap.resource.bytes, bitmap.resource.size_in_bytes, &dtLayout, &writeSize);
 }
 
 inline static void createBitMapFromJPG(const char* filename, OGUI::Bitmap& bm)

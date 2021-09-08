@@ -31,6 +31,7 @@
 #pragma once
 #include "config.h"
 
+namespace godot{
 struct Vector2 {
 	static const int AXIS_COUNT = 2;
 
@@ -61,6 +62,7 @@ struct Vector2 {
 	Vector2 operator+(const Vector2 &p_v) const;
 	void operator+=(const Vector2 &p_v);
 	Vector2 operator*(const real_t &rvalue) const;
+	Vector2 operator/(const Vector2 &p_v1) const;
 	Vector2 operator/(const real_t &rvalue) const;
 	Vector2 operator*(const Vector2 &p_v1) const;
 	bool operator==(const Vector2 &p_vec2) const;
@@ -70,6 +72,7 @@ struct Vector2 {
 	bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
 	bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
 	bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	void operator/=(const Vector2 &rvalue) { *this = *this / rvalue; }
 
 	_FORCE_INLINE_ Vector2() {}
 	_FORCE_INLINE_ Vector2(const real_t p_x, const real_t p_y) {
@@ -77,6 +80,9 @@ struct Vector2 {
 		y = p_y;
 	}
 };
+_FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
+	return Vector2(x / p_v1.x, y / p_v1.y);
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
 	return Vector2(x * p_v1.x, y * p_v1.y);
@@ -164,3 +170,4 @@ _FORCE_INLINE_ bool Vector2i::operator!=(const Vector2i &p_vec2) const {
 
 typedef Vector2i Size2i;
 typedef Vector2i Point2i;
+}

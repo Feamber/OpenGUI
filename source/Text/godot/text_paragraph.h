@@ -32,6 +32,7 @@
 
 #include "text_server.h"
 
+namespace godot{
 /*************************************************************************/
 class Font;
 
@@ -155,3 +156,4 @@ public:
 	TextParagraph();
 	~TextParagraph();
 };
+}

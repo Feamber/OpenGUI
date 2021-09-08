@@ -3,6 +3,7 @@
 #include "OpenGUI/Xml/XsdGen/OGUI.h"
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Context.h"
 
@@ -233,7 +234,7 @@ namespace OGUI
 
     VisualElement* IXmlFactory_Text::Create(const XmlElement& asset, CreationContext& context)
     {
-        return XmlFactoryCreate<IXmlFactory_Text, TextVisualElement>(*this, asset, context);
+        return XmlFactoryCreate<IXmlFactory_Text, TextElement>(*this, asset, context);
     }
 
     bool IXmlFactory_Text::InitAttribute(VisualElement &new_element, const XmlElement &asset, CreationContext &context)
