@@ -65,10 +65,9 @@ public:
 
 	enum LineBreakFlag {
 		BREAK_NONE = 0,
-		BREAK_MANDATORY = 1 << 4,
-		BREAK_WORD_BOUND = 1 << 5,
-		BREAK_GRAPHEME_BOUND = 1 << 6,
-		BREAK_WORD_BOUND_ADAPTIVE = 1 << 5 | 1 << 7,
+		BREAK_MANDATORY = 1 << 5,
+		BREAK_WORD_BOUND = 1 << 6,
+		BREAK_GRAPHEME_BOUND = 1 << 7
 	};
 
 	enum TextOverrunFlag {

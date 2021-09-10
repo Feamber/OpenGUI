@@ -25,6 +25,7 @@ namespace OGUI
 
         void GetChildren(std::vector<VisualElement *>& Children) override;
         void DrawPrimitive(PrimitiveDraw::DrawContext &Ctx) override;
+        void SyncYogaStyle() override;
     };
 }
 #endif

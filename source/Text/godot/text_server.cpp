@@ -318,13 +318,14 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_
 				}
 			}
 			if ((p_break_flags & BREAK_WORD_BOUND) == BREAK_WORD_BOUND) {
-				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+				if(word_count == 0)
+				{
+					last_safe_break = i;
+				}
+				else if ((l_gl[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 					last_safe_break = i;
 					word_count++;
 				}
-			}
-			if (((p_break_flags & BREAK_WORD_BOUND_ADAPTIVE) == BREAK_WORD_BOUND_ADAPTIVE) && word_count == 0) {
-				last_safe_break = i;
 			}
 			if ((p_break_flags & BREAK_GRAPHEME_BOUND) == BREAK_GRAPHEME_BOUND) {
 				last_safe_break = i;
@@ -978,7 +979,10 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 {
 	using namespace OGUI::PrimitiveDraw;
 	BoxParams params;
-	params.rect = math_cast(p_rect);
+	auto dstRect = p_rect;
+	dstRect.position.y = - p_rect.position.y;
+	dstRect.size.y = - p_rect.size.y;
+	params.rect = math_cast(dstRect);
 	auto srcRect = p_src_rect;
 	srcRect.position.y = 1 - p_src_rect.position.y ;
 	srcRect.size.y = - p_src_rect.size.y;
@@ -991,7 +995,10 @@ void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_r
 {
 	using namespace OGUI::PrimitiveDraw;
 	BoxParams params;
-	params.rect = math_cast(p_rect);
+	auto dstRect = p_rect;
+	dstRect.position.y = - p_rect.position.y;
+	dstRect.size.y = - p_rect.size.y;
+	params.rect = math_cast(dstRect);
 	params.color = math_cast(p_color);
 	PrimitiveDraw<BoxShape>(nullptr, list, params);
 }

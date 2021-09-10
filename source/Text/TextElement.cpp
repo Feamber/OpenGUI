@@ -1,4 +1,7 @@
 
+#include "OpenGUI/VisualElement.h"
+#include "YGValue.h"
+#include "Yoga.h"
 #define DLL_IMPLEMENTATION
 #ifndef UE4Runtime
 #include "OpenGUI/Core/Math/Vector.h"
@@ -14,16 +17,6 @@
 
 namespace OGUI
 {
-    TextElement::TextElement()
-    {
-
-    }
-
-    TextElement::~TextElement()
-    {
-        if(_paragraph)
-            delete _paragraph;
-    }
 
     std::shared_ptr<godot::FontData> GetTestFontData()
     {
@@ -54,28 +47,79 @@ namespace OGUI
         }
         return instance;
     }
-//真的猛士，敢于直面惨淡的人生，敢于正视淋漓的鲜血。这是怎样的哀痛者和幸福者？然而造化又常常为庸人设计，以时间的流逝，来洗涤旧迹，仅是留下淡红的血色和微漠的悲哀。在这淡红的血色和微漠的悲哀中，又给人暂得偷生，维持着这似人非人的世界。
+
+    YGSize MeasureText(
+    YGNodeRef node,
+    float width,
+    YGMeasureMode widthMode,
+    float height,
+    YGMeasureMode heightMode)
+    {
+        auto te = (TextElement*)YGNodeGetContext(node);
+        switch (widthMode) {
+        case YGMeasureModeExactly:
+        case YGMeasureModeAtMost:
+            te->_paragraph->set_max_width(width);
+            break;
+        default:
+            te->_paragraph->set_max_width(-1);
+        }
+
+        switch (heightMode) {
+        case YGMeasureModeExactly:
+        case YGMeasureModeAtMost:
+            te->_paragraph->set_max_height(height);
+            break;
+        default:
+            te->_paragraph->set_max_height(-1);
+        }
+
+        auto size = te->_paragraph->get_size();
+        YGSize result;
+    
+        switch (widthMode) {
+        case YGMeasureModeExactly:
+            result.width = width;
+            break;
+        case YGMeasureModeAtMost:
+        default:
+            result.width = size.width;
+        }
+
+        switch (heightMode) {
+        case YGMeasureModeExactly:
+            result.height = height;
+            break;
+        case YGMeasureModeAtMost:
+        default:
+            result.height = size.height;
+        }
+        return result;
+    }
+
+    float BaselineText(YGNodeRef node, float width, float height)
+    {
+        auto te = (TextElement*)YGNodeGetContext(node);
+        return height - te->_paragraph->get_line_ascent(0);
+    }
+    
     void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
     {
         //VisualElement::DrawPrimitive(Ctx);
-        auto Rect = GetRect();
-        if(!_paragraph)
-        {
-            _paragraph = new godot::TextParagraph;
-            const wchar_t* literal = L"I'm an artist, I'm a performance artist.\nWilliam Shakespeare was an English playwright, poet, and actor, widely regarded as the greatest writer in the English language and the world's greatest dramatist. He is often called England's national poet and the \"Bard of Avon\"."; 
-            _paragraph->set_dropcap("My name is Van", GetTestFont(), 39);
-            _paragraph->add_string(literal, GetTestFont(), 20);
-            _paragraph->set_width(Rect.max.x - Rect.min.x);
-        }
         PrimitiveDraw::BeginDraw(Ctx.prims);
-        
+        auto Rect = GetRect();
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1), godot::Color(1, 0, 0));
-        auto& list = Ctx.prims;
-        int count = list.vertices.size();
-        for (int i = list.beginCount; i < count; ++i)
-            list.vertices[i].position = list.vertices[i].position * Vector2f(1.0f, -1.0f);
         PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform, Ctx.resolution);
     }
+
+    void TextElement::SyncYogaStyle()
+    {
+        VisualElement::SyncYogaStyle();
+        if(_style.width != YGValueAuto && _style.width != YGValueUndefined)
+            _paragraph->set_max_width(_style.width.value);
+        if(_style.height != YGValueAuto && _style.height != YGValueUndefined)
+            _paragraph->set_max_height(_style.height.value);
+    };
 
     // helper type for the visitor #4
     template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
@@ -94,6 +138,23 @@ namespace OGUI
                 [&](TextElement*& child) { children.push_back(child); }
             }, inl);
         }
+    }
+    
+    TextElement::TextElement()
+    {
+        _paragraph = new godot::TextParagraph;
+        const wchar_t* literal = L"I'm an artist, I'm a performance artist.\nWilliam Shakespeare was an English playwright, poet, and actor, widely regarded as the greatest writer in the English language and the world's greatest dramatist. He is often called England's national poet and the \"Bard of Avon\".真的猛士，敢于直面惨淡的人生，敢于正视淋漓的鲜血。这是怎样的哀痛者和幸福者？然而造化又常常为庸人设计，以时间的流逝，来洗涤旧迹，仅是留下淡红的血色和微漠的悲哀。在这淡红的血色和微漠的悲哀中，又给人暂得偷生，维持着这似人非人的世界。"; 
+        _paragraph->set_dropcap("My name is Van", GetTestFont(), 39);
+        _paragraph->add_string(literal, GetTestFont(), 20);
+        _paragraph->set_align(godot::HALIGN_FILL);
+        YGNodeSetMeasureFunc(_ygnode, MeasureText);
+        YGNodeSetBaselineFunc(_ygnode, BaselineText);
+    }
+
+    TextElement::~TextElement()
+    {
+        if(_paragraph)
+            delete _paragraph;
     }
 }
 #endif

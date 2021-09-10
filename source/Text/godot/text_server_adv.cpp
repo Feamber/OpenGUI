@@ -374,7 +374,7 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 	}
 #else
 	if (icu_data == nullptr) {
-		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
+		String filename = "res/icudt69l.dat";
         auto& ctx = OGUI::Context::Get().fileImpl;
         auto f = ctx->Open(filename.ascii().ptr());
 		if (!f) {
@@ -4741,6 +4741,7 @@ TextServer *TextServerAdvanced::create_func(Error &r_error, void *p_user_data) {
 
 TextServerAdvanced::TextServerAdvanced() {
 	hb_bmp_create_font_funcs();
+	load_support_data("");
 }
 
 TextServerAdvanced::~TextServerAdvanced() {

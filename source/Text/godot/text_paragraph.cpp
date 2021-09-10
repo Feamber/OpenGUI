@@ -45,45 +45,9 @@ void TextParagraph::_shape_lines() {
 
 		float h_offset = 0.f;
 		float v_offset = 0.f;
+		float h_total = 0.f;
 		int start = 0;
 		dropcap_lines = 0;
-
-		if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-			h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
-			v_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
-		} else {
-			h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
-			v_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
-		}
-
-		if (h_offset > 0) {
-			// Dropcap, flow around.
-			Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, width - h_offset, 0, flags);
-			for (int i = 0; i < line_breaks.size(); i++) {
-				RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
-				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
-				
-				if (!tab_stops.is_empty()) {
-					TS->shaped_text_tab_align(line, tab_stops);
-				}
-				dropcap_lines++;
-				v_offset -= h;
-				start = line_breaks[i].y;
-				lines_rid.push_back(line);
-				if (v_offset < 0) {
-					break;
-				}
-			}
-		}
-		// Use fixed for the rest of lines.
-		Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, width, start, flags);
-		for (int i = 0; i < line_breaks.size(); i++) {
-			RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
-			if (!tab_stops.is_empty()) {
-				TS->shaped_text_tab_align(line, tab_stops);
-			}
-			lines_rid.push_back(line);
-		}
 
 		uint8_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
 		if (overrun_behavior != OVERRUN_NO_TRIMMING) {
@@ -109,6 +73,58 @@ void TextParagraph::_shape_lines() {
 			}
 		}
 
+		if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+			h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+			v_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+		} else {
+			h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+			v_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+		}
+		bool lines_overflow = false;
+		if (h_offset > 0) {
+			// Dropcap, flow around.
+			Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, max_width - h_offset, 0, flags);
+			for (int i = 0; i < line_breaks.size(); i++) {
+				RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
+				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
+				
+				if (!tab_stops.is_empty()) {
+					TS->shaped_text_tab_align(line, tab_stops);
+				}
+				dropcap_lines++;
+				v_offset -= h;
+				h_total += h;
+				start = line_breaks[i].y;
+				lines_rid.push_back(line);
+				if (v_offset < 0) {
+					break;
+				}
+			}
+		}
+		// Use fixed for the rest of lines.
+		Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, max_width, start, flags);
+		for (int i = 0; i < line_breaks.size(); i++) {
+			RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
+			if (!tab_stops.is_empty()) {
+				TS->shaped_text_tab_align(line, tab_stops);
+			}
+			float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
+			h_total += h;
+			if(h_total > max_height && lines_rid.size() > 0)
+			{
+				TS->free(line);
+				TS->free(lines_rid.back());
+				line = TS->shaped_text_substr(rid, line_breaks[i-1].x, line_breaks.back().y - line_breaks[i-1].x);
+				if (!tab_stops.is_empty()) {
+					TS->shaped_text_tab_align(line, tab_stops);
+				}
+				lines_rid.back() = line;
+				lines_overflow = true;
+				break;
+			}
+			lines_rid.push_back(line);
+		}
+
 		bool autowrap_enabled = ((flags & TextServer::BREAK_WORD_BOUND) == TextServer::BREAK_WORD_BOUND) || ((flags & TextServer::BREAK_GRAPHEME_BOUND) == TextServer::BREAK_GRAPHEME_BOUND);
 
 		// Fill after min_size calculation.
@@ -121,26 +137,27 @@ void TextParagraph::_shape_lines() {
 			if (align == HALIGN_FILL) {
 				for (int i = 0; i < lines_rid.size(); i++) {
 					if (i < visible_lines - 1 || lines_rid.size() == 1) {
-						TS->shaped_text_fit_to_width(lines_rid[i], width, flags);
+						
+						TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags);
 					} else if (i == (visible_lines - 1)) {
-						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
+						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], max_width, overrun_flags);
 					}
 				}
 
-			} else if (lines_hidden) {
-				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
+			} else if (lines_hidden || lines_overflow) {
+				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], max_width, overrun_flags);
 			}
 
 		} else {
 			// Autowrap disabled.
 			for (int i = 0; i < lines_rid.size(); i++) {
 				if (align == HALIGN_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width, flags);
+					TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags);
 					overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					TS->shaped_text_overrun_trim_to_width(lines_rid[i], max_width, overrun_flags);
+					TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
+					TS->shaped_text_overrun_trim_to_width(lines_rid[i], max_width, overrun_flags);
 				}
 			}
 		}
@@ -306,15 +323,28 @@ TextParagraph::OverrunBehavior TextParagraph::get_text_overrun_behavior() const 
 	return overrun_behavior;
 }
 
-void TextParagraph::set_width(float p_width) {
-	if (width != p_width) {
-		width = p_width;
+void TextParagraph::set_max_width(float p_width) {
+	if (max_width != p_width) {
+		max_width = p_width;
 		lines_dirty = true;
 	}
 }
 
-float TextParagraph::get_width() const {
-	return width;
+float TextParagraph::get_max_width() const {
+	return max_width;
+}
+
+void TextParagraph::set_max_height(float p_height)
+{
+	if (max_height != p_height) {
+		max_height = p_height;
+		lines_dirty = true;
+	}
+}
+
+float TextParagraph::get_max_height() const
+{
+	return max_height;
 }
 
 Size2 TextParagraph::get_non_wraped_size() const {
@@ -449,9 +479,9 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 		Vector2 dc_off = ofs;
 		if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				dc_off.x += width - h_offset;
+				dc_off.x += max_width - h_offset;
 			} else {
-				dc_off.y += width - h_offset;
+				dc_off.y += max_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw(dropcap_rid, list, dc_off + Vector2(0, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.size.y + dropcap_margins.position.y / 2), -1, -1, p_dc_color);
@@ -460,7 +490,7 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 	int lines_visible = (max_lines_visible >= 0) ? MIN(max_lines_visible, lines_rid.size()) : lines_rid.size();
 
 	for (int i = 0; i < lines_visible; i++) {
-		float l_width = width;
+		float l_width = max_width;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
@@ -481,7 +511,7 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 			}
 		}
 		float line_width = TS->shaped_text_get_width(lines_rid[i]);
-		if (width > 0) {
+		if (max_width > 0) {
 			switch (align) {
 				case HALIGN_FILL:
 					if (TS->shaped_text_get_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
@@ -543,16 +573,16 @@ void TextParagraph::draw_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos,
 		Vector2 dc_off = ofs;
 		if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				dc_off.x += width - h_offset;
+				dc_off.x += max_width - h_offset;
 			} else {
-				dc_off.y += width - h_offset;
+				dc_off.y += max_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw_outline(dropcap_rid, list, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dc_color);
 	}
 
 	for (int i = 0; i < lines_rid.size(); i++) {
-		float l_width = width;
+		float l_width = max_width;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
@@ -573,7 +603,7 @@ void TextParagraph::draw_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos,
 			}
 		}
 		float length = TS->shaped_text_get_width(lines_rid[i]);
-		if (width > 0) {
+		if (max_width > 0) {
 			switch (align) {
 				case HALIGN_FILL:
 					if (TS->shaped_text_get_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
@@ -660,9 +690,9 @@ void TextParagraph::draw_dropcap(OGUI::PrimDrawList& list, const Vector2 &p_pos,
 		// Draw dropcap.
 		if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				ofs.x += width - h_offset;
+				ofs.x += max_width - h_offset;
 			} else {
-				ofs.y += width - h_offset;
+				ofs.y += max_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw(dropcap_rid, list, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_color);
@@ -682,9 +712,9 @@ void TextParagraph::draw_dropcap_outline(OGUI::PrimDrawList& list, const Vector2
 		// Draw dropcap.
 		if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				ofs.x += width - h_offset;
+				ofs.x += max_width - h_offset;
 			} else {
-				ofs.y += width - h_offset;
+				ofs.y += max_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw_outline(dropcap_rid, list, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_color);
@@ -723,7 +753,7 @@ TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int
 	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
-	width = p_width;
+	max_width = p_width;
 }
 
 TextParagraph::TextParagraph() {

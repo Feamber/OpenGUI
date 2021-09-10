@@ -59,18 +59,18 @@ private:
 
 	bool lines_dirty = true;
 
-	float width = -1.0;
+	float max_width = -1.0;
+	float max_height = -1.0;
 	int max_lines_visible = -1;
 
-	uint8_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
-	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+	uint8_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES;
+	OverrunBehavior overrun_behavior = OVERRUN_TRIM_ELLIPSIS;
 
 	HAlign align = HALIGN_LEFT;
 
 	Vector<float> tab_stops;
 
 protected:
-	static void _bind_methods();
 
 	void _shape_lines();
 
@@ -113,8 +113,10 @@ public:
 	void set_text_overrun_behavior(OverrunBehavior p_behavior);
 	OverrunBehavior get_text_overrun_behavior() const;
 
-	void set_width(float p_width);
-	float get_width() const;
+	void set_max_width(float p_width);
+	float get_max_width() const;
+	void set_max_height(float p_height);
+	float get_max_height() const;
 
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;

@@ -42,6 +42,10 @@
     background-image:url(res/test.jpg); 
 }
 
+#Child3 { 
+    height:300px; width:300px; 
+}
+
 #Child2 {
     height:116px;width:180px;background-image:url(res/test3.jpg);
 }

@@ -212,13 +212,22 @@ void OGUI::VisualElement::UpdateWorldTransform()
 
 OGUI::Rect OGUI::VisualElement::GetLayout()
 {
-	Vector2f LB = {YGNodeLayoutGetLeft(_ygnode), YGNodeLayoutGetTop(_ygnode)};
-	Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
-	return
+	if(_layoutType == LayoutType::Flex)
 	{
-		LB,
-		LB + WH,
-	};
+		Vector2f LB = {YGNodeLayoutGetLeft(_ygnode), YGNodeLayoutGetTop(_ygnode)};
+		Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
+		return
+		{
+			LB,
+			LB + WH,
+		};
+	}
+	else if(_layoutType == LayoutType::Inline)
+	{
+		return _inlineLayout;
+	}
+	else
+		return Rect();
 }
 
 OGUI::Rect OGUI::VisualElement::GetRect()
@@ -417,12 +426,8 @@ void OGUI::VisualElement::ReleaseBeforePseudoElement()
 
 void OGUI::VisualElement::RegisterFocusedEvent()
 {
-	_eventHandler.Register<PreGotKeyboardFocusEvent, &VisualElement::OnPreGotKeyboardFocus_Internal>(this);
-	_eventHandler.Register<PreLostKeyboardFocusEvent, &VisualElement::OnPreLostKeyboardFocus_Internal>(this);
 	_eventHandler.Register<GotKeyboardFocusEvent, &VisualElement::OnGotKeyboardFocus_Internal>(this);
 	_eventHandler.Register<LostKeyboardFocusEvent, &VisualElement::OnLostKeyboardFocus_Internal>(this);
-	_eventHandler.Register<PreGotFocusEvent, &VisualElement::OnPreGotFocus_Internal>(this);
-	_eventHandler.Register<PreLostFocusEvent, &VisualElement::OnPreLostFocus_Internal>(this);
 	_eventHandler.Register<GotFocusEvent, &VisualElement::OnGotFocus_Internal>(this);
 	_eventHandler.Register<LostFocusEvent, &VisualElement::OnLostFocus_Internal>(this);
 }
@@ -457,7 +462,6 @@ bool OGUI::VisualElement::OnGotKeyboardFocus_Internal(struct GotKeyboardFocusEve
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::KeyboardFocus, true);
-	OnGotKeyboardFocus(event);
 	return false;
 }
 
@@ -465,7 +469,6 @@ bool OGUI::VisualElement::OnLostKeyboardFocus_Internal(struct LostKeyboardFocusE
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::KeyboardFocus, false);
-	OnLostKeyboardFocus(event);
 	return false;
 }
 
@@ -473,7 +476,6 @@ bool OGUI::VisualElement::OnGotFocus_Internal(struct GotFocusEvent& event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::Focus, true);
-	OnGotFocus(event);
 	return false;
 }
 
@@ -481,7 +483,6 @@ bool OGUI::VisualElement::OnLostFocus_Internal(struct LostFocusEvent& event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::Focus, false);
-	OnLostFocus(event);
 	return false;
 }
 

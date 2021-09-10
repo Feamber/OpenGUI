@@ -7,6 +7,7 @@
 #include "OpenGUI/Style/Style.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
+#include "event/event.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
@@ -33,6 +34,13 @@ namespace OGUI
 		void forward(float deltaTime) { time = std::clamp(time + deltaTime, 0.f, duration); }
 		void reverse() { time = duration - time; }
 		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
+	};
+
+	enum class LayoutType
+	{
+		None,
+		Flex,
+		Inline
 	};
 
 	class OGUI_API VisualElement
@@ -83,12 +91,13 @@ namespace OGUI
 		void UpdateWorldTransform();
 		Rect GetLayout();
 		Rect GetRect();
+		Rect _inlineLayout;
 		//Rect _layout;
 #pragma endregion
 
 #pragma region Style
 	public:
-
+		LayoutType _layoutType = LayoutType::Flex;
 		YGNodeRef _ygnode;
 		uint32_t _triggerPseudoMask = 0;
 		uint32_t _dependencyPseudoMask = 0;
@@ -116,7 +125,7 @@ namespace OGUI
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout();
-		void SyncYogaStyle();
+		virtual void SyncYogaStyle();
 		bool ContainClass(std::string_view c);
 		void _ResetStyles();
 		void ResetStyles();
@@ -161,25 +170,9 @@ namespace OGUI
 
 		void RegisterFocusedEvent();
 
-		// OnPre @return 返回true将阻止KeyboardFocus改变
-		virtual bool OnPreGotKeyboardFocus(struct PreGotKeyboardFocusEvent& event) { return false; };
-		virtual bool OnPreLostKeyboardFocus(struct PreLostKeyboardFocusEvent& event) { return false; };
-		virtual void OnGotKeyboardFocus(struct GotKeyboardFocusEvent& event) {};
-		virtual void OnLostKeyboardFocus(struct LostKeyboardFocusEvent& event) {};
-
-		// OnPre @return 返回true将阻止Focus改变
-		virtual bool OnPreGotFocus(struct PreGotFocusEvent& event) { return false; };
-		virtual bool OnPreLostFocus(struct PreLostFocusEvent& event) { return false; };
-		virtual void OnGotFocus(struct GotFocusEvent& event) {};
-		virtual void OnLostFocus(struct LostFocusEvent& event) {};
-
-		bool OnPreGotKeyboardFocus_Internal(struct PreGotKeyboardFocusEvent& event) { return OnPreGotKeyboardFocus(event); };
-		bool OnPreLostKeyboardFocus_Internal(struct PreLostKeyboardFocusEvent& event) { return OnPreLostKeyboardFocus(event); };
 		bool OnGotKeyboardFocus_Internal(struct GotKeyboardFocusEvent& event);
 		bool OnLostKeyboardFocus_Internal(struct LostKeyboardFocusEvent& event);
 
-		bool OnPreGotFocus_Internal(struct PreGotFocusEvent& event) { return OnPreGotFocus(event); };
-		bool OnPreLostFocus_Internal(struct PreLostFocusEvent& event) { return OnPreLostFocus(event); };
 		bool OnGotFocus_Internal(struct GotFocusEvent& event);
 		bool OnLostFocus_Internal(struct LostFocusEvent& event);
 #pragma endregion
