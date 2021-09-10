@@ -136,7 +136,7 @@ void TextParagraph::_shape_lines() {
 			}
 			if (align == HALIGN_FILL) {
 				for (int i = 0; i < lines_rid.size(); i++) {
-					if (i < visible_lines - 1 || lines_rid.size() == 1) {
+					if ((i < visible_lines - 1 || lines_rid.size() == 1) && !TS->shaped_test_is_hard_break(lines_rid[i])) {
 						
 						TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags);
 					} else if (i == (visible_lines - 1)) {
@@ -152,10 +152,17 @@ void TextParagraph::_shape_lines() {
 			// Autowrap disabled.
 			for (int i = 0; i < lines_rid.size(); i++) {
 				if (align == HALIGN_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags);
-					overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], max_width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					if(!TS->shaped_test_is_hard_break(lines_rid[i]))
+					{
+						TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags);
+						overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
+						TS->shaped_text_overrun_trim_to_width(lines_rid[i], max_width, overrun_flags);
+						TS->shaped_text_fit_to_width(lines_rid[i], i < dropcap_lines ? max_width - h_offset : max_width , flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					}
+					else 
+					{
+						TS->shaped_text_overrun_trim_to_width(lines_rid[i], max_width, overrun_flags);
+					}
 				} else {
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], max_width, overrun_flags);
 				}
@@ -236,7 +243,7 @@ bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_fonts, 
 	ERR_FAIL_COND_V(!p_fonts, false);
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
-	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
+	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, godot::Color(1, 1, 1), p_opentype_features, p_language);
 	lines_dirty = true;
 	return res;
 }
@@ -247,9 +254,9 @@ void TextParagraph::clear_dropcap() {
 	lines_dirty = true;
 }
 
-bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
+bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Color &p_color, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
 	ERR_FAIL_COND_V(!p_fonts, false);
-	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
+	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_color, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	lines_dirty = true;
@@ -748,9 +755,9 @@ void TextParagraph::draw_line_outline(OGUI::PrimDrawList& list, const Vector2 &p
 	return TS->shaped_text_draw_outline(lines_rid[p_line], list, ofs, -1, -1, p_outline_size, p_color);
 }
 
-TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Color &p_color, const Map<uint32_t, double> &p_opentype_features, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
-	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
+	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_color, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	max_width = p_width;

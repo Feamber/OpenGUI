@@ -41,6 +41,7 @@ struct Color {
 		};
 		float components[4] = { 0, 0, 0, 1.0 };
 	};
+	Color operator*(const Color &p_color) const;
 
     _FORCE_INLINE_ Color() {}
 
@@ -75,4 +76,12 @@ struct Color {
 		a = p_a;
 	}
 };
+
+_FORCE_INLINE_ Color Color::operator*(const Color &p_color) const {
+	return Color(
+			r * p_color.r,
+			g * p_color.g,
+			b * p_color.b,
+			a * p_color.a);
+}
 }

@@ -137,6 +137,7 @@ public:
 		RID font_rid; // Font resource.
 		int font_size = 0; // Font size;
 		int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs).
+		Color color;
 
 		bool operator==(const Glyph &p_a) const;
 		bool operator!=(const Glyph &p_a) const;
@@ -187,7 +188,7 @@ public:
 
 			Vector<RID> fonts;
 			int font_size = 0;
-
+			Color color = Color(1, 1, 1);
 			Variant embedded_key = nullptr;
 
 			String language;
@@ -399,7 +400,7 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) = 0;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const = 0;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") = 0;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Color &p_color = Color(1, 1, 1), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") = 0;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) = 0;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
 
@@ -414,6 +415,7 @@ public:
 	virtual bool shaped_text_update_justification_ops(RID p_shaped) = 0;
 
 	virtual bool shaped_text_is_ready(RID p_shaped) const = 0;
+	virtual bool shaped_test_is_hard_break(RID p_shaped) const;
 
 	virtual Vector<Glyph> shaped_text_get_glyphs(RID p_shaped) const = 0;
 

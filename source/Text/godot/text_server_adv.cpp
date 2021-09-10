@@ -374,7 +374,7 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 	}
 #else
 	if (icu_data == nullptr) {
-		String filename = "res/icudt69l.dat";
+		String filename = "res/icudt67l.dat";
         auto& ctx = OGUI::Context::Get().fileImpl;
         auto f = ctx->Open(filename.ascii().ptr());
 		if (!f) {
@@ -389,7 +389,6 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 		icu_data = (uint8_t *)memalloc(len);
         ctx->Read(icu_data, len, f);
         ctx->Close(f);
-		memdelete(f);
 
 		udata_setCommonData(icu_data, &err);
 		if (U_FAILURE(err)) {
@@ -3021,7 +3020,7 @@ TextServer::Orientation TextServerAdvanced::shaped_text_get_orientation(RID p_sh
 	return sd->orientation;
 }
 
-bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
+bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Color &p_color, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
@@ -3040,6 +3039,7 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	}
 
 	ShapedTextDataAdvanced::Span span;
+	span.color = p_color;
 	span.start = sd->text.length();
 	span.end = span.start + p_text.length();
 	span.fonts = p_fonts; // Do not pre-sort, spans will be divided to subruns later.
@@ -4085,6 +4085,7 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index) {
 	int fs = p_sd->spans[p_span].font_size;
+	Color color = p_sd->spans[p_span].color;
 	if (p_fb_index >= p_fonts.size()) {
 		// Add fallback glyphs.
 		for (int i = p_start; i < p_end; i++) {
@@ -4096,6 +4097,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				gl.index = p_sd->text[i];
 				gl.font_size = fs;
 				gl.font_rid = RID();
+				gl.color = color;
 				if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
 					gl.flags |= TextServer::GRAPHEME_IS_RTL;
 				}
@@ -4194,6 +4196,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 
 			gl.font_rid = p_fonts[p_fb_index];
 			gl.font_size = fs;
+			gl.color = color;
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {

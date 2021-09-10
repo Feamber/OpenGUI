@@ -461,7 +461,7 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) override;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const override;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") override;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Color &p_color = Color(1, 1, 1), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") override;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
 

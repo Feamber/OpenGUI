@@ -1,7 +1,3 @@
-
-#include "OpenGUI/VisualElement.h"
-#include "YGValue.h"
-#include "Yoga.h"
 #define DLL_IMPLEMENTATION
 #ifndef UE4Runtime
 #include "OpenGUI/Core/Math/Vector.h"
@@ -25,7 +21,7 @@ namespace OGUI
         {
             data.reset(new godot::FontData);
             auto& ctx = Context::Get().fileImpl;
-            auto f = ctx->Open("fireflysung.ttf");
+            auto f = ctx->Open("res/fireflysung.ttf");
             auto length = ctx->Length(f);
             godot::PackedByteArray buffer;
             buffer.resize(length);
@@ -143,9 +139,13 @@ namespace OGUI
     TextElement::TextElement()
     {
         _paragraph = new godot::TextParagraph;
-        const wchar_t* literal = L"I'm an artist, I'm a performance artist.\nWilliam Shakespeare was an English playwright, poet, and actor, widely regarded as the greatest writer in the English language and the world's greatest dramatist. He is often called England's national poet and the \"Bard of Avon\".真的猛士，敢于直面惨淡的人生，敢于正视淋漓的鲜血。这是怎样的哀痛者和幸福者？然而造化又常常为庸人设计，以时间的流逝，来洗涤旧迹，仅是留下淡红的血色和微漠的悲哀。在这淡红的血色和微漠的悲哀中，又给人暂得偷生，维持着这似人非人的世界。"; 
-        _paragraph->set_dropcap("My name is Van", GetTestFont(), 39);
+        const wchar_t* literal = L" name is Van.I'm an artist, I'm a performance artist.\nWilliam Shakespeare was an English playwright, poet, and actor, widely regarded as the greatest writer in the English language and the world's greatest dramatist. He is often called England's national poet and the \"Bard of Avon\".";
+        const wchar_t* literal2 = L"真的猛士，敢于直面惨淡的人生，敢于正视淋漓的鲜血。";
+        const wchar_t* literal3 = L"这是怎样的哀痛者和幸福者？然而造化又常常为庸人设计，以时间的流逝，来洗涤旧迹，仅是留下淡红的血色和微漠的悲哀。在这淡红的血色和微漠的悲哀中，又给人暂得偷生，维持着这似人非人的世界。"; 
+        _paragraph->set_dropcap("My", GetTestFont(), 39);
         _paragraph->add_string(literal, GetTestFont(), 20);
+        _paragraph->add_string(literal2, GetTestFont(), 25, godot::Color(0, 0, 1));
+        _paragraph->add_string(literal3, GetTestFont(), 20);
         _paragraph->set_align(godot::HALIGN_FILL);
         YGNodeSetMeasureFunc(_ygnode, MeasureText);
         YGNodeSetBaselineFunc(_ygnode, BaselineText);

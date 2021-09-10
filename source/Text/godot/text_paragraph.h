@@ -98,7 +98,7 @@ public:
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "");
 	void clear_dropcap();
 
-	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "");
+	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Color &p_color = Color(1, 1, 1), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "");
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
 
@@ -154,7 +154,7 @@ public:
 
 	int hit_test(const Point2 &p_coords) const;
 
-	TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
+	TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Color &p_color = Color(1, 1, 1), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
 	~TextParagraph();
 };

@@ -318,13 +318,13 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_
 				}
 			}
 			if ((p_break_flags & BREAK_WORD_BOUND) == BREAK_WORD_BOUND) {
-				if(word_count == 0)
-				{
-					last_safe_break = i;
-				}
-				else if ((l_gl[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 					last_safe_break = i;
 					word_count++;
+				}
+				else if(word_count == 0)
+				{
+					last_safe_break = i;
 				}
 			}
 			if ((p_break_flags & BREAK_GRAPHEME_BOUND) == BREAK_GRAPHEME_BOUND) {
@@ -370,6 +370,14 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_gra
 	}
 
 	return words;
+}
+
+
+bool TextServer::shaped_test_is_hard_break(RID p_shaped) const
+{
+	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
+	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
+	return (logical.back().flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD;
 }
 
 TextServer::TrimData TextServer::shaped_text_get_trim_data(RID p_shaped) const {
@@ -837,9 +845,9 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const 
 			}
 
 			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph(glyphs[i].font_rid, list, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
+				font_draw_glyph(glyphs[i].font_rid, list, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color * glyphs[i].color);
 			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
-				TextServer::draw_hex_code_box(list, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
+				TextServer::draw_hex_code_box(list, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color * glyphs[i].color);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;

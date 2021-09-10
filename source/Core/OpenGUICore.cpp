@@ -73,7 +73,7 @@ std::string FileInterface::ToFullPath(const char* path)
 
 FileHandle FileInterface::Open(const char* path)
 {
-    return ::fopen(path, "rb");
+    return fopen(path, "rb");
 }
 
 void FileInterface::Close(FileHandle file)
