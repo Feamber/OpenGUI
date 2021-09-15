@@ -377,7 +377,7 @@ bool TextServer::shaped_test_is_hard_break(RID p_shaped) const
 {
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
-	return (logical.back().flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD;
+	return logical.size() && (logical.back().flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD;
 }
 
 TextServer::TrimData TextServer::shaped_text_get_trim_data(RID p_shaped) const {

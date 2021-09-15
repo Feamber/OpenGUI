@@ -95,7 +95,7 @@ namespace OGUI
 		if (element->_prevLayout != element->GetLayout())
 			element->_transformDirty = true;
 		else
-			element->Traverse([&](VisualElement* next) { CacheLayoutRec(next); });
+			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
 	}
 	void UpdateLayout(VisualElement* element)
 	{

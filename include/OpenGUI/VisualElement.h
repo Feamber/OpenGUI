@@ -70,13 +70,17 @@ namespace OGUI
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 
 #pragma region Hierachy
+		void UpdateRoot(VisualElement* child);
 		void PushChild(VisualElement* child);
 		void InsertChild(VisualElement* child, int index);
 		void RemoveChild(VisualElement* child);
 		VisualElement* GetRoot();
+		VisualElement* GetLayoutRoot();
 
 		std::vector<VisualElement*> _children;
 		
+		VisualElement* _root = nullptr;
+		VisualElement* _layoutRoot = nullptr;
 		VisualElement* _physical_parent = nullptr;
 		//There could be some node between logical parent and this widget for layout
 		VisualElement* _logical_parent = nullptr;
@@ -91,6 +95,7 @@ namespace OGUI
 		void UpdateWorldTransform();
 		Rect GetLayout();
 		Rect GetRect();
+		Vector2f GetSize();
 		Rect _inlineLayout;
 		//Rect _layout;
 #pragma endregion
@@ -115,6 +120,7 @@ namespace OGUI
 		bool _sharedDirty = false;
 		bool _transformDirty = false;
 		bool _procedureStyleDirty = false;
+		bool _layoutDirty = false;
 		Rect _prevLayout;
 		Style _style;
 		Style _preAnimatedStyle;
@@ -122,6 +128,7 @@ namespace OGUI
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
+		virtual void MarkLayoutDirty();
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout();

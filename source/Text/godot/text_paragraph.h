@@ -69,10 +69,12 @@ private:
 	HAlign align = HALIGN_LEFT;
 
 	Vector<float> tab_stops;
+	std::function<void()> on_dirty;
 
 protected:
 
 	void _shape_lines();
+	void mark_dirty();
 
 public:
 	RID get_rid() const;
@@ -81,6 +83,7 @@ public:
 
 	void clear();
 
+	void set_on_dirty(std::function<void()> p_on_dirty) { on_dirty = p_on_dirty; }
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;
 
@@ -101,6 +104,7 @@ public:
 	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Color &p_color = Color(1, 1, 1), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "");
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
+	Vector<Variant> get_objects() const;
 
 	void set_align(HAlign p_align);
 	HAlign get_align() const;

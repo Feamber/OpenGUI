@@ -348,9 +348,9 @@ namespace OGUI {
                     if(new_text_element)
                     {
                         if(new_text_element->IsA("OGUI::TextElement"))
-                            new_text_element->_inlines.push_back(static_cast<OGUI::TextElement*>(new_child_element));
+                            new_text_element->AddInlineText(static_cast<OGUI::TextElement*>(new_child_element));
                         else
-                            new_text_element->_inlines.push_back(new_child_element);
+                            new_text_element->AddInlineElement(new_child_element);
                     }
                     else
                         new_element->PushChild(new_child_element);

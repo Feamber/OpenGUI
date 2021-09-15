@@ -3085,14 +3085,31 @@ bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, con
 	return true;
 }
 
+bool TextServerAdvanced::shaped_text_resize_object_raw(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
+	ShapedTextData *sd = shaped_owner.getornull(p_shaped);
+	ERR_FAIL_COND_V(!sd, false);
+
+	MutexLock lock(sd->mutex);
+	ERR_FAIL_COND_V(!sd->objects.has(p_key), false);
+	auto& embedded = sd->objects[p_key];
+	if(embedded.rect.size == p_size && embedded.inline_align == p_inline_align)
+		return false;
+	embedded.rect.size = p_size;
+	embedded.inline_align = p_inline_align;
+	return true;
+}
+
 bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
 	ShapedTextData *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
 	MutexLock lock(sd->mutex);
 	ERR_FAIL_COND_V(!sd->objects.has(p_key), false);
-	sd->objects[p_key].rect.size = p_size;
-	sd->objects[p_key].inline_align = p_inline_align;
+	auto& embedded = sd->objects[p_key];
+	if(embedded.rect.size == p_size && embedded.inline_align == p_inline_align)
+		return false;
+	embedded.rect.size = p_size;
+	embedded.inline_align = p_inline_align;
 	if (sd->valid) {
 		// Recalc string metrics.
 		sd->ascent = 0;

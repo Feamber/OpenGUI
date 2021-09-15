@@ -42,7 +42,7 @@ F(	display,					YGDisplay,			"flex-display",					YGDisplayFlex,					) \
 //End Yoga props																								
 //Begin draw props		
 #define TEXTPROP(F) \
-F(	fontSize,					float,				"font-size",					0.f,							) \
+F(	fontSize,					float,				"font-size",					20.f,							) \
 
 
 #define SHAPEPROP(F) \

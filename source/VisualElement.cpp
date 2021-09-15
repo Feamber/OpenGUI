@@ -153,9 +153,19 @@ void OGUI::VisualElement::DestoryTree(VisualElement* element)
 	}
 }
 
+void OGUI::VisualElement::UpdateRoot(VisualElement* child)
+{
+	child->_root = GetRoot();
+	if(child->_layoutType == _layoutType)
+		child->_layoutRoot = GetLayoutRoot();
+}
+
 void OGUI::VisualElement::PushChild(VisualElement* child)
 {
+	child->_physical_parent = this;
 	InsertChild(child, _children.size());
+	child->_layoutType = LayoutType::Flex;
+	UpdateRoot(child);
 }
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
@@ -163,6 +173,8 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 	child->_physical_parent = this;
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
 	_children.insert(_children.begin() + index, child);
+	child->_layoutType = LayoutType::Flex;
+	UpdateRoot(child);
 }
 
 void OGUI::VisualElement::RemoveChild(VisualElement* child)
@@ -171,15 +183,18 @@ void OGUI::VisualElement::RemoveChild(VisualElement* child)
     YGNodeRemoveChild(_ygnode, child->_ygnode);
 	auto end = std::remove(_children.begin(), _children.end(), child);
 	_children.erase(end, _children.end());
+	child->_root = child->_layoutRoot = nullptr;
+	child->_layoutType = LayoutType::None;
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetRoot()
 {
-	if(auto Parent = GetHierachyParent())
-	{
-		return Parent->GetRoot();
-	}
-	return this;
+	return _root ? _root : this;
+}
+
+OGUI::VisualElement* OGUI::VisualElement::GetLayoutRoot()
+{
+	return _layoutRoot ? _layoutRoot : this;
 }
 
 void OGUI::VisualElement::CalculateLayout()
@@ -187,6 +202,7 @@ void OGUI::VisualElement::CalculateLayout()
 	//TODO: mark transform dirty
 	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
 	YGNodeSetHasNewLayout(_ygnode, false);
+	_transformDirty = true;
 }
 
 void OGUI::VisualElement::UpdateWorldTransform()
@@ -241,11 +257,27 @@ OGUI::Rect OGUI::VisualElement::GetRect()
 	};
 }
 
+OGUI::Vector2f OGUI::VisualElement::GetSize()
+{
+	return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
+}
+
+void OGUI::VisualElement::MarkLayoutDirty()
+{
+}
+
 void OGUI::VisualElement::SyncYogaStyle()
 {
 	if (!_ygnode)
 		return;
 	Context::Get()._layoutDirty = true;
+	auto p = this;
+	while(p!=nullptr)
+	{
+		p = p->GetLayoutRoot();
+		p->MarkLayoutDirty();
+		p = p->GetHierachyParent();
+	}
 	YGNodeStyleSetFlex(_ygnode, _style.flex);
 	YGNodeStyleSetFlexGrow(_ygnode, _style.flexGrow);
 	YGNodeStyleSetFlexShrink(_ygnode, _style.flexShrink);

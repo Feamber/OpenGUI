@@ -1,5 +1,8 @@
+
+#include "Yoga.h"
 #define DLL_IMPLEMENTATION
 #ifndef UE4Runtime
+#include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/Math/Vector.h"
 #include <memory>
 #include <vector>
@@ -11,6 +14,11 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "godot/text_server_adv.h"
 
+
+    // helper type for the visitor #4
+    template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+    // explicit deduction guide (not needed as of C++20)
+    template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 namespace OGUI
 {
 
@@ -52,6 +60,7 @@ namespace OGUI
     YGMeasureMode heightMode)
     {
         auto te = (TextElement*)YGNodeGetContext(node);
+        te->BuildParagraph();
         switch (widthMode) {
         case YGMeasureModeExactly:
         case YGMeasureModeAtMost:
@@ -70,7 +79,39 @@ namespace OGUI
             te->_paragraph->set_max_height(-1);
         }
 
+        auto inlineElements = te->_paragraph->get_objects();
+        for(auto i : inlineElements)
+        {
+            auto ie = (VisualElement*)i;
+            YGDirection dir;
+            switch (te->_paragraph->get_direction()) {
+            case godot::TextServer::DIRECTION_RTL:
+                dir = YGDirectionRTL;
+                break;
+            case godot::TextServer::DIRECTION_LTR:
+            default:
+                dir = YGDirectionLTR;
+            }
+            YGNodeCalculateLayout(ie->_ygnode, width, height, dir);
+            auto esize = ie->GetSize();
+            te->_paragraph->resize_object(i, {esize.X, esize.Y});
+        }
         auto size = te->_paragraph->get_size();
+
+        auto lineCount = te->_paragraph->get_line_count();
+        for(int i=0; i<lineCount; ++i)
+        {
+            auto lineElements = te->_paragraph->get_line_objects(i);
+            for(auto j : lineElements)
+            {
+                auto je = (VisualElement*)j;
+                auto rect = te->_paragraph->get_line_object_rect(i, j);
+                je->_inlineLayout = {
+                    Vector2f{rect.position.x, rect.position.y},
+                    Vector2f{rect.position.x + rect.size.x, rect.position.y + rect.size.y}
+                };
+            }
+        }
         YGSize result;
     
         switch (widthMode) {
@@ -98,6 +139,63 @@ namespace OGUI
         auto te = (TextElement*)YGNodeGetContext(node);
         return height - te->_paragraph->get_line_ascent(0);
     }
+
+    void TextElement::AddInlineElement(VisualElement* element)
+    {
+        _inlines.push_back(InlineType{element});
+        element->_layoutType = LayoutType::Inline;
+        element->_physical_parent = this;
+        UpdateRoot(element);
+        _paragraphDirty = true;
+    }
+
+    void TextElement::AddInlineText(TextElement* text)
+    {
+        _inlines.push_back(InlineType{text});
+        text->_layoutType = LayoutType::Inline;
+        text->_physical_parent = this;
+        UpdateRoot(text);
+        _paragraphDirty = true;
+    }
+
+    void TextElement::AddText(ostr::string text)
+    {
+        _inlines.push_back(InlineType{text});
+        _paragraphDirty = true;
+    }
+
+    void TextElement::BuildParagraph()
+    {
+        if(_paragraphDirty)
+        {
+            _paragraph->clear();
+            BuildParagraphRec(_paragraph);
+            MarkLayoutDirty();
+        }
+    }
+
+    void TextElement::BuildParagraphRec(godot::TextParagraph* p)
+    {
+        for(auto& inl : _inlines)
+        {
+            std::visit(overloaded
+            {
+                [&](ostr::string& text) 
+                { 
+                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), _style.fontSize); 
+                },
+                [&](VisualElement*& child) 
+                { 
+                    auto esize = child->GetSize();
+                    p->add_object(child, {esize.X, esize.Y}); 
+                },
+                [&](TextElement*& child) 
+                { 
+                    child->BuildParagraphRec(p); 
+                }
+            }, inl);
+        }
+    }
     
     void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
     {
@@ -108,19 +206,15 @@ namespace OGUI
         PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform, Ctx.resolution);
     }
 
+    void TextElement::MarkLayoutDirty()
+    {
+        YGNodeMarkDirty(_ygnode);
+    }
+
     void TextElement::SyncYogaStyle()
     {
         VisualElement::SyncYogaStyle();
-        if(_style.width != YGValueAuto && _style.width != YGValueUndefined)
-            _paragraph->set_max_width(_style.width.value);
-        if(_style.height != YGValueAuto && _style.height != YGValueUndefined)
-            _paragraph->set_max_height(_style.height.value);
     };
-
-    // helper type for the visitor #4
-    template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-    // explicit deduction guide (not needed as of C++20)
-    template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
     void TextElement::GetChildren(std::vector<VisualElement *>& children)
     {
@@ -139,13 +233,7 @@ namespace OGUI
     TextElement::TextElement()
     {
         _paragraph = new godot::TextParagraph;
-        const wchar_t* literal = L" name is Van.I'm an artist, I'm a performance artist.\nWilliam Shakespeare was an English playwright, poet, and actor, widely regarded as the greatest writer in the English language and the world's greatest dramatist. He is often called England's national poet and the \"Bard of Avon\".";
-        const wchar_t* literal2 = L"真的猛士，敢于直面惨淡的人生，敢于正视淋漓的鲜血。";
-        const wchar_t* literal3 = L"这是怎样的哀痛者和幸福者？然而造化又常常为庸人设计，以时间的流逝，来洗涤旧迹，仅是留下淡红的血色和微漠的悲哀。在这淡红的血色和微漠的悲哀中，又给人暂得偷生，维持着这似人非人的世界。"; 
-        _paragraph->set_dropcap("My", GetTestFont(), 39);
-        _paragraph->add_string(literal, GetTestFont(), 20);
-        _paragraph->add_string(literal2, GetTestFont(), 25, godot::Color(0, 0, 1));
-        _paragraph->add_string(literal3, GetTestFont(), 20);
+        _paragraph->set_on_dirty([this]() {MarkLayoutDirty();});
         _paragraph->set_align(godot::HALIGN_FILL);
         YGNodeSetMeasureFunc(_ygnode, MeasureText);
         YGNodeSetBaselineFunc(_ygnode, BaselineText);

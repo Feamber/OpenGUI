@@ -1679,7 +1679,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
       ? availableHeight
       : YGFloatMax(0, availableHeight - paddingAndBorderAxisColumn);
 
-  if (widthMeasureMode == YGMeasureModeExactly &&
+  /*if (widthMeasureMode == YGMeasureModeExactly &&
       heightMeasureMode == YGMeasureModeExactly) {
     // Don't bother sizing the text if both dimensions are already defined.
     node->setLayoutMeasuredDimension(
@@ -1694,7 +1694,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
             ownerHeight,
             ownerWidth),
         YGDimensionHeight);
-  } else {
+  } else */{
     Event::publish<Event::MeasureCallbackStart>(node);
 
     // Measure the text under the current constraints.

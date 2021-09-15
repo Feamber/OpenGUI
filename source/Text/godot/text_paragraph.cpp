@@ -172,6 +172,16 @@ void TextParagraph::_shape_lines() {
 	}
 }
 
+void TextParagraph::mark_dirty()
+{
+	if(!lines_dirty)
+	{
+		lines_dirty = true;
+		if(on_dirty)
+			on_dirty();
+	}
+}
+
 RID TextParagraph::get_rid() const {
 	return rid;
 }
@@ -200,7 +210,7 @@ void TextParagraph::clear() {
 void TextParagraph::set_preserve_invalid(bool p_enabled) {
 	TS->shaped_text_set_preserve_invalid(rid, p_enabled);
 	TS->shaped_text_set_preserve_invalid(dropcap_rid, p_enabled);
-	lines_dirty = true;
+	mark_dirty();
 }
 
 bool TextParagraph::get_preserve_invalid() const {
@@ -210,7 +220,7 @@ bool TextParagraph::get_preserve_invalid() const {
 void TextParagraph::set_preserve_control(bool p_enabled) {
 	TS->shaped_text_set_preserve_control(rid, p_enabled);
 	TS->shaped_text_set_preserve_control(dropcap_rid, p_enabled);
-	lines_dirty = true;
+	mark_dirty();
 }
 
 bool TextParagraph::get_preserve_control() const {
@@ -220,7 +230,7 @@ bool TextParagraph::get_preserve_control() const {
 void TextParagraph::set_direction(TextServer::Direction p_direction) {
 	TS->shaped_text_set_direction(rid, p_direction);
 	TS->shaped_text_set_direction(dropcap_rid, p_direction);
-	lines_dirty = true;
+	mark_dirty();
 }
 
 TextServer::Direction TextParagraph::get_direction() const {
@@ -231,7 +241,7 @@ TextServer::Direction TextParagraph::get_direction() const {
 void TextParagraph::set_orientation(TextServer::Orientation p_orientation) {
 	TS->shaped_text_set_orientation(rid, p_orientation);
 	TS->shaped_text_set_orientation(dropcap_rid, p_orientation);
-	lines_dirty = true;
+	mark_dirty();
 }
 
 TextServer::Orientation TextParagraph::get_orientation() const {
@@ -244,14 +254,14 @@ bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_fonts, 
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
 	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, godot::Color(1, 1, 1), p_opentype_features, p_language);
-	lines_dirty = true;
+	mark_dirty();
 	return res;
 }
 
 void TextParagraph::clear_dropcap() {
 	dropcap_margins = Rect2();
 	TS->shaped_text_clear(dropcap_rid);
-	lines_dirty = true;
+	mark_dirty();
 }
 
 bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Color &p_color, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
@@ -259,7 +269,7 @@ bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, i
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_color, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
-	lines_dirty = true;
+	mark_dirty();
 	return res;
 }
 
@@ -273,26 +283,34 @@ int TextParagraph::get_spacing_bottom() const {
 
 void TextParagraph::set_bidi_override(const Vector<Vector2i> &p_override) {
 	TS->shaped_text_set_bidi_override(rid, p_override);
-	lines_dirty = true;
+	mark_dirty();
 }
 
 bool TextParagraph::add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
 	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length);
-	lines_dirty = true;
+	mark_dirty();
 	return res;
 }
 
 bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
-	bool res = TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align);
-	lines_dirty = true;
-	return res;
+	if(TS->shaped_text_resize_object_raw(rid, p_key, p_size, p_inline_align))
+	{
+		mark_dirty();
+		return true;
+	}
+	return false;
+}
+
+Vector<Variant> TextParagraph::get_objects() const
+{
+	return TS->shaped_text_get_objects(rid);
 }
 
 void TextParagraph::set_align(HAlign p_align) {
 	if (align != p_align) {
 		if (align == HALIGN_FILL || p_align == HALIGN_FILL) {
 			align = p_align;
-			lines_dirty = true;
+			mark_dirty();
 		} else {
 			align = p_align;
 		}
@@ -305,13 +323,13 @@ HAlign TextParagraph::get_align() const {
 
 void TextParagraph::tab_align(const Vector<float> &p_tab_stops) {
 	tab_stops = p_tab_stops;
-	lines_dirty = true;
+	mark_dirty();
 }
 
 void TextParagraph::set_flags(uint8_t p_flags) {
 	if (flags != p_flags) {
 		flags = p_flags;
-		lines_dirty = true;
+		mark_dirty();
 	}
 }
 
@@ -322,7 +340,7 @@ uint8_t TextParagraph::get_flags() const {
 void TextParagraph::set_text_overrun_behavior(TextParagraph::OverrunBehavior p_behavior) {
 	if (overrun_behavior != p_behavior) {
 		overrun_behavior = p_behavior;
-		lines_dirty = true;
+		mark_dirty();
 	}
 }
 
@@ -333,7 +351,7 @@ TextParagraph::OverrunBehavior TextParagraph::get_text_overrun_behavior() const 
 void TextParagraph::set_max_width(float p_width) {
 	if (max_width != p_width) {
 		max_width = p_width;
-		lines_dirty = true;
+		mark_dirty();
 	}
 }
 
@@ -345,7 +363,7 @@ void TextParagraph::set_max_height(float p_height)
 {
 	if (max_height != p_height) {
 		max_height = p_height;
-		lines_dirty = true;
+		mark_dirty();
 	}
 }
 
@@ -388,7 +406,7 @@ int TextParagraph::get_line_count() const {
 void TextParagraph::set_max_lines_visible(int p_lines) {
 	if (p_lines != max_lines_visible) {
 		max_lines_visible = p_lines;
-		lines_dirty = true;
+		mark_dirty();
 	}
 }
 

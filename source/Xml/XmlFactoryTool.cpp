@@ -21,7 +21,7 @@ namespace OGUI
     {
         auto textVisualElement = dynamic_cast<OGUI::TextElement*>(context.stack.front());
         if (textVisualElement)
-            textVisualElement->_inlines.push_back(ostr::string(asset.text));
+            textVisualElement->AddText(ostr::string(asset.text));
         return nullptr;
     }
 

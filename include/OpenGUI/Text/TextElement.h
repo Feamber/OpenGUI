@@ -22,10 +22,19 @@ namespace OGUI
         std::vector<InlineType> _inlines;
 
         godot::TextParagraph* _paragraph = nullptr;
+        bool _paragraphDirty = false;
 
+        void AddInlineElement(VisualElement* element);
+        void AddInlineText(TextElement* text);
+        void AddText(ostr::string text);
+        void BuildParagraph();
+
+        void MarkLayoutDirty() override;
         void GetChildren(std::vector<VisualElement *>& Children) override;
         void DrawPrimitive(PrimitiveDraw::DrawContext &Ctx) override;
         void SyncYogaStyle() override;
+
+        void BuildParagraphRec(godot::TextParagraph* p);
     };
 }
 #endif
