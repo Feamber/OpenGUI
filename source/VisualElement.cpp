@@ -1,3 +1,4 @@
+#include "Yoga.h"
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Configure.h"
@@ -201,8 +202,11 @@ void OGUI::VisualElement::CalculateLayout()
 {
 	//TODO: mark transform dirty
 	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
-	YGNodeSetHasNewLayout(_ygnode, false);
-	_transformDirty = true;
+	if(YGNodeGetHasNewLayout(_ygnode))
+	{
+		YGNodeSetHasNewLayout(_ygnode, false);
+		_transformDirty = true;
+	}
 }
 
 void OGUI::VisualElement::UpdateWorldTransform()
@@ -213,7 +217,7 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	if (parent)
 	{
 		auto playout = parent->GetLayout();
-		auto offset = (layout.min + layout.max)/2 -(playout.max - playout.min) / 2;
+		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		_worldTransform = math::make_transform_2d(offset + _style.translation, _style.rotation, _style.scale);
 		_worldTransform = multiply(_worldTransform, parent->_worldTransform);
 	}

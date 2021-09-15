@@ -1,4 +1,5 @@
 
+#include "YGValue.h"
 #include "Yoga.h"
 #define DLL_IMPLEMENTATION
 #ifndef UE4Runtime
@@ -83,35 +84,12 @@ namespace OGUI
         for(auto i : inlineElements)
         {
             auto ie = (VisualElement*)i;
-            YGDirection dir;
-            switch (te->_paragraph->get_direction()) {
-            case godot::TextServer::DIRECTION_RTL:
-                dir = YGDirectionRTL;
-                break;
-            case godot::TextServer::DIRECTION_LTR:
-            default:
-                dir = YGDirectionLTR;
-            }
-            YGNodeCalculateLayout(ie->_ygnode, width, height, dir);
+            ie->CalculateLayout(); //TODO: dir
+            //YGNodeCalculateLayout(ie->_ygnode, YGUndefined, YGUndefined, dir);
             auto esize = ie->GetSize();
             te->_paragraph->resize_object(i, {esize.X, esize.Y});
         }
         auto size = te->_paragraph->get_size();
-
-        auto lineCount = te->_paragraph->get_line_count();
-        for(int i=0; i<lineCount; ++i)
-        {
-            auto lineElements = te->_paragraph->get_line_objects(i);
-            for(auto j : lineElements)
-            {
-                auto je = (VisualElement*)j;
-                auto rect = te->_paragraph->get_line_object_rect(i, j);
-                je->_inlineLayout = {
-                    Vector2f{rect.position.x, rect.position.y},
-                    Vector2f{rect.position.x + rect.size.x, rect.position.y + rect.size.y}
-                };
-            }
-        }
         YGSize result;
     
         switch (widthMode) {
@@ -130,6 +108,25 @@ namespace OGUI
         case YGMeasureModeAtMost:
         default:
             result.height = size.height;
+        }
+
+        auto lineCount = te->_paragraph->get_line_count();
+        Vector2f off{0, 0};
+        Vector2f start{0, result.height};
+        for(int i=0; i<lineCount; ++i)
+        {
+            off.y -= te->_paragraph->get_line_ascent(i) + te->_paragraph->get_spacing_top();
+            auto lineElements = te->_paragraph->get_line_objects(i);
+            for(auto j : lineElements)
+            {
+                auto je = (VisualElement*)j;
+                auto rect = te->_paragraph->get_line_object_rect(i, j);
+                je->_inlineLayout = {
+                    Vector2f{rect.position.x, -rect.position.y - rect.size.y } + off + start,
+                    Vector2f{rect.position.x+rect.size.x, -rect.position.y } + off + start
+                };
+            }
+            off.y -= te->_paragraph->get_line_descent(i) + te->_paragraph->get_spacing_bottom();
         }
         return result;
     }
@@ -199,7 +196,7 @@ namespace OGUI
     
     void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
     {
-        //VisualElement::DrawPrimitive(Ctx);
+        VisualElement::DrawPrimitive(Ctx);
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1), godot::Color(1, 0, 0));
@@ -224,8 +221,14 @@ namespace OGUI
             std::visit(overloaded
             {
                 [](ostr::string& ) {},
-                [&](VisualElement*& child) { children.push_back(child); },
-                [&](TextElement*& child) { children.push_back(child); }
+                [&](VisualElement*& child) 
+                { 
+                    children.push_back(child); 
+                },
+                [&](TextElement*& child) 
+                { 
+                    children.push_back(child); 
+                }
             }, inl);
         }
     }

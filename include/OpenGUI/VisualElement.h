@@ -53,7 +53,7 @@ namespace OGUI
 		VisualElement* GetHierachyParent();
 		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 
-		virtual bool IsA(std::string_view type) { return GetTypeName() == type; }
+		virtual bool IsA(std::string_view type) { return GetFullTypeName() == type; }
 		virtual std::string_view GetTypeName() { return "VisualElement"; }
 		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
 

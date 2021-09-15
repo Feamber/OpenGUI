@@ -54,12 +54,12 @@ namespace OGUI
 		element->DrawPrimitive(ctx);
 		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 	}
-	void TransformRec(VisualElement* element)
+	void TransformRec(VisualElement* element, bool dirty = false)
 	{
-		bool dirty = element->_transformDirty;
+		dirty |= element->_transformDirty;
 		if(dirty)
 			element->UpdateWorldTransform();
-		element->Traverse([&](VisualElement* next) { if(dirty) next->_transformDirty = true; TransformRec(next); });
+		element->Traverse([&](VisualElement* next) { TransformRec(next, dirty); });
 	}
 
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)

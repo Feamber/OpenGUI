@@ -347,7 +347,7 @@ namespace OGUI {
                 {
                     if(new_text_element)
                     {
-                        if(new_text_element->IsA("OGUI::TextElement"))
+                        if(new_child_element->IsA("OGUI::TextElement"))
                             new_text_element->AddInlineText(static_cast<OGUI::TextElement*>(new_child_element));
                         else
                             new_text_element->AddInlineElement(new_child_element);
