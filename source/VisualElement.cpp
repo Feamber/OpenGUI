@@ -218,6 +218,7 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	{
 		auto playout = parent->GetLayout();
 		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
+		offset.y = -offset.y;
 		_worldTransform = math::make_transform_2d(offset + _style.translation, _style.rotation, _style.scale);
 		_worldTransform = multiply(_worldTransform, parent->_worldTransform);
 	}

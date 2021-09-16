@@ -1,3 +1,4 @@
+#include <memory>
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Context.h"
@@ -13,6 +14,7 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
+#include "text/godot/text_server_adv.h"
 
 OGUI::WindowContext::WindowContext()
 {
@@ -26,25 +28,13 @@ OGUI::WindowContext::~WindowContext()
 		VisualElement::DestoryTree(ui);
 };
 
-void OGUI::Context::Initialize(
-	InputInterface* I, SystemInterface* S,
-	RenderInterface* R, FileInterface* F,
-	BitmapParserInterface* B)
+godot::TextServer* OGUI::Context::GetTextServer()
 {
-	OASSERT(initialized);
-	inputImpl.reset(I);
-	systemImpl.reset(S);
-	if(F)
+	if(!_textServer)
 	{
-		fileImpl.reset(F);
-	} else {
-		fileImpl = std::make_unique<FileInterface>();
+		_textServer = std::make_unique<godot::TextServerAdvanced>();
 	}
-	
-	bmParserImpl.reset(B);
-	ioThread = std::make_unique<OGUI::IOThread>();
-
-	initialized = true;
+	return _textServer.get();
 }
 
 namespace OGUI

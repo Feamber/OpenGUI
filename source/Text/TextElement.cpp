@@ -30,7 +30,9 @@ namespace OGUI
         {
             data.reset(new godot::FontData);
             auto& ctx = Context::Get().fileImpl;
-            auto f = ctx->Open("res/fireflysung.ttf");
+            auto f = ctx->Open("res/Vera.ttf");
+            if(!f)
+                return nullptr;
             auto length = ctx->Length(f);
             godot::PackedByteArray buffer;
             buffer.resize(length);

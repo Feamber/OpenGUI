@@ -201,6 +201,7 @@ public:
 			{
 				tex.second.Release();
 			}
+			ogui_textures.clear();
 			wgpuBindGroupLayoutRelease(bindGroupLayout);
 			wgpuRenderPipelineRelease(pipeline);
 			wgpuSwapChainRelease(swapchain);
@@ -656,9 +657,13 @@ public:
 
 	void ReleaseTexture(TextureHandle h)
 	{
-		if(h)
-			window.ogui_textures.erase(h);
-		window.ogui_textures[h].Release();
+		if(!h)
+			return;
+		auto iter = window.ogui_textures.find(h);
+		if(iter == window.ogui_textures.end())
+			return;
+		iter->second.Release();
+		window.ogui_textures.erase(iter);
 	}
 
 	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap &) override

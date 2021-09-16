@@ -1,4 +1,5 @@
 #define DLL_IMPLEMENTATION
+#include "OpenGUI/Context.h"
 #include "config.h"
 #include "rid_owner.h"
 #include "text_server_adv.h"
@@ -25,7 +26,6 @@ SafeNumeric<uint64_t> RID_AllocBase::base_id{ 1 };
 
 class TextServer* get_text_server()
 {
-    static TextServerAdvanced instance;
-    return &instance;
+    return OGUI::Context::Get().GetTextServer();
 }
 }

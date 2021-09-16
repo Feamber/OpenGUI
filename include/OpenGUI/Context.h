@@ -10,6 +10,12 @@
 #include <memory>
 #include <vector>
 
+
+namespace godot
+{
+	class TextServer;
+}
+
 namespace OGUI
 {
 	namespace PrimitiveDraw
@@ -52,8 +58,6 @@ namespace OGUI
 	public:
 		Context();
 		~Context();
-		//Initialize
-		void Initialize(InputInterface*,SystemInterface*,RenderInterface*,FileInterface*,BitmapParserInterface*);
 
 #pragma region FocusNavigation
 		std::vector<EKeyCode> keyNavigation_Up {EKeyCode::W, EKeyCode::Up};
@@ -105,6 +109,7 @@ namespace OGUI
 		static Context& Get();
 		VisualElement* _elementUnderCursor = nullptr;
 	public:
+		std::unique_ptr<godot::TextServer> _textServer;
 		//Hooks
 		std::unique_ptr<InputInterface>  inputImpl;
 		std::unique_ptr<SystemInterface> systemImpl;
@@ -114,7 +119,8 @@ namespace OGUI
 		std::unique_ptr<BitmapParserInterface>   bmParserImpl;
 		//Components
 		std::unique_ptr<IOThread>        ioThread;
-		std::vector<std::unique_ptr<WindowContext>>       windowContexts; // Update Per Frame
+		std::vector<std::unique_ptr<WindowContext>>   windowContexts; // Update Per Frame
+		godot::TextServer* GetTextServer();
 		//States
 		bool initialized = false;
 		int pointerDownCount = 0;

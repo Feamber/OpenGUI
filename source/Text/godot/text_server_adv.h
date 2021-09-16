@@ -41,6 +41,7 @@
 #include "script_iterator.h"
 #include "rid_owner.h"
 
+#include <memory>
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
 #include <unicode/uchar.h>
@@ -78,11 +79,13 @@ public:
 struct TextureRef
 {
 	OGUI::TextureHandle handle = nullptr;
-	std::shared_ptr<OGUI::RenderInterface> renderImpl;
+	std::weak_ptr<OGUI::RenderInterface> renderImpl;
 	~TextureRef()
 	{
-		if(handle)
-			renderImpl->ReleaseTexture(handle);
+		if(!handle)
+			return;
+		if(auto impl = renderImpl.lock())
+			impl->ReleaseTexture(handle);
 	}
 };
 

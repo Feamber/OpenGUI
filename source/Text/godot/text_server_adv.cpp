@@ -1101,8 +1101,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 		if (!tex.texture.handle) {
 			tex.texture.handle = ctx->RegisterTexture(bitmap);
 			tex.texture.renderImpl = ctx;
-		} else {
-			tex.texture.renderImpl->UpdateTexture(tex.texture.handle, bitmap);
+		} else if(auto impl  = tex.texture.renderImpl.lock()) {
+			impl->UpdateTexture(tex.texture.handle, bitmap);
 		}
 	}
 
