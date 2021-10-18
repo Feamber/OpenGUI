@@ -124,7 +124,7 @@ namespace OGUI
 
     bool IXmlFactory_VisualElement::InitAttribute(VisualElement &new_element, const XmlElement &asset, CreationContext &context)
     {
-        auto& propeManager = Context::Get().propeManager;
+        auto& propManager = Context::Get().propManager;
 
         if(focusable) new_element.focusable = focusable.value();
         if(navMode)
@@ -153,7 +153,7 @@ namespace OGUI
         if(name) new_element._name = name.value();
         else if(name_bind)
         {
-            new_element._allListenHandle.push_back(propeManager.ListenProperty(PropertyPath::Make(name_bind.value()), 
+            new_element._allListenHandle.push_back(propManager.ListenProperty(PropertyPath::Make(name_bind.value()), 
 			[&new_element](const PropeChangeCause cause, Property& listenTarget)
 			{
 				if(!(cause == PropeChangeCause::PropeChange || cause == PropeChangeCause::RegisterProperty))

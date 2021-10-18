@@ -125,7 +125,7 @@ namespace OGUI
 		bool initialized = false;
 		int pointerDownCount = 0;
 
-		PropertyManager propeManager;
+		PropertyManager propManager;
 	protected:
 		WindowContext& GetWindowContext(const WindowHandle window);
 		WindowContext& GetOrRegisterWindowContext(const WindowHandle window);

@@ -24,8 +24,6 @@
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Core/DynamicAtlasResource.h"
 #include "efsw/efsw.hpp"
-
-#include "OpenGUI/Text/FontRendering.h"
 #include "webgpu.h"
 
 
@@ -777,10 +775,10 @@ int main(int , char* []) {
 		ctx.bmParserImpl = std::make_unique<BitmapParser>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.logImpl = std::make_unique<SpdlogLogger>();
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 	BuildSDLMap();
 
@@ -834,10 +832,10 @@ int main(int , char* []) {
 		ctx.bmParserImpl = std::make_unique<BitmapParser>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.logImpl = std::make_unique<SpdlogLogger>();
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 	BuildSDLMap();
 
@@ -874,20 +872,20 @@ int main(int , char* []) {
 		if(win2) win2->Update();
 		
 		dataBindTest = dataBindTest == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName"));
+		ctx.propManager.PropertyChange(PropertyPath::Make("GName"));
 
 		dataBindTest2 = dataBindTest2 == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName2"));
+		ctx.propManager.PropertyChange(PropertyPath::Make("GName2"));
 
 		dataBindTest3 = dataBindTest3 == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName3"));
+		ctx.propManager.PropertyChange(PropertyPath::Make("GName3"));
 
 		dataBindTest4 = dataBindTest4 == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName4"));
+		ctx.propManager.PropertyChange(PropertyPath::Make("GName4"));
 
 	}
 
-	ctx.propeManager.UnRegisterProperty(PropertyPath::Make("GName"));
+	ctx.propManager.UnRegisterProperty(PropertyPath::Make("GName"));
 	SDL_Quit();
 	return 0;
 }
