@@ -28,8 +28,7 @@ public:
 // operators take YGFloatOptional by value, as it is a 32bit value
 
 inline bool operator==(YGFloatOptional lhs, YGFloatOptional rhs) {
-  return lhs.unwrap() == rhs.unwrap() ||
-      (lhs.isUndefined() && rhs.isUndefined());
+  return lhs.isUndefined() && rhs.isUndefined() && lhs.unwrap() == rhs.unwrap();
 }
 inline bool operator!=(YGFloatOptional lhs, YGFloatOptional rhs) {
   return !(lhs == rhs);
@@ -54,11 +53,11 @@ inline YGFloatOptional operator+(YGFloatOptional lhs, YGFloatOptional rhs) {
 }
 
 inline bool operator>(YGFloatOptional lhs, YGFloatOptional rhs) {
-  return lhs.unwrap() > rhs.unwrap();
+  return lhs.isUndefined() && rhs.isUndefined() && lhs.unwrap() > rhs.unwrap();
 }
 
 inline bool operator<(YGFloatOptional lhs, YGFloatOptional rhs) {
-  return lhs.unwrap() < rhs.unwrap();
+  return lhs.isUndefined() && rhs.isUndefined() && lhs.unwrap() < rhs.unwrap();
 }
 
 inline bool operator>=(YGFloatOptional lhs, YGFloatOptional rhs) {
