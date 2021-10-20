@@ -65,17 +65,13 @@ float YGFloatSanitize(const float val) {
 }
 
 YGFloatOptional YGFloatOptionalMax(YGFloatOptional op1, YGFloatOptional op2) {
-  if(op1.isUndefined())
-      return op2;
-  if (op2.isUndefined())
-      return op1;
   if (op1 >= op2) {
     return op1;
   }
   if (op2 > op1) {
     return op2;
   }
-  return op1;
+  return op1.isUndefined() ? op2 : op1;
 }
 
 void throwLogicalErrorWithMessage(const char* message) {

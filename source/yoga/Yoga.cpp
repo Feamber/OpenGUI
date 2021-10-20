@@ -531,19 +531,6 @@ void updateStyle(YGNode* node, Ref (YGStyle::*prop)(), T value) {
       [prop](YGStyle& s, T x) { (s.*prop)() = x; });
 }
 
-template <typename Ref>
-void updateStyle(YGNode* node, Ref(YGStyle::* prop)(), YGFloatOptional value) {
-    updateStyle(
-        node,
-        value,
-        [prop](YGStyle& s, YGFloatOptional x)
-        {
-            YGFloatOptional value = (s.*prop)();
-            return value.isUndefined() || (s.*prop)() != x; 
-        },
-        [prop](YGStyle& s, YGFloatOptional x) { (s.*prop)() = x; });
-}
-
 template <typename Ref, typename Idx>
 void updateIndexedStyleProp(
     YGNode* node,
@@ -1177,11 +1164,11 @@ static YGFloatOptional YGNodeBoundAxisWithinMinAndMax(
         node->getStyle().maxDimensions()[YGDimensionWidth], axisSize);
   }
 
-  if (!max.isUndefined() && max >= YGFloatOptional{0} && value > max) {
+  if (max >= YGFloatOptional{0} && value > max) {
     return max;
   }
 
-  if (!min.isUndefined() &&  min >= YGFloatOptional{0} && value < min) {
+  if (min >= YGFloatOptional{0} && value < min) {
     return min;
   }
 
@@ -1679,7 +1666,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
       ? availableHeight
       : YGFloatMax(0, availableHeight - paddingAndBorderAxisColumn);
 
-  /*if (widthMeasureMode == YGMeasureModeExactly &&
+  if (widthMeasureMode == YGMeasureModeExactly &&
       heightMeasureMode == YGMeasureModeExactly) {
     // Don't bother sizing the text if both dimensions are already defined.
     node->setLayoutMeasuredDimension(
@@ -1694,7 +1681,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
             ownerHeight,
             ownerWidth),
         YGDimensionHeight);
-  } else */{
+  } else {
     Event::publish<Event::MeasureCallbackStart>(node);
 
     // Measure the text under the current constraints.
