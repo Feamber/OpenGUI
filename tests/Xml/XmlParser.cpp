@@ -5,22 +5,22 @@
 #include "OpenGUI/VisualElement.h"
 
 #include <fstream>
-/*
+
 TEST_CASE("XmlParser", "[XmlAsset]")
 {
     using namespace OGUI;
-    // for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         auto asset = XmlAsset::LoadXmlFile("XmlParserTest.xml");
         REQUIRE(asset);
         VisualElement* ins = asset->Instantiate();
         REQUIRE(ins);
 
-        auto Text = (TextVisualElement*)ins->_children[1];
-        REQUIRE(Text->_name == "Text");
-        REQUIRE(Text->_texts[0] == "aaaa");
-        auto TextChild = (TextVisualElement*)(Text->_children[0]->_children[0]);
-        REQUIRE(TextChild->_texts[0] == "ssss");
-        REQUIRE(Text->_texts[1] == "bbbb");
+        // auto Text = (TextVisualElement*)ins->_children[1];
+        // REQUIRE(Text->_name == "Text");
+        // REQUIRE(Text->_texts[0] == "aaaa");
+        // auto TextChild = (TextVisualElement*)(Text->_children[0]->_children[0]);
+        // REQUIRE(TextChild->_texts[0] == "ssss");
+        // REQUIRE(Text->_texts[1] == "bbbb");
 
         auto A = ins->_children[0];
         REQUIRE(A->_name == "A");
@@ -44,7 +44,5 @@ TEST_CASE("XmlParser", "[XmlAsset]")
         auto BBB = BB2->_children[0]->_children[0];
         REQUIRE(BBB->_name == "BBB");
         REQUIRE(BBB->_children[0]->_name == "BB2_1");
-    // }
-    
+    }
 }
-*/

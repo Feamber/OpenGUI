@@ -178,7 +178,7 @@ namespace OGUI
         {
             std::string _slot = {slot.value().begin(), slot.value().end()};
             auto parent_node = context.stack.front();
-            if(parent_node->IsA("TemplateContainer"))
+            if(parent_node->IsA("OGUI::TemplateContainer"))
             {
                 auto template_container = (TemplateContainer*)parent_node;
                 auto find_slots = template_container->slots.find(_slot);
