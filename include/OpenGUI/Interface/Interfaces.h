@@ -72,8 +72,8 @@ namespace OGUI
             uint16_t* indices, uint32_t num_indices) = 0;
         virtual void ReleasePrimitive(PersistantPrimitiveHandle primitive) = 0;
 
-        virtual void RenderPrimitives(const struct PrimDrawList&) = 0;
-        virtual void RenderPrimitives(const struct PersistantPrimDrawList&) = 0;
+        virtual void RenderPrimitives(const struct PrimDrawList&, const class WindowContext&) = 0;
+        virtual void RenderPrimitives(const struct PersistantPrimDrawList&, const class WindowContext&) = 0;
 
 		virtual RenderTargetViewHandle RegisterRenderTargetView(const Bitmap&) = 0;
 		virtual RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) = 0;		

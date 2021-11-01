@@ -9,13 +9,13 @@
 
 using namespace std;
 
-typedef struct {
+struct HBText {
     std::string data;
     std::string language;
     hb_script_t script;
     hb_direction_t direction;
     const char* c_data() { return data.c_str(); };
-} HBText;
+};
 
 namespace HBFeature {
     const hb_tag_t KernTag = HB_TAG('k', 'e', 'r', 'n'); // kerning operations

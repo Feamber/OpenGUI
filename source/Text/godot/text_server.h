@@ -464,7 +464,7 @@ public:
 	void canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false) const;
 
 	TextServer();
-	~TextServer();
+	virtual ~TextServer();
 };
 
 //#define TS TextServerManager::get_primary_interface()

@@ -134,6 +134,8 @@ void OGUI::Style::ApplyPropertiesFast(const StyleSheetStorage& sheet, const gsl:
 		}
 		STYLEPROP(GEN)
 #undef GEN
+		default: 
+			return;
 		}
 	}
 }
@@ -244,6 +246,8 @@ void OGUI::Style::LerpPropertiesFast(const StyleSheetStorage& sheet, const gsl::
 		}
 		STYLEPROP(GEN)
 #undef GEN
+		default:
+			return;
 		}
 	}
 }

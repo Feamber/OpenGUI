@@ -14,7 +14,7 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
-#include "text/godot/text_server_adv.h"
+#include "Text/godot/text_server_adv.h"
 
 OGUI::WindowContext::WindowContext()
 {
@@ -144,7 +144,7 @@ void OGUI::Context::Render(const OGUI::WindowHandle window)
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
 	wctx.currentDrawCtx->resolution = Vector2f(wctx.X, wctx.Y);
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
-	if(wctx.renderImpl) wctx.renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims);
+	if(wctx.renderImpl) wctx.renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims, wctx);
 }
 
 void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)

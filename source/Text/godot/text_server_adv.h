@@ -508,6 +508,6 @@ public:
 	static void register_server();
 
 	TextServerAdvanced();
-	~TextServerAdvanced();
+	virtual ~TextServerAdvanced();
 };
 }

@@ -55,6 +55,8 @@ size_t FormatToCount(OGUI::PixelFormat f)
 		return 2;
 	case PF_R8G8B8A8 :
 		return 4;
+	default: 
+		return 4;
 	}
 	return 4;
 }
@@ -527,7 +529,7 @@ public:
 };
 
 
-class OGUIWebGPURenderer : public OGUI::RenderInterface
+class OGUIWebGPURenderer final : public OGUI::RenderInterface
 {
 public:
 	Window& window;
@@ -543,19 +545,20 @@ public:
 		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
 		if(index_buffer) wgpuBufferRelease(index_buffer);
 	}
+	
 	PersistantPrimitiveHandle RegisterPrimitive(
 		Vertex* vertices, uint32_t num_vertices,
-		uint16_t* indices, uint32_t num_indices)
+		uint16_t* indices, uint32_t num_indices) override
 	{
 		return nullptr;
 	}
 	
-	void ReleasePrimitive(PersistantPrimitiveHandle primitive)
+	void ReleasePrimitive(PersistantPrimitiveHandle primitive) override
 	{
 		
 	}
 
-	void RenderPrimitives(const PrimDrawList& list)
+	void RenderPrimitives(const PrimDrawList& list, const class WindowContext&) override
 	{
 		((PrimDrawList&)list).ValidateAndBatch();
 		if(list.command_list.size() <= 0) return;
@@ -638,12 +641,12 @@ public:
 		wgpuTextureViewRelease(backBufView);													
 	}
 
-	void RenderPrimitives(const PersistantPrimDrawList&)
+	void RenderPrimitives(const PersistantPrimDrawList&, const class WindowContext&) override
 	{
 		
 	}
 
-	TextureHandle RegisterTexture(const Bitmap& bitmap)
+	TextureHandle RegisterTexture(const Bitmap& bitmap) override
 	{
 		WGPU_OGUI_Texture* t = createTexture(window.device, window.queue, bitmap);
 		window.ogui_textures[t] = *t;
@@ -655,7 +658,7 @@ public:
 		updateTexture(window.device, window.queue, &window.ogui_textures[t], bitmap);
 	}
 
-	void ReleaseTexture(TextureHandle h)
+	void ReleaseTexture(TextureHandle h) override
 	{
 		if(!h)
 			return;
@@ -686,12 +689,12 @@ public:
 		return {0, 0};
 	}
 
-	void SetScissor(const Scissor scissor)
+	void SetScissor(const Scissor scissor) override
 	{
 
 	}
-
-	void ResetScissor()
+ 
+	void ResetScissor() override
 	{
 
 	}
@@ -760,60 +763,6 @@ struct SpdlogLogger : LogInterface
 		return _static;
 	}
 };
-
-
-/*
-int main(int , char* []) {
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
-		return -1;
-	}
-
-	using namespace OGUI;
-	using namespace ostr::literal;
-	auto& ctx = Context::Get();
-	InstallInput();
-	{
-		ctx.bmParserImpl = std::make_unique<BitmapParser>();
-		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-		ctx.logImpl = std::make_unique<SpdlogLogger>();
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
-	}
-	BuildSDLMap();
-
-	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-
-	// main loop
-	while(win1)
-	{
-		using namespace ostr::literal;
-
-		SDL_Event event;
-		while (SDL_PollEvent(&event) && (win1)) 
-		{
-			olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
-			// TODO 关闭事件中没有窗口id？ 导致现在关闭没反应
-			if(win1 && SDL_GetWindowID(win1->window) == event.window.windowID)
-			{
-				if(!SDLEventHandler(event, win1->window, win1->hWnd))
-				{
-					delete win1;
-					win1 = nullptr;
-				}
-			}
-		}
-		if(win1) win1->Update();
-	}
-
-	
-	//delete win2;
-	SDL_Quit();
-	return 0;
-}
-*/
 
 int main(int , char* []) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
