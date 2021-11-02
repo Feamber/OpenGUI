@@ -28,6 +28,7 @@
 
 #pragma comment(lib, "dawn_native.lib")
 #pragma comment(lib, "dawn_proc.lib")
+#pragma comment(lib, "dawn_platform.lib")
 #ifdef DAWN_ENABLE_BACKEND_VULKAN
 #pragma comment(lib, "vulkan-1.lib")
 #endif
@@ -49,6 +50,7 @@ namespace webgpu
  */
 		WGPUDevice device;
 
+		WGPUInstance instance;
 /*
  * Something needs to hold onto this since the address is passed to the WebGPU
  * native API, exposing the type-specific swap chain implementation. The struct
@@ -207,6 +209,10 @@ webgpu::instance* webgpu::create(window::Handle window, WGPUBackendType type) {
 		adapter.GetProperties(&properties);
 		i->backend = static_cast<WGPUBackendType>(properties.backendType);
 		i->device  = adapter.CreateDevice();
+	
+		static dawn_native::Instance instance;
+		i->instance = instance.Get();
+
 		impl::initSwapChain(i, i->backend, i->device, window);
 		DawnProcTable procs(dawn_native::GetProcs());
 		procs.deviceSetUncapturedErrorCallback(i->device, impl::printError, nullptr);
@@ -215,24 +221,35 @@ webgpu::instance* webgpu::create(window::Handle window, WGPUBackendType type) {
 	return i;
 }
 
-WGPUSwapChain webgpu::createSwapChain(webgpu::instance* i, float width, float height) {
+WGPUSwapChain webgpu::createSwapChain(webgpu::instance* i, float width, float height, void* hwnd, void* hinstance) {
 	WGPUSwapChainDescriptor swapDesc = {};
 	/*
 	 * Currently failing (probably because the nextInChain needs setting up, and
 	 * also with the correct WGPUSType_* for the platform).
 	 *
 	swapDesc.usage  = WGPUTextureUsage_OutputAttachment;
-	swapDesc.format = i->swapPref;
 	swapDesc.width  = 800;
 	swapDesc.height = 450;
 	swapDesc.presentMode = WGPUPresentMode_Mailbox;
 	 */
-	swapDesc.implementation = reinterpret_cast<uintptr_t>(&i->swapImpl);
-	WGPUSwapChain swapchain = wgpuDeviceCreateSwapChain(i->device, nullptr, &swapDesc);
-	/*
-	 * Currently failing on hi-DPI (with Vulkan).
-	 */
-	wgpuSwapChainConfigure(swapchain, i->swapPref, WGPUTextureUsage_OutputAttachment, width, height);
+	//swapDesc.implementation = reinterpret_cast<uintptr_t>(&i->swapImpl);
+	swapDesc.format = WGPUTextureFormat_BGRA8Unorm;
+	swapDesc.usage = WGPUTextureUsage_RenderAttachment;
+	swapDesc.width = width;
+	swapDesc.height = height;
+	WGPUSurfaceDescriptor desc = {};
+	WGPUChainedStruct chain = {};
+	chain.sType = WGPUSType_SurfaceDescriptorFromWindowsHWND;
+	chain.next = NULL;
+	WGPUSurfaceDescriptorFromWindowsHWND HWNDDesc = {};
+	HWNDDesc.chain = chain;
+	HWNDDesc.hwnd = hwnd;
+	HWNDDesc.hinstance = hinstance;
+	desc.nextInChain = (const WGPUChainedStruct*)&HWNDDesc;
+	auto surface = wgpuInstanceCreateSurface(i->instance, &desc);
+	WGPUSwapChain swapchain = wgpuDeviceCreateSwapChain(i->device, surface, &swapDesc);
+	// Configure is invalid for surface-based swapchains
+	// wgpuSwapChainConfigure(swapchain, i->swapPref, WGPUTextureUsage_RenderAttachment, width, height);
 	return swapchain;
 }
 

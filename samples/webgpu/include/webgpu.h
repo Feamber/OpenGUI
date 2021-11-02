@@ -15,7 +15,7 @@ namespace webgpu
 	struct instance;
 	instance* create(window::Handle window, WGPUBackendType type = WGPUBackendType_Force32);
     void release(instance* instance);
-	WGPUSwapChain createSwapChain(instance* instance, float width, float height);
+	WGPUSwapChain createSwapChain(instance* instance, float width, float height, void* hwnd, void* hinstance);
 	WGPUTextureFormat getSwapChainFormat(instance* instance);
 	WGPUDevice getDevice(instance* instance);
 }

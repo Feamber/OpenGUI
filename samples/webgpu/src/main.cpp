@@ -130,7 +130,10 @@ public:
 };
 
 class OGUIWebGPURenderer;
-std::shared_ptr<OGUIWebGPURenderer> MakeRenderer(class Window& window);
+std::shared_ptr<OGUIWebGPURenderer> WebGPURenderer;
+webgpu::instance* wgpu;
+WGPUDevice device;
+WGPUQueue queue;
 
 class Window
 {
@@ -139,15 +142,12 @@ public:
 	SDL_SysWMinfo wmInfo;
 	WindowContext* cWnd;
 	window::Handle hWnd;
-	WGPUDevice device;
-	WGPUQueue queue;
 	WGPUSwapChain swapchain;
 	WGPURenderPipeline pipeline;
 	WGPUBindGroupLayout bindGroupLayout;
 	WGPUSampler sampler;
 	WGPU_OGUI_Texture* default_ogui_texture;
 	std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
-	webgpu::instance* wgpu;
 
 	efsw::FileWatcher fileWatcher;
 	UpdateListener listener;
@@ -175,17 +175,14 @@ public:
 
 		if (hWnd)
 		{
-			if(wgpu = webgpu::create(hWnd); wgpu)
 			{
-				device = getDevice(wgpu);
-				queue = wgpuDeviceGetDefaultQueue(device);
-				swapchain = webgpu::createSwapChain(wgpu, width, height);
+				swapchain = webgpu::createSwapChain(wgpu, width, height, hWnd, wmInfo.info.win.hinstance);
 				createPipelineAndBuffers();
 
 				using namespace OGUI;
 				auto &ctx = Context::Get();
 				cWnd = &ctx.Create(hWnd);
-				cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(MakeRenderer(*this));
+				cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(WebGPURenderer);
 				LoadResource(xmlFile);
 			}
         }
@@ -434,13 +431,11 @@ public:
 		WGPUBindGroupLayoutEntry bglEntry[2] = {{}, {}};
 		bglEntry[0].binding = 0;
 		bglEntry[0].visibility = WGPUShaderStage_Fragment;
-		bglEntry[0].type = WGPUBindingType_Undefined;
 		bglEntry[0].texture.sampleType = WGPUTextureSampleType_Float;
 		bglEntry[0].texture.viewDimension = WGPUTextureViewDimension_2D;
 		bglEntry[0].texture.multisampled = false;
 		bglEntry[1].binding = 1;
 		bglEntry[1].visibility = WGPUShaderStage_Fragment;
-		bglEntry[1].type = WGPUBindingType_Undefined;
 		bglEntry[1].sampler.type = WGPUSamplerBindingType_Filtering;
 
 		WGPUBindGroupLayoutDescriptor bglDesc = {};
@@ -457,47 +452,60 @@ public:
 		// begin pipeline set-up
 		WGPURenderPipelineDescriptor desc = {};
 		desc.layout = pipelineLayout;
-		desc.vertexStage.module = vertMod;
-		desc.vertexStage.entryPoint = "main";
-		WGPUProgrammableStageDescriptor fragStage = {};
-		fragStage.module = fragMod;
-		fragStage.entryPoint = "main";
-		desc.fragmentStage = &fragStage;
+
 		// describe buffer layouts
-		WGPUVertexAttributeDescriptor vertAttrs[3] = {};
-		vertAttrs[0].format = WGPUVertexFormat_Float2;
+		WGPUVertexAttribute vertAttrs[3] = {};
+		vertAttrs[0].format = WGPUVertexFormat_Float32x2;
 		vertAttrs[0].offset = 0;
 		vertAttrs[0].shaderLocation = 0;
-		vertAttrs[1].format = WGPUVertexFormat_Float2;
+		vertAttrs[1].format = WGPUVertexFormat_Float32x2;
 		vertAttrs[1].offset = 2 * sizeof(float);
 		vertAttrs[1].shaderLocation = 1;
-		vertAttrs[2].format = WGPUVertexFormat_Float4;
+		vertAttrs[2].format = WGPUVertexFormat_Float32x4;
 		vertAttrs[2].offset = 4 * sizeof(float);
 		vertAttrs[2].shaderLocation = 2;
-
-		WGPUVertexBufferLayoutDescriptor vertDesc = {};
+		WGPUVertexBufferLayout vertDesc = {};
 		vertDesc.arrayStride = 8 * sizeof(float);
 		vertDesc.attributeCount = 3;
 		vertDesc.attributes = vertAttrs;
-		WGPUVertexStateDescriptor vertState = {};
-		vertState.vertexBufferCount = 1;
-		vertState.vertexBuffers = &vertDesc;
-		desc.vertexState = &vertState;
-		desc.primitiveTopology = WGPUPrimitiveTopology_TriangleList;
-		desc.sampleCount = 1;
+
+		// shader stages
+		WGPUVertexState vertexState = {};
+		vertexState.module = vertMod;
+		vertexState.entryPoint = "main";
+		vertexState.bufferCount = 1;
+		vertexState.buffers = &vertDesc;
+		desc.vertex = vertexState;
+
+		WGPUFragmentState fragStage = {};
+		fragStage.module = fragMod;
+		fragStage.entryPoint = "main";
+		desc.fragment = &fragStage;
+
+		desc.primitive.frontFace = WGPUFrontFace_CCW;
+		desc.primitive.cullMode = WGPUCullMode_None;
+		desc.primitive.topology = WGPUPrimitiveTopology_TriangleList;
+		desc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
+
 		// describe blend
-		WGPUBlendDescriptor blendDesc = {};
-		blendDesc.operation = WGPUBlendOperation_Add;
-		blendDesc.srcFactor = WGPUBlendFactor_SrcAlpha;
-		blendDesc.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
-		WGPUColorStateDescriptor colorDesc = {};
-		colorDesc.format = webgpu::getSwapChainFormat(wgpu);
-		colorDesc.alphaBlend = blendDesc;
-		colorDesc.colorBlend = blendDesc;
-		colorDesc.writeMask = WGPUColorWriteMask_All;
-		desc.colorStateCount = 1;
-		desc.colorStates = &colorDesc;
-		desc.sampleMask = 0xFFFFFFFF; // <-- Note: this currently causes Emscripten to fail (sampleMask ends up as -1, which trips an assert)
+		WGPUBlendState blendDesc = {};
+		blendDesc.color.operation = WGPUBlendOperation_Add;
+		blendDesc.color.srcFactor = WGPUBlendFactor_SrcAlpha;
+		blendDesc.color.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
+		blendDesc.alpha.operation = WGPUBlendOperation_Add;
+		blendDesc.alpha.srcFactor = WGPUBlendFactor_SrcAlpha;
+		blendDesc.alpha.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
+
+		WGPUColorTargetState colorTarget = {};
+		colorTarget.format = WGPUTextureFormat_BGRA8Unorm;
+		colorTarget.blend = &blendDesc;
+		colorTarget.writeMask = WGPUColorWriteMask_All;
+		fragStage.targetCount = 1;
+		fragStage.targets = &colorTarget;
+
+		desc.multisample.count = 1;
+		desc.multisample.mask = 0xFFFFFFFF;
+		desc.multisample.alphaToCoverageEnabled = false;
 		pipeline = wgpuDeviceCreateRenderPipeline(device, &desc);
 		// partial clean-up (just move to the end, no?)
 		wgpuPipelineLayoutRelease(pipelineLayout);
@@ -528,16 +536,30 @@ public:
 	}
 };
 
-
 class OGUIWebGPURenderer final : public OGUI::RenderInterface
 {
 public:
-	Window& window;
-
-	OGUIWebGPURenderer(Window& window) 
-	: window(window)
+	Window* window;
+	OGUIWebGPURenderer() 
 	{
+		auto init_window = SDL_CreateWindow("TestWindow",
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			50, 50, 0
+		);
+		SDL_SysWMinfo wmInfo;
+		SDL_VERSION(&wmInfo.version);
+		SDL_GetWindowWMInfo(init_window, &wmInfo);
 
+#if defined(_WIN32) || defined(_WIN64)
+		const auto hWnd = (window::Handle)wmInfo.info.win.window;
+#endif
+		if(wgpu = webgpu::create(hWnd); wgpu)
+		{
+			device = getDevice(wgpu);
+			queue = wgpuDeviceGetQueue(device);
+		}
+
+		SDL_DestroyWindow(init_window);
 	}
 
 	virtual ~OGUIWebGPURenderer()
@@ -568,24 +590,24 @@ public:
 		if(index_buffer) 
 			wgpuBufferRelease(index_buffer);
 
-		vertex_buffer = createBuffer(window.device, window.queue,
+		vertex_buffer = createBuffer(device, queue,
 			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
-		index_buffer = createBuffer(window.device, window.queue,
+		index_buffer = createBuffer(device, queue,
 			list.indices.data(), list.indices.size() * sizeof(uint16_t), WGPUBufferUsage_Index);
 
-		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(window.swapchain);			// create textureView
-		WGPURenderPassColorAttachmentDescriptor colorDesc = {};
-		colorDesc.attachment = backBufView;
+		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(window->swapchain);			// create textureView
+		WGPURenderPassColorAttachment colorDesc = {};
+		colorDesc.view = backBufView;
 		colorDesc.loadOp  = WGPULoadOp_Clear;
 		colorDesc.storeOp = WGPUStoreOp_Store;
 		colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
 		WGPURenderPassDescriptor renderPass = {};
 		renderPass.colorAttachmentCount = 1;
 		renderPass.colorAttachments = &colorDesc;
-		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(window.device, nullptr);			// create encoder
+		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
 		WGPURenderPassEncoder pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
 		// draw the triangle (comment these five lines to simply clear the screen)
-		wgpuRenderPassEncoderSetPipeline(pass, window.pipeline);
+		wgpuRenderPassEncoderSetPipeline(pass, window->pipeline);
 
 		int last_index = -1;
 		for(auto& cmd : list.command_list)
@@ -595,31 +617,31 @@ public:
 			{
 				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
 				if(!texture)
-					texture = window.default_ogui_texture;
+					texture = window->default_ogui_texture;
 				if(!texture->bind_group)
 				{
 					// update texture binding
 					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
 					bgEntry[0].binding = 0;
 					bgEntry[0].textureView 
-						= texture->texture? texture->texture_view : window.default_ogui_texture->texture_view;
+						= texture->texture? texture->texture_view : window->default_ogui_texture->texture_view;
 					bgEntry[1].binding = 1;
-					bgEntry[1].sampler = window.sampler;
+					bgEntry[1].sampler = window->sampler;
 					WGPUBindGroupDescriptor bgDesc = {};
-					bgDesc.layout = window.bindGroupLayout;
+					bgDesc.layout = window->bindGroupLayout;
 					bgDesc.entryCount = 2;
 					bgDesc.entries = bgEntry;
-					texture->bind_group = wgpuDeviceCreateBindGroup(window.device, &bgDesc);
+					texture->bind_group = wgpuDeviceCreateBindGroup(device, &bgDesc);
 				}
 				wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 			}
 			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
 				cmd.vertex_offset * sizeof(Vertex),
-				0
+				WGPU_WHOLE_SIZE
 			);
 			wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
 				cmd.index_offset * sizeof(uint16_t),
-				0
+				WGPU_WHOLE_SIZE
 			);
 			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
 			last_index++;
@@ -630,13 +652,13 @@ public:
 		WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
 		wgpuCommandEncoderRelease(encoder);														// release encoder
 
-		wgpuQueueSubmit(window.queue, 1, &commands);
+		wgpuQueueSubmit(queue, 1, &commands);
 		wgpuCommandBufferRelease(commands);														// release commands
 	#ifndef __EMSCRIPTEN__
 		/*
 		* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
 		*/
-		wgpuSwapChainPresent(window.swapchain);
+		wgpuSwapChainPresent(window->swapchain);
 	#endif
 		wgpuTextureViewRelease(backBufView);													
 	}
@@ -648,25 +670,25 @@ public:
 
 	TextureHandle RegisterTexture(const Bitmap& bitmap) override
 	{
-		WGPU_OGUI_Texture* t = createTexture(window.device, window.queue, bitmap);
-		window.ogui_textures[t] = *t;
+		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
+		window->ogui_textures[t] = *t;
 		return t;
 	}
 
 	void UpdateTexture(TextureHandle t, const Bitmap& bitmap) override
 	{
-		updateTexture(window.device, window.queue, &window.ogui_textures[t], bitmap);
+		updateTexture(device, queue, &window->ogui_textures[t], bitmap);
 	}
 
 	void ReleaseTexture(TextureHandle h) override
 	{
 		if(!h)
 			return;
-		auto iter = window.ogui_textures.find(h);
-		if(iter == window.ogui_textures.end())
+		auto iter = window->ogui_textures.find(h);
+		if(iter == window->ogui_textures.end())
 			return;
 		iter->second.Release();
-		window.ogui_textures.erase(iter);
+		window->ogui_textures.erase(iter);
 	}
 
 	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap &) override
@@ -701,12 +723,6 @@ public:
 	WGPUBuffer vertex_buffer = nullptr;
 	WGPUBuffer index_buffer = nullptr;
 };
-
-
-std::shared_ptr<OGUIWebGPURenderer> MakeRenderer(class Window& window)
-{
-	return std::make_shared<OGUIWebGPURenderer>(window);
-}
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -790,8 +806,10 @@ int main(int , char* []) {
 	}
 	BuildSDLMap();
 
+	WebGPURenderer = std::make_shared<OGUIWebGPURenderer>();
 	Window* win1 = nullptr;//new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
+	WebGPURenderer->window = win2;
 
 	// main loop
 	while(win1 || win2)

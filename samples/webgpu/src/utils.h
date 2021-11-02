@@ -7,31 +7,40 @@
 
 // 0 ~ 1 => -1 ~ 1
 static char const triangle_vert_wgsl[] = R"(
-	[[location(0)]] var<in>  aPos : vec2<f32>;
-	[[location(1)]] var<in>  aUV  : vec2<f32>;
-	[[location(2)]] var<in>  aCol : vec4<f32>;
-	[[location(0)]] var<out> vCol : vec4<f32>;
-	[[location(1)]] var<out> vUV : vec2<f32>;
-	[[builtin(position)]] var<out> Position : vec4<f32>;
-	[[stage(vertex)]] fn main() -> void {
-		Position = vec4<f32>(aPos * 2.0, 1.0, 1.0);
-		vCol = aCol;
-        vUV = aUV;
-        vUV.y = 1.0 - vUV.y;
+	[[block]]
+	struct VertexIn {
+		[[location(0)]] aPos : vec2<f32>;
+		[[location(1)]] aUV  : vec2<f32>;
+		[[location(2)]] aCol : vec4<f32>;
+	};
+	struct VertexOut {
+		[[location(0)]] vCol : vec4<f32>;
+		[[location(1)]] vUV  : vec2<f32>;
+		[[builtin(position)]] Position : vec4<f32>;
+	};
+	[[stage(vertex)]] fn main(input : VertexIn) -> VertexOut {
+		var output : VertexOut;
+		output.Position = vec4<f32>(input.aPos * 2.0, 1.0, 1.0);
+		output.vCol = input.aCol;
+        output.vUV = input.aUV;
+        output.vUV.y = 1.0 - output.vUV.y;
+		return output;
 	}
 )";
 
 
 static char const triangle_frag_wgsl[] = R"(
-	[[location(0)]] var<in> vCol : vec4<f32>;
-	[[location(1)]] var<in> vUV : vec2<f32>;
-	[[location(0)]] var<out> fragColor : vec4<f32>;
+	struct VertexOut {
+		[[location(0)]] vCol : vec4<f32>;
+		[[location(1)]] vUV  : vec2<f32>;
+		[[builtin(position)]] Position : vec4<f32>;
+	};
+    [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+    [[group(0), binding(1)]] var mySampler : sampler;
 
-    [[binding(0), set(0)]] var<uniform_constant> myTexture : texture_2d<f32>;
-    [[binding(1), set(0)]] var<uniform_constant> mySampler : sampler;
-
-	[[stage(fragment)]] fn main() -> void {
-		fragColor = vCol * textureSample(myTexture, mySampler, vUV);
+	[[stage(fragment)]] 
+	fn main(input : VertexOut) ->  [[location(0)]] vec4<f32> {
+		return input.vCol * textureSample(myTexture, mySampler, input.vUV);
     }
 )";
 
@@ -122,7 +131,7 @@ inline static WGPU_OGUI_Texture* createTexture(
     WGPU_OGUI_Texture* result = new WGPU_OGUI_Texture();
 
     WGPUTextureDescriptor descriptor = {};
-    descriptor.usage = WGPUTextureUsage_Sampled | WGPUTextureUsage_CopyDst;
+    descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
     descriptor.dimension = WGPUTextureDimension_2D;
     descriptor.size = {bitmap.width, bitmap.height, 1};
     descriptor.mipLevelCount = 1;
@@ -131,7 +140,7 @@ inline static WGPU_OGUI_Texture* createTexture(
     auto tex = wgpuDeviceCreateTexture(device, &descriptor);
     result->texture = tex;
 
-    WGPUTextureCopyView cpyView = {};
+    WGPUImageCopyTexture cpyView = {};
     cpyView.texture = tex;
     cpyView.mipLevel = 0;
     cpyView.origin = { 0, 0, 0 };
@@ -163,8 +172,7 @@ inline static void updateTexture(
     const OGUI::Bitmap& bitmap
 )
 {
-
-    WGPUTextureCopyView cpyView = {};
+    WGPUImageCopyTexture cpyView = {};
     cpyView.texture = texture->texture;
     cpyView.mipLevel = 0;
     cpyView.origin = { 0, 0, 0 };

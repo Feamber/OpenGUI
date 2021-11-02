@@ -66,6 +66,8 @@ namespace dawn_native {
         std::vector<const char*> requiredExtensions;
         std::vector<const char*> forceEnabledToggles;
         std::vector<const char*> forceDisabledToggles;
+
+        const WGPURequiredLimits* requiredLimits = nullptr;
     };
 
     // A struct to record the information of a toggle. A toggle is a code path in Dawn device that
@@ -108,6 +110,13 @@ namespace dawn_native {
 
         std::vector<const char*> GetSupportedExtensions() const;
         WGPUDeviceProperties GetAdapterProperties() const;
+        bool GetLimits(WGPUSupportedLimits* limits) const;
+
+        void SetUseTieredLimits(bool useTieredLimits);
+
+        // Check that the Adapter is able to support importing external images. This is necessary
+        // to implement the swapchain and interop APIs in Chromium.
+        bool SupportsExternalImages() const;
 
         explicit operator bool() const;
 
@@ -115,6 +124,13 @@ namespace dawn_native {
         // a device descriptor and a pointer to backend specific options.
         // On an error, nullptr is returned.
         WGPUDevice CreateDevice(const DeviceDescriptor* deviceDescriptor = nullptr);
+
+        void RequestDevice(const DeviceDescriptor* descriptor,
+                           WGPURequestDeviceCallback callback,
+                           void* userdata);
+
+        // Reset the backend device object for testing purposes.
+        void ResetInternalDeviceForTesting();
 
       private:
         AdapterBase* mImpl = nullptr;
@@ -128,6 +144,8 @@ namespace dawn_native {
       protected:
         AdapterDiscoveryOptionsBase(WGPUBackendType type);
     };
+
+    enum BackendValidationLevel { Full, Partial, Disabled };
 
     // Represents a connection to dawn_native and is used for dependency injection, discovering
     // system adapters and injecting custom adapters (like a Swiftshader Vulkan adapter).
@@ -155,14 +173,12 @@ namespace dawn_native {
 
         const ToggleInfo* GetToggleInfo(const char* toggleName);
 
-        // Enable backend's validation layers if it has.
+        // Enables backend validation layers
         void EnableBackendValidation(bool enableBackendValidation);
+        void SetBackendValidationLevel(BackendValidationLevel validationLevel);
 
         // Enable debug capture on Dawn startup
         void EnableBeginCaptureOnStartup(bool beginCaptureOnStartup);
-
-        // Enable GPU based backend validation if it has.
-        void EnableGPUBasedBackendValidation(bool enableGPUBasedBackendValidation);
 
         void SetPlatform(dawn_platform::Platform* platform);
 
@@ -212,6 +228,7 @@ namespace dawn_native {
         DmaBuf,
         IOSurface,
         DXGISharedHandle,
+        EGLImage,
     };
 
     // Common properties of external images
@@ -225,6 +242,12 @@ namespace dawn_native {
         ExternalImageDescriptor(ExternalImageType type);
     };
 
+    struct DAWN_NATIVE_EXPORT ExternalImageAccessDescriptor {
+      public:
+        bool isInitialized;  // Whether the texture is initialized on import
+        WGPUTextureUsageFlags usage;
+    };
+
     struct DAWN_NATIVE_EXPORT ExternalImageExportInfo {
       public:
         const ExternalImageType type;
@@ -233,6 +256,13 @@ namespace dawn_native {
       protected:
         ExternalImageExportInfo(ExternalImageType type);
     };
+
+    DAWN_NATIVE_EXPORT const char* GetObjectLabelForTesting(void* objectHandle);
+
+    DAWN_NATIVE_EXPORT uint64_t GetAllocatedSizeForTesting(WGPUBuffer buffer);
+
+    DAWN_NATIVE_EXPORT bool BindGroupLayoutBindingsEqualForTesting(WGPUBindGroupLayout a,
+                                                                   WGPUBindGroupLayout b);
 
 }  // namespace dawn_native
 
