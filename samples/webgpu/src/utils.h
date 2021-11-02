@@ -414,3 +414,26 @@ inline static void BuildSDLMap()
 	gEKeyCodeLut[SDLK_y] = EKeyCode::Y;
 	gEKeyCodeLut[SDLK_z] = EKeyCode::Z;
 }
+
+FORCEINLINE auto InitializeWGPUDevice() 
+	-> std::tuple<webgpu::instance*, WGPUDevice, WGPUQueue>
+{
+	auto init_window = SDL_CreateWindow("TestWindow",
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		50, 50, 0
+	);
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(init_window, &wmInfo);
+#if defined(_WIN32) || defined(_WIN64)
+	const auto hWnd = (window::Handle)wmInfo.info.win.window;
+#endif
+	if(auto wgpu = webgpu::create(hWnd))
+	{
+		auto device = getDevice(wgpu);
+		auto queue = wgpuDeviceGetQueue(device);
+		SDL_DestroyWindow(init_window);
+		return std::make_tuple(wgpu, device, queue);
+	}
+	return {nullptr, nullptr, nullptr};
+}

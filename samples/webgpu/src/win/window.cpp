@@ -1,6 +1,7 @@
 /// TODO: change this into SDLs input
 #include "window.h"
 #include "glue.h"
+#include "../utils.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/Math.h"
@@ -110,5 +111,6 @@ namespace OGUI
 void InstallInput()
 {
 	auto& ctx = OGUI::Context::Get();
+	BuildSDLMap();
 	ctx.inputImpl = std::make_unique<OGUI::WindowsInput>();
 }

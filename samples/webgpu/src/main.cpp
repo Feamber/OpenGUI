@@ -1,147 +1,19 @@
-#include "OpenGUI/Style/StyleSelector.h"
-#include "utils.h"
-#include <functional>
-#include <filesystem>
-#include <memory>
-#include <string_view>
-#include <string.h>
-#include <unordered_map>
-#include <vector>
-
 #include "OpenGUI/Core/PrimitiveDraw.h"
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Style/VisualStyleSystem.h"
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/CSSParser/CSSParser.h"
-#include "OpenGUI/Xml/XmlAsset.h"
-#include "OpenGUI/VisualWindow.h"
-#include "OpenGUI/Core/Utilities/ipair.hpp"
-#include "OpenGUI/Core/open_string.h"
-#include "OpenGUI/Core/olog.h"
-#include "OpenGUI/Core/olog.h"
-#include "OpenGUI/Event/KeyEvent.h"
-#include "OpenGUI/Event/PointerEvent.h"
-#include "OpenGUI/Core/DynamicAtlasResource.h"
-#include "efsw/efsw.hpp"
-
-#include "OpenGUI/Text/FontRendering.h"
+#include "appbase.h"
 #include "webgpu.h"
-
 
 extern void InstallInput();
 
-using namespace OGUI;
-
-OGUI::PixelFormat CountToFormat(size_t n)
-{
-	switch (n) {
-	case 1 :
-		return PF_R8;
-	case 2 :
-		return PF_R8A8;
-	case 4 :
-		return PF_R8G8B8A8;
-	}
-	return PF_R8G8B8A8;
-}
-
-size_t FormatToCount(OGUI::PixelFormat f)
-{
-	switch (f) {
-	case PF_R8 :
-		return 1;
-	case PF_R8A8 :
-		return 2;
-	case PF_R8G8B8A8 :
-		return 4;
-	default: 
-		return 4;
-	}
-	return 4;
-}
-
-struct BitmapParser final : public OGUI::BitmapParserInterface
-{
-    inline Bitmap LoadFromFile(const FileHandle file)
-    {
-		Bitmap bm = {};
-		int x, y, n;
-		stbi_info_from_file((FILE*)file, &x, &y, &n);
-		bm.format = CountToFormat(n);
-		const auto channels = FormatToCount(bm.format);
-		auto data = stbi_load_from_file((FILE*)file, &x, &y, &n, channels);
-		bm.resource.bytes = data;
-		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
-		bm.height = y;
-		bm.width = x;
-
-		return bm;
-    }
-	inline virtual Bitmap LoadFromMemory(const void* buffer, size_t length)
-    {
-		Bitmap bm = {};
-		int x, y, n;
-		stbi_info_from_memory((const stbi_uc*)buffer, length, &x, &y, &n);
-		bm.format = CountToFormat(n);
-		const auto channels = FormatToCount(bm.format);
-		auto data = stbi_load_from_memory((const stbi_uc*)buffer, length, &x, &y, &n, channels);
-		bm.resource.bytes = data;
-		bm.resource.size_in_bytes = x * y * channels * sizeof(*data);
-		bm.height = y;
-		bm.width = x;
-
-		return bm;
-    }
-    inline void Free(Bitmap bm)
-    {
-        stbi_image_free(bm.resource.bytes);
-    }
-};
-
-class Window;
-
-
-
-#define SDL_MAIN_NEEDED
-#include <SDL2/SDL_main.h>
-
-#include "OpenGUI/Managers/RenderTextureManager.h"
-#include "OpenGUI/Core/AsyncRenderTexture.h"
-#include "OpenGUI/Core/olog.h"
-#if defined(_WIN32) || defined(_WIN64)
-#define SDL_MAIN_HANDLED
-#ifndef __WIN32__
-#define __WIN32__
-#endif // __WIN32__
-#endif
-
-class UpdateListener : public efsw::FileWatchListener
-{
-public:
-	std::function<void(efsw::WatchID, const std::string&, const std::string&, efsw::Action, std::string)> handle;
-
-	UpdateListener() {};
-
-	void handleFileAction(efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
-	{
-		handle(watchid, dir, filename, action, oldFilename);
-	}
-};
-
-class OGUIWebGPURenderer;
-std::shared_ptr<OGUIWebGPURenderer> WebGPURenderer;
+std::shared_ptr<class OGUIWebGPURenderer> WebGPURenderer;
 webgpu::instance* wgpu;
 WGPUDevice device;
 WGPUQueue queue;
+// Bare minimum pipeline to draw a triangle using the above shaders.
+uint8_t white_tex0[1024 * 1024 * 4];
 
-class Window
+class Window : public CSSWindow
 {
 public:
-	SDL_Window* window;
-	SDL_SysWMinfo wmInfo;
-	WindowContext* cWnd;
-	window::Handle hWnd;
 	WGPUSwapChain swapchain;
 	WGPURenderPipeline pipeline;
 	WGPUBindGroupLayout bindGroupLayout;
@@ -149,276 +21,43 @@ public:
 	WGPU_OGUI_Texture* default_ogui_texture;
 	std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 
-	efsw::FileWatcher fileWatcher;
-	UpdateListener listener;
-
-	std::string mainXmlFile;
-	std::vector<std::string> allCssFile;
-    std::vector<std::string> allXmlFile;
-
-	// Bare minimum pipeline to draw a triangle using the above shaders.
- 	uint8_t white_tex0[1024 * 1024 * 4];
-
 	Window(int width, int height, const char *title, const char *xmlFile)
+		:CSSWindow(width, height, title, xmlFile)
 	{
-		window = SDL_CreateWindow(title,
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			width, height, 0
-		);
-
-		SDL_VERSION(&wmInfo.version);
-		SDL_GetWindowWMInfo(window, &wmInfo);
-
-#if defined(_WIN32) || defined(_WIN64)
-		hWnd = (window::Handle)wmInfo.info.win.window;
-#endif
-
 		if (hWnd)
 		{
 			{
 				swapchain = webgpu::createSwapChain(wgpu, width, height, hWnd, wmInfo.info.win.hinstance);
 				createPipelineAndBuffers();
 
-				using namespace OGUI;
-				auto &ctx = Context::Get();
-				cWnd = &ctx.Create(hWnd);
 				cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(WebGPURenderer);
-				LoadResource(xmlFile);
 			}
         }
 	};
 
-	~Window()
+	virtual ~Window()
 	{
-		auto& ctx = OGUI::Context::Get();
-		ctx.Remove(hWnd);
-
-		#ifndef __EMSCRIPTEN__
-			// last bit of clean-up
-			wgpuSamplerRelease(sampler);
-			for(auto& tex : ogui_textures)
-			{
-				tex.second.Release();
-			}
-			ogui_textures.clear();
-			wgpuBindGroupLayoutRelease(bindGroupLayout);
-			wgpuRenderPipelineRelease(pipeline);
-			wgpuSwapChainRelease(swapchain);
-			wgpuQueueRelease(queue);
-			//wgpuDeviceRelease(device);
-			webgpu::release(wgpu);
-		#endif
-		
-		SDL_DestroyWindow(window);
+#ifndef __EMSCRIPTEN__
+		// last bit of clean-up
+		wgpuSamplerRelease(sampler);
+		for(auto& tex : ogui_textures)
+		{
+			tex.second.Release();
+		}
+		ogui_textures.clear();
+		wgpuBindGroupLayoutRelease(bindGroupLayout);
+		wgpuRenderPipelineRelease(pipeline);
+		wgpuSwapChainRelease(swapchain);
+		wgpuQueueRelease(queue);
+		//wgpuDeviceRelease(device);
+		webgpu::release(wgpu);
+#endif
 	}
 
-	bool Update()
+	virtual bool Update() override
 	{
-		static std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
-		auto& ctx = OGUI::Context::Get();
-		std::chrono::time_point now = std::chrono::high_resolution_clock::now();
-		using namespace ostr::literal;
-		float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
-		prev = now;
-		ctx.Update(hWnd, deltaTime);
-		ctx.Render(hWnd);
-		return true;
+        return CSSWindow::Update();
 	};
-
-	void OnReloaded()
-	{
-		auto ve = cWnd->GetWindowUI()->_children[0];
-		if (auto child2 = QueryFirst(ve, "#Child2"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit! Child2"_o);
-				return true;
-			};
-
-			child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
-		}
-
-		{
-			std::vector<VisualElement*> tests;
-			QueryAll(ve, ".Element", tests);
-			for (auto [i, test] : ipair(tests))
-			{
-				constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-				{
-					if(event.currentPhase == EventRoutePhase::Reach)
-						Context::Get().SetFocus(&element);
-					return true;
-				};
-				test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-			}
-		}
-
-		if (auto child1 = QueryFirst(ve, "#Child1"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit!"_o);
-				return true;
-			};
-			constexpr auto handlerDown = +[](KeyDownEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Down!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerUp = +[](KeyUpEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is up!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerHold = +[](KeyHoldEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Holding!"_o);
-				}
-				return false;
-			};
-			child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
-			child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
-			child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
-			child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
-		}
-		{
-			std::vector<VisualElement*> tests;
-			QueryAll(ve, ".Test", tests);
-			for (auto [i, test] : ipair(tests))
-				if (i % 2 == 0)
-					test->_styleClasses.push_back("Bigger");
-		}
-
-		ve->_pseudoMask |= (int)PseudoStates::Root;
-	}
-
-	void LoadResource(const char *xmlFile)
-	{
-		using namespace OGUI;
-		auto& ctx = Context::Get();
-		auto asset = XmlAsset::LoadXmlFile(xmlFile);
-		auto ve = asset->Instantiate();
-
-		mainXmlFile = xmlFile;
-		allCssFile = asset->all_css_file;
-		allXmlFile = asset->all_xml_file;
-
-		for(auto child : cWnd->GetWindowUI()->_children)
-		{
-			cWnd->GetWindowUI()->RemoveChild(child);
-			VisualElement::DestoryTree(child);
-		}
-		cWnd->GetWindowUI()->PushChild(ve);
-		OnReloaded();
-
-		listener.handle = [this](efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
-		{
-			auto& ctx = Context::Get();
-			switch (action)
-			{
-				case efsw::Actions::Add:
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added" << std::endl;
-					break;
-				case efsw::Actions::Delete:
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
-					break;
-				case efsw::Actions::Modified:
-				{
-					auto path = std::filesystem::path(dir.substr(0, dir.length() - 1) + filename);
-					if (find(allXmlFile.begin(), allXmlFile.end(), path) != allXmlFile.end())
-					{
-						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-						auto asset = XmlAsset::LoadXmlFile(mainXmlFile);
-
-						if(asset)
-						{
-							auto newVe = asset->Instantiate();
-							if (newVe)
-							{
-								for(auto child : cWnd->GetWindowUI()->_children)
-								{
-									cWnd->GetWindowUI()->RemoveChild(child);
-									VisualElement::DestoryTree(child);
-								}
-								cWnd->GetWindowUI()->PushChild(newVe);
-								OnReloaded();
-								ctx._layoutDirty = true;
-							}
-						}
-						olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-					}
-					else if (find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
-					{
-						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-						auto asset = ParseCSSFile(path.string());
-						if (asset)
-						{
-							std::vector<VisualElement*> current {cWnd->GetWindowUI()->_children};
-							std::vector<VisualElement*> next;
-							while (current.size() > 0) 
-							{
-								for (auto element : current)
-								{
-									for(auto& styleSheet : element->_styleSheets)
-									{
-										if(styleSheet->path == path)
-										{
-											*styleSheet = asset.value();
-											styleSheet->Initialize();
-											element->_selectorDirty = true;
-										}
-									}
-
-									next.insert(next.end(), element->_children.begin(), element->_children.end());
-								}
-								current.clear();
-								std::swap(current, next);
-							}
-							ctx._layoutDirty = true;
-							ctx.styleSystem.InvalidateCache();
-						}
-						olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-					}
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified" << std::endl;
-					break;
-				}
-				case efsw::Actions::Moved:
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from (" << oldFilename << ")" << std::endl;
-					break;
-				default:
-					std::cout << "Should never happen!" << std::endl;
-			}
-		};
-
-		for(auto dir : fileWatcher.directories())
-			fileWatcher.removeWatch(dir);
-		for(auto filePath : allCssFile)
-			fileWatcher.addWatch(std::filesystem::path(filePath).remove_filename().string(), &listener, true);
-		for(auto filePath : allXmlFile)
-			fileWatcher.addWatch(std::filesystem::path(filePath).remove_filename().string(), &listener, true);
-
-		fileWatcher.watch();
-	}
 
 	void createPipelineAndBuffers()
 	{
@@ -542,24 +181,10 @@ public:
 	Window* window;
 	OGUIWebGPURenderer() 
 	{
-		auto init_window = SDL_CreateWindow("TestWindow",
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			50, 50, 0
-		);
-		SDL_SysWMinfo wmInfo;
-		SDL_VERSION(&wmInfo.version);
-		SDL_GetWindowWMInfo(init_window, &wmInfo);
-
-#if defined(_WIN32) || defined(_WIN64)
-		const auto hWnd = (window::Handle)wmInfo.info.win.window;
-#endif
-		if(wgpu = webgpu::create(hWnd); wgpu)
-		{
-			device = getDevice(wgpu);
-			queue = wgpuDeviceGetQueue(device);
-		}
-
-		SDL_DestroyWindow(init_window);
+		const auto WGPUDeviceSet = InitializeWGPUDevice();
+		wgpu = std::get<0>(WGPUDeviceSet);
+		device = std::get<1>(WGPUDeviceSet);
+		queue = std::get<2>(WGPUDeviceSet);
 	}
 
 	virtual ~OGUIWebGPURenderer()
@@ -724,62 +349,6 @@ public:
 	WGPUBuffer index_buffer = nullptr;
 };
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/daily_file_sink.h>
-#include <Windows.h>
-
-struct SpdlogLogger : LogInterface
-{
-	SpdlogLogger()
-	{
-		auto console_sink = get_console_sink();
-		console_sink->set_level(spdlog::level::info);
-		console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
-
-		auto file_sink = get_file_sink();
-		file_sink->set_level(spdlog::level::trace);
-		file_sink->set_pattern("[%Y-%m-%d %z %X.(%F)] [%^%l%$] [%P.%t] %v");
-
-		auto logger = std::make_shared<spdlog::logger>("logger_default", spdlog::sinks_init_list{ console_sink, file_sink });
-		logger->set_level(spdlog::level::trace);
-		logger->flush_on(spdlog::level::info);
-		spdlog::set_default_logger(logger);
-
-		SetConsoleOutputCP(65001);
-	}
-
-	virtual void Log(olog::Level l, ostr::string_view msg)
-	{
-		std::wstring str(msg.raw().cbegin(), msg.raw().cend());
-		spdlog::level::level_enum spdlevel = 
-		[l]
-		{
-			if (l == olog::Level::None) return spdlog::level::off;
-			return (spdlog::level::level_enum)((uint8_t)l - 1);
-		}();
-		spdlog::log(spdlevel, std::wstring_view(str));
-	}
-
-	std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> get_console_sink()
-	{
-		static std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> _static = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-		return _static;
-	}
-
-	std::shared_ptr<spdlog::sinks::daily_file_sink_mt> get_file_sink()
-	{
-		static std::shared_ptr<spdlog::sinks::daily_file_sink_mt> _static = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
-			"Daily.log",        // file name
-			0,                  // hour
-			0,                  // minute
-			false,              // truncate
-			7                   // max files
-			);
-		return _static;
-	}
-};
-
 int main(int , char* []) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
@@ -796,15 +365,12 @@ int main(int , char* []) {
 	auto& ctx = Context::Get();
 	InstallInput();
 	{
-		ctx.bmParserImpl = std::make_unique<BitmapParser>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-		ctx.logImpl = std::make_unique<SpdlogLogger>();
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
-	BuildSDLMap();
 
 	WebGPURenderer = std::make_shared<OGUIWebGPURenderer>();
 	Window* win1 = nullptr;//new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
