@@ -61,13 +61,6 @@ inline static WGPUShaderModule createShader(WGPUDevice device, const char* const
 	return wgpuDeviceCreateShaderModule(device, &desc);
 }
 
-/**
- * Helper to create a buffer.
- *
- * \param[in] data pointer to the start of the raw data
- * \param[in] size number of bytes in \a data
- * \param[in] usage type of buffer
- */
 inline static WGPUBuffer createBuffer(WGPUDevice device, WGPUQueue queue,
     const void* data, size_t size, WGPUBufferUsage usage) {
 	WGPUBufferDescriptor desc = {};
@@ -76,6 +69,12 @@ inline static WGPUBuffer createBuffer(WGPUDevice device, WGPUQueue queue,
 	WGPUBuffer buffer = wgpuDeviceCreateBuffer(device, &desc);
 	wgpuQueueWriteBuffer(queue, buffer, 0, data, size);
 	return buffer;
+}
+
+inline static void writeBuffer(WGPUQueue queue, WGPUBuffer buffer,
+    const void* data, size_t size) 
+{
+	wgpuQueueWriteBuffer(queue, buffer, 0, data, size);
 }
 
 inline static WGPUTextureFormat translate(OGUI::PixelFormat format)
@@ -437,3 +436,6 @@ FORCEINLINE auto InitializeWGPUDevice()
 	}
 	return {nullptr, nullptr, nullptr};
 }
+
+bool InstallBitmapParser();
+bool InstallLogger();

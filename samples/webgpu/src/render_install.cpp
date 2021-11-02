@@ -51,7 +51,7 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
 
 		return bm;
     }
-	inline virtual Bitmap LoadFromMemory(const void* buffer, size_t length)
+    inline virtual Bitmap LoadFromMemory(const void* buffer, size_t length)
     {
 		Bitmap bm = {};
 		int x, y, n;
@@ -72,8 +72,9 @@ struct BitmapParser final : public OGUI::BitmapParserInterface
     }
 };
 
-static bool bBitmapParserInstalled = []()-> bool {
+bool InstallBitmapParser()
+{
     auto& ctx = OGUI::Context::Get();
 	ctx.bmParserImpl = std::make_unique<BitmapParser>();
     return ctx.bmParserImpl.get();
-}(); 
+} 

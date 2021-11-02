@@ -8,6 +8,9 @@ std::shared_ptr<class OGUIWebGPURenderer> WebGPURenderer;
 webgpu::instance* wgpu;
 WGPUDevice device;
 WGPUQueue queue;
+WGPU_OGUI_Texture* default_ogui_texture;
+std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
+
 // Bare minimum pipeline to draw a triangle using the above shaders.
 uint8_t white_tex0[1024 * 1024 * 4];
 
@@ -18,8 +21,6 @@ public:
 	WGPURenderPipeline pipeline;
 	WGPUBindGroupLayout bindGroupLayout;
 	WGPUSampler sampler;
-	WGPU_OGUI_Texture* default_ogui_texture;
-	std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 
 	Window(int width, int height, const char *title, const char *xmlFile)
 		:CSSWindow(width, height, title, xmlFile)
@@ -204,21 +205,36 @@ public:
 	{
 		
 	}
-
+	
 	void RenderPrimitives(const PrimDrawList& list, const class WindowContext&) override
 	{
 		((PrimDrawList&)list).ValidateAndBatch();
 		if(list.command_list.size() <= 0) return;
+		static size_t old_vb_size = 0;
+		static size_t old_ib_size = 0;
+		const auto this_vb_size = list.vertices.size() * sizeof(OGUI::Vertex);
+		const auto this_ib_size = list.indices.size() * sizeof(OGUI::uint16_t);
 		// upload buffer
-		if(vertex_buffer) 
-			wgpuBufferRelease(vertex_buffer);
-		if(index_buffer) 
-			wgpuBufferRelease(index_buffer);
-
-		vertex_buffer = createBuffer(device, queue,
-			list.vertices.data(), list.vertices.size() * sizeof(OGUI::Vertex), WGPUBufferUsage_Vertex);
-		index_buffer = createBuffer(device, queue,
-			list.indices.data(), list.indices.size() * sizeof(uint16_t), WGPUBufferUsage_Index);
+		if(old_vb_size < this_vb_size)
+		{
+			if (vertex_buffer) wgpuBufferRelease(vertex_buffer);
+			vertex_buffer = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
+			old_vb_size = this_vb_size;
+		}
+		else
+		{
+			writeBuffer(queue, vertex_buffer, list.vertices.data(), this_vb_size);
+		}
+		if(old_ib_size < this_ib_size)
+		{
+			if (index_buffer) wgpuBufferRelease(index_buffer);
+			index_buffer = createBuffer(device, queue, list.indices.data(), this_ib_size, WGPUBufferUsage_Index);
+			old_ib_size = this_ib_size;
+		}
+		else
+		{
+			writeBuffer(queue, index_buffer, list.indices.data(), this_ib_size);
+		}
 
 		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(window->swapchain);			// create textureView
 		WGPURenderPassColorAttachment colorDesc = {};
@@ -242,14 +258,14 @@ public:
 			{
 				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
 				if(!texture)
-					texture = window->default_ogui_texture;
+					texture = default_ogui_texture;
 				if(!texture->bind_group)
 				{
 					// update texture binding
 					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
 					bgEntry[0].binding = 0;
 					bgEntry[0].textureView 
-						= texture->texture? texture->texture_view : window->default_ogui_texture->texture_view;
+						= texture->texture? texture->texture_view : default_ogui_texture->texture_view;
 					bgEntry[1].binding = 1;
 					bgEntry[1].sampler = window->sampler;
 					WGPUBindGroupDescriptor bgDesc = {};
@@ -296,24 +312,24 @@ public:
 	TextureHandle RegisterTexture(const Bitmap& bitmap) override
 	{
 		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
-		window->ogui_textures[t] = *t;
+		ogui_textures[t] = *t;
 		return t;
 	}
 
 	void UpdateTexture(TextureHandle t, const Bitmap& bitmap) override
 	{
-		updateTexture(device, queue, &window->ogui_textures[t], bitmap);
+		updateTexture(device, queue, &ogui_textures[t], bitmap);
 	}
 
 	void ReleaseTexture(TextureHandle h) override
 	{
 		if(!h)
 			return;
-		auto iter = window->ogui_textures.find(h);
-		if(iter == window->ogui_textures.end())
+		auto iter = ogui_textures.find(h);
+		if(iter == ogui_textures.end())
 			return;
 		iter->second.Release();
-		window->ogui_textures.erase(iter);
+		ogui_textures.erase(iter);
 	}
 
 	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap &) override
@@ -363,7 +379,9 @@ int main(int , char* []) {
 	using namespace OGUI;
 	using namespace ostr::literal;
 	auto& ctx = Context::Get();
+	InstallLogger();	
 	InstallInput();
+	InstallBitmapParser();
 	{
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");

@@ -5,6 +5,7 @@
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Context.h"
+#include "utils.h"
 
 using namespace OGUI;
 
@@ -59,8 +60,9 @@ struct SpdlogLogger : LogInterface
 	}
 };
 
-static bool bLoggerInstalled = []()-> bool {
+bool InstallLogger()
+{
     auto& ctx = OGUI::Context::Get();
     ctx.logImpl = std::make_unique<SpdlogLogger>();
     return ctx.logImpl.get();
-}(); 
+}; 
