@@ -11,7 +11,6 @@
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style/StyleSheet.h"
 #include "OpenGUI/Style/Style.h"
-#include "OpenGUI/Xml/XmlFactory.h"
 #include "OpenGUI/Event/EventHandler.h"
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Core/Types.h"
@@ -19,6 +18,7 @@
 
 namespace OGUI
 {
+	using namespace ostr::literal;
 	namespace PrimitiveDraw
 	{
 		struct OGUI_API DrawContext;
@@ -65,7 +65,6 @@ namespace OGUI
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
 		std::string _name;
-        std::string _path;
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 

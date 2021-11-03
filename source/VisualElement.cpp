@@ -1,5 +1,5 @@
-#include "Yoga.h"
 #define DLL_IMPLEMENTATION
+#include "Yoga.h"
 #include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/Math.h"
@@ -9,7 +9,6 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
 #include "OpenGUI/Style/Style.h"
-#include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Animation/AnimStyle.h"
 #include "OpenGUI/Context.h"

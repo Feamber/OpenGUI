@@ -1,5 +1,5 @@
-
 #include "OpenGui/Core/ostring/osv.h"
+#include "OpenGUI/Core/ostring/helpers.h"
 #include <string_view>
 
 _NS_OSTR_BEGIN
@@ -138,6 +138,102 @@ int string_view::to_int() const noexcept
 	for (const auto& c : sv._str)
 		value = value * 10 + c - u'0';
 	return value;
+}
+
+float string_view::to_float() const noexcept
+{
+	int value = 0;
+	bool is = false;
+	float v = 10;
+	string_view sv = this->trim();
+	for (const auto& c : sv._str)
+	{
+		if(c == u'.')
+			continue;
+		if(!is)
+			value = value * 10 + c - u'0';
+		else
+		{
+			value += (float)(c - u'0') / v;
+			v /= 10;
+		};
+	}
+	return value;
+}
+
+bool string_view::to_bool() const noexcept
+{
+	string_view sv = this->trim();
+
+	if(sv.length() == 1 && (sv._str.front() == '0' || sv._str.front() == '1'))
+		return true;
+	else if(sv.length() == 4
+			&& (sv._str[0] == 't' || sv._str[0] == 'T')
+			&& (sv._str[1] == 'r' || sv._str[1] == 'R')
+			&& (sv._str[2] == 'u' || sv._str[2] == 'U')
+			&& (sv._str[3] == 'e' || sv._str[3] == 'E'))
+		return true;
+	return false;
+}
+
+bool string_view::is_number() const noexcept
+{
+	bool is = false;
+	string_view sv = this->trim();
+	for (auto i = sv._str.begin(); i != sv._str.end(); ++i)
+	{
+		const auto& c = *i;
+		if(helper::character::is_number(c))
+			continue;
+		else if(i == sv._str.begin() && (c == '-' || c == '+'))
+			continue;
+		else if(c == '.' && !is)
+		{
+			is = true;
+			continue;
+		}
+		else
+			return false;
+	}
+	return true;
+}
+
+bool string_view::is_integer() const noexcept
+{
+	string_view sv = this->trim();
+	for (auto i = sv._str.begin(); i != sv._str.end(); ++i)
+	{
+		const auto& c = *i;
+		if(helper::character::is_number(c))
+			continue;
+		else if(i == sv._str.begin() && (c == '-' || c == '+'))
+			continue;
+		else
+			return false;
+	}
+	return true;
+}
+
+bool string_view::is_bool() const noexcept
+{
+	string_view sv = this->trim();
+
+	if(sv.length() == 1 && (sv._str.front() == '0' || sv._str.front() == '1'))
+		return true;
+	else if(sv.length() == 4
+			&& (sv._str[0] == 't' || sv._str[0] == 'T')
+			&& (sv._str[1] == 'r' || sv._str[1] == 'R')
+			&& (sv._str[2] == 'u' || sv._str[2] == 'U')
+			&& (sv._str[3] == 'e' || sv._str[3] == 'E'))
+		return true;
+	else if(sv.length() == 5
+			&& (sv._str[0] == 'f' || sv._str[0] == 'F')
+			&& (sv._str[1] == 'a' || sv._str[1] == 'A')
+			&& (sv._str[2] == 'l' || sv._str[2] == 'L')
+			&& (sv._str[3] == 's' || sv._str[3] == 'S')
+			&& (sv._str[4] == 'e' || sv._str[4] == 'E'))
+		return true;
+	return false;
 }
 
 size_t string_view::position_codepoint_to_index(size_t codepoint_count_to_iterator) const noexcept

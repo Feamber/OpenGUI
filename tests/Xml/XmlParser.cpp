@@ -1,7 +1,6 @@
-#include <OpenGUI/Xml/XmlFactoryTool.h>
+#include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/Core/Types.h"
 #include "catch.hpp"
-#include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualElement.h"
 
 #include <fstream>
@@ -9,10 +8,14 @@
 TEST_CASE("XmlParser", "[XmlAsset]")
 {
     using namespace OGUI;
+    XmlBase::RegisterOGUIXmlParser();
     for (int i = 0; i < 1000; ++i) {
-        auto asset = XmlAsset::LoadXmlFile("XmlParserTest.xml");
+        ParseXmlState xmlState;
+        auto asset = LoadXmlFile("XmlParserTest.xml", xmlState);
         REQUIRE(asset);
-        VisualElement* ins = asset->Instantiate();
+        // asset->root->DebugPrint();
+        InstantiateXmlState InstantState;
+        VisualElement* ins = asset->Instantiate(InstantState);
         REQUIRE(ins);
 
         // auto Text = (TextVisualElement*)ins->_children[1];
@@ -39,7 +42,6 @@ TEST_CASE("XmlParser", "[XmlAsset]")
         auto BB2 = AA1->_children[1];
         REQUIRE(BB2->_name == "BB2");
         REQUIRE(BB2->_styleClasses[0] == "aaaaaa");
-        REQUIRE(BB2->_path == "aaaa");
 
         auto BBB = BB2->_children[0]->_children[0];
         REQUIRE(BBB->_name == "BBB");

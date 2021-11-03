@@ -1,8 +1,7 @@
-
-#include <OpenGUI/Xml/XmlFactoryTool.h>
 #include "catch.hpp"
 #include "OpenGUI/Core/Name.h"
 
+using namespace ostr::literal;
 TEST_CASE("Name", "NameTest")
 {
     using namespace OGUI;

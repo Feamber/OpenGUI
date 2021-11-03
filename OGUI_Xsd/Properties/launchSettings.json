@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "OGUI_Xsd": {
-      "commandName": "Project",
-      "commandLineArgs": "XsdToCpp -x include\\OpenGUI\\Xml\\Xsd\\Main.xsd -h include\\OpenGUI\\Xml\\XsdGen -c source\\Xml\\XsdGen",
-      "workingDirectory": "../"
-    }
-  }
-}

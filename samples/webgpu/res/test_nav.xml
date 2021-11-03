@@ -3,23 +3,23 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="../../../include/OpenGUI/Xml/Xsd/Main.xsd">
     <engine:Style path="res/test_nav.css"/>
-    <engine:VisualElement name="Scope1" class_tag="FocusScope" isFocusScope="true" navCycleMode="Vertical">
-        <engine:VisualElement name="$GName" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="$GName2" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="$GName" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="s1e4" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="$GName" class_tag="Element" focusable="true" />
+    <engine:VisualElement name="Scope1" class="FocusScope" focus-scope="true" nav-cycle-mode="Vertical">
+        <engine:VisualElement name="$GName" class="Element" focusable="true" />
+        <engine:VisualElement name="$GName2" class="Element" focusable="true" />
+        <engine:VisualElement name="$GName" class="Element" focusable="true" />
+        <engine:VisualElement name="s1e4" class="Element" focusable="true" />
+        <engine:VisualElement name="$GName" class="Element" focusable="true" />
     </engine:VisualElement>
-    <engine:VisualElement name="e1" class_tag="Element" focusable="true" />
-    <engine:VisualElement name="e2" class_tag="Element" focusable="true" />
-    <engine:VisualElement name="e3" class_tag="Element" focusable="true" />
-    <engine:VisualElement name="e4" class_tag="Element" focusable="true" />
-    <engine:VisualElement name="Scope2" class_tag="FocusScope" isFocusScope="true" isKeeyScopeFocused="true" navCycleMode="Automatic">
-        <engine:VisualElement name="s2e1" class_tag="Element" focusable="true" />
-        <engine:VisualElement navExplicitRight="#s1e4" navExplicitDown="#e4" name="s2e2" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="s2e3" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="s2e4" class_tag="Element" focusable="true" />
-        <engine:VisualElement name="s2e5" class_tag="Element" focusable="true" />
-        <engine:VisualElement isFocusScope="true" name="s2e6" class_tag="Element" focusable="true" />
+    <engine:VisualElement name="e1" class="Element" focusable="true" />
+    <engine:VisualElement name="e2" class="Element" focusable="true" />
+    <engine:VisualElement name="e3" class="Element" focusable="true" />
+    <engine:VisualElement name="e4" class="Element" focusable="true" />
+    <engine:VisualElement name="Scope2" class="FocusScope" focus-scope="true" keep-focused="true" nav-cycle-mode="Automatic">
+        <engine:VisualElement name="s2e1" class="Element" focusable="true" />
+        <engine:VisualElement nav-right="#s1e4" nav-down="#e4" name="s2e2" class="Element" focusable="true" />
+        <engine:VisualElement name="s2e3" class="Element" focusable="true" />
+        <engine:VisualElement name="s2e4" class="Element" focusable="true" />
+        <engine:VisualElement name="s2e5" class="Element" focusable="true" />
+        <engine:VisualElement focus-scope="true" name="s2e6" class="Element" focusable="true" />
     </engine:VisualElement>
 </engine:Root>

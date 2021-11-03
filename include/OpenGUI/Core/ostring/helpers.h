@@ -253,6 +253,17 @@ namespace helper
 	namespace string
 	{
 		template<typename T>
+		inline bool is_number(T* str, size_t len)
+		{
+			for (T* c = str; c < str + len; ++c)
+			{
+				if (!character::is_number(*c))
+					return false;
+			}
+			return true;
+		}
+
+		template<typename T>
 		inline size_t to_uint(T* str, size_t len)
 		{
 			size_t ans = 0;

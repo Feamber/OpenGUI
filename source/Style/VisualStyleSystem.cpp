@@ -1,3 +1,4 @@
+#include "OpenGUI/Core/ostring/ostr.h"
 #define DLL_IMPLEMENTATION
 #include <algorithm>
 #include <bitset>

@@ -208,7 +208,17 @@ public:
 		return trim_start().trim_end();
 	}
 
+	[[nodiscard]] bool is_number() const noexcept;
+
+	[[nodiscard]] bool is_integer() const noexcept;
+
+	[[nodiscard]] bool is_bool() const noexcept;
+
 	[[nodiscard]] int to_int() const noexcept;
+
+	[[nodiscard]] float to_float() const noexcept;
+	
+	[[nodiscard]] bool to_bool() const noexcept;
 
 	[[nodiscard]] constexpr uint32_t get_hash() const noexcept
 	{

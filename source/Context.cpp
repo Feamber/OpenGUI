@@ -10,7 +10,7 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/IOThread.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
-
+#include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
@@ -312,6 +312,7 @@ OGUI::Context::Context()
 {
 	ioThread = std::make_unique<IOThread>();
 	logImpl = std::make_unique<StdOutputLog>();
+	XmlBase::RegisterOGUIXmlParser();
 }
 
 OGUI::Context::~Context()
