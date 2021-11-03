@@ -1,12 +1,4 @@
 project(WebgpuSample)
-
-download_and_extract2(
-    URL ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/common/OGUI_Xsd.zip
-    FILENAME ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.zip
-    HASH_TYPE SHA1
-    HASH 5b0947b8f2f949d42ed61d51e0c169f5c465bcfb
-    EXTRACT_DIR ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/
-)
 	
 download_and_extract(
     ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn.zip

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<engine:Root xmlns:engine="OGUI"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:noNamespaceSchemaLocation="../../include/OpenGUI/Xml/Xsd/Main.xsd">
+<engine:Root xmlns:engine="OGUI">
   <engine:Template name="test2" path="XmlParserTest2.xml"/>
   <engine:VisualElement name="A" focusable="true" nav-mode="Horizontal" focus-scope="true" nav-cycle-mode="Automatic">
     <engine:Instance template="test2" name="B1">
