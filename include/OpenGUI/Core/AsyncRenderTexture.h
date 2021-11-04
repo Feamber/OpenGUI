@@ -48,12 +48,12 @@ namespace OGUI
 		Count
 	};
 
-	class AsyncRenderTexture
+	class AsyncRenderTexture 
 	{
 		friend class RenderTextureManager;
 	public:
 		~AsyncRenderTexture();
-		AsyncRenderTexture(std::shared_ptr<AsyncTexture2D> image_handle, ERenderTextureType type);
+		AsyncRenderTexture(std::unique_ptr<AsyncTexture2D> image_handle, ERenderTextureType type);
 		inline const TextureHandle Get(void) const
 		{
 			return device_image->Get();
@@ -63,8 +63,8 @@ namespace OGUI
 			return device_image->valid();
 		}
 	protected:
-		std::shared_ptr<AsyncTexture2D> device_image;
-		std::shared_ptr<AsyncStaticAtlas> static_atlas;
+		std::unique_ptr<AsyncTexture2D> device_image;
+		std::unique_ptr<AsyncStaticAtlas> static_atlas;
 
 		ERenderTextureType texture_type;
 	};

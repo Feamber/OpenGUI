@@ -386,10 +386,10 @@ OGUI::AsyncTexture2D::~AsyncTexture2D()
     }
 }
 
-OGUI::AsyncRenderTexture::AsyncRenderTexture(std::shared_ptr<AsyncTexture2D> image_handle, ERenderTextureType type)
+OGUI::AsyncRenderTexture::AsyncRenderTexture(std::unique_ptr<AsyncTexture2D> image_handle, ERenderTextureType type)
     :texture_type(type)
 {
-    device_image = image_handle;
+    device_image = std::move(image_handle);
 }
 
 OGUI::AsyncRenderTexture::~AsyncRenderTexture()

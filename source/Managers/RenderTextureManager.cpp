@@ -20,10 +20,7 @@ shared_ptr<AsyncRenderTexture> RenderTextureManager::RequireFromFileSystem(
     if(needUpload)
     {
         tex_locked = std::make_shared<AsyncRenderTexture>(
-            std::shared_ptr<AsyncTexture2D>(new AsyncTexture2D(), 
-            [this, url](AsyncTexture2D* tex){
-                render_textures.erase(url);
-            }), ERenderTextureType::RawTexture
+            std::make_unique<AsyncTexture2D>(), ERenderTextureType::RawTexture
         );
         render_textures[url] = tex_locked;
     } else {

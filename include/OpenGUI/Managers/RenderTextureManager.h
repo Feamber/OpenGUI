@@ -23,8 +23,7 @@ namespace OGUI
 
         void Update();
     protected:
-        std::unordered_map<std::string, std::weak_ptr<AsyncRenderTexture>> 
-            render_textures;
+        std::unordered_map<std::string, std::weak_ptr<AsyncRenderTexture>> render_textures;
         std::unordered_map<std::string, std::shared_ptr<AsyncBitmap>> files;        
     };
 }
