@@ -18,7 +18,6 @@
 
 OGUI::WindowContext::WindowContext()
 {
-	textureManager = std::make_unique<RenderTextureManager>(*this);
 	ui = new VisualWindow();
 };
 
@@ -127,7 +126,8 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 {
 	auto& wctx = GetOrRegisterWindowContext(window);
 	auto root = wctx.GetWindowUI();
-	wctx.textureManager->Update();
+	// Texture Streaming
+	textureManager->Update();
 	// Update Window
 	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
 	_deltaTime = dt;
@@ -144,6 +144,7 @@ void OGUI::Context::Render(const OGUI::WindowHandle window)
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
 	wctx.currentDrawCtx->resolution = Vector2f(wctx.X, wctx.Y);
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
+	wctx.currentDrawCtx->prims.ValidateAndBatch();
 	if(renderImpl.get()) 
 		renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims, wctx);
 }

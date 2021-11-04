@@ -42,7 +42,6 @@ namespace OGUI
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
 		std::shared_ptr<PrimitiveDraw::DrawContext> currentDrawCtx;
-		std::unique_ptr<RenderTextureManager> textureManager;
 	protected:
 		float X; float Y;
 		WindowHandle window;
@@ -106,6 +105,7 @@ namespace OGUI
 		VisualElement* _elementUnderCursor = nullptr;
 	public:
 		std::unique_ptr<godot::TextServer> _textServer;
+		std::unique_ptr<RenderTextureManager> textureManager;
 		//Hooks
 		std::unique_ptr<InputInterface>  inputImpl;
 		std::unique_ptr<SystemInterface> systemImpl;

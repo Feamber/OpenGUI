@@ -24,21 +24,6 @@ namespace OGUI
 	};
 
 	using Region = Rect;
-	class AsyncStaticAtlas : public AsyncTexture2D
-	{
-		friend class RenderTextureManager;
-	public:
-		
-	protected:
-		OGUI::vector<std::string_view> region_names;
-	};
-
-	class AsyncDynamicAtlas : public AsyncStaticAtlas
-	{
-		
-	public:
-		
-	};
 
 	enum ERenderTextureType
 	{
@@ -65,7 +50,6 @@ namespace OGUI
 		}
 	protected:
 		std::unique_ptr<AsyncTexture2D> device_image;
-		std::unique_ptr<AsyncStaticAtlas> static_atlas;
 
 		ERenderTextureType texture_type;
 	};

@@ -15,8 +15,6 @@ public:
 	};
 };
 
-
-// Bare minimum pipeline to draw a triangle using the above shaders.
 class OGUIWebGPURenderer final : public OGUI::RenderInterface
 {
 public:
@@ -142,7 +140,6 @@ public:
 	
 	void RenderPrimitives(const PrimDrawList& list, const class WindowContext& wctx) override
 	{
-		((PrimDrawList&)list).ValidateAndBatch();
 		if(list.command_list.size() <= 0) return;
 		static size_t old_vb_size = 0;
 		static size_t old_ib_size = 0;
@@ -402,6 +399,7 @@ int main(int , char* []) {
 	InstallBitmapParser();
 	{
 		ctx.renderImpl = std::make_unique<OGUIWebGPURenderer>();
+		ctx.textureManager = std::make_unique<RenderTextureManager>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
