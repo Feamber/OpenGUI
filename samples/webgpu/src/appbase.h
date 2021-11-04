@@ -20,7 +20,6 @@
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Event/KeyEvent.h"
 #include "OpenGUI/Event/PointerEvent.h"
-#include "OpenGUI/Core/DynamicAtlasResource.h"
 #include "efsw/efsw.hpp"
 
 using namespace OGUI;
