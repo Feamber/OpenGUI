@@ -13,7 +13,7 @@ namespace OGUI
         std::vector<std::string> stringData;
 
         template<class T>
-        const T& Get(VariantHandle handle)
+        const T& Get(VariantHandle handle) const
         {
             if constexpr(std::is_pod_v<T>)
             {
@@ -26,7 +26,7 @@ namespace OGUI
         }
 
         template<class T>
-        VariantHandle Add(const T& value)
+        VariantHandle Push(const T& value)
         {
             if constexpr(std::is_pod_v<T>)
             {
@@ -46,6 +46,12 @@ namespace OGUI
     struct StyleRule
 	{
 		std::vector<StyleProperty> properties;
+        struct AnimRule
+        {
+            std::string name;
+            std::vector<StyleProperty> properties;
+        };
+        std::vector<AnimRule> animation;
 	};
 
     struct StyleKeyframes
@@ -75,4 +81,10 @@ namespace OGUI
 		using KeyframesMap = std::map<std::string_view, int>;
 		KeyframesMap namedKeyframes;
     };
+
+	struct InlineStyle
+	{
+		StyleRule rule;
+		StyleSheetStorage storage;
+	};
 }

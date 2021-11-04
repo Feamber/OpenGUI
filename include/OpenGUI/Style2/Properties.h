@@ -1,13 +1,21 @@
 
-
+#pragma once
 #include "OpenGUI/Core/ostring/ostr.h"
 #include <gsl/span>
 #include <unordered_map>
 namespace OGUI
 {
-	struct AnimationStyle;
-	struct AnimRunContext;
-	struct StyleSheetStorage;
+
+	enum class StyleKeyword : int
+	{
+		Inherit,
+		Initial,
+		Auto,
+		Unset,
+		True,
+		False,
+		None
+	};
 
 	struct VariantHandle
 	{
@@ -32,35 +40,11 @@ namespace OGUI
 		{}
 	};
 
-    struct Style;
-
-    struct StyleDesc
-    {
-		void (*Dispose)(Style& style);
-        void (*Merge)(Style& style, const Style& other, gsl::span<StyleProperty>& props);
-        void (*Initialize)(Style& style);
-        void (*ApplySS)(Style& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style& parent);
-        void (*LerpSS)(Style& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
-			const Style* parent, float alpha);
-    };
-
-	struct StyleRegistry
+	struct AnimatedProperty
 	{
-		std::vector<StyleDesc> descriptions;
-	};
-
-	void RegisterStyleStruct(StyleDesc* Registry);
-
-	struct Style
-	{
-		std::unordered_map<size_t, std::shared_ptr<void*>> structs;
-		
-		static const Style& GetInitialStyle();
-		static Style Create();
-		void MergeStyle(const Style& other, gsl::span<StyleProperty>& props);
-		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const Style* parent);
-		void ApplyAnimation(const AnimationStyle& anim, const AnimRunContext& ctx, const Style* parent);
-		void LerpProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
-			const Style* parent, float alpha);
+		size_t id;
+		VariantHandle from;
+		VariantHandle to;
+		float alpha;
 	};
 }

@@ -2,8 +2,7 @@
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/DataBind/PropertyManager.h"
-#include "OpenGUI/Style/VisualStyleSystem.h"
-#include "OpenGUI/Animation/VisualAnimationSystem.h"
+#include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/Types.h"
 #include <algorithm>
@@ -79,7 +78,6 @@ namespace OGUI
 
 		//Systems
 		VisualStyleSystem styleSystem;
-		VisualAnimationSystem animSystem;
 
 		//Global States
 		float _deltaTime = 0.f;

@@ -1,6 +1,7 @@
 #include "Yoga.h"
 #define DLL_IMPLEMENTATION
-#include "OpenGUI/Style/StyleSelector.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/Math.h"
 #include <type_traits>
@@ -8,10 +9,10 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
-#include "OpenGUI/Style/Style.h"
+#include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
-#include "OpenGUI/Animation/AnimStyle.h"
+#include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Context.h"
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
@@ -353,7 +354,6 @@ bool OGUI::VisualElement::ContainClass(std::string_view cls)
 
 void OGUI::VisualElement::_ResetStyles()
 {
-	_sharedStyle = nullptr;
 	_selectorDirty = true;
 	//dosent clean this cause we want to inherit anim context
 	//_animContext.clear();
@@ -387,7 +387,6 @@ void OGUI::VisualElement::SetPseudoClass(PseudoStates state, bool b)
 		_selectorDirty = true;
 }
 
-#include "OpenGUI/CSSParser/CSSParser.h"
 void OGUI::VisualElement::InitInlineStyle(std::string_view str)
 {
 	auto res = ParseInlineStyle(str);

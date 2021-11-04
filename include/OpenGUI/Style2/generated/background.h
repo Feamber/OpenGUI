@@ -4,31 +4,24 @@
 #pragma once
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
-%for header in struct.headers:
-#include "${header}"
-%endfor
+#include "OpenGUI/Core/Math.h"
 namespace OGUI
 {
-    struct Style${struct.ident}
+    struct StyleBackground
     {
-        constexpr static size_t hash = ${struct.hash}U;
+        constexpr static size_t hash = 8018830855182204725U;
         struct Id
         {
-        %for prop in struct.longhands:
-            static constexpr size_t ${prop.ident} = ${prop.hash}U;
-        %endfor
-        %for prop in struct.shorthands:
-            static constexpr size_t ${prop.ident} = ${prop.hash}U;
-        %endfor
+            static constexpr size_t backgroundColor = 6146824217856065527U;
+            static constexpr size_t backgroundImage = 5857326841327635783U;
         };
-    %for prop in struct.longhands:
-        ${prop.type} ${prop.ident};
-    %endfor
+        Color4f backgroundColor;
+        std::string backgroundImage;
         void Initialize();
-        static const Style${struct.ident}& GetDefault();
-        static const Style${struct.ident}& Get(const ComputedStyle& style);
-        static Style${struct.ident}* TryGet(const ComputedStyle& style);
-        static Style${struct.ident}& GetOrAdd(ComputedStyle& style);
+        static const StyleBackground& GetDefault();
+        static const StyleBackground& Get(const ComputedStyle& style);
+        static StyleBackground* TryGet(const ComputedStyle& style);
+        static StyleBackground& GetOrAdd(ComputedStyle& style);
         static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);

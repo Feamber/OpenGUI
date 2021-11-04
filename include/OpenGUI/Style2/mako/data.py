@@ -1,7 +1,7 @@
 
 import re
 
-PHYSICAL_SIDES = ["top", "right", "bottom", "left"]
+PHYSICAL_SIDES = ["left", "top", "right", "bottom"]
 LOGICAL_SIDES = ["block-start", "block-end", "inline-start", "inline-end"]
 PHYSICAL_SIZES = ["width", "height"]
 LOGICAL_SIZES = ["block-size", "inline-size"]
@@ -62,6 +62,18 @@ def to_snake_case(ident):
     return re.sub("([A-Z]+)", lambda m: "_" + m.group(1).lower(), ident).strip("_")
 
 
+def to_small_camel_case(ident):
+    first = True
+    def cast(m):
+        nonlocal first
+        if first:
+            first = False
+            return m.group(2)
+        return m.group(2).upper()
+    return re.sub(
+        "(^|_|-)([a-z0-9])", cast, ident.strip("_").strip("-")
+    )
+
 def to_camel_case(ident):
     return re.sub(
         "(^|_|-)([a-z0-9])", lambda m: m.group(2).upper(), ident.strip("_").strip("-")
@@ -94,8 +106,9 @@ class Property(object):
         flags
     ):
         self.name = name
+        self.hash = chash(name)
         self.spec = spec
-        self.ident = to_camel_case(name)
+        self.ident = to_small_camel_case(name)
         self.rule_types_allowed = rule_values_from_arg(rule_types_allowed)
         self.aliases = parse_property_aliases(aliases)
         self.flags = flags.split() if flags else []
@@ -108,6 +121,17 @@ def arg_to_bool(arg):
         arg
     )
     return arg == "True"
+
+import ctypes
+
+_FNV_offset_basis = ctypes.c_size_t(14695981039346656037)
+_FNV_prime        = ctypes.c_size_t(1099511628211)
+def chash(arg):
+    value = _FNV_offset_basis
+    for element in arg:
+        value.value^=ord(element)
+        value.value*=_FNV_prime.value
+    return value.value
 
 class Longhand(Property):
     def __init__(
@@ -136,11 +160,10 @@ class Longhand(Property):
         self.keyword = keyword
         self.type = type
         self.initial_value = initial_value
-        self.hash = hash(name)
-        self.style_struct = style_struct
         self.logical = arg_to_bool(logical)
         self.is_vector = arg_to_bool(vector)
         self.restyle_damage = restyle_damage
+        self.parser = "ParseValue"
 
 class Shorthand(Property):
     def __init__(
@@ -160,14 +183,26 @@ class Shorthand(Property):
             aliases=aliases,
             flags = flags
         )
-        self.sub_properties = sub_properties
 
 
 class StyleStruct(object):
-    def __init__(self, name, inherited, longhands):
+    def __init__(self, name, inherited):
         self.name = name
-        self.hash = hash(name)
+        self.hash = chash(name)
         self.name_lower = to_snake_case(name)
         self.ident = to_camel_case(self.name_lower)
-        self.longhands = longhands
+        self.longhands = []
+        self.shorthands = []
+        self.headers = []
         self.inherited = inherited
+        self.name_to_longhand = {}
+
+    def add_longhand(self, *args, **kwargs):
+        longhand = Longhand(*args, **kwargs)
+        self.longhands.append(longhand)
+        self.name_to_longhand[longhand.name] = longhand
+
+    def add_shorthand(self, name, sub_properties, *args, **kwargs):
+        sub_properties = [self.name_to_longhand[s] for s in sub_properties]
+        shorthand = Shorthand(name, sub_properties, *args, **kwargs)
+        self.shorthands.append(shorthand)
