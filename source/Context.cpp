@@ -121,7 +121,7 @@ void OGUI::Context::Remove(const OGUI::WindowHandle window)
 		}
 	}
 }
-
+ 
 void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 {
 	auto& wctx = GetOrRegisterWindowContext(window);

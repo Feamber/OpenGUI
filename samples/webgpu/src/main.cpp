@@ -1,6 +1,11 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "appbase.h"
 #include "webgpu.h"
+#ifdef USE_TRACY
+	#define TRACY_IMPORTS
+	#define TRACY_ENABLE
+	#include "tracy/Tracy.hpp"
+#endif
 
 extern void InstallInput();
 
@@ -13,6 +18,12 @@ public:
 		auto&& ctx = Context::Get();
 		ctx.renderImpl->RegisterWindow(*cWnd);
 	};
+
+	virtual bool Update() override
+	{
+		ZoneScopedN("Window Update");
+		return CSSWindow::Update();
+	}
 };
 
 class OGUIWebGPURenderer final : public OGUI::RenderInterface
@@ -414,6 +425,8 @@ int main(int , char* []) {
 	while(win1 || win2)
 	{
 		using namespace ostr::literal;
+		
+		ZoneScoped;
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && (win1 || win2)) 
@@ -450,7 +463,7 @@ int main(int , char* []) {
 
 		dataBindTest4 = dataBindTest4 == "test1" ? "test2" : "test1";
 		ctx.propeManager.PropertyChange(PropertyPath::Make("GName4"));
-
+		FrameMark;
 	}
 
 	ctx.propeManager.UnRegisterProperty(PropertyPath::Make("GName"));
