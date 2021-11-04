@@ -54,8 +54,8 @@ void RenderTextureManager::Update()
         {
             auto tex_locked = render_textures[url].lock();
             // comple/upload texture to render device.
-            tex_locked->device_image->_handle 
-                = windowContext.renderImpl->RegisterTexture(file->GetBitmap());
+            tex_locked->device_image->_handle = windowContext.renderImpl->RegisterTexture(file->GetBitmap());
+            tex_locked->device_image->render_impl = windowContext.renderImpl.get();
             tex_locked->device_image->is_ready = true;
             file.reset();
             uploadeds.push_back(url);

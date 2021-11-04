@@ -80,6 +80,7 @@ public:
 	SDL_Window* window;
 	SDL_SysWMinfo wmInfo;
 	window::Handle hWnd;
+	Timer UpdateTimer;
 
 	FORCEINLINE AppWindow(int width, int height, const char *title)
 		:width(width), height(height)
@@ -97,6 +98,7 @@ public:
 		auto &ctx = Context::Get();
         cWnd = &ctx.Create(this);
 #endif
+		UpdateTimer.Reset();
     }
 
 	int GetWidth() const override {return width;}
@@ -104,11 +106,18 @@ public:
 
     virtual ~AppWindow()
     {
+		auto& ctx = OGUI::Context::Get();
+		ctx.Remove(this);
+
 		SDL_DestroyWindow(window);
     }
 
 	virtual bool Update() override
     {
+		const auto deltaTime = UpdateTimer.Tick();
+		auto& ctx = OGUI::Context::Get();
+		ctx.Update(this, deltaTime);
+		ctx.Render(this);
         return true;
     }
 };
@@ -122,28 +131,15 @@ public:
 	std::vector<std::string> allCssFile;
     std::vector<std::string> allXmlFile;
 
-	Timer UpdateTimer;
 	FORCEINLINE CSSWindow(int width, int height, const char *title, const char *xmlFile)
         :AppWindow(width, height, title)
     {
-		UpdateTimer.Reset();
         LoadResource(xmlFile);
     }
 
     virtual ~CSSWindow()
     {
-        auto& ctx = OGUI::Context::Get();
-		ctx.Remove(this);
-    }
 
-	virtual bool Update() override
-    {
-        const auto Super = AppWindow::Update();
-		const auto deltaTime = UpdateTimer.Tick();
-		auto& ctx = OGUI::Context::Get();
-		ctx.Update(this, deltaTime);
-		ctx.Render(this);
-		return Super;
     }
 private:
 	FORCEINLINE void LoadResource(const char *xmlFile)

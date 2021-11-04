@@ -379,11 +379,7 @@ OGUI::LogInterface::~LogInterface()
 
 OGUI::AsyncTexture2D::~AsyncTexture2D()
 {
-    auto& ctx = Context::Get();
-    for(auto&& windowContext : ctx.windowContexts)
-    {
-        windowContext->renderImpl->ReleaseTexture(_handle); 
-    }
+    render_impl->ReleaseTexture(_handle); 
 }
 
 OGUI::AsyncRenderTexture::AsyncRenderTexture(std::unique_ptr<AsyncTexture2D> image_handle, ERenderTextureType type)
@@ -394,7 +390,7 @@ OGUI::AsyncRenderTexture::AsyncRenderTexture(std::unique_ptr<AsyncTexture2D> ima
 
 OGUI::AsyncRenderTexture::~AsyncRenderTexture()
 {
-    device_image.reset();
+    
 }
 
 StdOutputLog::~StdOutputLog()

@@ -117,6 +117,7 @@ namespace OGUI
 		//Components
 		std::unique_ptr<IOThread>        ioThread;
 		std::vector<std::unique_ptr<WindowContext>>   windowContexts; // Update Per Frame
+		std::vector<std::unique_ptr<RenderInterface>>   renderImples; 
 		godot::TextServer* GetTextServer();
 		//States
 		bool initialized = false;
