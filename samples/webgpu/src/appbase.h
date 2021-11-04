@@ -22,7 +22,6 @@
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Core/DynamicAtlasResource.h"
 #include "efsw/efsw.hpp"
-#include "OpenGUI/Text/FontRendering.h"
 
 using namespace OGUI;
 

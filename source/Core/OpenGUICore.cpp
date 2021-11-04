@@ -350,14 +350,14 @@ void AsyncBitmap::Initialize(const char* path)
 {
     auto& ctx = Context::Get();
     auto f = ctx.fileImpl->Open(path);
-    bm = ctx.bmParserImpl->LoadFromFile(f);
+    bitmap = ctx.bmParserImpl->LoadFromFile(f);
     ctx.fileImpl->Close(f);
 }
 
 void AsyncBitmap::Finalize() 
 {
     auto& ctx = Context::Get();
-    ctx.bmParserImpl->Free(bm);
+    ctx.bmParserImpl->Free(bitmap);
 }
 
 // AsyncBlob
