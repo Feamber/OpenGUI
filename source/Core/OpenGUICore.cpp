@@ -379,7 +379,8 @@ OGUI::LogInterface::~LogInterface()
 
 OGUI::AsyncTexture2D::~AsyncTexture2D()
 {
-    render_impl->ReleaseTexture(_handle); 
+    auto&& ctx = Context::Get();
+    ctx.renderImpl->ReleaseTexture(_handle); 
 }
 
 OGUI::AsyncRenderTexture::AsyncRenderTexture(std::unique_ptr<AsyncTexture2D> image_handle, ERenderTextureType type)

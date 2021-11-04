@@ -19,7 +19,6 @@ namespace OGUI
 		}
 	protected:
 		// Setup in RenderTextureManager::Update
-		RenderInterface* render_impl; // RenderInterface must be valid when a texture is active. 
 		TextureHandle _handle = nullptr;
 		std::atomic_bool is_ready;
 	};

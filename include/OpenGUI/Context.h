@@ -42,7 +42,6 @@ namespace OGUI
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
 		std::shared_ptr<PrimitiveDraw::DrawContext> currentDrawCtx;
-		std::shared_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<RenderTextureManager> textureManager;
 	protected:
 		float X; float Y;
@@ -111,13 +110,13 @@ namespace OGUI
 		std::unique_ptr<InputInterface>  inputImpl;
 		std::unique_ptr<SystemInterface> systemImpl;
 		std::unique_ptr<LogInterface> logImpl;
+		std::unique_ptr<RenderInterface> renderImpl;
 		
 		std::unique_ptr<FileInterface>   fileImpl;
 		std::unique_ptr<BitmapParserInterface>   bmParserImpl;
 		//Components
 		std::unique_ptr<IOThread>        ioThread;
 		std::vector<std::unique_ptr<WindowContext>>   windowContexts; // Update Per Frame
-		std::vector<std::unique_ptr<RenderInterface>>   renderImples; 
 		godot::TextServer* GetTextServer();
 		//States
 		bool initialized = false;

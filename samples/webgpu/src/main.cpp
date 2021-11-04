@@ -4,21 +4,19 @@
 
 extern void InstallInput();
 
-std::shared_ptr<class OGUIWebGPURenderer> WebGPURenderer;
-
 class SampleWindow : public CSSWindow
 {
 public:
 	SampleWindow(int width, int height, const char *title, const char *xmlFile)
 		:CSSWindow(width, height, title, xmlFile)
 	{
-		cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(WebGPURenderer);
-		cWnd->renderImpl->RegisterWindow(*cWnd);
+		auto&& ctx = Context::Get();
+		ctx.renderImpl->RegisterWindow(*cWnd);
 	};
 };
 
+
 // Bare minimum pipeline to draw a triangle using the above shaders.
-uint8_t white_tex0[1024 * 1024 * 4];
 class OGUIWebGPURenderer final : public OGUI::RenderInterface
 {
 public:
@@ -32,6 +30,7 @@ public:
 	WGPU_OGUI_Texture* default_ogui_texture;
 	std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 	std::unordered_map<WindowHandle, WGPUSwapChain> registered_windows;
+	uint8_t white_tex0[1024 * 1024 * 4];
 
 	OGUIWebGPURenderer() 
 	{
@@ -195,6 +194,12 @@ public:
 				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
 				if(!texture)
 					texture = default_ogui_texture;
+				if(texture != default_ogui_texture && 
+					ogui_textures.find(texture) == ogui_textures.end())
+				{
+					olog::Error(u"WTF?"_o);
+				}
+
 				if(!texture->bind_group)
 				{
 					// update texture binding
@@ -396,6 +401,7 @@ int main(int , char* []) {
 	InstallInput();
 	InstallBitmapParser();
 	{
+		ctx.renderImpl = std::make_unique<OGUIWebGPURenderer>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
@@ -403,7 +409,6 @@ int main(int , char* []) {
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 
-	WebGPURenderer = std::make_shared<OGUIWebGPURenderer>();
 	SampleWindow* win1 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 	SampleWindow* win2 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 

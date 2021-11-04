@@ -732,8 +732,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 	int mw = p_width;
 	int mh = p_height;
 
-	for (int i = 0; i < p_data->textures.size(); i++) {
-		const FontTexture &ct = p_data->textures[i];
+	for (int i = 0; i < p_data->font_textures.size(); i++) {
+		const FontTexture &ct = p_data->font_textures[i];
 
         if (ct.format != p_image_format) {
             continue;
@@ -775,7 +775,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		ret.x = 0;
 		ret.y = 0;
 
-		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256 << MIN(p_data->textures.size(), 4));
+		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256 << MIN(p_data->font_textures.size(), 4));
 		if (mw > texsize) {
 			texsize = mw; // Special case, adapt to it?
 		}
@@ -820,8 +820,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 			tex.offsets.data()[i] = 0;
 		}
 
-		p_data->textures.push_back(tex);
-		ret.index = p_data->textures.size() - 1;
+		p_data->font_textures.push_back(tex);
+		ret.index = p_data->font_textures.size() - 1;
 	}
 
 	return ret;
@@ -1044,7 +1044,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 
 	// Fit character in char texture.
 
-	FontTexture &tex = p_data->textures[tex_pos.index];
+	FontTexture &tex = p_data->font_textures[tex_pos.index];
 
 	{
 		uint8_t *wr = tex.imgdata.ptrw();
@@ -1091,7 +1091,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 
 	// Blit to image and texture.
 	{
-		auto ctx = OGUI::Context::Get().windowContexts[0]->renderImpl;
+		auto&& ctx = OGUI::Context::Get().renderImpl;
 
 		OGUI::Bitmap bitmap;
 		bitmap.resource = { tex.imgdata.data(), tex.imgdata.size() };
@@ -1100,8 +1100,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 		bitmap.width = tex.texture_w;
 		if (!tex.texture.handle) {
 			tex.texture.handle = ctx->RegisterTexture(bitmap);
-			tex.texture.renderImpl = ctx;
-		} else if(auto impl  = tex.texture.renderImpl.lock()) {
+		} else if(auto impl  = ctx.get();impl) {
 			impl->UpdateTexture(tex.texture.handle, bitmap);
 		}
 	}
@@ -2071,7 +2070,7 @@ int TextServerAdvanced::font_get_texture_count(RID p_font_rid, const Vector2i &p
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
 
-	return fd->cache[size]->textures.size();
+	return fd->cache[size]->font_textures.size();
 }
 
 void TextServerAdvanced::font_clear_textures(RID p_font_rid, const Vector2i &p_size) {
@@ -2081,7 +2080,7 @@ void TextServerAdvanced::font_clear_textures(RID p_font_rid, const Vector2i &p_s
 	Vector2i size = _get_size_outline(fd, p_size);
 
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
-	fd->cache[size]->textures.clear();
+	fd->cache[size]->font_textures.clear();
 }
 
 void TextServerAdvanced::font_remove_texture(RID p_font_rid, const Vector2i &p_size, int p_texture_index) {
@@ -2091,9 +2090,9 @@ void TextServerAdvanced::font_remove_texture(RID p_font_rid, const Vector2i &p_s
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
-	ERR_FAIL_INDEX(p_texture_index, fd->cache[size]->textures.size());
+	ERR_FAIL_INDEX(p_texture_index, fd->cache[size]->font_textures.size());
 
-	fd->cache[size]->textures.remove(p_texture_index);
+	fd->cache[size]->font_textures.remove(p_texture_index);
 }
 
 void TextServerAdvanced::font_set_texture_image(RID p_font_rid, const Vector2i &p_size, int p_texture_index, const Ref<Image> &p_image) {
@@ -2105,11 +2104,11 @@ void TextServerAdvanced::font_set_texture_image(RID p_font_rid, const Vector2i &
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	ERR_FAIL_COND(p_texture_index < 0);
-	if (p_texture_index >= fd->cache[size]->textures.size()) {
-		fd->cache[size]->textures.resize(p_texture_index + 1);
+	if (p_texture_index >= fd->cache[size]->font_textures.size()) {
+		fd->cache[size]->font_textures.resize(p_texture_index + 1);
 	}
 
-	FontTexture &tex = fd->cache[size]->textures.data()[p_texture_index];
+	FontTexture &tex = fd->cache[size]->font_textures.data()[p_texture_index];
 
     tex.imgdata.resize(p_image->resource.size_in_bytes);
     memcpy(tex.imgdata.data(), p_image->resource.bytes, p_image->resource.size_in_bytes);
@@ -2117,9 +2116,8 @@ void TextServerAdvanced::font_set_texture_image(RID p_font_rid, const Vector2i &
 	tex.texture_h = p_image->height;
 	tex.format = p_image->format;
     
-	auto ctx = OGUI::Context::Get().windowContexts[0]->renderImpl;
+	auto&& ctx = OGUI::Context::Get().renderImpl;
     tex.texture.handle = ctx->RegisterTexture(*p_image);
-	tex.texture.renderImpl = ctx;
 }
 
 Ref<Image> TextServerAdvanced::font_get_texture_image(RID p_font_rid, const Vector2i &p_size, int p_texture_index) const {
@@ -2129,9 +2127,9 @@ Ref<Image> TextServerAdvanced::font_get_texture_image(RID p_font_rid, const Vect
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Ref<Image>());
-	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), Ref<Image>());
+	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->font_textures.size(), Ref<Image>());
 
-	const FontTexture &tex = fd->cache[size]->textures.data()[p_texture_index];
+	const FontTexture &tex = fd->cache[size]->font_textures.data()[p_texture_index];
 	Ref<Image> img = {};//memnew(Image(tex.texture_w, tex.texture_h, 0, tex.format, tex.imgdata));
     //TODO: ???
 	return img;
@@ -2144,11 +2142,11 @@ void TextServerAdvanced::font_set_texture_offsets(RID p_font_rid, const Vector2i
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
-	if (p_texture_index >= fd->cache[size]->textures.size()) {
-		fd->cache[size]->textures.resize(p_texture_index + 1);
+	if (p_texture_index >= fd->cache[size]->font_textures.size()) {
+		fd->cache[size]->font_textures.resize(p_texture_index + 1);
 	}
 
-	FontTexture &tex = fd->cache[size]->textures.data()[p_texture_index];
+	FontTexture &tex = fd->cache[size]->font_textures.data()[p_texture_index];
 	tex.offsets = p_offset;
 }
 
@@ -2159,9 +2157,9 @@ PackedInt32Array TextServerAdvanced::font_get_texture_offsets(RID p_font_rid, co
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), PackedInt32Array());
-	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), PackedInt32Array());
+	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->font_textures.size(), PackedInt32Array());
 
-	const FontTexture &tex = fd->cache[size]->textures.data()[p_texture_index];
+	const FontTexture &tex = fd->cache[size]->font_textures.data()[p_texture_index];
 	return tex.offsets;
 }
 
@@ -2605,7 +2603,7 @@ void TextServerAdvanced::font_draw_glyph(RID p_font_rid, OGUI::PrimDrawList& lis
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
 	if (gl.found) {
-		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
+		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->font_textures.size());
 
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
@@ -2614,7 +2612,7 @@ void TextServerAdvanced::font_draw_glyph(RID p_font_rid, OGUI::PrimDrawList& lis
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-            auto& texture = fd->cache[size]->textures[gl.texture_idx].texture;
+            auto& texture = fd->cache[size]->font_textures[gl.texture_idx].texture;
 #ifdef MODULE_MSDFGEN_ENABLED
             if (fd->msdf) {
                 Point2 cpos = p_pos;
@@ -2646,7 +2644,7 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, OGUI::PrimDrawL
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
 	if (gl.found) {
-		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
+		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->font_textures.size());
 
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
@@ -2655,7 +2653,7 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, OGUI::PrimDrawL
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-            auto& texture = fd->cache[size]->textures[gl.texture_idx].texture;
+            auto& texture = fd->cache[size]->font_textures[gl.texture_idx].texture;
 #ifdef MODULE_MSDFGEN_ENABLED
             RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
             if (fd->msdf) {
@@ -4782,4 +4780,11 @@ TextServerAdvanced::~TextServerAdvanced() {
 		icu_data = nullptr;
 	}
 #endif
+}
+
+TextureRef::~TextureRef()
+{
+	if(!handle)
+		return;
+	OGUI::Context::Get().renderImpl->ReleaseTexture(handle);
 }
