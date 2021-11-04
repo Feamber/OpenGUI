@@ -45,6 +45,7 @@ namespace OGUI
 		std::shared_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<RenderTextureManager> textureManager;
 	protected:
+		float X; float Y;
 		WindowHandle window;
 		VisualWindow* ui;
 	};
