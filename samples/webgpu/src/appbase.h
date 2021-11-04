@@ -52,17 +52,34 @@ public:
 	}
 };
 
+class Timer
+{
+public:
+	void Reset()
+	{
+		prev = std::chrono::high_resolution_clock::now();
+	}
+	float Tick()
+	{
+		auto& ctx = OGUI::Context::Get();
+		std::chrono::time_point now = std::chrono::high_resolution_clock::now();
+		using namespace ostr::literal;
+		float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
+		prev = now;
+		return deltaTime;
+	}
+	std::chrono::time_point<std::chrono::steady_clock> prev = std::chrono::high_resolution_clock::now();
+};
+
 class AppWindow : public WindowInterface
 {
 private:
 	int width, height;
 public:
+	WindowContext* cWnd;
 	SDL_Window* window;
 	SDL_SysWMinfo wmInfo;
 	window::Handle hWnd;
-
-	efsw::FileWatcher fileWatcher;
-	UpdateListener listener;
 
 	FORCEINLINE AppWindow(int width, int height, const char *title)
 		:width(width), height(height)
@@ -77,6 +94,8 @@ public:
 
 #if defined(_WIN32) || defined(_WIN64)
 		hWnd = (window::Handle)wmInfo.info.win.window;
+		auto &ctx = Context::Get();
+        cWnd = &ctx.Create(this);
 #endif
     }
 
@@ -88,7 +107,7 @@ public:
 		SDL_DestroyWindow(window);
     }
 
-	virtual bool Update()
+	virtual bool Update() override
     {
         return true;
     }
@@ -97,23 +116,18 @@ public:
 class CSSWindow : public AppWindow
 {
 public:
-	WindowContext* cWnd;
-
+	efsw::FileWatcher fileWatcher;
+	UpdateListener listener;
 	std::string mainXmlFile;
 	std::vector<std::string> allCssFile;
     std::vector<std::string> allXmlFile;
 
+	Timer UpdateTimer;
 	FORCEINLINE CSSWindow(int width, int height, const char *title, const char *xmlFile)
         :AppWindow(width, height, title)
     {
-        using namespace OGUI;
-        if (hWnd)
-        {
-            auto &ctx = Context::Get();
-            cWnd = &ctx.Create(this);
-            
-            LoadResource(xmlFile);
-        }
+		UpdateTimer.Reset();
+        LoadResource(xmlFile);
     }
 
     virtual ~CSSWindow()
@@ -125,13 +139,8 @@ public:
 	virtual bool Update() override
     {
         const auto Super = AppWindow::Update();
-
-        static std::chrono::time_point prev = std::chrono::high_resolution_clock::now();
+		const auto deltaTime = UpdateTimer.Tick();
 		auto& ctx = OGUI::Context::Get();
-		std::chrono::time_point now = std::chrono::high_resolution_clock::now();
-		using namespace ostr::literal;
-		float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
-		prev = now;
 		ctx.Update(this, deltaTime);
 		ctx.Render(this);
 		return Super;

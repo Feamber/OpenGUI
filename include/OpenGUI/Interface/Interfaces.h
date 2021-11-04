@@ -20,6 +20,7 @@ namespace OGUI
 	{
 		virtual int GetWidth() const = 0;
 		virtual int GetHeight() const = 0;
+		virtual bool Update() = 0;
 	};
 
     struct OGUI_API InputInterface

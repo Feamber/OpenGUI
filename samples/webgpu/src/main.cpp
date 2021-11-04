@@ -415,7 +415,7 @@ int main(int , char* []) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && (win1 || win2)) 
 		{
-			olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
+			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			if(win1 && SDL_GetWindowID(win1->window) == event.window.windowID)
 			{
 				if(!SDLEventHandler(event, win1->window, win1))
