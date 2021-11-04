@@ -4,11 +4,11 @@
 
 namespace OGUI
 {
-    class AsyncImage
+    class AsyncTexture2D
 	{
 		friend class RenderTextureManager;
 	public:
-		~AsyncImage();
+		~AsyncTexture2D();
 		inline const TextureHandle Get(void) const
 		{
 			return _handle;
@@ -23,7 +23,7 @@ namespace OGUI
 	};
 
 	using Region = Rect;
-	class AsyncStaticAtlas : public AsyncImage
+	class AsyncStaticAtlas : public AsyncTexture2D
 	{
 		friend class RenderTextureManager;
 	public:
@@ -53,7 +53,7 @@ namespace OGUI
 		friend class RenderTextureManager;
 	public:
 		~AsyncRenderTexture();
-		AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle, ERenderTextureType type);
+		AsyncRenderTexture(std::shared_ptr<AsyncTexture2D> image_handle, ERenderTextureType type);
 		inline const TextureHandle Get(void) const
 		{
 			return device_image->Get();
@@ -63,7 +63,7 @@ namespace OGUI
 			return device_image->valid();
 		}
 	protected:
-		std::shared_ptr<AsyncImage> device_image;
+		std::shared_ptr<AsyncTexture2D> device_image;
 		std::shared_ptr<AsyncStaticAtlas> static_atlas;
 
 		ERenderTextureType texture_type;

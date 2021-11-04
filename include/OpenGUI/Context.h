@@ -29,7 +29,6 @@ namespace OGUI
 	class Context;
 	class RenderTextureManager;
 
-	using WindowHandle = void*;
 	class WindowContext
 	{
 		friend class Context;
@@ -37,10 +36,8 @@ namespace OGUI
 		WindowContext();
 		~WindowContext();
 
-		inline float GetWindowX() const { return X; }
-		inline float GetWindowY() const { return Y; }
-		inline void SetWindowX(float newX) { X = newX; }
-		inline void SetWindowY(float newY) { Y = newY; }
+		inline float GetWidth() const { return window->GetWidth(); }
+		inline float GetHeight() const { return window->GetHeight(); }
 		inline WindowHandle GetWindowHandle() const { return window; }
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
@@ -48,7 +45,6 @@ namespace OGUI
 		std::shared_ptr<RenderInterface> renderImpl;
 		std::unique_ptr<RenderTextureManager> textureManager;
 	protected:
-		float X; float Y;
 		WindowHandle window;
 		VisualWindow* ui;
 	};

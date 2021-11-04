@@ -208,7 +208,7 @@ inline static void freeBitMap(OGUI::Bitmap& bm)
 #include "OpenGUI/Context.h"
 static std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 
-inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, void* hWnd)
+inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, OGUI::WindowHandle hWnd)
 {
     using namespace OGUI;
     auto& ctx = OGUI::Context::Get();

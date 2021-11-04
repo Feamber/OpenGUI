@@ -334,8 +334,8 @@ OGUI::WindowContext& OGUI::Context::GetOrRegisterWindowContext(const OGUI::Windo
 	}
 	WindowContext& newOne = *windowContexts.emplace_back(std::make_unique<WindowContext>()).get();
 	newOne.window = window;
-	newOne.X = 0;
-	newOne.Y = 0;
+	newOne.X = window->GetWidth();
+	newOne.Y = window->GetHeight();
 	return newOne;
 }
 

@@ -52,8 +52,10 @@ public:
 	}
 };
 
-class AppWindow
+class AppWindow : public WindowInterface
 {
+private:
+	int width, height;
 public:
 	SDL_Window* window;
 	SDL_SysWMinfo wmInfo;
@@ -63,6 +65,7 @@ public:
 	UpdateListener listener;
 
 	FORCEINLINE AppWindow(int width, int height, const char *title)
+		:width(width), height(height)
     {
 		window = SDL_CreateWindow(title,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -76,6 +79,9 @@ public:
 		hWnd = (window::Handle)wmInfo.info.win.window;
 #endif
     }
+
+	int GetWidth() const override {return width;}
+	int GetHeight() const override {return height;}
 
     virtual ~AppWindow()
     {
@@ -104,7 +110,7 @@ public:
         if (hWnd)
         {
             auto &ctx = Context::Get();
-            cWnd = &ctx.Create(hWnd);
+            cWnd = &ctx.Create(this);
             
             LoadResource(xmlFile);
         }
@@ -113,7 +119,7 @@ public:
     virtual ~CSSWindow()
     {
         auto& ctx = OGUI::Context::Get();
-		ctx.Remove(hWnd);
+		ctx.Remove(this);
     }
 
 	virtual bool Update() override
@@ -126,8 +132,8 @@ public:
 		using namespace ostr::literal;
 		float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - prev).count();
 		prev = now;
-		ctx.Update(hWnd, deltaTime);
-		ctx.Render(hWnd);
+		ctx.Update(this, deltaTime);
+		ctx.Render(this);
 		return Super;
     }
 private:

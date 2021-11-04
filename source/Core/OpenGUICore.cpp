@@ -66,11 +66,6 @@ BitmapParserInterface::~BitmapParserInterface()
 
 }
 
-std::string FileInterface::ToFullPath(const char* path)
-{
-    return path;
-}
-
 FileHandle FileInterface::Open(const char* path)
 {
     return fopen(path, "rb");
@@ -382,7 +377,7 @@ OGUI::LogInterface::~LogInterface()
 {
 }
 
-OGUI::AsyncImage::~AsyncImage()
+OGUI::AsyncTexture2D::~AsyncTexture2D()
 {
     auto& ctx = Context::Get();
     for(auto&& windowContext : ctx.windowContexts)
@@ -391,7 +386,7 @@ OGUI::AsyncImage::~AsyncImage()
     }
 }
 
-OGUI::AsyncRenderTexture::AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle, ERenderTextureType type)
+OGUI::AsyncRenderTexture::AsyncRenderTexture(std::shared_ptr<AsyncTexture2D> image_handle, ERenderTextureType type)
     :texture_type(type)
 {
     device_image = image_handle;

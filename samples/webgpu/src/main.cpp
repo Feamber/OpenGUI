@@ -5,67 +5,64 @@
 extern void InstallInput();
 
 std::shared_ptr<class OGUIWebGPURenderer> WebGPURenderer;
-webgpu::instance* wgpu;
-WGPUDevice device;
-WGPUQueue queue;
-WGPU_OGUI_Texture* default_ogui_texture;
-std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
 
-// Bare minimum pipeline to draw a triangle using the above shaders.
-uint8_t white_tex0[1024 * 1024 * 4];
 
 class Window : public CSSWindow
 {
 public:
-	WGPUSwapChain swapchain;
-	WGPURenderPipeline pipeline;
-	WGPUBindGroupLayout bindGroupLayout;
-	WGPUSampler sampler;
 
 	Window(int width, int height, const char *title, const char *xmlFile)
 		:CSSWindow(width, height, title, xmlFile)
 	{
-		if (hWnd)
-		{
-			{
-				swapchain = webgpu::createSwapChain(wgpu, width, height, hWnd, wmInfo.info.win.hinstance);
-				createPipelineAndBuffers();
-
-				cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(WebGPURenderer);
-			}
-        }
+		cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(WebGPURenderer);
+		cWnd->renderImpl->RegisterWindow(*cWnd);
 	};
 
 	virtual ~Window()
 	{
-#ifndef __EMSCRIPTEN__
-		// last bit of clean-up
-		wgpuSamplerRelease(sampler);
-		for(auto& tex : ogui_textures)
-		{
-			tex.second.Release();
-		}
-		ogui_textures.clear();
-		wgpuBindGroupLayoutRelease(bindGroupLayout);
-		wgpuRenderPipelineRelease(pipeline);
-		wgpuSwapChainRelease(swapchain);
-		wgpuQueueRelease(queue);
-		//wgpuDeviceRelease(device);
-		webgpu::release(wgpu);
-#endif
+
 	}
 
 	virtual bool Update() override
 	{
         return CSSWindow::Update();
 	};
+};
 
-	void createPipelineAndBuffers()
+// Bare minimum pipeline to draw a triangle using the above shaders.
+uint8_t white_tex0[1024 * 1024 * 4];
+class OGUIWebGPURenderer final : public OGUI::RenderInterface
+{
+public:
+	webgpu::instance* wgpu;
+	WGPUDevice device;
+	WGPUQueue queue;
+	WGPUBindGroupLayout bindGroupLayout;
+	WGPURenderPipeline pipeline;
+
+	WGPUSampler sampler;
+	WGPU_OGUI_Texture* default_ogui_texture;
+	std::unordered_map<TextureInterface*, WGPU_OGUI_Texture> ogui_textures;
+	std::unordered_map<WindowHandle, WGPUSwapChain> registered_windows;
+
+	OGUIWebGPURenderer() 
 	{
-		// compile shaders
-		// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
-		WGPUShaderModule vertMod = createShader(device, triangle_vert_wgsl);
-		WGPUShaderModule fragMod = createShader(device, triangle_frag_wgsl);
+		const auto WGPUDeviceSet = InitializeWGPUDevice();
+		wgpu = std::get<0>(WGPUDeviceSet);
+		device = std::get<1>(WGPUDeviceSet);
+		queue = std::get<2>(WGPUDeviceSet);
+
+		WGPUSamplerDescriptor sampDesc = {};
+		sampDesc.addressModeU = WGPUAddressMode_ClampToEdge;
+		sampDesc.addressModeV = WGPUAddressMode_ClampToEdge;
+		sampDesc.addressModeW = WGPUAddressMode_ClampToEdge;
+		sampDesc.magFilter = WGPUFilterMode_Nearest;
+		sampDesc.minFilter = WGPUFilterMode_Nearest;
+		sampDesc.mipmapFilter = WGPUFilterMode_Nearest;
+		sampDesc.lodMinClamp = 0;
+		sampDesc.lodMaxClamp = 1000.f;
+		sampDesc.maxAnisotropy = 1.f;
+		sampler = wgpuDeviceCreateSampler(device, &sampDesc);
 
 		// bind group layout (used by both the pipeline layout and uniform bind group, released at the end of this function)
 		WGPUBindGroupLayoutEntry bglEntry[2] = {{}, {}};
@@ -82,6 +79,245 @@ public:
 		bglDesc.entryCount = 2;
 		bglDesc.entries = bglEntry;
 		bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
+
+		memset(white_tex0, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
+		Bitmap bitmap = {};
+		bitmap.resource.bytes = white_tex0;
+		bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
+		bitmap.width = 1024; bitmap.height = 1024;
+		bitmap.format = PF_R8G8B8A8;
+		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
+		ogui_textures[t] = *t;
+		default_ogui_texture = t;
+
+		createPipelineAndBuffers();
+	}
+
+	virtual ~OGUIWebGPURenderer()
+	{
+		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
+		if(index_buffer) wgpuBufferRelease(index_buffer);
+
+		#ifndef __EMSCRIPTEN__
+			wgpuRenderPipelineRelease(pipeline);
+			// last bit of clean-up
+			for(auto& tex : ogui_textures)
+			{
+				tex.second.Release();
+			}
+			ogui_textures.clear();
+			// last bit of clean-up
+			wgpuSamplerRelease(sampler);
+			wgpuBindGroupLayoutRelease(bindGroupLayout);
+			wgpuQueueRelease(queue);
+			//wgpuDeviceRelease(device);
+			webgpu::release(wgpu);
+		#endif
+	}
+	
+	PersistantPrimitiveHandle RegisterPrimitive(
+		Vertex* vertices, uint32_t num_vertices,
+		uint16_t* indices, uint32_t num_indices) override
+	{
+		return nullptr;
+	}
+	
+	void RegisterWindow(const class WindowContext& wctx) override
+	{
+		const auto hdl = wctx.GetWindowHandle();
+		if (registered_windows.find(hdl) != registered_windows.end())
+		{
+			return;
+		}
+		const Window* win = (const Window*)hdl;
+		const auto& wmInfo = win->wmInfo;
+		const auto width = win->GetWidth();
+		const auto height = win->GetHeight();
+		auto swapchain = webgpu::createSwapChain(wgpu, width, height, win->wmInfo.info.win.window, wmInfo.info.win.hinstance);
+		registered_windows[hdl] = swapchain;
+	}
+
+	void ReleaseWindow(const class WindowContext& wctx) override
+	{
+		const auto hdl = wctx.GetWindowHandle();
+		const auto iter = registered_windows.find(hdl);
+		if (iter != registered_windows.end())
+		{
+			wgpuSwapChainRelease(iter->second);
+			registered_windows.erase(hdl);
+		}
+	}
+
+	void ReleasePrimitive(PersistantPrimitiveHandle primitive) override
+	{
+		
+	}
+	
+	void RenderPrimitives(const PrimDrawList& list, const class WindowContext& wctx) override
+	{
+		((PrimDrawList&)list).ValidateAndBatch();
+		if(list.command_list.size() <= 0) return;
+		static size_t old_vb_size = 0;
+		static size_t old_ib_size = 0;
+		const auto this_vb_size = list.vertices.size() * sizeof(OGUI::Vertex);
+		const auto this_ib_size = list.indices.size() * sizeof(OGUI::uint16_t);
+		// upload buffer
+		if(old_vb_size < this_vb_size)
+		{
+			if (vertex_buffer) wgpuBufferRelease(vertex_buffer);
+			vertex_buffer = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
+			old_vb_size = this_vb_size;
+		}
+		else
+		{
+			writeBuffer(queue, vertex_buffer, list.vertices.data(), this_vb_size);
+		}
+		if(old_ib_size < this_ib_size)
+		{
+			if (index_buffer) wgpuBufferRelease(index_buffer);
+			index_buffer = createBuffer(device, queue, list.indices.data(), this_ib_size, WGPUBufferUsage_Index);
+			old_ib_size = this_ib_size;
+		}
+		else
+		{
+			writeBuffer(queue, index_buffer, list.indices.data(), this_ib_size);
+		}
+
+		auto swapchain = registered_windows.find(wctx.GetWindowHandle())->second;
+		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
+		WGPURenderPassColorAttachment colorDesc = {};
+		colorDesc.view = backBufView;
+		colorDesc.loadOp  = WGPULoadOp_Clear;
+		colorDesc.storeOp = WGPUStoreOp_Store;
+		colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
+		WGPURenderPassDescriptor renderPass = {};
+		renderPass.colorAttachmentCount = 1;
+		renderPass.colorAttachments = &colorDesc;
+		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
+		WGPURenderPassEncoder pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
+		// draw the triangle (comment these five lines to simply clear the screen)
+		wgpuRenderPassEncoderSetPipeline(pass, pipeline);
+
+		int last_index = -1;
+		for(auto& cmd : list.command_list)
+		{
+			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
+			if(last_cmd.texture != cmd.texture || last_index < 0)
+			{
+				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
+				if(!texture)
+					texture = default_ogui_texture;
+				if(!texture->bind_group)
+				{
+					// update texture binding
+					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
+					bgEntry[0].binding = 0;
+					bgEntry[0].textureView 
+						= texture->texture? texture->texture_view : default_ogui_texture->texture_view;
+					bgEntry[1].binding = 1;
+					bgEntry[1].sampler = sampler;
+					WGPUBindGroupDescriptor bgDesc = {};
+					bgDesc.layout = bindGroupLayout;
+					bgDesc.entryCount = 2;
+					bgDesc.entries = bgEntry;
+					texture->bind_group = wgpuDeviceCreateBindGroup(device, &bgDesc);
+				}
+				wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
+			}
+			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
+				cmd.vertex_offset * sizeof(Vertex),
+				WGPU_WHOLE_SIZE
+			);
+			wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
+				cmd.index_offset * sizeof(uint16_t),
+				WGPU_WHOLE_SIZE
+			);
+			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
+			last_index++;
+		}
+
+		wgpuRenderPassEncoderEndPass(pass);
+		wgpuRenderPassEncoderRelease(pass);														// release pass
+		WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
+		wgpuCommandEncoderRelease(encoder);														// release encoder
+
+		wgpuQueueSubmit(queue, 1, &commands);
+		wgpuCommandBufferRelease(commands);														// release commands
+	#ifndef __EMSCRIPTEN__
+		/*
+		* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
+		*/
+		wgpuSwapChainPresent(swapchain);
+	#endif
+		wgpuTextureViewRelease(backBufView);													
+	}
+
+	void RenderPrimitives(const PersistantPrimDrawList&, const class WindowContext&) override
+	{
+		
+	}
+
+	TextureHandle RegisterTexture(const Bitmap& bitmap) override
+	{
+		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
+		ogui_textures[t] = *t;
+		return t;
+	}
+
+	void UpdateTexture(TextureHandle t, const Bitmap& bitmap) override
+	{
+		updateTexture(device, queue, &ogui_textures[t], bitmap);
+	}
+
+	void ReleaseTexture(TextureHandle h) override
+	{
+		if(!h)
+			return;
+		auto iter = ogui_textures.find(h);
+		if(iter == ogui_textures.end())
+			return;
+		iter->second.Release();
+		ogui_textures.erase(iter);
+	}
+
+	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap &) override
+	{
+		return nullptr;
+	}
+
+	RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) override
+	{
+		return nullptr;
+	}
+
+	void ReleaseRenderTargetView(RenderTargetViewHandle) override
+	{
+
+	}
+
+	Vector2f GetSize(RenderTargetViewHandle) override
+	{
+		return {0, 0};
+	}
+
+	void SetScissor(const Scissor scissor) override
+	{
+
+	}
+ 
+	void ResetScissor() override
+	{
+
+	}
+	WGPUBuffer vertex_buffer = nullptr;
+	WGPUBuffer index_buffer = nullptr;
+protected:
+	void createPipelineAndBuffers()
+	{
+		// compile shaders
+		// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
+		WGPUShaderModule vertMod = createShader(device, triangle_vert_wgsl);
+		WGPUShaderModule fragMod = createShader(device, triangle_frag_wgsl);
 
 		// pipeline layout (used by the render pipeline, released after its creation)
 		WGPUPipelineLayoutDescriptor layoutDesc = {};
@@ -151,218 +387,7 @@ public:
 		wgpuPipelineLayoutRelease(pipelineLayout);
 		wgpuShaderModuleRelease(fragMod);
 		wgpuShaderModuleRelease(vertMod);
-
-		memset(white_tex0, 255, 4 * 1024 * 1024 * sizeof(uint8_t)); // pure white
-		Bitmap bitmap = {};
-		bitmap.resource.bytes = white_tex0;
-		bitmap.resource.size_in_bytes = 4 * 1024 * 1024;
-		bitmap.width = 1024; bitmap.height = 1024;
-		bitmap.format = PF_R8G8B8A8;
-		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
-		ogui_textures[t] = *t;
-		default_ogui_texture = t;
-
-		WGPUSamplerDescriptor sampDesc = {};
-		sampDesc.addressModeU = WGPUAddressMode_ClampToEdge;
-		sampDesc.addressModeV = WGPUAddressMode_ClampToEdge;
-		sampDesc.addressModeW = WGPUAddressMode_ClampToEdge;
-		sampDesc.magFilter = WGPUFilterMode_Nearest;
-		sampDesc.minFilter = WGPUFilterMode_Nearest;
-		sampDesc.mipmapFilter = WGPUFilterMode_Nearest;
-		sampDesc.lodMinClamp = 0;
-		sampDesc.lodMaxClamp = 1000.f;
-		sampDesc.maxAnisotropy = 1.f;
-		sampler = wgpuDeviceCreateSampler(device, &sampDesc);
 	}
-};
-
-class OGUIWebGPURenderer final : public OGUI::RenderInterface
-{
-public:
-	Window* window;
-	OGUIWebGPURenderer() 
-	{
-		const auto WGPUDeviceSet = InitializeWGPUDevice();
-		wgpu = std::get<0>(WGPUDeviceSet);
-		device = std::get<1>(WGPUDeviceSet);
-		queue = std::get<2>(WGPUDeviceSet);
-	}
-
-	virtual ~OGUIWebGPURenderer()
-	{
-		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
-		if(index_buffer) wgpuBufferRelease(index_buffer);
-	}
-	
-	PersistantPrimitiveHandle RegisterPrimitive(
-		Vertex* vertices, uint32_t num_vertices,
-		uint16_t* indices, uint32_t num_indices) override
-	{
-		return nullptr;
-	}
-	
-	void ReleasePrimitive(PersistantPrimitiveHandle primitive) override
-	{
-		
-	}
-	
-	void RenderPrimitives(const PrimDrawList& list, const class WindowContext&) override
-	{
-		((PrimDrawList&)list).ValidateAndBatch();
-		if(list.command_list.size() <= 0) return;
-		static size_t old_vb_size = 0;
-		static size_t old_ib_size = 0;
-		const auto this_vb_size = list.vertices.size() * sizeof(OGUI::Vertex);
-		const auto this_ib_size = list.indices.size() * sizeof(OGUI::uint16_t);
-		// upload buffer
-		if(old_vb_size < this_vb_size)
-		{
-			if (vertex_buffer) wgpuBufferRelease(vertex_buffer);
-			vertex_buffer = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
-			old_vb_size = this_vb_size;
-		}
-		else
-		{
-			writeBuffer(queue, vertex_buffer, list.vertices.data(), this_vb_size);
-		}
-		if(old_ib_size < this_ib_size)
-		{
-			if (index_buffer) wgpuBufferRelease(index_buffer);
-			index_buffer = createBuffer(device, queue, list.indices.data(), this_ib_size, WGPUBufferUsage_Index);
-			old_ib_size = this_ib_size;
-		}
-		else
-		{
-			writeBuffer(queue, index_buffer, list.indices.data(), this_ib_size);
-		}
-
-		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(window->swapchain);			// create textureView
-		WGPURenderPassColorAttachment colorDesc = {};
-		colorDesc.view = backBufView;
-		colorDesc.loadOp  = WGPULoadOp_Clear;
-		colorDesc.storeOp = WGPUStoreOp_Store;
-		colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
-		WGPURenderPassDescriptor renderPass = {};
-		renderPass.colorAttachmentCount = 1;
-		renderPass.colorAttachments = &colorDesc;
-		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
-		WGPURenderPassEncoder pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
-		// draw the triangle (comment these five lines to simply clear the screen)
-		wgpuRenderPassEncoderSetPipeline(pass, window->pipeline);
-
-		int last_index = -1;
-		for(auto& cmd : list.command_list)
-		{
-			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
-			if(last_cmd.texture != cmd.texture || last_index < 0)
-			{
-				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
-				if(!texture)
-					texture = default_ogui_texture;
-				if(!texture->bind_group)
-				{
-					// update texture binding
-					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
-					bgEntry[0].binding = 0;
-					bgEntry[0].textureView 
-						= texture->texture? texture->texture_view : default_ogui_texture->texture_view;
-					bgEntry[1].binding = 1;
-					bgEntry[1].sampler = window->sampler;
-					WGPUBindGroupDescriptor bgDesc = {};
-					bgDesc.layout = window->bindGroupLayout;
-					bgDesc.entryCount = 2;
-					bgDesc.entries = bgEntry;
-					texture->bind_group = wgpuDeviceCreateBindGroup(device, &bgDesc);
-				}
-				wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
-			}
-			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
-				cmd.vertex_offset * sizeof(Vertex),
-				WGPU_WHOLE_SIZE
-			);
-			wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
-				cmd.index_offset * sizeof(uint16_t),
-				WGPU_WHOLE_SIZE
-			);
-			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
-			last_index++;
-		}
-
-		wgpuRenderPassEncoderEndPass(pass);
-		wgpuRenderPassEncoderRelease(pass);														// release pass
-		WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
-		wgpuCommandEncoderRelease(encoder);														// release encoder
-
-		wgpuQueueSubmit(queue, 1, &commands);
-		wgpuCommandBufferRelease(commands);														// release commands
-	#ifndef __EMSCRIPTEN__
-		/*
-		* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
-		*/
-		wgpuSwapChainPresent(window->swapchain);
-	#endif
-		wgpuTextureViewRelease(backBufView);													
-	}
-
-	void RenderPrimitives(const PersistantPrimDrawList&, const class WindowContext&) override
-	{
-		
-	}
-
-	TextureHandle RegisterTexture(const Bitmap& bitmap) override
-	{
-		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
-		ogui_textures[t] = *t;
-		return t;
-	}
-
-	void UpdateTexture(TextureHandle t, const Bitmap& bitmap) override
-	{
-		updateTexture(device, queue, &ogui_textures[t], bitmap);
-	}
-
-	void ReleaseTexture(TextureHandle h) override
-	{
-		if(!h)
-			return;
-		auto iter = ogui_textures.find(h);
-		if(iter == ogui_textures.end())
-			return;
-		iter->second.Release();
-		ogui_textures.erase(iter);
-	}
-
-	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap &) override
-	{
-		return nullptr;
-	}
-
-	RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) override
-	{
-		return nullptr;
-	}
-
-	void ReleaseRenderTargetView(RenderTargetViewHandle) override
-	{
-
-	}
-
-	Vector2f GetSize(RenderTargetViewHandle) override
-	{
-		return {0, 0};
-	}
-
-	void SetScissor(const Scissor scissor) override
-	{
-
-	}
- 
-	void ResetScissor() override
-	{
-
-	}
-	WGPUBuffer vertex_buffer = nullptr;
-	WGPUBuffer index_buffer = nullptr;
 };
 
 int main(int , char* []) {
@@ -393,7 +418,6 @@ int main(int , char* []) {
 	WebGPURenderer = std::make_shared<OGUIWebGPURenderer>();
 	Window* win1 = nullptr;//new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
-	WebGPURenderer->window = win2;
 
 	// main loop
 	while(win1 || win2)
@@ -406,7 +430,7 @@ int main(int , char* []) {
 			olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			if(win1 && SDL_GetWindowID(win1->window) == event.window.windowID)
 			{
-				if(!SDLEventHandler(event, win1->window, win1->hWnd))
+				if(!SDLEventHandler(event, win1->window, win1))
 				{
 					delete win1;
 					win1 = nullptr;
@@ -414,7 +438,7 @@ int main(int , char* []) {
 			}
 			else if(win2 && SDL_GetWindowID(win2->window) == event.window.windowID)
 			{
-				if(!SDLEventHandler(event, win2->window, win2->hWnd))
+				if(!SDLEventHandler(event, win2->window, win2))
 				{
 					delete win2;
 					win2 = nullptr;

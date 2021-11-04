@@ -9,8 +9,8 @@ download_and_extract2(
 )
 	
 download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/dawn.zip
+    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn_0.0.2.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
 download_and_extract(
@@ -19,8 +19,8 @@ download_and_extract(
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
 download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/dawn.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn.zip
+    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/dawn_0.0.2.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
 download_and_extract(
