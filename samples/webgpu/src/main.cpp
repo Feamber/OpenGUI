@@ -6,26 +6,14 @@ extern void InstallInput();
 
 std::shared_ptr<class OGUIWebGPURenderer> WebGPURenderer;
 
-
-class Window : public CSSWindow
+class SampleWindow : public CSSWindow
 {
 public:
-
-	Window(int width, int height, const char *title, const char *xmlFile)
+	SampleWindow(int width, int height, const char *title, const char *xmlFile)
 		:CSSWindow(width, height, title, xmlFile)
 	{
 		cWnd->renderImpl = std::static_pointer_cast<RenderInterface>(WebGPURenderer);
 		cWnd->renderImpl->RegisterWindow(*cWnd);
-	};
-
-	virtual ~Window()
-	{
-
-	}
-
-	virtual bool Update() override
-	{
-        return CSSWindow::Update();
 	};
 };
 
@@ -129,7 +117,7 @@ public:
 		{
 			return;
 		}
-		const Window* win = (const Window*)hdl;
+		const SampleWindow* win = (const SampleWindow*)hdl;
 		const auto& wmInfo = win->wmInfo;
 		const auto width = win->GetWidth();
 		const auto height = win->GetHeight();
@@ -416,8 +404,8 @@ int main(int , char* []) {
 	}
 
 	WebGPURenderer = std::make_shared<OGUIWebGPURenderer>();
-	Window* win1 = nullptr;//new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
+	SampleWindow* win1 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	SampleWindow* win2 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop
 	while(win1 || win2)
