@@ -1,7 +1,6 @@
 #pragma once
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include "OpenGUI/Core/AsyncFile.h"
-#include "OpenGUI/DataBind/PropertyManager.h"
 #include "OpenGUI/Style/VisualStyleSystem.h"
 #include "OpenGUI/Animation/VisualAnimationSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
@@ -124,8 +123,6 @@ namespace OGUI
 		//States
 		bool initialized = false;
 		int pointerDownCount = 0;
-
-		PropertyManager propeManager;
 	protected:
 		WindowContext& GetWindowContext(const WindowHandle window);
 		WindowContext& GetOrRegisterWindowContext(const WindowHandle window);

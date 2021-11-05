@@ -821,11 +821,6 @@ int main(int , char* []) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
 	}
-
-	ostr::string dataBindTest = "test1";
-	ostr::string dataBindTest2 = "test2";
-	ostr::string dataBindTest3 = "test1";
-	ostr::string dataBindTest4 = "test2";
 	
 	using namespace OGUI;
 	using namespace ostr::literal;
@@ -835,14 +830,10 @@ int main(int , char* []) {
 		ctx.bmParserImpl = std::make_unique<BitmapParser>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.logImpl = std::make_unique<SpdlogLogger>();
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 	BuildSDLMap();
 
-	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	Window* win1 = nullptr; //new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop
@@ -873,22 +864,7 @@ int main(int , char* []) {
 		}
 		if(win1) win1->Update();
 		if(win2) win2->Update();
-		
-		dataBindTest = dataBindTest == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName"));
-
-		dataBindTest2 = dataBindTest2 == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName2"));
-
-		dataBindTest3 = dataBindTest3 == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName3"));
-
-		dataBindTest4 = dataBindTest4 == "test1" ? "test2" : "test1";
-		ctx.propeManager.PropertyChange(PropertyPath::Make("GName4"));
-
 	}
-
-	ctx.propeManager.UnRegisterProperty(PropertyPath::Make("GName"));
 	SDL_Quit();
 	return 0;
 }

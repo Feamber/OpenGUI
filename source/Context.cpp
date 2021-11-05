@@ -1,5 +1,5 @@
-#include <memory>
 #define DLL_IMPLEMENTATION
+#include <memory>
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/AsyncFile.h"

@@ -1,19 +1,19 @@
-#include <string>
-#include <unordered_map>
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/XmlParser/XmlParser.h"
+#include <map>
+#include <vector>
+#include <list>
+#include <fstream>
+#include <string>
+#include <unordered_map>
+#include <memory>
 #include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/XmlParser/TemplateContainer.h"
 #include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/ostring/osv.h"
-#include <memory>
 #include "tinyxml2/tinyxml2.h"
 #include "OpenGUI/VisualElement.h"
-#include <map>
-#include <vector>
-#include <list>
-#include <fstream>
 
 namespace OGUI
 {
@@ -117,7 +117,9 @@ namespace OGUI
         {
             if(tinyxml2::XMLText* xml_Text = node->ToText())
             {
-                return std::make_shared<XmlElement>(true, xml_Text->Value());
+                ostr::string v;
+                v.decode_from_utf8(xml_Text->Value());
+                return std::make_shared<XmlElement>(true, v);
             }
             return nullptr;
         };

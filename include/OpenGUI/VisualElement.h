@@ -210,12 +210,6 @@ namespace OGUI
 
 		VisualElement* FindNextNavTarget(ENavDirection direction);
 #pragma endregion
-
-#pragma region DataBind
-	public:
-		std::vector<std::shared_ptr<int>> _allListenHandle;
-#pragma endregion
-
 	};
 }
 

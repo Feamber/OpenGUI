@@ -4,7 +4,6 @@
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/Math.h"
 #include <type_traits>
-#include "OpenGUI/DataBind/PropertyManager.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
