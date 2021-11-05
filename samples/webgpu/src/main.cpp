@@ -15,9 +15,6 @@ public:
 	};
 };
 
-
-
-#define NUM_FRAMES 3
 class OGUIWebGPURenderer final : public OGUI::RenderInterface
 {
 public:
@@ -83,14 +80,8 @@ public:
 
 	virtual ~OGUIWebGPURenderer()
 	{
-		for(auto vertex_buffer : vertex_buffers)
-		{
-			if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
-		}
-		for(auto index_buffer : index_buffers)
-		{
-			if(index_buffer) wgpuBufferRelease(index_buffer);
-		}
+		if(vertex_buffer) wgpuBufferRelease(vertex_buffer);
+		if(index_buffer) wgpuBufferRelease(index_buffer);
 
 		#ifndef __EMSCRIPTEN__
 			wgpuRenderPipelineRelease(pipeline);
@@ -129,8 +120,8 @@ public:
 		const auto height = win->GetHeight();
 		auto swapchain = webgpu::createSwapChain(wgpu, width, height, win->wmInfo.info.win.window, wmInfo.info.win.hinstance);
 		{
-			//auto backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			
-			//wgpuTextureViewRelease(backBufView);
+			auto backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			
+			wgpuTextureViewRelease(backBufView);
 		}
 		registered_windows[hdl] = swapchain;
 	}
@@ -150,46 +141,38 @@ public:
 	{
 		
 	}
-	int this_frame = -2;
+	
 	void RenderPrimitives(const PrimDrawList& list, const class WindowContext& wctx) override
 	{
 		ZoneScopedN("WebGPU Render");
-		auto swapchain = registered_windows.find(wctx.GetWindowHandle())->second;
-
+		
 		if(list.command_list.size() <= 0) return;
-		static size_t old_vb_sizes[NUM_FRAMES] = {0, 0, 0};
-		static size_t old_ib_sizes[NUM_FRAMES] = {0, 0, 0};
+		static size_t old_vb_size = 0;
+		static size_t old_ib_size = 0;
 		const auto this_vb_size = list.vertices.size() * sizeof(OGUI::Vertex);
 		const auto this_ib_size = list.indices.size() * sizeof(OGUI::uint16_t);
-		std::atomic_bool render_finish_signals[NUM_FRAMES] = {true, true, true};
 		{
 			ZoneScopedN("Prepare Buffers");
-			const auto upload_frame = (this_frame + 2) % NUM_FRAMES;
 			// upload buffer
-			if(old_vb_sizes[upload_frame] < this_vb_size)
+			if(old_vb_size < this_vb_size)
 			{
-				if (vertex_buffers[upload_frame]) wgpuBufferRelease(vertex_buffers[upload_frame]);
-				vertex_buffers[upload_frame] = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
-				old_vb_sizes[upload_frame] = this_vb_size;
+				if (vertex_buffer) wgpuBufferRelease(vertex_buffer);
+				vertex_buffer = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
+				old_vb_size = this_vb_size;
 			}
 			else
 			{
-				writeBuffer(queue, vertex_buffers[upload_frame], list.vertices.data(), this_vb_size);
+				writeBuffer(queue, vertex_buffer, list.vertices.data(), this_vb_size);
 			}
-			if(old_ib_sizes[upload_frame] < this_ib_size)
+			if(old_ib_size < this_ib_size)
 			{
-				if (index_buffers[upload_frame]) wgpuBufferRelease(index_buffers[upload_frame]);
-				index_buffers[upload_frame] = createBuffer(device, queue, list.indices.data(), this_ib_size, WGPUBufferUsage_Index);
-				old_ib_sizes[upload_frame] = this_ib_size;
+				if (index_buffer) wgpuBufferRelease(index_buffer);
+				index_buffer = createBuffer(device, queue, list.indices.data(), this_ib_size, WGPUBufferUsage_Index);
+				old_ib_size = this_ib_size;
 			}
 			else
 			{
-				writeBuffer(queue, index_buffers[upload_frame], list.indices.data(), this_ib_size);
-			}
-			if(this_frame < 0) 
-			{
-				this_frame = (this_frame + 1) % NUM_FRAMES;
-				return;
+				writeBuffer(queue, index_buffer, list.indices.data(), this_ib_size);
 			}
 		}
 		WGPUCommandEncoder encoder;
@@ -197,9 +180,13 @@ public:
 			ZoneScopedN("Create Encoder");
 			encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
 		}
+		auto swapchain = registered_windows.find(wctx.GetWindowHandle())->second;
 		{
 			ZoneScopedN("Swapchain Presents");
 		#ifndef __EMSCRIPTEN__
+			/*
+			* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
+			*/
 			wgpuSwapChainPresent(swapchain);
 		#endif
 		}
@@ -264,11 +251,11 @@ public:
 					}
 					wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 				}
-				wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffers[this_frame],
+				wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
 					cmd.vertex_offset * sizeof(Vertex),
 					WGPU_WHOLE_SIZE
 				);
-				wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffers[this_frame], WGPUIndexFormat_Uint16,
+				wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
 					cmd.index_offset * sizeof(uint16_t),
 					WGPU_WHOLE_SIZE
 				);
@@ -287,22 +274,7 @@ public:
 		}
 		{
 			ZoneScopedN("Submit Commands");
-			WGPUQueueWorkDoneCallback callback = +[](WGPUQueueWorkDoneStatus status, void * userdata)
-			{
-				auto render_finish_signal = (std::atomic_bool*)userdata;
-				render_finish_signal->store(true);
-			};
-			wgpuQueueOnSubmittedWorkDone(queue, 0u, callback, &render_finish_signals[this_frame]);
-			{
-				ZoneScopedN("Wait Last");
-				while(!render_finish_signals[this_frame])
-				{
-					// Wait for last submission.
-				}
-			}
-			render_finish_signals[this_frame].store(false);
 			wgpuQueueSubmit(queue, 1, &commands);
-			this_frame = (this_frame + 1) % NUM_FRAMES;
 		}
 		{
 			ZoneScopedN("Release Resources");
@@ -372,8 +344,8 @@ public:
 	{
 
 	}
-	WGPUBuffer vertex_buffers[NUM_FRAMES] = {nullptr, nullptr, nullptr};
-	WGPUBuffer index_buffers[NUM_FRAMES] = {nullptr, nullptr, nullptr};
+	WGPUBuffer vertex_buffer = nullptr;
+	WGPUBuffer index_buffer = nullptr;
 protected:
 	void createPipelineAndBuffers()
 	{
