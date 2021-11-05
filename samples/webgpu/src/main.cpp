@@ -1,11 +1,6 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "appbase.h"
 #include "webgpu.h"
-#ifdef USE_TRACY
-	#define TRACY_IMPORTS
-	#define TRACY_ENABLE
-	#include "tracy/Tracy.hpp"
-#endif
 
 extern void InstallInput();
 
@@ -18,12 +13,6 @@ public:
 		auto&& ctx = Context::Get();
 		ctx.renderImpl->RegisterWindow(*cWnd);
 	};
-
-	virtual bool Update() override
-	{
-		ZoneScopedN("Window Update");
-		return CSSWindow::Update();
-	}
 };
 
 class OGUIWebGPURenderer final : public OGUI::RenderInterface
@@ -130,6 +119,10 @@ public:
 		const auto width = win->GetWidth();
 		const auto height = win->GetHeight();
 		auto swapchain = webgpu::createSwapChain(wgpu, width, height, win->wmInfo.info.win.window, wmInfo.info.win.hinstance);
+		{
+			auto backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			
+			wgpuTextureViewRelease(backBufView);
+		}
 		registered_windows[hdl] = swapchain;
 	}
 
@@ -151,106 +144,147 @@ public:
 	
 	void RenderPrimitives(const PrimDrawList& list, const class WindowContext& wctx) override
 	{
+		ZoneScopedN("WebGPU Render");
+		
 		if(list.command_list.size() <= 0) return;
 		static size_t old_vb_size = 0;
 		static size_t old_ib_size = 0;
 		const auto this_vb_size = list.vertices.size() * sizeof(OGUI::Vertex);
 		const auto this_ib_size = list.indices.size() * sizeof(OGUI::uint16_t);
-		// upload buffer
-		if(old_vb_size < this_vb_size)
 		{
-			if (vertex_buffer) wgpuBufferRelease(vertex_buffer);
-			vertex_buffer = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
-			old_vb_size = this_vb_size;
+			ZoneScopedN("Prepare Buffers");
+			// upload buffer
+			if(old_vb_size < this_vb_size)
+			{
+				if (vertex_buffer) wgpuBufferRelease(vertex_buffer);
+				vertex_buffer = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
+				old_vb_size = this_vb_size;
+			}
+			else
+			{
+				writeBuffer(queue, vertex_buffer, list.vertices.data(), this_vb_size);
+			}
+			if(old_ib_size < this_ib_size)
+			{
+				if (index_buffer) wgpuBufferRelease(index_buffer);
+				index_buffer = createBuffer(device, queue, list.indices.data(), this_ib_size, WGPUBufferUsage_Index);
+				old_ib_size = this_ib_size;
+			}
+			else
+			{
+				writeBuffer(queue, index_buffer, list.indices.data(), this_ib_size);
+			}
 		}
-		else
+		WGPUCommandEncoder encoder;
 		{
-			writeBuffer(queue, vertex_buffer, list.vertices.data(), this_vb_size);
+			ZoneScopedN("Create Encoder");
+			encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
 		}
-		if(old_ib_size < this_ib_size)
-		{
-			if (index_buffer) wgpuBufferRelease(index_buffer);
-			index_buffer = createBuffer(device, queue, list.indices.data(), this_ib_size, WGPUBufferUsage_Index);
-			old_ib_size = this_ib_size;
-		}
-		else
-		{
-			writeBuffer(queue, index_buffer, list.indices.data(), this_ib_size);
-		}
-
 		auto swapchain = registered_windows.find(wctx.GetWindowHandle())->second;
-		WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
-		WGPURenderPassColorAttachment colorDesc = {};
-		colorDesc.view = backBufView;
-		colorDesc.loadOp  = WGPULoadOp_Clear;
-		colorDesc.storeOp = WGPUStoreOp_Store;
-		colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
-		WGPURenderPassDescriptor renderPass = {};
-		renderPass.colorAttachmentCount = 1;
-		renderPass.colorAttachments = &colorDesc;
-		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
-		WGPURenderPassEncoder pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
-		// draw the triangle (comment these five lines to simply clear the screen)
-		wgpuRenderPassEncoderSetPipeline(pass, pipeline);
+		{
+			ZoneScopedN("Swapchain Presents");
+		#ifndef __EMSCRIPTEN__
+			/*
+			* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
+			*/
+			wgpuSwapChainPresent(swapchain);
+		#endif
+		}
+		WGPUTextureView backBufView;
+		{
+			ZoneScopedN("Fetch Backview");
+			backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
+		}
+		WGPURenderPassEncoder pass;
+		{
+			ZoneScopedN("Begin Pass");
+
+			WGPURenderPassColorAttachment colorDesc = {};
+			colorDesc.view = backBufView;
+			colorDesc.loadOp  = WGPULoadOp_Clear;
+			colorDesc.storeOp = WGPUStoreOp_Store;
+			colorDesc.clearColor = {0.3f, 0.3f, 0.3f, 1.f};
+			WGPURenderPassDescriptor renderPass = {};
+			renderPass.colorAttachmentCount = 1;
+			renderPass.colorAttachments = &colorDesc;
+			pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
+		}
+		{
+			ZoneScopedN("Set Pipeline");
+			// draw the triangle (comment these five lines to simply clear the screen)
+			wgpuRenderPassEncoderSetPipeline(pass, pipeline);
+		}
 
 		int last_index = -1;
-		for(auto& cmd : list.command_list)
 		{
-			auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
-			if(last_cmd.texture != cmd.texture || last_index < 0)
-			{
-				WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
-				if(!texture)
-					texture = default_ogui_texture;
-				if(texture != default_ogui_texture && 
-					ogui_textures.find(texture) == ogui_textures.end())
-				{
-					olog::Error(u"WTF?"_o);
-				}
+			ZoneScopedN("Prepare DrawCalls");
 
-				if(!texture->bind_group)
+			for(auto& cmd : list.command_list)
+			{
+				auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
+				if(last_cmd.texture != cmd.texture || last_index < 0)
 				{
-					// update texture binding
-					WGPUBindGroupEntry bgEntry[2] = {{}, {}};
-					bgEntry[0].binding = 0;
-					bgEntry[0].textureView 
-						= texture->texture? texture->texture_view : default_ogui_texture->texture_view;
-					bgEntry[1].binding = 1;
-					bgEntry[1].sampler = sampler;
-					WGPUBindGroupDescriptor bgDesc = {};
-					bgDesc.layout = bindGroupLayout;
-					bgDesc.entryCount = 2;
-					bgDesc.entries = bgEntry;
-					texture->bind_group = wgpuDeviceCreateBindGroup(device, &bgDesc);
+					WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
+					if(!texture)
+						texture = default_ogui_texture;
+					if(texture != default_ogui_texture && 
+						ogui_textures.find(texture) == ogui_textures.end())
+					{
+						olog::Error(u"WTF?"_o);
+						continue;
+					}
+
+					if(!texture->bind_group)
+					{
+						// update texture binding
+						WGPUBindGroupEntry bgEntry[2] = {{}, {}};
+						bgEntry[0].binding = 0;
+						bgEntry[0].textureView 
+							= texture->texture? texture->texture_view : default_ogui_texture->texture_view;
+						bgEntry[1].binding = 1;
+						bgEntry[1].sampler = sampler;
+						WGPUBindGroupDescriptor bgDesc = {};
+						bgDesc.layout = bindGroupLayout;
+						bgDesc.entryCount = 2;
+						bgDesc.entries = bgEntry;
+						texture->bind_group = wgpuDeviceCreateBindGroup(device, &bgDesc);
+					}
+					wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 				}
-				wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
+				wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
+					cmd.vertex_offset * sizeof(Vertex),
+					WGPU_WHOLE_SIZE
+				);
+				wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
+					cmd.index_offset * sizeof(uint16_t),
+					WGPU_WHOLE_SIZE
+				);
+				wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
+				last_index++;
 			}
-			wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
-				cmd.vertex_offset * sizeof(Vertex),
-				WGPU_WHOLE_SIZE
-			);
-			wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
-				cmd.index_offset * sizeof(uint16_t),
-				WGPU_WHOLE_SIZE
-			);
-			wgpuRenderPassEncoderDrawIndexed(pass, cmd.element_count, 1, 0, 0, 0);
-			last_index++;
+		}
+		WGPUCommandBuffer commands;
+		{
+			ZoneScopedN("End Pass");
+			wgpuRenderPassEncoderEndPass(pass);
+		}
+		{
+			ZoneScopedN("Create Commands");
+			commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
+		}
+		{
+			ZoneScopedN("Submit Commands");
+			wgpuQueueSubmit(queue, 1, &commands);
+		}
+		{
+			ZoneScopedN("Release Resources");
+
+			wgpuRenderPassEncoderRelease(pass);														// release pass
+			wgpuCommandEncoderRelease(encoder);														// release encoder
+			wgpuCommandBufferRelease(commands);														// release commands
+			wgpuTextureViewRelease(backBufView);
 		}
 
-		wgpuRenderPassEncoderEndPass(pass);
-		wgpuRenderPassEncoderRelease(pass);														// release pass
-		WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
-		wgpuCommandEncoderRelease(encoder);														// release encoder
-
-		wgpuQueueSubmit(queue, 1, &commands);
-		wgpuCommandBufferRelease(commands);														// release commands
-	#ifndef __EMSCRIPTEN__
-		/*
-		* TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
-		*/
-		wgpuSwapChainPresent(swapchain);
-	#endif
-		wgpuTextureViewRelease(backBufView);													
 	}
 
 	void RenderPrimitives(const PersistantPrimDrawList&, const class WindowContext&) override
@@ -418,7 +452,7 @@ int main(int , char* []) {
 		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 
-	SampleWindow* win1 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	SampleWindow* win1 = nullptr;//new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 	SampleWindow* win2 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop
@@ -426,7 +460,7 @@ int main(int , char* []) {
 	{
 		using namespace ostr::literal;
 		
-		ZoneScoped;
+		ZoneScopedN("LoopBody");
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && (win1 || win2)) 

@@ -137,7 +137,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	TransformRec(root);
 }
 
-void OGUI::Context::Render(const OGUI::WindowHandle window)
+void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 {
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
@@ -145,6 +145,11 @@ void OGUI::Context::Render(const OGUI::WindowHandle window)
 	wctx.currentDrawCtx->resolution = Vector2f(wctx.X, wctx.Y);
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
+}
+
+void OGUI::Context::Render(const OGUI::WindowHandle window)
+{
+	auto& wctx = GetWindowContext(window);
 	if(renderImpl.get()) 
 		renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims, wctx);
 }

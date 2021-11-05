@@ -37,6 +37,12 @@ using namespace OGUI;
 #endif
 #include "utils.h"
 
+#ifdef USE_TRACY
+	#define TRACY_IMPORTS
+	#define TRACY_ENABLE
+	#include "tracy/Tracy.hpp"
+#endif
+
 class UpdateListener : public efsw::FileWatchListener
 {
 public:
@@ -114,9 +120,19 @@ public:
     {
 		const auto deltaTime = UpdateTimer.Tick();
 		auto& ctx = OGUI::Context::Get();
-		ctx.Update(this, deltaTime);
-		ctx.Render(this);
-        return true;
+		{
+			ZoneScopedN("Elements Update");
+			ctx.Update(this, deltaTime);
+		}
+		{
+			ZoneScopedN("Prepare Primitives");
+			ctx.PreparePrimitives(this);
+		}
+		{
+			ZoneScopedN("Primitives Render");
+			ctx.Render(this);
+		}
+		return true;
     }
 };
 

@@ -237,6 +237,7 @@ WGPUSwapChain webgpu::createSwapChain(webgpu::instance* i, float width, float he
 	swapDesc.usage = WGPUTextureUsage_RenderAttachment;
 	swapDesc.width = width;
 	swapDesc.height = height;
+	swapDesc.presentMode = WGPUPresentMode_Mailbox;
 	WGPUSurfaceDescriptor desc = {};
 	WGPUChainedStruct chain = {};
 	chain.sType = WGPUSType_SurfaceDescriptorFromWindowsHWND;
