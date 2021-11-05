@@ -1,5 +1,13 @@
 project(WebgpuSample)
 
+find_package(Vulkan)
+if(${Vulkan_FOUND})
+    include_directories(${Vulkan_INCLUDE_DIRS})
+	link_libraries(${Vulkan_LIBRARY})
+    message(STATUS "Found VK SDK. Include Dir: ${Vulkan_INCLUDE_DIRS}")
+    set(vulkan TRUE)
+endif()
+
 download_and_extract2(
     URL ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/common/OGUI_Xsd.zip
     FILENAME ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.zip
