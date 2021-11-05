@@ -211,7 +211,6 @@ public:
 		}
 		{
 			ZoneScopedN("Set Pipeline");
-			// draw the triangle (comment these five lines to simply clear the screen)
 			wgpuRenderPassEncoderSetPipeline(pass, pipeline);
 		}
 
