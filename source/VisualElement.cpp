@@ -157,6 +157,8 @@ void OGUI::VisualElement::UpdateRoot(VisualElement* child)
 	child->_root = GetRoot();
 	if(child->_layoutType == _layoutType)
 		child->_layoutRoot = GetLayoutRoot();
+	for(auto grandson : child->_children)
+		child->UpdateRoot(grandson);
 }
 
 void OGUI::VisualElement::PushChild(VisualElement* child)
