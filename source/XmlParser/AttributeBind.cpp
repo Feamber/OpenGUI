@@ -1,7 +1,8 @@
+#define DLL_IMPLEMENTATION
 #include <algorithm>
 #include <typeindex>
 #include <vector>
-#define DLL_IMPLEMENTATION
+#include "OpenGUI/Core/olog.h"
 #include "OpenGUI/XmlParser/AttributeBind.h"
 
 namespace OGUI
@@ -37,11 +38,13 @@ namespace OGUI
         auto find = AllAttrBind.find(fullName);
         if(find != AllAttrBind.end())
         {
-            //TODO void* data
             auto& attrBindList = find->second;
             for(auto bind : attrBindList)
             {
-                bind->changeFun(*this);
+                if(bind->data)
+                    bind->changePostFun(AttrConverter(type, data, bind->type, bind->data));
+                else
+                    bind->changeFun(*this);
             }
         }
     }
@@ -84,12 +87,18 @@ namespace OGUI
     {
         auto findSource = AllConverter.find(sourceType);
         if(findSource == AllConverter.end())
+        {
+            olog::Warn(u"AttrConverter error: {} to {}", sourceType.name(), targetType.name());
             return false;
+        }
         
         auto& targetMap = findSource->second;
         auto findTarget = targetMap.find(targetType);
         if(findTarget == targetMap.end())
+        {
+            olog::Warn(u"AttrConverter error: {} to {}", sourceType.name(), targetType.name());
             return false;
+        }
         
         return findTarget->second(source, target);
     }
