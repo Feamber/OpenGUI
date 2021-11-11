@@ -1,4 +1,4 @@
-#include "OpenGUI/Style/StyleSelector.h"
+#include "OpenGUI/Style2/Selector.h"
 #include "utils.h"
 #include <functional>
 #include <filesystem>
@@ -12,10 +12,10 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Style/VisualStyleSystem.h"
+#include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/VisualElement.h"
-#include "OpenGUI/CSSParser/CSSParser.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
+#include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include "OpenGUI/Core/open_string.h"
@@ -25,8 +25,6 @@
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Core/DynamicAtlasResource.h"
 #include "efsw/efsw.hpp"
-
-#include "OpenGUI/Text/FontRendering.h"
 #include "webgpu.h"
 
 
@@ -778,10 +776,10 @@ int main(int , char* []) {
 		ctx.bmParserImpl = std::make_unique<BitmapParser>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 		ctx.logImpl = std::make_unique<SpdlogLogger>();
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
-		ctx.propeManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest, "GName");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest2, "GName2");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest3, "GName3");
+		ctx.propManager.RegisterProperty(PropertyPtr(), &dataBindTest4, "GName4");
 	}
 	BuildSDLMap();
 
@@ -821,7 +819,8 @@ int main(int , char* []) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
 	}
-	
+
+    RegisterBuiltinStructs();
 	using namespace OGUI;
 	using namespace ostr::literal;
 	auto& ctx = Context::Get();

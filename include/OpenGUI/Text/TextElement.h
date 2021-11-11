@@ -36,7 +36,7 @@ namespace OGUI
         void DrawPrimitive(PrimitiveDraw::DrawContext &Ctx) override;
         void SyncYogaStyle() override;
 
-        void BuildParagraphRec(godot::TextParagraph* p);
+        void BuildParagraphRec(godot::TextParagraph* p, const struct StyleText& txt);
     };
 }
 #endif

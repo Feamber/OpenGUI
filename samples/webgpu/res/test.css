@@ -64,16 +64,12 @@
 
 /*negative delay hack*/
 #Child1:focus {
-    animation-name:rotateanim;
+    animation-name:rotateanim, shapeanim;
     animation-duration: 0.5s;
-    animation-yield-mode:stop;
+    animation-delay: 0s, -0.5s;
+    animation-yield-mode:stop, goback;
     animation-resume-mode:reset;
-    animation-name:shapeanim;
-    animation-duration: 0.5s;
-    animation-delay: -0.5s;
     animation-fill-mode: none;
-    animation-yield-mode:goback;
-    animation-resume-mode:reset;
 }
 
 .Test.Bigger{
@@ -115,13 +111,9 @@
 
 /*multi animation overload hack*/
 #Child2:focus {
-    animation-name:shapeanim2;
-    animation-duration: 0.5s;
-    animation-yield-mode:goback;
-    animation-resume-mode:reset;
-    animation-name:rotateanim2;
-    animation-duration: 0.5s;
-    animation-yield-mode:stop;
+    animation-name:shapeanim2, rotateanim2;
+    animation-duration: 0.5s,  0.5s;
+    animation-yield-mode:goback, stop;
     animation-resume-mode:reset;
 }
 
