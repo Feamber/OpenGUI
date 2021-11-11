@@ -125,7 +125,7 @@ void TextServer::initialize_hex_code_box_fonts() {
 		0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 	};
 
-	auto ctx = OGUI::Context::Get().windowContexts[0]->renderImpl;
+	auto&& ctx = OGUI::Context::Get().renderImpl;
 	auto& parser = OGUI::Context::Get().bmParserImpl;
 	OGUI::Bitmap bitmap1 = parser->LoadFromMemory(tamsyn5x9_png, tamsyn5x9_png_len);
 	hex_code_box_font_tex[0] = ctx->RegisterTexture(bitmap1);
@@ -136,7 +136,7 @@ void TextServer::initialize_hex_code_box_fonts() {
 }
 
 void TextServer::finish_hex_code_box_fonts() {
-	auto ctx = OGUI::Context::Get().windowContexts[0]->renderImpl;
+	auto&& ctx = OGUI::Context::Get().renderImpl;
 	if (hex_code_box_font_tex[0]) {
 		ctx->ReleaseTexture(hex_code_box_font_tex[0]);
 	}

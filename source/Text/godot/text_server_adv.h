@@ -79,14 +79,7 @@ public:
 struct TextureRef
 {
 	OGUI::TextureHandle handle = nullptr;
-	std::weak_ptr<OGUI::RenderInterface> renderImpl;
-	~TextureRef()
-	{
-		if(!handle)
-			return;
-		if(auto impl = renderImpl.lock())
-			impl->ReleaseTexture(handle);
-	}
+	~TextureRef();
 };
 
 class TextServerAdvanced : public TextServer {
@@ -143,7 +136,7 @@ public:
 
 		Vector2i size;
 
-		Vector<FontTexture> textures;
+		Vector<FontTexture> font_textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
 		Map<Vector2i, Vector2> kerning_map;
 
@@ -508,6 +501,6 @@ public:
 	static void register_server();
 
 	TextServerAdvanced();
-	~TextServerAdvanced();
+	virtual ~TextServerAdvanced();
 };
 }

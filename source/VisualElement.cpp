@@ -31,6 +31,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	using namespace PrimitiveDraw;
 	//auto rectPixelPos = GetRect();
 	Rect rect = GetRect();
+	auto&& ctx = Context::Get();
 	//Rect rect_origin = GetRect();
 	//Rect rect = rectPixelPosToScreenPos(rect_origin, Ctx.resolution);
 	auto& bg = StyleBackground::Get(_style);
@@ -43,7 +44,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 		//start new load
 		if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != bg.backgroundImage)
 		{
-			backgroundImageResource = Ctx.Window.textureManager->RequireFromFileSystem(bg.backgroundImage);
+			backgroundImageResource = ctx.textureManager->RequireFromFileSystem(bg.backgroundImage);
 			backgroundImageUrl = bg.backgroundImage;
 		}
 	}

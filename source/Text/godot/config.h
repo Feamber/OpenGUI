@@ -79,39 +79,39 @@ class Vector : public std::vector<T>
 public:
 	bool has(const T& key) const
 	{
-		return std::find(begin(), end(), key) != end();
+		return std::find(this->begin(), this->end(), key) != this->end();
 	}
     void remove(size_t pos)
     {
-        erase(begin() + pos);
+        this->erase(this->begin() + pos);
     }
 	void remove(const T& key)
 	{
-		erase(std::remove(begin(), end(), key), end());
+		this->erase(std::remove(this->begin(), this->end(), key), this->end());
 	}
     void reverse()
     {
-        std::reverse(begin(), end());
+        std::reverse(this->begin(), this->end());
     }
 	bool is_empty() const
 	{
-		return size() == 0;
+		return this->size() == 0;
 	}
 	T* ptrw()
 	{
-		return data();
+		return this->data();
 	}
 	const T* ptr() const
 	{
-		return data();
+		return this->data();
 	}
 	void insert(size_t pos, const T& v)
 	{
-		std::vector<T>::insert(begin() + pos, v);
+		std::vector<T>::insert(this->begin() + pos, v);
 	}
 	void append_array(const Vector<T>& other)
 	{
-		std::vector<T>::insert(end(), other.begin(), other.end());
+		std::vector<T>::insert(this->end(), other.begin(), other.end());
 	}
 };
 
@@ -121,7 +121,7 @@ class Set : public std::set<T>
 public:
 	bool has(const T& key) const
 	{
-		return find(key) != end();
+		return this->find(key) != this->end();
 	}
 };
 
@@ -131,12 +131,12 @@ class Map : public std::map<K, T>
 public:
 	bool is_empty() const
 	{
-		return size() == 0;
+		return this->size() == 0;
 	}
 
 	bool has(const K& key) const
 	{
-		return find(key) != end();
+		return this->find(key) != this->end();
 	}
 };
 
@@ -146,7 +146,7 @@ class HashMap : public std::unordered_map<K, T>
 	public:
 	bool has(const K& key) const
 	{
-		return find(key) != end();
+		return this->find(key) != this->end();
 	}
 };
 

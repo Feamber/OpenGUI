@@ -9,11 +9,18 @@
 namespace OGUI
 {
     using FileHandle = void*;
-	using WindowHandle = void*;
+	using WindowHandle = struct WindowInterface*;
 
     struct OGUI_API SystemInterface
 	{
 		virtual ~SystemInterface();
+	};
+
+	struct OGUI_API WindowInterface
+	{
+		virtual int GetWidth() const = 0;
+		virtual int GetHeight() const = 0;
+		virtual bool Update() = 0;
 	};
 
     struct OGUI_API InputInterface
@@ -37,7 +44,6 @@ namespace OGUI
     struct OGUI_API FileInterface
 	{
 		virtual ~FileInterface();
-		virtual std::string ToFullPath(const char* path);
 		virtual FileHandle Open(const char* path);
 		virtual void Close(FileHandle file);
 		virtual size_t Read(void* buffer, size_t size, FileHandle file);
@@ -72,8 +78,8 @@ namespace OGUI
             uint16_t* indices, uint32_t num_indices) = 0;
         virtual void ReleasePrimitive(PersistantPrimitiveHandle primitive) = 0;
 
-        virtual void RenderPrimitives(const struct PrimDrawList&) = 0;
-        virtual void RenderPrimitives(const struct PersistantPrimDrawList&) = 0;
+        virtual void RenderPrimitives(const struct PrimDrawList&, const class WindowContext&) = 0;
+        virtual void RenderPrimitives(const struct PersistantPrimDrawList&, const class WindowContext&) = 0;
 
 		virtual RenderTargetViewHandle RegisterRenderTargetView(const Bitmap&) = 0;
 		virtual RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) = 0;		
@@ -85,6 +91,9 @@ namespace OGUI
 
 		virtual Vector2f GetSize(RenderTargetViewHandle) = 0;
 
+		virtual void RegisterWindow(const class WindowContext&) = 0;
+		virtual void ReleaseWindow(const class WindowContext& wctx) = 0;
+		
         virtual void SetScissor(const Scissor scissor) = 0;
         virtual void ResetScissor() = 0;
 	};

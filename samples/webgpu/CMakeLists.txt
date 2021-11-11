@@ -1,8 +1,24 @@
 project(WebgpuSample)
+
+find_package(Vulkan)
+if(${Vulkan_FOUND})
+    include_directories(${Vulkan_INCLUDE_DIRS})
+	link_libraries(${Vulkan_LIBRARY})
+    message(STATUS "Found VK SDK. Include Dir: ${Vulkan_INCLUDE_DIRS}")
+    set(vulkan TRUE)
+endif()
+
+download_and_extract2(
+    URL ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/common/OGUI_Xsd.zip
+    FILENAME ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.zip
+    HASH_TYPE SHA1
+    HASH 5b0947b8f2f949d42ed61d51e0c169f5c465bcfb
+    EXTRACT_DIR ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/
+)
 	
 download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/dawn.zip
+    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn_0.0.2.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
 download_and_extract(
@@ -11,8 +27,8 @@ download_and_extract(
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
 download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/dawn.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn.zip
+    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/dawn_0.0.2.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
 download_and_extract(

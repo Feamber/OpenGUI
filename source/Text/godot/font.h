@@ -187,7 +187,7 @@ public:
 	virtual Map<uint32_t, Vector3i> get_supported_variation_list() const;
 
 	FontData();
-	~FontData();
+	virtual ~FontData();
 };
 
 /*************************************************************************/
@@ -254,6 +254,6 @@ public:
 	void update_changes();
 
 	Font();
-	~Font();
+	virtual ~Font();
 };
 }

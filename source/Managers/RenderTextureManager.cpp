@@ -20,10 +20,7 @@ shared_ptr<AsyncRenderTexture> RenderTextureManager::RequireFromFileSystem(
     if(needUpload)
     {
         tex_locked = std::make_shared<AsyncRenderTexture>(
-            std::shared_ptr<AsyncImage>(new AsyncImage(), 
-            [this, url](AsyncImage* tex){
-                render_textures.erase(url);
-            }), ERenderTextureType::RawTexture
+            std::make_unique<AsyncTexture2D>(), ERenderTextureType::RawTexture
         );
         render_textures[url] = tex_locked;
     } else {
@@ -51,14 +48,14 @@ void RenderTextureManager::Update()
 {
     // compile bitmaps to render_textures.
     std::vector<std::string> uploadeds;
+    auto& ctx = Context::Get();
     for(auto&& [url, file] : files)
     {
         if(file != nullptr && file->valid())
         {
             auto tex_locked = render_textures[url].lock();
             // comple/upload texture to render device.
-            tex_locked->device_image->_handle 
-                = windowContext.renderImpl->RegisterTexture(file->GetBitmap());
+            tex_locked->device_image->_handle = ctx.renderImpl->RegisterTexture(file->GetBitmap());
             tex_locked->device_image->is_ready = true;
             file.reset();
             uploadeds.push_back(url);

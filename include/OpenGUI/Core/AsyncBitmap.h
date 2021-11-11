@@ -10,10 +10,10 @@ namespace OGUI
         void Finalize() final;
         FORCEINLINE const Bitmap GetBitmap() const
         {
-            return bm;
+            return bitmap;
         }
-        inline size_t size() const final {return bm.resource.size_in_bytes;}
+        inline size_t size() const final {return bitmap.resource.size_in_bytes;}
     protected:
-        Bitmap bm;
+        Bitmap bitmap;
     };
 }
