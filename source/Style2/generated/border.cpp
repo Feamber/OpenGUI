@@ -79,6 +79,12 @@ void OGUI::StyleBorder::Initialize()
     borderBottomLeftRadius = YGValueZero;
 }
 
+template<class T>
+std::vector<T> ToOwned(gsl::span<T> s)
+{
+    return {s.begin(), s.end()};
+}
+
 void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
@@ -451,7 +457,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderLeftWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-left-width value!";
@@ -462,7 +468,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderTopWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-top-width value!";
@@ -473,7 +479,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderRightWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-right-width value!";
@@ -484,7 +490,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderBottomWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-bottom-width value!";
@@ -495,7 +501,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderTopLeftRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-top-left-radius value!";
@@ -506,7 +512,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderTopRightRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-top-right-radius value!";
@@ -517,7 +523,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderBottomRightRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-bottom-right-radius value!";
@@ -528,7 +534,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
         case Id::borderBottomLeftRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-bottom-left-radius value!";

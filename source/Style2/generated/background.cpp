@@ -72,6 +72,12 @@ void OGUI::StyleBackground::Initialize()
     backgroundImage = {};
 }
 
+template<class T>
+std::vector<T> ToOwned(gsl::span<T> s)
+{
+    return {s.begin(), s.end()};
+}
+
 void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
@@ -258,7 +264,7 @@ bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::strin
         case Id::backgroundColor:{
             Color4f v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<Color4f>(v)});
             else
             {
                 errorMsg = "failed to parse background-color value!";
@@ -269,7 +275,7 @@ bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::strin
         case Id::backgroundImage:{
             std::string v;
             if(ParseUrl(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<std::string>(v)});
             else
             {
                 errorMsg = "failed to parse background-image value!";

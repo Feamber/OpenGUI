@@ -153,6 +153,12 @@ class Longhand(Property):
         self.initial_value = initial_value
         self.logical = arg_to_bool(logical)
         self.is_vector = arg_to_bool(vector)
+        if self.is_vector:
+            self.view_type = "gsl::span<{}>".format(type)
+            self.storage_type = "std::vector<{}>".format(type)
+        else:
+            self.view_type = type
+            self.storage_type = type
         self.restyle_damage = restyle_damage
         self.parser = parser
 

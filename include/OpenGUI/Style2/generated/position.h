@@ -9,6 +9,7 @@
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Parse/Math.h"
 #include "OpenGUI/Style2/Parse/Yoga.h"
 #include "OpenGUI/Style2/Lerp/Math.h"
@@ -56,7 +57,7 @@ namespace OGUI
             static constexpr size_t flexDisplay = OGUI::hash("flex-display"sv);
             static constexpr size_t margin = OGUI::hash("margin"sv);
         };
-        ComputedTransform transform;
+        std::vector<TransformFunction> transform;
         float flexGrow;
         float flexShrink;
         YGValue flexBasis;

@@ -72,6 +72,12 @@ void OGUI::StyleText::Initialize()
     color = Color4f(0,0,0,1);
 }
 
+template<class T>
+std::vector<T> ToOwned(gsl::span<T> s)
+{
+    return {s.begin(), s.end()};
+}
+
 void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
@@ -257,7 +263,7 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
         case Id::fontSize:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse font-size value!";
@@ -268,7 +274,7 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
         case Id::color:{
             Color4f v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<Color4f>(v)});
             else
             {
                 errorMsg = "failed to parse color value!";

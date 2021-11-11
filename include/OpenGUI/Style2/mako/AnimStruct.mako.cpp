@@ -36,7 +36,7 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
             {
             %for prop in struct.longhands:
                 case Id::${prop.ident}:
-                    ${prop.ident} = sheet.Get<${prop.type}>(prop.value);
+                    ${prop.ident} = sheet.Get<${prop.view_type}>(prop.value);
                     break;
             %endfor
                 default: break;
@@ -71,7 +71,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
-                ${prop.type} v;
+                ${prop.storage_type} v;
                 if(${prop.parser}(tokens[i], v))
             %if prop.name=="animation-name":
                     rule.animation[i].name = v;

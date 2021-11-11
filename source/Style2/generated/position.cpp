@@ -69,7 +69,7 @@ void OGUI::StylePosition::Dispose(ComputedStyle& style)
 
 void OGUI::StylePosition::Initialize()
 {
-    transform = ComputedTransform::ident();
+    transform = {};
     flexGrow = 0.f;
     flexShrink = 1.f;
     flexBasis = YGValueAuto;
@@ -100,6 +100,12 @@ void OGUI::StylePosition::Initialize()
     justifyContent = YGJustifyFlexStart;
     flexWrap = YGWrapNoWrap;
     flexDisplay = YGDisplayFlex;
+}
+
+template<class T>
+std::vector<T> ToOwned(gsl::span<T> s)
+{
+    return {s.begin(), s.end()};
 }
 
 void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -146,7 +152,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 {
                 case Id::transform:{
                     auto v = fget();
-                    v->transform = ComputedTransform::ident();
+                    v->transform = {};
                     break;
                     }
                 case Id::flexGrow:{
@@ -471,7 +477,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             {
                 case Id::transform:{
                     auto v = fget();
-                    v->transform = sheet.Get<ComputedTransform>(prop.value);
+                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.value));
                     break;
                     }
                 case Id::flexGrow:{
@@ -670,13 +676,13 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
             case Id::transform:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
-                    v->transform = sheet.Get<ComputedTransform>(prop.from);
+                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->transform = sheet.Get<ComputedTransform>(prop.to);
+                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->transform = OGUI::Lerp(v->transform, sheet.Get<ComputedTransform>(prop.to), prop.alpha);
+                    v->transform = OGUI::Lerp(v->transform, sheet.Get<gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 else
-                    v->transform = OGUI::Lerp(sheet.Get<ComputedTransform>(prop.from), sheet.Get<ComputedTransform>(prop.to), prop.alpha);
+                    v->transform = OGUI::Lerp(sheet.Get<gsl::span<TransformFunction>>(prop.from), sheet.Get<gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 break;
                 }
             case Id::flexGrow:{
@@ -1162,9 +1168,9 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
     switch(hash)
     {
         case Id::transform:{
-            ComputedTransform v;
+            std::vector<TransformFunction> v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<gsl::span<TransformFunction>>(v)});
             else
             {
                 errorMsg = "failed to parse transform value!";
@@ -1175,7 +1181,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::flexGrow:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse flex-grow value!";
@@ -1186,7 +1192,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::flexShrink:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse flex-shrink value!";
@@ -1197,7 +1203,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::flexBasis:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse flex-basis value!";
@@ -1208,7 +1214,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::left:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse left value!";
@@ -1219,7 +1225,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::top:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse top value!";
@@ -1230,7 +1236,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::right:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse right value!";
@@ -1241,7 +1247,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::bottom:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse bottom value!";
@@ -1252,7 +1258,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::marginLeft:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-left value!";
@@ -1263,7 +1269,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::marginTop:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-top value!";
@@ -1274,7 +1280,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::marginRight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-right value!";
@@ -1285,7 +1291,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::marginBottom:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-bottom value!";
@@ -1296,7 +1302,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::paddingLeft:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-left value!";
@@ -1307,7 +1313,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::paddingTop:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-top value!";
@@ -1318,7 +1324,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::paddingRight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-right value!";
@@ -1329,7 +1335,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::paddingBottom:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-bottom value!";
@@ -1340,7 +1346,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::width:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse width value!";
@@ -1351,7 +1357,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::height:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse height value!";
@@ -1362,7 +1368,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::position:{
             YGPositionType v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGPositionType>(v)});
             else
             {
                 errorMsg = "failed to parse position value!";
@@ -1373,7 +1379,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::overflow:{
             YGOverflow v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGOverflow>(v)});
             else
             {
                 errorMsg = "failed to parse overflow value!";
@@ -1384,7 +1390,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::alignSelf:{
             YGAlign v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGAlign>(v)});
             else
             {
                 errorMsg = "failed to parse align-self value!";
@@ -1395,7 +1401,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::maxWidth:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse max-width value!";
@@ -1406,7 +1412,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::maxHeight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse max-height value!";
@@ -1417,7 +1423,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::minWidth:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse min-width value!";
@@ -1428,7 +1434,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::minHeight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse min-height value!";
@@ -1439,7 +1445,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::flexDirection:{
             YGFlexDirection v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGFlexDirection>(v)});
             else
             {
                 errorMsg = "failed to parse flex-direction value!";
@@ -1450,7 +1456,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::alignContent:{
             YGAlign v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGAlign>(v)});
             else
             {
                 errorMsg = "failed to parse align-content value!";
@@ -1461,7 +1467,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::alignItems:{
             YGAlign v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGAlign>(v)});
             else
             {
                 errorMsg = "failed to parse align-items value!";
@@ -1472,7 +1478,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::justifyContent:{
             YGJustify v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGJustify>(v)});
             else
             {
                 errorMsg = "failed to parse justify-content value!";
@@ -1483,7 +1489,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::flexWrap:{
             YGWrap v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGWrap>(v)});
             else
             {
                 errorMsg = "failed to parse flex-wrap value!";
@@ -1494,7 +1500,7 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
         case Id::flexDisplay:{
             YGDisplay v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<YGDisplay>(v)});
             else
             {
                 errorMsg = "failed to parse flex-display value!";

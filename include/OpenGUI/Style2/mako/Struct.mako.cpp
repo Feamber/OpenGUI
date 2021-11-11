@@ -76,6 +76,12 @@ void OGUI::Style${struct.ident}::Initialize()
 %endfor
 }
 
+template<class T>
+std::vector<T> ToOwned(gsl::span<T> s)
+{
+    return {s.begin(), s.end()};
+}
+
 void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
@@ -152,7 +158,11 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
             %for prop in struct.longhands:
                 case Id::${prop.ident}:{
                     auto v = fget();
-                    v->${prop.ident} = sheet.Get<${prop.type}>(prop.value);
+                %if prop.is_vector:
+                    v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.value));
+                %else:
+                    v->${prop.ident} = sheet.Get<${prop.view_type}>(prop.value);
+                %endif
                     break;
                     }
             %endfor
@@ -203,13 +213,21 @@ void OGUI::Style${struct.ident}::ApplyAnimatedProperties(ComputedStyle& style, c
             case Id::${prop.ident}:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
-                    v->${prop.ident} = sheet.Get<${prop.type}>(prop.from);
+                %if prop.is_vector:
+                    v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.from));
+                %else:
+                    v->${prop.ident} = sheet.Get<${prop.view_type}>(prop.from);
+                %endif
                 else if(prop.alpha == 1.f)
-                    v->${prop.ident} = sheet.Get<${prop.type}>(prop.to);
+                %if prop.is_vector:
+                    v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.to));
+                %else:
+                    v->${prop.ident} = sheet.Get<${prop.view_type}>(prop.to);
+                %endif
                 else if(prop.from == prop.to)
-                    v->${prop.ident} = OGUI::Lerp(v->${prop.ident}, sheet.Get<${prop.type}>(prop.to), prop.alpha);
+                    v->${prop.ident} = OGUI::Lerp(v->${prop.ident}, sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
                 else
-                    v->${prop.ident} = OGUI::Lerp(sheet.Get<${prop.type}>(prop.from), sheet.Get<${prop.type}>(prop.to), prop.alpha);
+                    v->${prop.ident} = OGUI::Lerp(sheet.Get<${prop.view_type}>(prop.from), sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
                 break;
                 }
         %endfor
@@ -253,9 +271,9 @@ bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::
     {
     %for prop in struct.longhands:
         case Id::${prop.ident}:{
-            ${prop.type} v;
+            ${prop.storage_type} v;
             if(${prop.parser}(value, v))
-                rule.properties.push_back({hash, sheet.Push(v)});
+                rule.properties.push_back({hash, sheet.Push<${prop.view_type}>(v)});
             else
             {
                 errorMsg = "failed to parse ${prop.name} value!";

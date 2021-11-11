@@ -16,9 +16,6 @@ namespace OGUI
     struct AnimStyle
     {
         constexpr static size_t hash = OGUI::hash("${struct.name}"sv);
-        //Resolved reference
-		StyleSheet* sheet;
-		StyleKeyframes* keyframes;
         struct Id
         {
         %for prop in struct.longhands:
@@ -26,7 +23,7 @@ namespace OGUI
         %endfor
         };
     %for prop in struct.longhands:
-        ${prop.type} ${prop.ident};
+        ${prop.storage_type} ${prop.ident};
     %endfor
         void Initialize();
         static void ApplyProperties(std::vector<AnimStyle>& group, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);

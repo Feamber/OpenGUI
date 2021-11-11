@@ -2,6 +2,8 @@
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Core/Math/Matrix.h"
 #include "OpenGUI/Core/Math/Vector.h"
+#include <vector>
+#include <gsl/span>
 
 namespace OGUI
 {
@@ -32,14 +34,22 @@ namespace OGUI
         } type;
         union
         {
-            Vector2f translate;
-            float rotate;
-            Vector2f skew;
-            Vector2f scale;
-            ComputedTransform matrix;
+            Vector2f _translate;
+            float _rotate;
+            Vector2f _skew;
+            Vector2f _scale;
+            ComputedTransform _matrix;
         };
-        ComputedTransform to_transform();
+        static TransformFunction translate(Vector2f t);
+        static TransformFunction rotate(float angle);
+        static TransformFunction skew(Vector2f s);
+        static TransformFunction scale(Vector2f s);
+        static TransformFunction matrix(float a, float b,float c,float d,float e,float f);
+        static TransformFunction matrix(ComputedTransform t);
+        static TransformFunction ident(Type type);
+        ComputedTransform to_transform() const;
+        TransformFunction();
     };
-
+    ComputedTransform evaluate(gsl::span<const TransformFunction> transformList);
     FORCEINLINE ComputedTransform multiply(ComputedTransform a, ComputedTransform b);
 }

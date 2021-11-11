@@ -1,4 +1,5 @@
 #pragma once
+#include <type_traits>
 #include <vector>
 #include <string>
 #include <map>
@@ -8,6 +9,11 @@
 
 namespace OGUI
 {
+    template<class T>
+    struct span_trait : std::false_type {};
+    template<class T>
+    struct span_trait<gsl::span<T>> : std::true_type { using type = T; };
+
     struct StyleSheetStorage
     {
         //TODO: handle alignment?
@@ -15,11 +21,20 @@ namespace OGUI
         std::vector<std::string> stringData;
 
         template<class T>
-        const T& Get(VariantHandle handle) const
+        T Get(VariantHandle handle) const
         {
+            using st = span_trait<T>;
             if constexpr(std::is_same_v<T, std::string>)
             {
                 return stringData[handle.index];
+            }
+            else if constexpr(st::value)
+            {
+                using et = typename st::type;
+                size_t length = *(size_t*)(bulkData.data() + handle.index);
+                auto begin = bulkData.data() +  handle.index + sizeof(size_t);
+                auto end = begin + sizeof(et)*length;
+                return {(et*)begin, (et*)end};
             }
             else 
             {
@@ -30,10 +45,21 @@ namespace OGUI
         template<class T>
         VariantHandle Push(const T& value)
         {
+            using st = span_trait<T>;
             if constexpr(std::is_same_v<T, std::string>)
             {
                 stringData.push_back(value);
                 return {(int)stringData.size()-1};
+            }
+            else if constexpr(st::value)
+            {
+                using et = typename st::type;
+                int offset = (int)bulkData.size();
+                size_t length = value.size();
+                bulkData.resize(bulkData.size() + sizeof(et)*length + sizeof(size_t));
+                *(size_t*)(bulkData.data() + offset) = length;
+                std::memcpy(bulkData.data() + offset + sizeof(size_t), value.data(), sizeof(et)*length);
+                return {offset};
             }
             else 
             {
@@ -42,23 +68,6 @@ namespace OGUI
 				std::memcpy(bulkData.data() + offset, &value, sizeof(T));
 				return {offset};
             }
-        }
-
-        template<class T>
-        VariantHandle PushArray(const T* value, size_t length)
-        {
-            int offset = (int)bulkData.size();
-            bulkData.resize(bulkData.size() + sizeof(T)*length + sizeof(size_t));
-            *(size_t*)(bulkData.data() + offset) = length;
-            std::memcpy(bulkData.data() + offset + sizeof(size_t), value, sizeof(T)*length);
-            return {offset};
-        }
-
-        template<class T>
-        const T* GetArray(VariantHandle handle, size_t& length) const
-        {
-            length = *(size_t*)(bulkData.data() + handle.index);
-            return (T*)(bulkData.data() + handle.index);
         }
     };
 

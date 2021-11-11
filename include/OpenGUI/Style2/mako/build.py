@@ -23,8 +23,8 @@ def gen_position():
     struct = StyleStruct("position", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    #add_longhand("transform",       "TransformFunction","{}"      ,vector = True)
-    add_longhand("transform",       "ComputedTransform","ComputedTransform::ident()")
+    add_longhand("transform",       "TransformFunction","{}"      ,vector = True)
+    #add_longhand("transform",       "ComputedTransform","ComputedTransform::ident()")
     add_longhand("flex-grow",       "float",            "0.f")
     add_longhand("flex-shrink",     "float",            "1.f")
     add_longhand("flex-basis",      "YGValue",          "YGValueAuto")
@@ -54,6 +54,7 @@ def gen_position():
 
     struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Core/Math.h")
+    struct.headers.append("OpenGUI/Style2/Transform.h")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")

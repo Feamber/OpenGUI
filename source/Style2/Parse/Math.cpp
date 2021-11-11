@@ -433,7 +433,7 @@ bool OGUI::ParseValue(std::string_view str, Color4f& value)
 		return parser.parse(str, value);
 }
 
-bool OGUI::ParseValue(std::string_view str, ComputedTransform& value)
+bool OGUI::ParseValue(std::string_view str, std::vector<TransformFunction>& value)
 {
     static auto grammar = R"(
 			TransformList	<- Transform (w Transform)*
@@ -448,6 +448,7 @@ bool OGUI::ParseValue(std::string_view str, ComputedTransform& value)
 			Skew			<- 'skew' _ '(' _ ANGLE _',' _ ANGLE _  ')'
 			SkewX			<- 'skewX' _ '(' _ ANGLE _  ')'
 			SkewY			<- 'skewY' _ '(' _ ANGLE _ ')'
+			Matrix			<- 'matrix' _ '(' _ NUM _ ',' _ NUM _ ',' _ NUM _ ',' _ NUM _ ',' _ NUM _ ',' _ NUM _ ')'
 			NUM				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
 			LENGTH			<- < ( NUM ('px' / '%') ) > / '0'
 			ANGLE			<- < NUM ('deg' / 'rad' / 'grad' / 'turn')? >
@@ -496,27 +497,26 @@ bool OGUI::ParseValue(std::string_view str, ComputedTransform& value)
 						return value / 180 * math::PI_;
 					};
 #define ARG(n) any_move<float>(vs[n])
-					parser["Rotate"] = [](SemanticValues& vs) { return ComputedTransform::rotate(ARG(0)); };
-					parser["ScaleX"] = [](SemanticValues& vs) { return ComputedTransform::scale({ARG(0), 1}); };
-					parser["ScaleY"] = [](SemanticValues& vs) { return ComputedTransform::scale({1, ARG(0)}); };
-					parser["Scale"] =   [](SemanticValues& vs)  { return ComputedTransform::scale({ARG(0), ARG(1)}); };
-					parser["TranslateX"] = [](SemanticValues& vs) { return ComputedTransform::translate({ARG(0), 0}); };
-					parser["TranslateY"] = [](SemanticValues& vs) { return ComputedTransform::translate({0, ARG(0)}); };
-					parser["Translate"] = [](SemanticValues& vs) { return ComputedTransform::translate({ARG(0), ARG(1)}); };
-					parser["SkewX"] = [](SemanticValues& vs) { return ComputedTransform::skew({ARG(0), 0}); };
-					parser["SkewY"] = [](SemanticValues& vs) { return ComputedTransform::skew({0, ARG(0)}); };
-					parser["Skew"] = [](SemanticValues& vs) { return ComputedTransform::skew({ARG(0), ARG(1)}); };
+					parser["Rotate"] = [](SemanticValues& vs) { return TransformFunction::rotate(ARG(0)); };
+					parser["ScaleX"] = [](SemanticValues& vs) { return TransformFunction::scale({ARG(0), 1}); };
+					parser["ScaleY"] = [](SemanticValues& vs) { return TransformFunction::scale({1, ARG(0)}); };
+					parser["Scale"] =   [](SemanticValues& vs)  { return TransformFunction::scale({ARG(0), ARG(1)}); };
+					parser["TranslateX"] = [](SemanticValues& vs) { return TransformFunction::translate({ARG(0), 0}); };
+					parser["TranslateY"] = [](SemanticValues& vs) { return TransformFunction::translate({0, ARG(0)}); };
+					parser["Translate"] = [](SemanticValues& vs) { return TransformFunction::translate({ARG(0), ARG(1)}); };
+					parser["SkewX"] = [](SemanticValues& vs) { return TransformFunction::skew({ARG(0), 0}); };
+					parser["SkewY"] = [](SemanticValues& vs) { return TransformFunction::skew({0, ARG(0)}); };
+					parser["Skew"] = [](SemanticValues& vs) { return TransformFunction::skew({ARG(0), ARG(1)}); };
+					parser["Matrix"] = [](SemanticValues& vs) { return TransformFunction::matrix(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5)); };
 #undef ARG
 					parser["Transform"] = [](SemanticValues& vs) { return std::move(vs[0]); };
 					parser["TransformList"] = [](SemanticValues& vs)
 					{
-						ComputedTransform finalM = any_move<ComputedTransform>(vs[0]);
-						for (int i = 1; i < vs.size(); ++i)
-						{
-							ComputedTransform M = any_move<ComputedTransform>(vs[i]);
-							finalM = multiply(finalM, M);
-						}
-						return finalM;
+						std::vector<TransformFunction> list;
+                        list.reserve(vs.size());
+						for (int i = 0; i < vs.size(); ++i)
+							list.push_back(any_move<TransformFunction>(vs[i]));
+						return list;
 					};
 				}
 			}

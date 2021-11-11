@@ -23,7 +23,9 @@
     background-image:url(res/test1.png);
 }
 
-
+TextElement{
+    background-color: transparent;
+}
 
 @keyframes t360 {
     to {
@@ -47,9 +49,9 @@
 }
 
 #Child2 {
-    justify-content:flex-start;
-    align-items:flex-start;
-    align-content: flex-start;
+    justify-content:center;
+    align-items:center;
+    align-content: center;
     flex-wrap: wrap;
     height:116px;width:180px;background-image:url(res/test3.jpg);
 }
@@ -59,7 +61,6 @@
     height:50px;
     margin:10px;
     background-image:url(res/UELogo.png);
-    transform: scale(0.8, 0.8) translate(5px, -5px);
 }
 
 /*negative delay hack*/
@@ -144,6 +145,19 @@
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         background-color:rgb(73, 214, 125);
+    }
+}
+
+#Child2:focus::before {
+    animation-name:rotateanim3;
+    animation-duration: 0.5s;
+    animation-yield-mode:goback;
+    animation-resume-mode:resume;
+}
+
+@keyframes rotateanim3 {
+    to {
+        transform: scale(1.2, 1.2) translate(0, 50px) rotate(360deg);
     }
 }
 

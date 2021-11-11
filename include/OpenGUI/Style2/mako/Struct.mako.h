@@ -28,7 +28,7 @@ namespace OGUI
         %endfor
         };
     %for prop in struct.longhands:
-        ${prop.type} ${prop.ident};
+        ${prop.storage_type} ${prop.ident};
     %endfor
         void Initialize();
         OGUI_API static const Style${struct.ident}& GetDefault();

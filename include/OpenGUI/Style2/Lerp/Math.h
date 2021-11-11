@@ -11,6 +11,6 @@ namespace OGUI
     Vector2f Lerp(Vector2f a, Vector2f b, float alpha);
     Color4f Lerp(Color4f a, Color4f b, float alpha);
     ComputedTransform Lerp(ComputedTransform a, ComputedTransform b, float alpha);
-    std::vector<TransformFunction> Lerp(const std::vector<TransformFunction>& a, const std::vector<TransformFunction>& b, float alpha);
+    std::vector<TransformFunction> Lerp(gsl::span<const TransformFunction> a, gsl::span<const TransformFunction> b, float alpha);
 
 }

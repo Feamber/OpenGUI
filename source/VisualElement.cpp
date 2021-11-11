@@ -17,6 +17,7 @@
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Context.h"
+#include <gsl/span>
 
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {
@@ -228,14 +229,13 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto playout = parent->GetLayout();
 		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		offset.y = -offset.y;
-		
-		_worldTransform = multiply(pos.transform, ComputedTransform::translate(offset)).to_3D();
+		_worldTransform = multiply(evaluate(pos.transform), ComputedTransform::translate(offset)).to_3D();
 		_worldTransform = multiply(_worldTransform, parent->_worldTransform);
 	}
 	else
 	{
 		auto offset = -(layout.max - layout.min) / 2;
-		_worldTransform = pos.transform.to_3D();
+		_worldTransform = evaluate(pos.transform).to_3D();
 	}
 	_worldPosition = {_worldTransform.M[3][0], _worldTransform.M[3][1]};
 	_transformDirty = false;

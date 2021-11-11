@@ -1,4 +1,4 @@
-#include "OpenGUI/Core/Math/Vector.h"
+
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Core/Math.h"
@@ -89,4 +89,111 @@ OGUI::Matrix4x4 OGUI::ComputedTransform::to_3D() const
 OGUI::ComputedTransform OGUI::ComputedTransform::compose(Vector2f trans, float rot, Vector2f sk, Vector2f sc)
 {
     return multiply(ComputedTransform::scale(sc), multiply(ComputedTransform::skew(sk), multiply(ComputedTransform::rotate(rot), ComputedTransform::translate(trans))));
+}
+
+OGUI::TransformFunction::TransformFunction()
+    :type(Type::translate), _translate(Vector2f::vector_zero())
+{}
+
+
+OGUI::TransformFunction OGUI::TransformFunction::translate(Vector2f t)
+{
+    OGUI::TransformFunction result;
+    result.type = Type::translate;
+    result._translate = t;
+    return result;
+}
+OGUI::TransformFunction OGUI::TransformFunction::rotate(float r)
+{
+    OGUI::TransformFunction result;
+    result.type = Type::rotate;
+    result._rotate = r;
+    return result;
+}
+OGUI::TransformFunction OGUI::TransformFunction::scale(Vector2f s)
+{
+    OGUI::TransformFunction result;
+    result.type = Type::scale;
+    result._scale = s;
+    return result;
+}
+OGUI::TransformFunction OGUI::TransformFunction::skew(Vector2f s)
+{
+    OGUI::TransformFunction result;
+    result.type = Type::skew;
+    result._skew = s;
+    return result;
+}
+OGUI::TransformFunction OGUI::TransformFunction::matrix(float a, float b,float c,float d,float e,float f)
+{
+    float data[] = {a, b, c, d};
+    OGUI::ComputedTransform transform;
+    transform.m = {data};
+    transform.trans = {e, f};
+    OGUI::TransformFunction result;
+    result.type = Type::matrix;
+    result._matrix = transform;
+    return result;
+}
+OGUI::TransformFunction OGUI::TransformFunction::matrix(ComputedTransform t)
+{
+    OGUI::TransformFunction result;
+    result.type = Type::matrix;
+    result._matrix = t;
+    return result;
+}
+OGUI::TransformFunction OGUI::TransformFunction::ident(Type type)
+{
+    OGUI::TransformFunction result;
+    result.type = type;
+    switch (type) {
+    case Type::translate:
+        result._translate = Vector2f{0, 0};
+        break;
+    case Type::rotate:
+        result._rotate = 0;
+        break;
+    case Type::skew:
+        result._skew = Vector2f{0, 0};
+        break;
+    case Type::scale:
+        result._scale = Vector2f{1, 1};
+        break;
+    case Type::matrix:
+        result._matrix = ComputedTransform::ident();
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
+OGUI::ComputedTransform OGUI::TransformFunction::to_transform() const
+{
+    switch (type) {
+    case Type::translate:
+        return ComputedTransform::translate(_translate);
+    case Type::rotate:
+        return ComputedTransform::rotate(_rotate);
+    case Type::skew:
+        return ComputedTransform::skew(_skew);
+    case Type::scale:
+        return ComputedTransform::scale(_scale);
+    case Type::matrix:
+        return _matrix;
+    default:
+        break;
+    }
+    return ComputedTransform::translate(_translate);
+}
+
+
+OGUI::ComputedTransform OGUI::evaluate(gsl::span<const TransformFunction> transformList)
+{
+    if(transformList.empty())
+        return ComputedTransform::ident();
+    OGUI::ComputedTransform result = transformList[0].to_transform();
+    for(int i=1; i<transformList.size(); ++i)
+        result = multiply(result, transformList[i].to_transform());
+    return result;
 }

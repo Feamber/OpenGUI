@@ -13,6 +13,5 @@ namespace OGUI
 	bool ParseTranslate(std::string_view str, Vector2f& t);
 	bool ParseValue(std::string_view str, Vector2f& t);
 	bool ParseValue(std::string_view str, Color4f& value);
-	bool ParseValue(std::string_view str, ComputedTransform& value);
 	bool ParseValue(std::string_view str, std::vector<TransformFunction>& value);
 }
