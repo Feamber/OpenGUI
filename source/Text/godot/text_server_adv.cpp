@@ -3534,7 +3534,6 @@ real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width
 			}
 		}
 	}
-	real_t adv_remain = 0;
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
 		real_t delta_width_per_space = (p_width - justification_width) / space_count;
 		for (int i = start_pos; i <= end_pos; i++) {
@@ -3549,14 +3548,6 @@ real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width
 						new_advance = MAX(gl.advance + delta_width_per_space, 0.1 * gl.font_size);
 					}
 					gl.advance = new_advance;
-					adv_remain += (new_advance - gl.advance);
-					if (adv_remain >= 1.0) {
-						gl.advance++;
-						adv_remain -= 1.0;
-					} else if (adv_remain <= -1.0) {
-						gl.advance = MAX(gl.advance - 1, 0);
-						adv_remain -= 1.0;
-					}
 					justification_width += (gl.advance - old_adv);
 				}
 			}
@@ -3989,7 +3980,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 		int limit = 0;
 		while (ubrk_next(bi) != UBRK_DONE) {
 			if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
-				int i = _convert_pos(sd, ubrk_current(bi));
+				int i = _convert_pos(sd, ubrk_current(bi)) - 1;
 				jstops[i + sd->start] = false;
 				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
 				if (ks != -1) {
@@ -4003,11 +3994,10 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 
 	sd->sort_valid = false;
 	sd->glyphs_logical.clear();
-	int sd_size = sd->glyphs.size();
 
 	if (jstops.size() > 0) {
-		for (int i = 0; i < sd_size; i++) {
-			if (sd->glyphs[i].count > 0) {
+		for (int i = 0; i < sd->glyphs.size(); i++) {
+			if (sd->glyphs[i].count > 0 && (sd->glyphs[i].flags & GRAPHEME_IS_VIRTUAL) == 0) {
 				if (jstops.has(sd->glyphs[i].start)) {
 					char32_t c = sd->text[sd->glyphs[i].start - sd->start];
 					if (c == 0xfffc) {
