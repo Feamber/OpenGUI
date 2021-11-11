@@ -14,7 +14,6 @@
 #include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Style2/generated/border.h"
 #include "Yoga.h"
-#include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Context.h"

@@ -1,3 +1,4 @@
+
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/XmlParser/XmlParser.h"
 #include <map>
@@ -7,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include "OpenGUI/CSSParser/CSSParser.h"
+#include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/XmlParser/TemplateContainer.h"
 #include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Core/ostring/ostr.h"
