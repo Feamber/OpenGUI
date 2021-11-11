@@ -1,3 +1,4 @@
+#define DLL_IMPLEMENTATION
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Rule.h"
@@ -56,7 +57,7 @@ namespace OGUI
 {
 	float ApplyTimingFunction(AnimTimingFunction function, float percentage)
 	{
-		//todo
+		//TODO:
 		return percentage;
 	}
 	bool ShouldReverse(EAnimDirection direction, float iteration)
@@ -80,9 +81,8 @@ bool test(T a, T b)
 	return ((int)a & (int)b) == (int)b;
 }
 
-float OGUI::ComputedAnim::GetPercentage()
+bool OGUI::ComputedAnim::GetPercentage(float& percent)
 {
-    float percentage = 0.f;
     float iteration = 0.f;
 	float t = time - style.animationDelay;
 	iteration = t / style.animationDuration;
@@ -95,41 +95,39 @@ float OGUI::ComputedAnim::GetPercentage()
 			//apply first frame
 			bool reversed = style.animationDirection == EAnimDirection::Reverse || style.animationDirection == EAnimDirection::AlternateReverse;
 			if (reversed)
-				return 1.f;
+				percent = 1.f;
 			else
-				return 0.f;
+				percent = 0.f;
+            return true;
 		}
-	}
-    else 
-    {
-        if (iteration > int(iteration))
-            percentage = iteration - int(iteration);
         else
-            percentage = iteration;
-        percentage = reversed ? 1 - percentage : percentage;
-        if (style.animationIterationCount > 0)
+            return false;
+	}
+    else if (style.animationIterationCount > 0 && iteration >= style.animationIterationCount && !goingback)
+    {
+        if (test(style.animationFillMode, EAnimFillMode::Forwards))
         {
-            if (iteration >= style.animationIterationCount && !goingback)
-            {
-                if (test(style.animationFillMode, EAnimFillMode::Forwards))
-                {
-                    //apply last frame
-                    if (reversed)
-                        return 1.f;
-                    else
-                        return 0.f;
-                }
-            }
-            iteration = std::clamp(iteration, 0.f, style.animationIterationCount);
+            //apply last frame
+            if (reversed)
+                percent = 0.f;
+            else
+                percent = 1.f;
+            return true;
         }
+        else
+            return false;
     }
-    return percentage;
+    percent = iteration - int(iteration);
+    percent = reversed ? 1 - percent : percent;
+    return true;
 }
 
 void OGUI::ComputedAnim::Apply(ComputedStyle &s)
 {
     std::vector<AnimatedProperty> props;
-	float percentage = GetPercentage();
+	float percentage;
+    if(!GetPercentage(percentage))
+        return;
 
     for(auto& track : tracks)
     {
@@ -140,12 +138,23 @@ void OGUI::ComputedAnim::Apply(ComputedStyle &s)
         for(; i<count && track.frames[i].percentage < percentage; ++i);
         if(i == 0)
         {   
-            if(track.frames[i].percentage == 0)
+            //TODO: per frame timing function
+            auto alpha =  percentage / track.frames[i].percentage;
+            alpha = ApplyTimingFunction(style.animationTimingFunction, alpha);
+            props.push_back({track.id, track.frames[i].value, track.frames[i].value, alpha});
+        }
+        else if(i==count)
+        {
+            auto alpha = 0.f;
+            props.push_back({track.id, track.frames[i-1].value, track.frames[i-1].value, alpha});
         }
         else 
         {
-        
-            
+            auto alpha = (percentage - track.frames[i-1].percentage) / (track.frames[i].percentage - track.frames[i-1].percentage);
+            alpha = ApplyTimingFunction(style.animationTimingFunction, alpha);
+            props.push_back({track.id, track.frames[i-1].value, track.frames[i].value, alpha});
         }
     }
+
+    s.ApplyAnimatedProperties(sheet->storage, props);
 }

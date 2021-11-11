@@ -1,4 +1,4 @@
-#include "OpenGUI/Style/StyleSelector.h"
+#include "OpenGUI/Style2/Selector.h"
 #include "utils.h"
 #include <functional>
 #include <filesystem>
@@ -11,9 +11,9 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Style/VisualStyleSystem.h"
+#include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/VisualElement.h"
-#include "OpenGUI/CSSParser/CSSParser.h"
+#include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Xml/XmlAsset.h"
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
@@ -819,6 +819,7 @@ int main(int , char* []) {
 		return -1;
 	}
 
+    RegisterBuiltinStructs();
 	ostr::string dataBindTest = "test1";
 	ostr::string dataBindTest2 = "test2";
 	ostr::string dataBindTest3 = "test1";

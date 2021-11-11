@@ -131,7 +131,6 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	// Update Window
 	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
 	_deltaTime = dt;
-	animSystem.Update(root);
 	styleSystem.Update(root);
 	UpdateLayout(root);
 	TransformRec(root);

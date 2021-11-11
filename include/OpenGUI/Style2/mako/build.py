@@ -23,9 +23,7 @@ def gen_position():
     struct = StyleStruct("position", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("rotate",          "float",            "0"),
-    add_longhand("scale",           "Vector2f",         "{1, 1}"),
-    add_longhand("translate",       "Vector2f",         "{0, 0}")
+    add_longhand("transform",       "ComputedTransform",            "ComputedTransform::ident()"),
     add_longhand("flex-grow",       "float",            "0.f")
     add_longhand("flex-shrink",     "float",            "1.f")
     add_longhand("flex-basis",      "YGValue",          "YGValueAuto")
@@ -55,6 +53,10 @@ def gen_position():
 
     struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Core/Math.h")
+    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
+    struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
     header_template = os.path.join(BASE, "Struct.mako.h")
     header_file = render(header_template, struct = struct,  data = data)
     source_template = os.path.join(BASE, "Struct.mako.cpp")
@@ -71,12 +73,19 @@ def gen_border():
         add_longhand("border-{0}-width".format(side), "float", "0.f")
     for corner in PHYSICAL_CORNERS:
         add_longhand("border-{0}-radius".format(corner), "YGValue", "YGValueZero")
+    shorthand_template = os.path.join(BASE, "shorthands/border.mako.h")
+    shorthand_file = render(shorthand_template, struct = struct,  data = data)
+    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
+    struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
     struct.headers.append("yoga/Yoga.h")
     header_template = os.path.join(BASE, "Struct.mako.h")
     header_file = render(header_template, struct = struct,  data = data)
     source_template = os.path.join(BASE, "Struct.mako.cpp")
     source_file = render(source_template, struct = struct,  data = data)
     write(HEADER_OUT_DIR, "border.h", header_file)
+    write(SOURCE_OUT_DIR, "border_shorthands.h", shorthand_file)
     write(SOURCE_OUT_DIR, "border.cpp", source_file)
     
 def gen_text():
@@ -84,6 +93,8 @@ def gen_text():
     def add_longhand(*args, **kwargs):
         struct.longhands.append(Longhand(*args, **kwargs))
     add_longhand("font-size", "float", "20.f")
+    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     header_template = os.path.join(BASE, "Struct.mako.h")
     header_file = render(header_template, struct = struct,  data = data)
     source_template = os.path.join(BASE, "Struct.mako.cpp")
@@ -97,8 +108,10 @@ def gen_background():
     def add_longhand(*args, **kwargs):
         struct.longhands.append(Longhand(*args, **kwargs))
     add_longhand("background-color",	"Color4f",	    "Color4f(1.f,1.f,1.f,1.f)")	
-    add_longhand("background-image",	"std::string",	"{}")
+    add_longhand("background-image",	"std::string",	"{}", parser = "ParseUrl")
     struct.headers.append("OpenGUI/Core/Math.h")
+    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     header_template = os.path.join(BASE, "Struct.mako.h")
     header_file = render(header_template, struct = struct,  data = data)
     source_template = os.path.join(BASE, "Struct.mako.cpp")
@@ -111,14 +124,17 @@ def gen_animation():
     def add_longhand(*args, **kwargs):
         struct.longhands.append(Longhand(*args, **kwargs))
     add_longhand("animation-name", "std::string", "{}")
-    add_longhand("animation-duration", "float", "1.f")
-    add_longhand("animation-delay", "float", "0.f")
+    add_longhand("animation-duration", "float", "1.f", parser = "ParseTime")
+    add_longhand("animation-delay", "float", "0.f", parser = "ParseTime")
     add_longhand("animation-direction", "EAnimDirection", "EAnimDirection::Normal")
-    add_longhand("animation-iteration-count", "float", "1.f")
-    add_longhand("animation-play-state", "AnimTimingFunction", "{}")
+    add_longhand("animation-iteration-count", "float", "1.f", parser = "ParseIterationCount")
+    add_longhand("animation-play-state", "EAnimPlayState", "{}")
+    add_longhand("animation-timing-function", "AnimTimingFunction", "{}")
     add_longhand("animation-fill-mode", "EAnimFillMode", "EAnimFillMode::Forwards")
     add_longhand("animation-yield-mode", "EAnimYieldMode", "EAnimYieldMode::GoBack")
     add_longhand("animation-resume-mode", "EAnimResumeMode", "EAnimResumeMode::Resume")
+    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     struct.headers.append("OpenGUI/Style2/AnimTypes.h")
     header_template = os.path.join(BASE, "AnimStruct.mako.h")
     header_file = render(header_template, struct = struct,  data = data)

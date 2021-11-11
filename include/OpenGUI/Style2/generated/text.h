@@ -4,25 +4,33 @@
 #pragma once
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
+#include "OpenGUI/Style2/Lerp/Common.h"
+#include "OpenGUI/Style2/Parse/Common.h"
+#include "OpenGUI/Core/Utilities/string_hash.hpp"
+#include "OpenGUI/Style2/Parse/Math.h"
+#include "OpenGUI/Style2/Lerp/Math.h"
 namespace OGUI
 {
+    using namespace std::literals::string_view_literals;
     struct StyleText
     {
-        constexpr static size_t hash = 5501995993259654724U;
+        constexpr static std::string_view name = "text"sv;
+        constexpr static size_t hash = OGUI::hash(name);
+        constexpr static bool inherited = true;
         struct Id
         {
-            static constexpr size_t fontSize = 5562663152763689101U;
+            static constexpr size_t fontSize = OGUI::hash("font-size"sv);
         };
         float fontSize;
         void Initialize();
-        static const StyleText& GetDefault();
-        static const StyleText& Get(const ComputedStyle& style);
-        static StyleText* TryGet(const ComputedStyle& style);
-        static StyleText& GetOrAdd(ComputedStyle& style);
-        static void Dispose(ComputedStyle& style);
+        OGUI_API static const StyleText& GetDefault();
+        OGUI_API static const StyleText& Get(const ComputedStyle& style);
+        OGUI_API static StyleText* TryGet(const ComputedStyle& style);
+        OGUI_API static StyleText& GetOrAdd(ComputedStyle& style);
+        OGUI_API static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static void ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
-        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg);
+        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
     };
 }

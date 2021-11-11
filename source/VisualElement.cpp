@@ -1,5 +1,6 @@
-#include "Yoga.h"
+
 #define DLL_IMPLEMENTATION
+#include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Configure.h"
@@ -10,6 +11,10 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/AsyncRenderTexture.h"
 #include "OpenGUI/Style2/Properties.h"
+#include "OpenGUI/Style2/generated/position.h"
+#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Style2/generated/border.h"
+#include "Yoga.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Style2/generated/animation.h"
@@ -30,17 +35,18 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	Rect rect = GetRect();
 	//Rect rect_origin = GetRect();
 	//Rect rect = rectPixelPosToScreenPos(rect_origin, Ctx.resolution);
-
+	auto& bg = StyleBackground::Get(_style);
+	auto& bd = StyleBorder::Get(_style);
 	auto transform = _worldTransform;
 	//transform.M[3][0] /= Ctx.resolution.X;
 	//transform.M[3][1] /= Ctx.resolution.Y;
-	if (!_style.backgroundImage.empty())
+	if (!bg.backgroundImage.empty())
 	{
 		//start new load
-		if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != _style.backgroundImage)
+		if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != bg.backgroundImage)
 		{
-			backgroundImageResource = Ctx.Window.textureManager->RequireFromFileSystem(_style.backgroundImage);
-			backgroundImageUrl = _style.backgroundImage;
+			backgroundImageResource = Ctx.Window.textureManager->RequireFromFileSystem(bg.backgroundImage);
+			backgroundImageUrl = bg.backgroundImage;
 		}
 	}
 	else //release old texture
@@ -48,16 +54,16 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	
 	BeginDraw(Ctx.prims);
 	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-	RoundBoxParams params {rect, uv, _style.backgroundColor };
+	RoundBoxParams params {rect, uv, bg.backgroundColor };
 	TextureInterface* tex = nullptr;
 	if (backgroundImageResource && backgroundImageResource->valid())
 	{
 		tex = backgroundImageResource->Get();
 	}
-	params.radius[0] = _style.borderTopLeftRadius.value;// / Ctx.resolution.Y;
-	params.radius[1] = _style.borderTopRightRadius.value;// / Ctx.resolution.Y;
-	params.radius[2] = _style.borderBottomRightRadius.value;// / Ctx.resolution.Y;
-	params.radius[3] = _style.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
+	params.radius[0] = bd.borderTopLeftRadius.value;// / Ctx.resolution.Y;
+	params.radius[1] = bd.borderTopRightRadius.value;// / Ctx.resolution.Y;
+	params.radius[2] = bd.borderBottomRightRadius.value;// / Ctx.resolution.Y;
+	params.radius[3] = bd.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
 	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, params, 20);
 	EndDraw(Ctx.prims, transform, Ctx.resolution);
 }
@@ -106,7 +112,7 @@ void OGUI::VisualElement::GetChildren(std::vector<VisualElement *>& children)
 OGUI::VisualElement::VisualElement()
 {
 	CreateYogaNode();
-	_style = Style::GetInitialStyle();
+	_style = ComputedStyle::Create(nullptr);
 	RegisterFocusedEvent();
 }
 
@@ -213,6 +219,7 @@ void OGUI::VisualElement::CalculateLayout()
 void OGUI::VisualElement::UpdateWorldTransform()
 {
 	using namespace math;
+	auto& pos = StylePosition::Get(_style);
 	auto layout = GetLayout();
 	auto parent = GetHierachyParent();
 	if (parent)
@@ -220,13 +227,14 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto playout = parent->GetLayout();
 		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		offset.y = -offset.y;
-		_worldTransform = math::make_transform_2d(offset + _style.translation, _style.rotation, _style.scale);
+		
+		_worldTransform = multiply(pos.transform, ComputedTransform::translate(offset)).to_3D();
 		_worldTransform = multiply(_worldTransform, parent->_worldTransform);
 	}
 	else
 	{
 		auto offset = -(layout.max - layout.min) / 2;
-		_worldTransform = math::make_transform_2d(_style.translation, _style.rotation, _style.scale);
+		_worldTransform = pos.transform.to_3D();
 	}
 	_worldPosition = {_worldTransform.M[3][0], _worldTransform.M[3][1]};
 	_transformDirty = false;
@@ -284,9 +292,10 @@ void OGUI::VisualElement::SyncYogaStyle()
 		p->MarkLayoutDirty();
 		p = p->GetHierachyParent();
 	}
-	YGNodeStyleSetFlex(_ygnode, _style.flex);
-	YGNodeStyleSetFlexGrow(_ygnode, _style.flexGrow);
-	YGNodeStyleSetFlexShrink(_ygnode, _style.flexShrink);
+	auto& pos = StylePosition::Get(_style);
+	auto& bd = StyleBorder::Get(_style);
+	YGNodeStyleSetFlexGrow(_ygnode, pos.flexGrow);
+	YGNodeStyleSetFlexShrink(_ygnode, pos.flexShrink);
 #define SetYGEdge(function, edge, v) \
 	if (v.unit == YGUnitPercent) \
 		function##Percent(_ygnode, edge, v.value); \
@@ -312,39 +321,39 @@ void OGUI::VisualElement::SyncYogaStyle()
 	else \
 		function(_ygnode, v.value)
 
-	SetYGValueAuto(YGNodeStyleSetFlexBasis, _style.flexBasis);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeLeft, _style.left);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeTop, _style.top);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeRight, _style.right);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeBottom, _style.bottom);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeLeft, _style.marginLeft);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeTop, _style.marginTop);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeRight, _style.marginRight);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeBottom, _style.marginBottom);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeLeft, _style.paddingLeft);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeTop, _style.paddingTop);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeRight, _style.paddingRight);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeBottom, _style.paddingBottom);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, _style.borderLeftWidth);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeTop, _style.borderTopWidth);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeRight, _style.borderRightWidth);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, _style.borderBottomWidth);
+	SetYGValueAuto(YGNodeStyleSetFlexBasis, pos.flexBasis);
+	SetYGEdge(YGNodeStyleSetPosition, YGEdgeLeft, pos.left);
+	SetYGEdge(YGNodeStyleSetPosition, YGEdgeTop, pos.top);
+	SetYGEdge(YGNodeStyleSetPosition, YGEdgeRight, pos.right);
+	SetYGEdge(YGNodeStyleSetPosition, YGEdgeBottom, pos.bottom);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeLeft, pos.marginLeft);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeTop, pos.marginTop);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeRight, pos.marginRight);
+	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeBottom, pos.marginBottom);
+	SetYGEdge(YGNodeStyleSetPadding, YGEdgeLeft, pos.paddingLeft);
+	SetYGEdge(YGNodeStyleSetPadding, YGEdgeTop, pos.paddingTop);
+	SetYGEdge(YGNodeStyleSetPadding, YGEdgeRight, pos.paddingRight);
+	SetYGEdge(YGNodeStyleSetPadding, YGEdgeBottom, pos.paddingBottom);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, bd.borderLeftWidth);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeTop, bd.borderTopWidth);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeRight, bd.borderRightWidth);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, bd.borderBottomWidth);
 
-	SetYGValueAuto(YGNodeStyleSetWidth, _style.width);
-	SetYGValueAuto(YGNodeStyleSetHeight, _style.height);
-	YGNodeStyleSetPositionType(_ygnode, _style.position);
-	YGNodeStyleSetOverflow(_ygnode, _style.overflow);
-	YGNodeStyleSetAlignSelf(_ygnode, _style.alignSelf);
-	SetYGValue(YGNodeStyleSetMaxWidth, _style.maxWidth);
-	SetYGValue(YGNodeStyleSetMaxHeight, _style.maxHeight);
-	SetYGValue(YGNodeStyleSetMinWidth, _style.minWidth);
-	SetYGValue(YGNodeStyleSetMinHeight, _style.minHeight);
-	YGNodeStyleSetFlexDirection(_ygnode, _style.flexDirection);
-	YGNodeStyleSetAlignContent(_ygnode, _style.alignContent);
-	YGNodeStyleSetAlignItems(_ygnode, _style.alignItems);
-	YGNodeStyleSetJustifyContent(_ygnode, _style.justifyContent);
-	YGNodeStyleSetFlexWrap(_ygnode, _style.wrap);
-	YGNodeStyleSetDisplay(_ygnode, _style.display);
+	SetYGValueAuto(YGNodeStyleSetWidth, pos.width);
+	SetYGValueAuto(YGNodeStyleSetHeight, pos.height);
+	YGNodeStyleSetPositionType(_ygnode, pos.position);
+	YGNodeStyleSetOverflow(_ygnode, pos.overflow);
+	YGNodeStyleSetAlignSelf(_ygnode, pos.alignSelf);
+	SetYGValue(YGNodeStyleSetMaxWidth, pos.maxWidth);
+	SetYGValue(YGNodeStyleSetMaxHeight, pos.maxHeight);
+	SetYGValue(YGNodeStyleSetMinWidth, pos.minWidth);
+	SetYGValue(YGNodeStyleSetMinHeight, pos.minHeight);
+	YGNodeStyleSetFlexDirection(_ygnode, pos.flexDirection);
+	YGNodeStyleSetAlignContent(_ygnode, pos.alignContent);
+	YGNodeStyleSetAlignItems(_ygnode, pos.alignItems);
+	YGNodeStyleSetJustifyContent(_ygnode, pos.justifyContent);
+	YGNodeStyleSetFlexWrap(_ygnode, pos.flexWrap);
+	YGNodeStyleSetDisplay(_ygnode, pos.flexDisplay);
 }
 
 bool OGUI::VisualElement::ContainClass(std::string_view cls)

@@ -4,22 +4,33 @@
 #pragma once
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
+#include "OpenGUI/Style2/Lerp/Common.h"
+#include "OpenGUI/Style2/Parse/Common.h"
+#include "OpenGUI/Core/Utilities/string_hash.hpp"
+#include "OpenGUI/Style2/Parse/Math.h"
+#include "OpenGUI/Style2/Parse/Yoga.h"
+#include "OpenGUI/Style2/Lerp/Math.h"
+#include "OpenGUI/Style2/Lerp/Yoga.h"
 #include "yoga/Yoga.h"
 namespace OGUI
 {
+    using namespace std::literals::string_view_literals;
     struct StyleBorder
     {
-        constexpr static size_t hash = 12508467192783972168U;
+        constexpr static std::string_view name = "border"sv;
+        constexpr static size_t hash = OGUI::hash(name);
+        constexpr static bool inherited = false;
         struct Id
         {
-            static constexpr size_t borderLeftWidth = 13594963510097231429U;
-            static constexpr size_t borderTopWidth = 3380317615930084648U;
-            static constexpr size_t borderRightWidth = 10241464068792898920U;
-            static constexpr size_t borderBottomWidth = 9088704890885528915U;
-            static constexpr size_t borderTopLeftRadius = 8719785054287530236U;
-            static constexpr size_t borderTopRightRadius = 3276279325730873300U;
-            static constexpr size_t borderBottomRightRadius = 13919024445090857246U;
-            static constexpr size_t borderBottomLeftRadius = 10234394799855156163U;
+            static constexpr size_t borderLeftWidth = OGUI::hash("border-left-width"sv);
+            static constexpr size_t borderTopWidth = OGUI::hash("border-top-width"sv);
+            static constexpr size_t borderRightWidth = OGUI::hash("border-right-width"sv);
+            static constexpr size_t borderBottomWidth = OGUI::hash("border-bottom-width"sv);
+            static constexpr size_t borderTopLeftRadius = OGUI::hash("border-top-left-radius"sv);
+            static constexpr size_t borderTopRightRadius = OGUI::hash("border-top-right-radius"sv);
+            static constexpr size_t borderBottomRightRadius = OGUI::hash("border-bottom-right-radius"sv);
+            static constexpr size_t borderBottomLeftRadius = OGUI::hash("border-bottom-left-radius"sv);
+            static constexpr size_t borderRadius = OGUI::hash("border-radius"sv);
         };
         float borderLeftWidth;
         float borderTopWidth;
@@ -30,14 +41,14 @@ namespace OGUI
         YGValue borderBottomRightRadius;
         YGValue borderBottomLeftRadius;
         void Initialize();
-        static const StyleBorder& GetDefault();
-        static const StyleBorder& Get(const ComputedStyle& style);
-        static StyleBorder* TryGet(const ComputedStyle& style);
-        static StyleBorder& GetOrAdd(ComputedStyle& style);
-        static void Dispose(ComputedStyle& style);
+        OGUI_API static const StyleBorder& GetDefault();
+        OGUI_API static const StyleBorder& Get(const ComputedStyle& style);
+        OGUI_API static StyleBorder* TryGet(const ComputedStyle& style);
+        OGUI_API static StyleBorder& GetOrAdd(ComputedStyle& style);
+        OGUI_API static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static void ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
-        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg);
+        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
     };
 }

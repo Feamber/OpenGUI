@@ -1,12 +1,12 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
-
+#define DLL_IMPLEMENTATION
 #include <memory>
 #include "OpenGUI/Style2/generated/border.h"
-#include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "border_shorthands.h"
 
 const OGUI::StyleBorder& OGUI::StyleBorder::GetDefault()
 {
@@ -41,7 +41,7 @@ OGUI::StyleBorder* OGUI::StyleBorder::TryGet(const ComputedStyle& style)
     }
     else 
     {
-        return (OGUI::StyleBorder*)iter->second.get();
+        return (OGUI::StyleBorder*)iter->second.ptr.get();
     }
 }
 
@@ -52,12 +52,12 @@ OGUI::StyleBorder& OGUI::StyleBorder::GetOrAdd(ComputedStyle& style)
     {
         auto value = std::make_shared<OGUI::StyleBorder>();
         value->Initialize();
-        style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+        style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
         return *value.get();
     }
     else 
     {
-        return *(OGUI::StyleBorder*)iter->second.get();
+        return *(OGUI::StyleBorder*)iter->second.ptr.get();
     }
 
 }
@@ -81,15 +81,31 @@ void OGUI::StyleBorder::Initialize()
 
 void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
-    auto pst = parent ? TryGet(parent) : nullptr;
-    OGUI::StyleBorder* st = TryGet(style);
+    auto pst = parent ? TryGet(*parent) : nullptr;
+    OGUI::StyleBorder* st = nullptr;
+    auto iter = style.structs.find(hash);
+    bool owned = false;
+    if(iter != style.structs.end())
+    {
+        auto value = iter->second;
+        st = (OGUI::StyleBorder*)value.ptr.get();
+        owned = value.owned;
+    }
     auto fget = [&]
     {
         if(!st)
         {
             auto value = std::make_shared<OGUI::StyleBorder>();
             value->Initialize();
-            style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
+            st = value.get();
+        }
+        else if(!owned)
+        {
+            auto value = std::make_shared<OGUI::StyleBorder>(*st);
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
             st = value.get();
         }
         return st;
@@ -145,6 +161,7 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                     v->borderBottomLeftRadius = YGValueZero;
                     break;
                     }
+                default: break;
                 }
             }
             else
@@ -191,6 +208,7 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                     v->borderBottomLeftRadius = pst->borderBottomLeftRadius;
                     break;
                     }
+                default: break;
                 }
             }
         }
@@ -238,6 +256,7 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                     v->borderBottomLeftRadius = sheet.Get<YGValue>(prop.value);
                     break;
                     }
+                default: break;
             }
         }
     }
@@ -246,14 +265,31 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
 
 void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
 {
-    OGUI::StyleBorder* st = TryGet(style);
+    OGUI::StyleBorder* st = nullptr;
+    auto iter = style.structs.find(hash);
+    bool owned = false;
+    if(iter != style.structs.end())
+    {
+        auto value = iter->second;
+        st = (OGUI::StyleBorder*)value.ptr.get();
+        owned = value.owned;
+    }
     auto fget = [&]
     {
         if(!st)
         {
             auto value = std::make_shared<OGUI::StyleBorder>();
             value->Initialize();
-            style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
+            st = value.get();
+        }
+        else if(!owned)
+        {
+            auto value = std::make_shared<OGUI::StyleBorder>(*st);
+            style.structs.erase(iter);
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
             st = value.get();
         }
         return st;
@@ -265,57 +301,150 @@ void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const Styl
         {
             case Id::borderLeftWidth:{
                 auto v = fget();
-                v->borderLeftWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderLeftWidth = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderLeftWidth = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderLeftWidth = OGUI::Lerp(v->borderLeftWidth, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->borderLeftWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
             case Id::borderTopWidth:{
                 auto v = fget();
-                v->borderTopWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderTopWidth = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderTopWidth = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderTopWidth = OGUI::Lerp(v->borderTopWidth, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->borderTopWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
             case Id::borderRightWidth:{
                 auto v = fget();
-                v->borderRightWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderRightWidth = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderRightWidth = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderRightWidth = OGUI::Lerp(v->borderRightWidth, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->borderRightWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
             case Id::borderBottomWidth:{
                 auto v = fget();
-                v->borderBottomWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderBottomWidth = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderBottomWidth = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderBottomWidth = OGUI::Lerp(v->borderBottomWidth, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->borderBottomWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
             case Id::borderTopLeftRadius:{
                 auto v = fget();
-                v->borderTopLeftRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderTopLeftRadius = sheet.Get<YGValue>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderTopLeftRadius = sheet.Get<YGValue>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderTopLeftRadius = OGUI::Lerp(v->borderTopLeftRadius, sheet.Get<YGValue>(prop.to), prop.alpha);
+                else
+                    v->borderTopLeftRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
             case Id::borderTopRightRadius:{
                 auto v = fget();
-                v->borderTopRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderTopRightRadius = sheet.Get<YGValue>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderTopRightRadius = sheet.Get<YGValue>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderTopRightRadius = OGUI::Lerp(v->borderTopRightRadius, sheet.Get<YGValue>(prop.to), prop.alpha);
+                else
+                    v->borderTopRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
             case Id::borderBottomRightRadius:{
                 auto v = fget();
-                v->borderBottomRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderBottomRightRadius = sheet.Get<YGValue>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderBottomRightRadius = sheet.Get<YGValue>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderBottomRightRadius = OGUI::Lerp(v->borderBottomRightRadius, sheet.Get<YGValue>(prop.to), prop.alpha);
+                else
+                    v->borderBottomRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
             case Id::borderBottomLeftRadius:{
                 auto v = fget();
-                v->borderBottomLeftRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->borderBottomLeftRadius = sheet.Get<YGValue>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderBottomLeftRadius = sheet.Get<YGValue>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderBottomLeftRadius = OGUI::Lerp(v->borderBottomLeftRadius, sheet.Get<YGValue>(prop.to), prop.alpha);
+                else
+                    v->borderBottomLeftRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
+            default: break;
         }
     }
 }
 
-bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg)
+bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
     size_t hash = OGUI::hash(name);
 
     //shorthands
     switch(hash)
     {
+        case Id::borderRadius:
+            return Parse::ParseBorderRadius(sheet, name, value, rule, errorMsg);
+        default: break;
     }
-
+    StyleKeyword keyword = StyleKeyword::None;
+    ParseValue(value, keyword);
+    if(keyword != StyleKeyword::None)
+    {
+        switch(hash)
+        {
+            case Id::borderLeftWidth:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::borderTopWidth:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::borderRightWidth:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::borderBottomWidth:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::borderTopLeftRadius:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::borderTopRightRadius:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::borderBottomRightRadius:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::borderBottomLeftRadius:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            default: break;
+        }
+        return false;
+    }
     //longhands
     switch(hash)
     {
@@ -407,6 +536,7 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
+        default: break;
     }
     return false;
 }

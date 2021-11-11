@@ -2,7 +2,6 @@
 #include <string>
 #include <optional>
 #include "OpenGUI/Style2/Rule.h"
-#include "yoga/Yoga.h"
 #include "AnimTypes.h"
 #include "OpenGUI/Core/Math.h"
 
@@ -11,36 +10,8 @@ namespace OGUI
 	OGUI_API std::optional<StyleSheet> ParseCSS(std::string_view str);
 	OGUI_API std::optional<InlineStyle> ParseInlineStyle(std::string_view str);
 	OGUI_API std::optional<StyleSheet> ParseCSSFile(std::string path);
-    OGUI_API bool ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg, int animCount = -1);
-    using PropertyParseFunc = bool(*)(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg);
-
-    bool ParseValue(std::string_view str, std::string& value);
-	bool ParseValue(std::string_view str, float& value);
-	bool ParseValue(std::string_view str, int& value);
-	bool ParseValue(std::string_view str, YGValue& value);
-	bool ParseValue(std::string_view str, struct AnimTimingFunction& TimingFunction);
-	bool ParseColorName(std::string_view str, Color4f& value);
-	bool ParseTranslate(std::string_view str, Vector2f& t);
-	bool ParseValue(std::string_view str, Vector2f& t);
-	bool ParseValue(std::string_view str, Color4f& value);
-	bool ParseFourSides(std::string_view str, YGValue& left, YGValue& top, YGValue& right, YGValue& bottom);
-	bool ParseTime(std::string_view str, float& value);
-	bool ParseTime(std::string_view str, std::vector<float>& values);
-	bool ParseValue(std::string_view str, YGPositionType& value);
-	bool ParseValue(std::string_view str, YGOverflow& value);
-	bool ParseValue(std::string_view str, YGAlign& value);
-	bool ParseValue(std::string_view str, YGFlexDirection& value);
-	bool ParseValue(std::string_view str, YGJustify& value);
-	bool ParseValue(std::string_view str, YGWrap& value);
-	bool ParseValue(std::string_view str, YGDisplay& value);
-	bool ParseValue(std::string_view str, EAnimDirection& value);
-	bool ParseValue(std::string_view str, EAnimResumeMode& value);
-	bool ParseValue(std::string_view str, EAnimYieldMode& value);
-	bool ParseValue(std::string_view str, EAnimFillMode& value);
-	bool ParseUrl(std::string_view str, std::string& value);
-	bool ParseIterationCount(std::string_view str, float& value);
-	bool ParseValue(std::string_view str, StyleKeyword& value);
-	bool ParseTransform(std::string_view str, StyleSheetStorage& sheet, StyleRule& rule);
+    OGUI_API bool ParseProperty(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg, int animCount = -1);
+    using PropertyParseFunc = bool(*)(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
 }
 
 namespace std

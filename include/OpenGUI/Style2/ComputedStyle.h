@@ -1,8 +1,10 @@
 #pragma once
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include <gsl/span>
+#include <memory>
 #include <unordered_map>
 namespace OGUI
 {
@@ -11,11 +13,11 @@ namespace OGUI
     struct StyleDesc
     {
 		std::string_view name;
-		void (*Dispose)(ComputedStyle& style);
-        void (*Initialize)(ComputedStyle& style);
+		size_t hash;
+		bool inherited;
         void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
 		void (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
-		bool (*ParseProperties)(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg);
+		bool (*ParseProperties)(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
     };
 
 	struct StyleRegistry
@@ -25,12 +27,22 @@ namespace OGUI
 	};
 
 	void RegisterStyleStruct(const StyleDesc& Registry);
+	OGUI_API void RegisterBuiltinStructs();
 
 	struct ComputedStyle
 	{
-		std::unordered_map<size_t, std::shared_ptr<void*>> structs;
-		static const ComputedStyle& GetInitialStyle();
-		static ComputedStyle Create();
+		struct ComputedStruct
+		{
+			std::shared_ptr<void> ptr;
+			bool owned = true;
+		};
+		std::unordered_map<size_t, ComputedStruct> structs;
+		ComputedStyle() = default;
+		ComputedStyle(const ComputedStyle& other);
+		ComputedStyle(ComputedStyle&& other) = default;
+		ComputedStyle& operator=(const ComputedStyle& other);
+		ComputedStyle& operator=(ComputedStyle&& other) = default;
+		static ComputedStyle Create(const ComputedStyle* parent);
 		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
         void ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
 	};

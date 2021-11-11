@@ -1,7 +1,7 @@
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Xml/XsdGen/OGUI.h"
-#include "OpenGUI/CSSParser/CSSParser.h"
+#include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Xml/XmlFactoryTool.h"

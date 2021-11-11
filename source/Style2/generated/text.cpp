@@ -1,9 +1,8 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
-
+#define DLL_IMPLEMENTATION
 #include <memory>
 #include "OpenGUI/Style2/generated/text.h"
-#include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -41,7 +40,7 @@ OGUI::StyleText* OGUI::StyleText::TryGet(const ComputedStyle& style)
     }
     else 
     {
-        return (OGUI::StyleText*)iter->second.get();
+        return (OGUI::StyleText*)iter->second.ptr.get();
     }
 }
 
@@ -52,12 +51,12 @@ OGUI::StyleText& OGUI::StyleText::GetOrAdd(ComputedStyle& style)
     {
         auto value = std::make_shared<OGUI::StyleText>();
         value->Initialize();
-        style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+        style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
         return *value.get();
     }
     else 
     {
-        return *(OGUI::StyleText*)iter->second.get();
+        return *(OGUI::StyleText*)iter->second.ptr.get();
     }
 
 }
@@ -74,15 +73,31 @@ void OGUI::StyleText::Initialize()
 
 void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
-    auto pst = parent ? TryGet(parent) : nullptr;
-    OGUI::StyleText* st = TryGet(style);
+    auto pst = parent ? TryGet(*parent) : nullptr;
+    OGUI::StyleText* st = nullptr;
+    auto iter = style.structs.find(hash);
+    bool owned = false;
+    if(iter != style.structs.end())
+    {
+        auto value = iter->second;
+        st = (OGUI::StyleText*)value.ptr.get();
+        owned = value.owned;
+    }
     auto fget = [&]
     {
         if(!st)
         {
             auto value = std::make_shared<OGUI::StyleText>();
             value->Initialize();
-            style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
+            st = value.get();
+        }
+        else if(!owned)
+        {
+            auto value = std::make_shared<OGUI::StyleText>(*st);
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
             st = value.get();
         }
         return st;
@@ -102,6 +117,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v->fontSize = 20.f;
                     break;
                     }
+                default: break;
                 }
             }
             else
@@ -113,6 +129,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v->fontSize = pst->fontSize;
                     break;
                     }
+                default: break;
                 }
             }
         }
@@ -125,6 +142,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v->fontSize = sheet.Get<float>(prop.value);
                     break;
                     }
+                default: break;
             }
         }
     }
@@ -133,14 +151,31 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
 
 void OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
 {
-    OGUI::StyleText* st = TryGet(style);
+    OGUI::StyleText* st = nullptr;
+    auto iter = style.structs.find(hash);
+    bool owned = false;
+    if(iter != style.structs.end())
+    {
+        auto value = iter->second;
+        st = (OGUI::StyleText*)value.ptr.get();
+        owned = value.owned;
+    }
     auto fget = [&]
     {
         if(!st)
         {
             auto value = std::make_shared<OGUI::StyleText>();
             value->Initialize();
-            style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
+            st = value.get();
+        }
+        else if(!owned)
+        {
+            auto value = std::make_shared<OGUI::StyleText>(*st);
+            style.structs.erase(iter);
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
             st = value.get();
         }
         return st;
@@ -152,22 +187,39 @@ void OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& style, const StyleS
         {
             case Id::fontSize:{
                 auto v = fget();
-                v->fontSize = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->fontSize = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->fontSize = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->fontSize = OGUI::Lerp(v->fontSize, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->fontSize = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
+            default: break;
         }
     }
 }
 
-bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg)
+bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
     size_t hash = OGUI::hash(name);
 
     //shorthands
-    switch(hash)
+    StyleKeyword keyword = StyleKeyword::None;
+    ParseValue(value, keyword);
+    if(keyword != StyleKeyword::None)
     {
+        switch(hash)
+        {
+            case Id::fontSize:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            default: break;
+        }
+        return false;
     }
-
     //longhands
     switch(hash)
     {
@@ -182,6 +234,7 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
+        default: break;
     }
     return false;
 }

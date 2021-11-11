@@ -8,6 +8,7 @@
 #include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include "OpenGUI/Core/olog.h"
+#include "OpenGUI/Context.h"
 
 void OGUI::VisualStyleSystem::InvalidateCache()
 {
@@ -230,7 +231,7 @@ namespace OGUI
 
 	size_t append_hash(size_t value, size_t append)
 	{
-		return (value * _FNV_prime) ^ append;
+		return (value * FNV_prime) ^ append;
 	}
 
 	template<class T>
@@ -241,7 +242,7 @@ namespace OGUI
 
 	size_t hash(const StyleRule& rule)
 	{
-		size_t value = _FNV_offset_basis;
+		size_t value = FNV_offset_basis;
 		for (auto& prop : rule.properties)
 			value = append_hash(value, (int)prop.id + prop.value.index);
 		//for (auto& prop : rule.customProperties)
@@ -313,12 +314,12 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 
 void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors)
 {
-	ComputedStyle resolvedStyle = ComputedStyle::Create();
+	auto parent = element->_logical_parent ? &element->_logical_parent->_style : nullptr;
+	ComputedStyle resolvedStyle = ComputedStyle::Create(parent);
 	std::vector<AnimStyle> anims;
 	for (auto& record : matchedSelectors)
 	{
 		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-		auto parent = element->_logical_parent ? &element->_logical_parent->_style : nullptr;
 		resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, parent);
 		for(auto& properties : rule.animation)
 		{
@@ -338,12 +339,14 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 				style->Initialize();
 				style->animationName = properties.name;
 			}
-			style->ApplyProperties(record.sheet->storage, rule.properties);
+			style->ApplyProperties(record.sheet->storage, properties.properties);
 		}
 	}
 	{
-		element->_preAnimatedStyle = resolvedStyle;
-		element->_style = resolvedStyle;
+		element->_preAnimatedStyle = std::move(resolvedStyle);
+		element->_style = element->_preAnimatedStyle;
+		element->SyncYogaStyle();
+		element->_transformDirty = true;
 	}
 	{
 		std::vector<bool> dynbitset;
@@ -394,12 +397,10 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 					continue;
 			}
 			if(curr != valid)
-			{
 				*curr = std::move(*valid);
-				++curr;
-			}
+			++curr;
 		}
-		element->_anims.resize(curr-element->_anims.begin());
+		element->_anims.resize(curr - element->_anims.begin());
 
 		for (int i = 0; i < dynbitset.size(); ++i)
 		{
@@ -417,9 +418,46 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 {
 	bool animationEvaling = false;
+	auto& ctx = Context::Get();
+	auto curr = element->_anims.begin();
+	auto valid = curr;
+	for(;valid != element->_anims.end(); ++valid)
+	{
+		auto& anim = *valid;
+		float maxTime = anim.style.animationDuration * anim.style.animationIterationCount + anim.style.animationDelay;
+		bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
+		bool infinite = anim.style.animationIterationCount <= 0.f;
+		if (paused || (!infinite && anim.time >= maxTime))
+			anim.evaluating = false;
+		else
+			anim.evaluating = true;
+		if (!paused || anim.yielding)
+		{
+			if (anim.goingback)
+				anim.time = std::max(anim.style.animationDelay, anim.time - ctx._deltaTime);
+			else if (anim.style.animationIterationCount > 0.f)
+				anim.time = std::min(ctx._deltaTime + anim.time, maxTime);
+			else
+				anim.time += ctx._deltaTime;
+		}
+		if (anim.yielding)
+		{
+			bool shouldStop = false;
+			if (!anim.goingback && anim.style.animationIterationCount > 0 && anim.time >= maxTime)
+				shouldStop = true;
+			else if(anim.goingback && anim.time <= anim.style.animationDelay)
+				shouldStop = true;
+			if (shouldStop)
+				continue;
+		}
+		if(curr != valid)
+			*curr = std::move(*valid);
+		++curr;
+	}
+	element->_anims.resize(curr - element->_anims.begin());
 	for (auto& ctx : element->_anims)
 		animationEvaling |= ctx.evaluating;
-	if (!animationEvaling && element->_prevEvaluating)
+	if (element->_anims.empty() && element->_prevEvaluating)
 	{
 		element->_style = element->_preAnimatedStyle;
 		element->SyncYogaStyle();
@@ -428,8 +466,8 @@ void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	if (animationEvaling)
 	{
 		element->_style = element->_preAnimatedStyle;
-		for (auto&& [i, anim] : ipair(element->_animStyles))
-			element->_style.ApplyAnimation(anim, element->_animContext[i]);
+		for (auto& anim : element->_anims)
+			anim.Apply(element->_style);
 		//TODO: check dirty
 		element->SyncYogaStyle();
 		element->_transformDirty = true;

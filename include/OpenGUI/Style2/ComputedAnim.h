@@ -15,6 +15,7 @@ namespace OGUI
         StyleSheet* sheet;
         struct Frame
         {
+            //TODO: animation timing function
             float percentage;
 		    VariantHandle value;
         };
@@ -26,7 +27,7 @@ namespace OGUI
         std::vector<Track> tracks;
 
         bool Init(const gsl::span<StyleSheet*>& sheets);
-        float GetPercentage();
+        bool GetPercentage(float& percent);
         void Apply(ComputedStyle& style);
     };
 }

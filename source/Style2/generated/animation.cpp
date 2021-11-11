@@ -1,6 +1,6 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
-
+#define DLL_IMPLEMENTATION
 #include <memory>
 #include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
@@ -15,6 +15,7 @@ void OGUI::AnimStyle::Initialize()
     animationDirection = EAnimDirection::Normal;
     animationIterationCount = 1.f;
     animationPlayState = {};
+    animationTimingFunction = {};
     animationFillMode = EAnimFillMode::Forwards;
     animationYieldMode = EAnimYieldMode::GoBack;
     animationResumeMode = EAnimResumeMode::Resume;
@@ -46,6 +47,9 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
                 case Id::animationPlayState:
                     animationPlayState = {};
                     break;
+                case Id::animationTimingFunction:
+                    animationTimingFunction = {};
+                    break;
                 case Id::animationFillMode:
                     animationFillMode = EAnimFillMode::Forwards;
                     break;
@@ -55,6 +59,7 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
                 case Id::animationResumeMode:
                     animationResumeMode = EAnimResumeMode::Resume;
                     break;
+                default: break;
             }
         }
         else
@@ -77,7 +82,10 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
                     animationIterationCount = sheet.Get<float>(prop.value);
                     break;
                 case Id::animationPlayState:
-                    animationPlayState = sheet.Get<AnimTimingFunction>(prop.value);
+                    animationPlayState = sheet.Get<EAnimPlayState>(prop.value);
+                    break;
+                case Id::animationTimingFunction:
+                    animationTimingFunction = sheet.Get<AnimTimingFunction>(prop.value);
                     break;
                 case Id::animationFillMode:
                     animationFillMode = sheet.Get<EAnimFillMode>(prop.value);
@@ -88,32 +96,26 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
                 case Id::animationResumeMode:
                     animationResumeMode = sheet.Get<EAnimResumeMode>(prop.value);
                     break;
+                default: break;
             }
         }
     }
 }
 
 
-bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg, int animCount)
+bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg, int animCount)
 {
     size_t hash = OGUI::hash(name);
 
     //shorthands
-    switch(hash)
-    {
-    }
     std::vector<std::string_view> tokens;
     std::split(value, tokens, ", ");
     //longhands
     switch(hash)
     {
         case Id::animationName:{
-            if(tokens.size() > animCount)
-            {
-                errorMsg = "failed to parse animation-name value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 std::string v;
                 if(ParseValue(tokens[i], v))
@@ -127,16 +129,16 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             return true;
         }
         case Id::animationDuration:{
-            if(tokens.size() > animCount)
-            {
-                errorMsg = "failed to parse animation-duration value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 float v;
-                if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                if(ParseTime(tokens[i], v))
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-duration value!";
@@ -146,16 +148,16 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             return true;
         }
         case Id::animationDelay:{
-            if(tokens.size() > animCount)
-            {
-                errorMsg = "failed to parse animation-delay value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 float v;
-                if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                if(ParseTime(tokens[i], v))
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-delay value!";
@@ -165,16 +167,16 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             return true;
         }
         case Id::animationDirection:{
-            if(tokens.size() > animCount)
-            {
-                errorMsg = "failed to parse animation-direction value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 EAnimDirection v;
                 if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-direction value!";
@@ -184,16 +186,16 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             return true;
         }
         case Id::animationIterationCount:{
-            if(tokens.size() > animCount)
-            {
-                errorMsg = "failed to parse animation-iteration-count value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 float v;
-                if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                if(ParseIterationCount(tokens[i], v))
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-iteration-count value!";
@@ -203,16 +205,16 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             return true;
         }
         case Id::animationPlayState:{
-            if(tokens.size() > animCount)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
-                errorMsg = "failed to parse animation-play-state value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
-            {
-                AnimTimingFunction v;
+                EAnimPlayState v;
                 if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-play-state value!";
@@ -221,17 +223,36 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationFillMode:{
-            if(tokens.size() > animCount)
+        case Id::animationTimingFunction:{
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
-                errorMsg = "failed to parse animation-fill-mode value!(count dismatch)";
-                return false;
+                AnimTimingFunction v;
+                if(ParseValue(tokens[i], v))
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
+                else
+                {
+                    errorMsg = "failed to parse animation-timing-function value!";
+                    return false;
+                }
             }
-            for(int i=0; i<tokens.size(); ++i)
+            return true;
+        }
+        case Id::animationFillMode:{
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 EAnimFillMode v;
                 if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-fill-mode value!";
@@ -241,16 +262,16 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             return true;
         }
         case Id::animationYieldMode:{
-            if(tokens.size() > animCount)
-            {
-                errorMsg = "failed to parse animation-yield-mode value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 EAnimYieldMode v;
                 if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-yield-mode value!";
@@ -260,16 +281,16 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             return true;
         }
         case Id::animationResumeMode:{
-            if(tokens.size() > animCount)
-            {
-                errorMsg = "failed to parse animation-resume-mode value!(count dismatch)";
-                return false;
-            }
-            for(int i=0; i<tokens.size(); ++i)
+            int count = std::min((int)tokens.size(), animCount);
+            for(int i=0; i<count; ++i)
             {
                 EAnimResumeMode v;
                 if(ParseValue(tokens[i], v))
-                    rule.animation[i].properties.push_back({hash, sheet.Push(v), i});
+                {
+                    auto handle = sheet.Push(v);
+                    for(int j=i; j<animCount; j+=count)
+                        rule.animation[j].properties.push_back({hash, handle});
+                }
                 else
                 {
                     errorMsg = "failed to parse animation-resume-mode value!";
@@ -278,6 +299,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
+        default: break;
     }
     return false;
 }

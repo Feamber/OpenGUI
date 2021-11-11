@@ -106,7 +106,6 @@ class Property(object):
         flags
     ):
         self.name = name
-        self.hash = chash(name)
         self.spec = spec
         self.ident = to_small_camel_case(name)
         self.rule_types_allowed = rule_values_from_arg(rule_types_allowed)
@@ -124,15 +123,6 @@ def arg_to_bool(arg):
 
 import ctypes
 
-_FNV_offset_basis = ctypes.c_size_t(14695981039346656037)
-_FNV_prime        = ctypes.c_size_t(1099511628211)
-def chash(arg):
-    value = _FNV_offset_basis
-    for element in arg:
-        value.value^=ord(element)
-        value.value*=_FNV_prime.value
-    return value.value
-
 class Longhand(Property):
     def __init__(
         self,
@@ -147,6 +137,7 @@ class Longhand(Property):
         flags=None,
         vector=False,
         restyle_damage="repaint",
+        parser = "ParseValue"
     ):
         Property.__init__(
             self,
@@ -163,7 +154,7 @@ class Longhand(Property):
         self.logical = arg_to_bool(logical)
         self.is_vector = arg_to_bool(vector)
         self.restyle_damage = restyle_damage
-        self.parser = "ParseValue"
+        self.parser = parser
 
 class Shorthand(Property):
     def __init__(
@@ -188,7 +179,6 @@ class Shorthand(Property):
 class StyleStruct(object):
     def __init__(self, name, inherited):
         self.name = name
-        self.hash = chash(name)
         self.name_lower = to_snake_case(name)
         self.ident = to_camel_case(self.name_lower)
         self.longhands = []

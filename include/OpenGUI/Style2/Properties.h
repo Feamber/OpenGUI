@@ -24,19 +24,19 @@ namespace OGUI
 		bool dynamic : 1;
 		VariantHandle() = default;
 		VariantHandle(int index) : index(index), dynamic(false) {}
+		bool operator==(const VariantHandle& other) { return index == other.index && dynamic == other.dynamic; }
 	};
 
     struct StyleProperty
 	{
 		size_t id;
 		VariantHandle value;
-		bool keyword : 1;
-		int arrayIndex : 31;
+		bool keyword;
 		StyleProperty() = default;
-		StyleProperty(size_t id, VariantHandle handle, int arrayIndex = -1)
-			: id(id), value(handle), keyword(false), arrayIndex(arrayIndex) {}
-		StyleProperty(size_t id, int keyword, int arrayIndex = -1)
-			: id(id), value{keyword}, keyword(true), arrayIndex(arrayIndex)
+		StyleProperty(size_t id, VariantHandle handle)
+			: id(id), value(handle), keyword(false) {}
+		StyleProperty(size_t id, int keyword)
+			: id(id), value{keyword}, keyword(true)
 		{}
 	};
 

@@ -139,7 +139,6 @@ namespace OGUI
 #pragma region Animation
 	public:
 		std::vector<ComputedAnim> _anims;
-		std::vector<AnimRunContext> _animContexts;
 		bool _prevEvaluating = false;
 #pragma endregion
 

@@ -1,9 +1,8 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
-
+#define DLL_IMPLEMENTATION
 #include <memory>
 #include "OpenGUI/Style2/generated/background.h"
-#include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -41,7 +40,7 @@ OGUI::StyleBackground* OGUI::StyleBackground::TryGet(const ComputedStyle& style)
     }
     else 
     {
-        return (OGUI::StyleBackground*)iter->second.get();
+        return (OGUI::StyleBackground*)iter->second.ptr.get();
     }
 }
 
@@ -52,12 +51,12 @@ OGUI::StyleBackground& OGUI::StyleBackground::GetOrAdd(ComputedStyle& style)
     {
         auto value = std::make_shared<OGUI::StyleBackground>();
         value->Initialize();
-        style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+        style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
         return *value.get();
     }
     else 
     {
-        return *(OGUI::StyleBackground*)iter->second.get();
+        return *(OGUI::StyleBackground*)iter->second.ptr.get();
     }
 
 }
@@ -75,15 +74,31 @@ void OGUI::StyleBackground::Initialize()
 
 void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
-    auto pst = parent ? TryGet(parent) : nullptr;
-    OGUI::StyleBackground* st = TryGet(style);
+    auto pst = parent ? TryGet(*parent) : nullptr;
+    OGUI::StyleBackground* st = nullptr;
+    auto iter = style.structs.find(hash);
+    bool owned = false;
+    if(iter != style.structs.end())
+    {
+        auto value = iter->second;
+        st = (OGUI::StyleBackground*)value.ptr.get();
+        owned = value.owned;
+    }
     auto fget = [&]
     {
         if(!st)
         {
             auto value = std::make_shared<OGUI::StyleBackground>();
             value->Initialize();
-            style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
+            st = value.get();
+        }
+        else if(!owned)
+        {
+            auto value = std::make_shared<OGUI::StyleBackground>(*st);
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
             st = value.get();
         }
         return st;
@@ -109,6 +124,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     v->backgroundImage = {};
                     break;
                     }
+                default: break;
                 }
             }
             else
@@ -125,6 +141,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     v->backgroundImage = pst->backgroundImage;
                     break;
                     }
+                default: break;
                 }
             }
         }
@@ -142,6 +159,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     v->backgroundImage = sheet.Get<std::string>(prop.value);
                     break;
                     }
+                default: break;
             }
         }
     }
@@ -150,14 +168,31 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
 
 void OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
 {
-    OGUI::StyleBackground* st = TryGet(style);
+    OGUI::StyleBackground* st = nullptr;
+    auto iter = style.structs.find(hash);
+    bool owned = false;
+    if(iter != style.structs.end())
+    {
+        auto value = iter->second;
+        st = (OGUI::StyleBackground*)value.ptr.get();
+        owned = value.owned;
+    }
     auto fget = [&]
     {
         if(!st)
         {
             auto value = std::make_shared<OGUI::StyleBackground>();
             value->Initialize();
-            style.structs.insert({hash, std::static_pointer_cast<void*>(value)});
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
+            st = value.get();
+        }
+        else if(!owned)
+        {
+            auto value = std::make_shared<OGUI::StyleBackground>(*st);
+            style.structs.erase(iter);
+            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            owned = true;
             st = value.get();
         }
         return st;
@@ -169,27 +204,54 @@ void OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const 
         {
             case Id::backgroundColor:{
                 auto v = fget();
-                v->backgroundColor = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->backgroundColor = sheet.Get<Color4f>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->backgroundColor = sheet.Get<Color4f>(prop.to);
+                else if(prop.from == prop.to)
+                    v->backgroundColor = OGUI::Lerp(v->backgroundColor, sheet.Get<Color4f>(prop.to), prop.alpha);
+                else
+                    v->backgroundColor = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
                 break;
                 }
             case Id::backgroundImage:{
                 auto v = fget();
-                v->backgroundImage = OGUI::Lerp(sheet.Get<std::string>(prop.from), sheet.Get<std::string>(prop.to), prop.alpha);
+                if(prop.alpha == 0.f)
+                    v->backgroundImage = sheet.Get<std::string>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->backgroundImage = sheet.Get<std::string>(prop.to);
+                else if(prop.from == prop.to)
+                    v->backgroundImage = OGUI::Lerp(v->backgroundImage, sheet.Get<std::string>(prop.to), prop.alpha);
+                else
+                    v->backgroundImage = OGUI::Lerp(sheet.Get<std::string>(prop.from), sheet.Get<std::string>(prop.to), prop.alpha);
                 break;
                 }
+            default: break;
         }
     }
 }
 
-bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, const char*& errorMsg)
+bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
     size_t hash = OGUI::hash(name);
 
     //shorthands
-    switch(hash)
+    StyleKeyword keyword = StyleKeyword::None;
+    ParseValue(value, keyword);
+    if(keyword != StyleKeyword::None)
     {
+        switch(hash)
+        {
+            case Id::backgroundColor:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            case Id::backgroundImage:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
+            default: break;
+        }
+        return false;
     }
-
     //longhands
     switch(hash)
     {
@@ -206,7 +268,7 @@ bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::strin
         }
         case Id::backgroundImage:{
             std::string v;
-            if(ParseValue(value, v))
+            if(ParseUrl(value, v))
                 rule.properties.push_back({hash, sheet.Push(v)});
             else
             {
@@ -215,6 +277,7 @@ bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::strin
             }
             return true;
         }
+        default: break;
     }
     return false;
 }
