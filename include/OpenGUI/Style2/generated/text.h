@@ -20,8 +20,10 @@ namespace OGUI
         struct Id
         {
             static constexpr size_t fontSize = OGUI::hash("font-size"sv);
+            static constexpr size_t color = OGUI::hash("color"sv);
         };
         float fontSize;
+        Color4f color;
         void Initialize();
         OGUI_API static const StyleText& GetDefault();
         OGUI_API static const StyleText& Get(const ComputedStyle& style);

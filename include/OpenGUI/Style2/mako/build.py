@@ -23,7 +23,8 @@ def gen_position():
     struct = StyleStruct("position", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("transform",       "ComputedTransform",            "ComputedTransform::ident()"),
+    #add_longhand("transform",       "TransformFunction","{}"      ,vector = True)
+    add_longhand("transform",       "ComputedTransform","ComputedTransform::ident()")
     add_longhand("flex-grow",       "float",            "0.f")
     add_longhand("flex-shrink",     "float",            "1.f")
     add_longhand("flex-basis",      "YGValue",          "YGValueAuto")
@@ -93,6 +94,7 @@ def gen_text():
     def add_longhand(*args, **kwargs):
         struct.longhands.append(Longhand(*args, **kwargs))
     add_longhand("font-size", "float", "20.f")
+    add_longhand("color", "Color4f", "Color4f(0,0,0,1)")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     header_template = os.path.join(BASE, "Struct.mako.h")
@@ -184,7 +186,7 @@ def write(directory, filename, content):
     if not os.path.exists(directory):
         os.makedirs(directory)
     full_path = os.path.join(directory, filename)
-    open(full_path, "w", encoding="utf-8").write(content)
+    open(full_path, "wb").write(content.encode("utf-8"))
 
     python_addr = RE_PYTHON_ADDR.search(content)
     if python_addr:

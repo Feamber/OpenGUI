@@ -69,6 +69,7 @@ void OGUI::StyleText::Dispose(ComputedStyle& style)
 void OGUI::StyleText::Initialize()
 {
     fontSize = 20.f;
+    color = Color4f(0,0,0,1);
 }
 
 void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -117,6 +118,11 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v->fontSize = 20.f;
                     break;
                     }
+                case Id::color:{
+                    auto v = fget();
+                    v->color = Color4f(0,0,0,1);
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -127,6 +133,11 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Id::fontSize:{
                     auto v = fget();
                     v->fontSize = pst->fontSize;
+                    break;
+                    }
+                case Id::color:{
+                    auto v = fget();
+                    v->color = pst->color;
                     break;
                     }
                 default: break;
@@ -140,6 +151,11 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Id::fontSize:{
                     auto v = fget();
                     v->fontSize = sheet.Get<float>(prop.value);
+                    break;
+                    }
+                case Id::color:{
+                    auto v = fget();
+                    v->color = sheet.Get<Color4f>(prop.value);
                     break;
                     }
                 default: break;
@@ -197,6 +213,18 @@ void OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& style, const StyleS
                     v->fontSize = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
+            case Id::color:{
+                auto v = fget();
+                if(prop.alpha == 0.f)
+                    v->color = sheet.Get<Color4f>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->color = sheet.Get<Color4f>(prop.to);
+                else if(prop.from == prop.to)
+                    v->color = OGUI::Lerp(v->color, sheet.Get<Color4f>(prop.to), prop.alpha);
+                else
+                    v->color = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
+                break;
+                }
             default: break;
         }
     }
@@ -216,6 +244,9 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
             case Id::fontSize:
                 rule.properties.push_back({hash,(int)keyword});
                 return true;
+            case Id::color:
+                rule.properties.push_back({hash,(int)keyword});
+                return true;
             default: break;
         }
         return false;
@@ -230,6 +261,17 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
             else
             {
                 errorMsg = "failed to parse font-size value!";
+                return false;
+            }
+            return true;
+        }
+        case Id::color:{
+            Color4f v;
+            if(ParseValue(value, v))
+                rule.properties.push_back({hash, sheet.Push(v)});
+            else
+            {
+                errorMsg = "failed to parse color value!";
                 return false;
             }
             return true;

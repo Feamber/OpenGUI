@@ -1,10 +1,10 @@
-#pragma once
-#include "yoga/Yoga.h"
-#include "OpenGUI/Style2/Rule.h"
-#include "OpenGUI/Style2/Parse.h"
-#include "OpenGUI/Style2/generated/position.h"
-
-
+#pragma once
+#include "yoga/Yoga.h"
+#include "OpenGUI/Style2/Rule.h"
+#include "OpenGUI/Style2/Parse.h"
+#include "OpenGUI/Style2/generated/position.h"
+
+
 
     
     

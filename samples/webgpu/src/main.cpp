@@ -443,7 +443,7 @@ int main(int , char* []) {
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 	}
 
-	SampleWindow* win1 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	SampleWindow* win1 = nullptr;//new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 	SampleWindow* win2 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop

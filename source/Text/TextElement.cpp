@@ -183,7 +183,8 @@ namespace OGUI
             {
                 [&](ostr::string& text) 
                 { 
-                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), txt.fontSize); 
+                    godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
+                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), txt.fontSize, color); 
                 },
                 [&](VisualElement*& child) 
                 { 
