@@ -441,10 +441,9 @@ int main(int , char* []) {
 		ctx.renderImpl = std::make_unique<OGUIWebGPURenderer>();
 		ctx.textureManager = std::make_unique<RenderTextureManager>();
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-		ctx.logImpl = std::make_unique<SpdlogLogger>();
 	}
 
-	SampleWindow* win1 = nullptr;//new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
+	SampleWindow* win1 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
 	SampleWindow* win2 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
 
 	// main loop

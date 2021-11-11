@@ -69,7 +69,7 @@
     animation-delay: 0s, -0.5s;
     animation-yield-mode:stop, goback;
     animation-resume-mode:reset;
-    animation-fill-mode: none;
+    animation-fill-mode: forwards, none;
 }
 
 .Test.Bigger{

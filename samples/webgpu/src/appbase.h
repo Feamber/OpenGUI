@@ -1,5 +1,5 @@
 #pragma once
-#include "OpenGUI/Style/StyleSelector.h"
+#include "OpenGUI/Style2/Selector.h"
 #include <functional>
 #include <filesystem>
 #include <memory>
@@ -7,12 +7,13 @@
 #include <string.h>
 #include <unordered_map>
 #include <vector>
+#include <iostream>
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Style/VisualStyleSystem.h"
+#include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/VisualElement.h"
-#include "OpenGUI/CSSParser/CSSParser.h"
-#include "OpenGUI/Xml/XmlAsset.h"
+#include "OpenGUI/Style2/Parse.h"
+#include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/VisualWindow.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include "OpenGUI/Core/open_string.h"
@@ -160,12 +161,14 @@ private:
 	{
 		using namespace OGUI;
 		auto& ctx = Context::Get();
-		auto asset = XmlAsset::LoadXmlFile(xmlFile);
-		auto ve = asset->Instantiate();
+		ParseXmlState xmlState;
+		auto asset = LoadXmlFile(xmlFile, xmlState);
+		InstantiateXmlState InstantState;
+		auto ve = asset->Instantiate(InstantState);
 
 		mainXmlFile = xmlFile;
-		allCssFile = asset->all_css_file;
-		allXmlFile = asset->all_xml_file;
+		allCssFile = xmlState.allCssFile;
+		allXmlFile = xmlState.allXmlFile;
 
 		for(auto child : cWnd->GetWindowUI()->_children)
 		{
@@ -192,11 +195,13 @@ private:
 					if (find(allXmlFile.begin(), allXmlFile.end(), path) != allXmlFile.end())
 					{
 						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-						auto asset = XmlAsset::LoadXmlFile(mainXmlFile);
+						ParseXmlState xmlState;
+						auto asset = LoadXmlFile(mainXmlFile.c_str(), xmlState);
 
 						if(asset)
 						{
-							auto newVe = asset->Instantiate();
+							InstantiateXmlState InstantState;
+							auto newVe = asset->Instantiate(InstantState);
 							if (newVe)
 							{
 								for(auto child : cWnd->GetWindowUI()->_children)
