@@ -16,7 +16,6 @@ namespace OGUI
 
     struct StyleSheetStorage
     {
-        //TODO: handle alignment?
         std::vector<char> bulkData;
         std::vector<std::string> stringData;
 
@@ -31,8 +30,8 @@ namespace OGUI
             else if constexpr(st::value)
             {
                 using et = typename st::type;
-                size_t length = *(size_t*)(bulkData.data() + handle.index);
-                auto begin = bulkData.data() +  handle.index + sizeof(size_t);
+                size_t length = *(size_t*)(bulkData.data() + handle.index - sizeof(size_t));
+                auto begin = bulkData.data() +  handle.index;
                 auto end = begin + sizeof(et)*length;
                 return {(et*)begin, (et*)end};
             }
@@ -54,17 +53,23 @@ namespace OGUI
             else if constexpr(st::value)
             {
                 using et = typename st::type;
-                int offset = (int)bulkData.size();
+                int offset = (int)bulkData.size() + sizeof(size_t);
+                auto align = static_cast<size_t>(reinterpret_cast<uintptr_t>(bulkData.data() + offset) & (alignof(et) - 1));
+                if(align != 0)
+                    offset += alignof(et) - align;
                 size_t length = value.size();
-                bulkData.resize(bulkData.size() + sizeof(et)*length + sizeof(size_t));
-                *(size_t*)(bulkData.data() + offset) = length;
-                std::memcpy(bulkData.data() + offset + sizeof(size_t), value.data(), sizeof(et)*length);
+                bulkData.resize(offset + sizeof(et)*length);
+                *(size_t*)(bulkData.data() + offset - sizeof(size_t)) = length;
+                std::memcpy(bulkData.data() + offset, value.data(), sizeof(et)*length);
                 return {offset};
             }
             else 
             {
                 int offset = (int)bulkData.size();
-				bulkData.resize(bulkData.size() + sizeof(T));
+                auto align = static_cast<size_t>(reinterpret_cast<uintptr_t>(bulkData.data() + offset) & (alignof(T) - 1));
+                if(align != 0)
+                    offset += alignof(T) - align;
+				bulkData.resize(offset + sizeof(T));
 				std::memcpy(bulkData.data() + offset, &value, sizeof(T));
 				return {offset};
             }
