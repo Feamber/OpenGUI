@@ -45,7 +45,7 @@ link_directories(${OPENGUI_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:
 
 project(OpenGUI)
 
-include(RTTI) 
+include(Configure) 
 include(Download) 
 set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 
@@ -64,7 +64,7 @@ add_subdirectory(thirdparty)
 file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
-if(${OPENGUI_LIB})
+if(OPENGUI_LIB)
     add_library(OpenGUI STATIC
         ${sources} 
         ${headers} 
@@ -73,7 +73,7 @@ if(${OPENGUI_LIB})
 else()
     add_library(OpenGUI SHARED ${sources} ${headers})
     message(STATUS "LibraryType: Shared Lib")
-endif(${OPENGUI_LIB})
+endif(OPENGUI_LIB)
 
 if(OPENGUI_USE_TRACY)
     add_library(TracyD SHARED ${TRACY_SOURCE})
@@ -114,6 +114,7 @@ endif()
 
         
 link_libraries(OpenGUI)
+add_subdirectory(extensions)
 if(OPENGUI_SAMPLES)
     add_subdirectory(samples)
 endif(OPENGUI_SAMPLES)

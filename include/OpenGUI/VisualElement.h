@@ -117,9 +117,7 @@ namespace OGUI
 
 		bool _selectorDirty = true;
 		bool _styleDirty = false;
-		bool _sharedDirty = false;
 		bool _transformDirty = false;
-		bool _procedureStyleDirty = false;
 		bool _layoutDirty = false;
 		Rect _prevLayout;
 		ComputedStyle _style;
@@ -140,7 +138,10 @@ namespace OGUI
 #pragma region Animation
 	public:
 		std::vector<ComputedAnim> _anims;
+		std::vector<ComputedAnim> _procedureAnims;
 		bool _prevEvaluating = false;
+		void PlayAnimation(const AnimStyle& style);
+		void SetAnimationTime(std::string_view name);
 #pragma endregion
 
 #pragma region PseudoElement
