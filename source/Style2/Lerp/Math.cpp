@@ -76,8 +76,8 @@ namespace OGUI
         }
         if(i<a.size() || i<b.size())
         {
-            ComputedTransform ta = evaluate({a.data()+i, a.size()-i});
-            ComputedTransform tb = evaluate({b.data()+i, b.size()-i});
+            ComputedTransform ta = evaluate(a.subspan(i));
+            ComputedTransform tb = evaluate(b.subspan(i));
             result.push_back(TransformFunction::matrix(Lerp(ta, tb, alpha)));
         }
         return result;

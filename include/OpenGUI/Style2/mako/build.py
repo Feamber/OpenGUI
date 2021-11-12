@@ -23,32 +23,32 @@ def gen_position():
     struct = StyleStruct("position", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("transform",       "TransformFunction","{}"      ,vector = True)
+    add_longhand("transform",       "TransformFunction","{}"      ,vector=True    ,restyle_damage="Transform")
     #add_longhand("transform",       "ComputedTransform","ComputedTransform::ident()")
-    add_longhand("flex-grow",       "float",            "0.f")
-    add_longhand("flex-shrink",     "float",            "1.f")
-    add_longhand("flex-basis",      "YGValue",          "YGValueAuto")
+    add_longhand("flex-grow",       "float",            "0.f"   ,restyle_damage="Yoga")
+    add_longhand("flex-shrink",     "float",            "1.f"   ,restyle_damage="Yoga")
+    add_longhand("flex-basis",      "YGValue",          "YGValueAuto"   ,restyle_damage="Yoga")
     for side in PHYSICAL_SIDES:
-        add_longhand(side, "YGValue", "YGValueAuto")
+        add_longhand(side, "YGValue", "YGValueAuto"   ,restyle_damage="Yoga")
     for side in PHYSICAL_SIDES:
-        add_longhand("margin-{0}".format(side), "YGValue", "YGValueZero")
+        add_longhand("margin-{0}".format(side), "YGValue", "YGValueZero"   ,restyle_damage="Yoga")
     for side in PHYSICAL_SIDES:
-        add_longhand("padding-{0}".format(side), "YGValue", "YGValueZero")
-    add_longhand("width",			"YGValue",			"YGValueAuto")		
-    add_longhand("height",			"YGValue",			"YGValueAuto")		
-    add_longhand("position",		"YGPositionType",	"YGPositionTypeRelative")
-    add_longhand("overflow",		"YGOverflow",		"YGOverflowVisible")
-    add_longhand("align-self",		"YGAlign",			"YGAlignAuto")		
+        add_longhand("padding-{0}".format(side), "YGValue", "YGValueZero"   ,restyle_damage="Yoga")
+    add_longhand("width",			"YGValue",			"YGValueAuto"   ,restyle_damage="Yoga")		
+    add_longhand("height",			"YGValue",			"YGValueAuto"   ,restyle_damage="Yoga")		
+    add_longhand("position",		"YGPositionType",	"YGPositionTypeRelative"   ,restyle_damage="Yoga")
+    add_longhand("overflow",		"YGOverflow",		"YGOverflowVisible"   ,restyle_damage="Yoga")
+    add_longhand("align-self",		"YGAlign",			"YGAlignAuto"   ,restyle_damage="Yoga")		
     for size in PHYSICAL_SIZES:
-        add_longhand("max-{0}".format(size), "YGValue", "YGValueUndefined")	
+        add_longhand("max-{0}".format(size), "YGValue", "YGValueUndefined"   ,restyle_damage="Yoga")	
     for size in PHYSICAL_SIZES:
-        add_longhand("min-{0}".format(size), "YGValue", "YGValueAuto")	
-    add_longhand("flex-direction",	"YGFlexDirection",	"YGFlexDirectionRow")
-    add_longhand("align-content",	"YGAlign",			"YGAlignFlexStart")	
-    add_longhand("align-items",		"YGAlign",			"YGAlignStretch")	
-    add_longhand("justify-content",	"YGJustify",		"YGJustifyFlexStart")
-    add_longhand("flex-wrap",		"YGWrap",			"YGWrapNoWrap")		
-    add_longhand("flex-display",	"YGDisplay",		"YGDisplayFlex")	
+        add_longhand("min-{0}".format(size), "YGValue", "YGValueAuto"   ,restyle_damage="Yoga")	
+    add_longhand("flex-direction",	"YGFlexDirection",	"YGFlexDirectionRow"   ,restyle_damage="Yoga")
+    add_longhand("align-content",	"YGAlign",			"YGAlignFlexStart"   ,restyle_damage="Yoga")	
+    add_longhand("align-items",		"YGAlign",			"YGAlignStretch"   ,restyle_damage="Yoga")	
+    add_longhand("justify-content",	"YGJustify",		"YGJustifyFlexStart"   ,restyle_damage="Yoga")
+    add_longhand("flex-wrap",		"YGWrap",			"YGWrapNoWrap"   ,restyle_damage="Yoga")		
+    add_longhand("flex-display",	"YGDisplay",		"YGDisplayFlex"   ,restyle_damage="Yoga")	
     shorthand_template = os.path.join(BASE, "shorthands/position.mako.h")
     shorthand_file = render(shorthand_template, struct = struct,  data = data)
 
@@ -72,7 +72,7 @@ def gen_border():
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
     for side in PHYSICAL_SIDES:
-        add_longhand("border-{0}-width".format(side), "float", "0.f")
+        add_longhand("border-{0}-width".format(side), "float", "0.f"   ,restyle_damage="Yoga")
     for corner in PHYSICAL_CORNERS:
         add_longhand("border-{0}-radius".format(corner), "YGValue", "YGValueZero")
     shorthand_template = os.path.join(BASE, "shorthands/border.mako.h")

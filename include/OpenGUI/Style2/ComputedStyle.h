@@ -16,7 +16,7 @@ namespace OGUI
 		size_t hash;
 		bool inherited;
         void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
-		void (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
 		bool (*ParseProperties)(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
     };
 
@@ -44,7 +44,7 @@ namespace OGUI
 		ComputedStyle& operator=(ComputedStyle&& other) = default;
 		static ComputedStyle Create(const ComputedStyle* parent);
 		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
-        void ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+        RestyleDamage ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
 	};
 
 }

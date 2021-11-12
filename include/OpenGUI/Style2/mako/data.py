@@ -136,7 +136,7 @@ class Longhand(Property):
         aliases=None,
         flags=None,
         vector=False,
-        restyle_damage="repaint",
+        restyle_damage=None,
         parser = "ParseValue"
     ):
         Property.__init__(

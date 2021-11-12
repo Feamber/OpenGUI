@@ -28,6 +28,6 @@ namespace OGUI
 
         bool Init(const gsl::span<StyleSheet*>& sheets);
         bool GetPercentage(float& percent);
-        void Apply(ComputedStyle& style);
+        RestyleDamage Apply(ComputedStyle& style);
     };
 }

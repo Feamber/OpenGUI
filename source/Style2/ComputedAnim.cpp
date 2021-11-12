@@ -122,12 +122,12 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
     return true;
 }
 
-void OGUI::ComputedAnim::Apply(ComputedStyle &s)
+OGUI::RestyleDamage OGUI::ComputedAnim::Apply(ComputedStyle &s)
 {
     std::vector<AnimatedProperty> props;
 	float percentage;
     if(!GetPercentage(percentage))
-        return;
+        return RestyleDamage::None;
 
     for(auto& track : tracks)
     {
@@ -156,5 +156,5 @@ void OGUI::ComputedAnim::Apply(ComputedStyle &s)
         }
     }
 
-    s.ApplyAnimatedProperties(sheet->storage, props);
+    return s.ApplyAnimatedProperties(sheet->storage, props);
 }
