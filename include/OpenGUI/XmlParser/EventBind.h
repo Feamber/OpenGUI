@@ -15,7 +15,7 @@ namespace OGUI
     {
         extern OGUI_API std::map<Name, std::vector<struct Handler*>> _AllEventHandler;
 
-        struct Handler : public std::enable_shared_from_this<Handler>
+        struct OGUI_API Handler : public std::enable_shared_from_this<Handler>
         {
             Name eventName;
             std::any fun;
@@ -33,7 +33,7 @@ namespace OGUI
                 {
                     if(handler->fun.type() != typeid(std::function<void(Args...)>))
                     {
-                        olog::Error(u"EventBind::Broadcast 有参数类型不一样的事件Handler! eventName:{} BroadcastType:{} HandlerType:{}"_o, eventName, typeid(std::function<void(Args...)>).name(), handler->fun.type().name());
+                        olog::Error(u"EventBind::Broadcast 有参数类型不一样的事件Handler! eventName:{} BroadcastType:{} HandlerType:{}"_o, eventName.ToStringView(), typeid(std::function<void(Args...)>).name(), handler->fun.type().name());
                         continue;;
                     }
                     std::any_cast<std::function<void(Args...)>>(handler->fun)(args...);
@@ -44,24 +44,21 @@ namespace OGUI
         template <typename ... Args>
         std::shared_ptr<Handler> AddHandler(Name eventName, std::function<void(Args...)> fun)
         {
-            auto find = _AllEventHandler.find(eventName);
-            if(find != _AllEventHandler.end())
+            auto result = _AllEventHandler.try_emplace(eventName);
+            auto& list = result.first->second;
+            for(auto& handler : list)
             {
-                auto& list = find->second;
-                for(auto& handler : list)
+                if(handler->fun.type() != typeid(std::function<void(Args...)>))
                 {
-                    if(handler->fun.type() != typeid(std::function<void(Args...)>))
-                    {
-                        olog::Error(u"EventBind::AddHandler 有参数类型不一样的事件Handler! eventName:{} AddType:{} HandlerType:{}"_o, eventName, typeid(std::function<void(Args...)>).name(), handler->fun.type().name());
-                        return nullptr;
-                    }
+                    olog::Error(u"EventBind::AddHandler 有参数类型不一样的事件Handler! eventName:{} AddType:{} HandlerType:{}"_o, eventName.ToStringView(), typeid(std::function<void(Args...)>).name(), handler->fun.type().name());
+                    return nullptr;
                 }
-                std::shared_ptr<Handler> newHandler(new Handler());
-                newHandler->eventName = eventName;
-                newHandler->fun = fun;
-                list.push_back(newHandler.get());
-                return newHandler;
             }
+            std::shared_ptr<Handler> newHandler(new Handler());
+            newHandler->eventName = eventName;
+            newHandler->fun = fun;
+            list.push_back(newHandler.get());
+            return newHandler;
         };
     }
 }

@@ -29,9 +29,10 @@
 
 .Text{
     background-color:transparent;
+    color: aliceblue;
 }
 
 .InfoText{
     height:30px; 
-    width:120px;
+    width:150px;
 }

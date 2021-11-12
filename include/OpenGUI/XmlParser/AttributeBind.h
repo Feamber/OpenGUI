@@ -19,6 +19,8 @@ namespace OGUI
         void DataChange() const;
 
         AttrSource(Name fullName, std::type_index type, void* data);
+        template<typename T>
+        AttrSource(Name fullName, T* data) :AttrSource(fullName, std::type_index(typeid(T)), (void*)data) {};
         ~AttrSource();
     };
 
@@ -26,9 +28,16 @@ namespace OGUI
     {
         using OnChange = std::function<void(const AttrSource&)>;
         using OnChangePost = std::function<void(bool /*是否应用成功（没找到AttrConverter就会false）*/)>;
+        using AssignFunc = std::function<void(void* /*dst*/, void* /*src*/)>;
 
         AttrBind(Name fullName, OnChange changeFun);
-        AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun);
+        AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun, AssignFunc assignFunc);
+        template<typename T>
+        AttrBind(Name fullName, T* data, OnChangePost changePostFun)
+            : AttrBind(fullName, std::type_index(typeid(T)), (void*)data, changePostFun, [](void* dst, void* src){ *(T*)dst = *(T*)src; })
+        {
+            
+        };
         ~AttrBind();
 
         void Sync(const AttrSource& source);
@@ -37,6 +46,7 @@ namespace OGUI
         Name fullName;
         OnChange changeFun;
         OnChangePost changePostFun;
+        AssignFunc assignFunc;
         std::type_index type;
         void* data;
     };

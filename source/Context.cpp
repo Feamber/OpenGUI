@@ -17,6 +17,7 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
+#include "OpenGUI/XmlParser/AttributeBind.h"
 #include "Text/godot/text_server_adv.h"
 
 OGUI::WindowContext::WindowContext()
@@ -363,6 +364,7 @@ OGUI::Context::Context()
 	ioThread = std::make_unique<IOThread>();
 	logImpl = std::make_unique<StdOutputLog>();
 	XmlBase::RegisterOGUIXmlParser();
+	RegisterBaseAttrConverter();
 }
 
 OGUI::Context::~Context()

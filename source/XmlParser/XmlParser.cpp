@@ -481,7 +481,6 @@ namespace OGUI
     XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, std::string& out)
     {
         auto search = e.attributes.find(name);
-        auto n = name.ToStringView();
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
@@ -810,7 +809,47 @@ namespace OGUI
                 for(auto& child : xe.children)
                 {
                     if(child->isString)
-                        textElement->AddText(child->strValue);
+                    {
+                        auto sv = child->strValue.to_sv();
+                        ostr::string str;
+                        for(auto i = sv.begin(); i != sv.end(); ++i)
+                        {
+                            // 玩家名：@{名称属性名} 等级：@{等级属性名} 。。。
+                            if(*i == '@')
+                            {
+                                bool isAdd = false;
+                                auto j = i;
+                                if(*(++j) == '{')
+                                {
+                                    ostr::string BindName;
+                                    while (++j != sv.end()) 
+                                    {
+                                        if(*j == '}')
+                                        {
+                                            if(BindName.is_empty())
+                                                break;
+                                            if(!str.is_empty())
+                                            {
+                                                textElement->AddText(str);
+                                                str = "";
+                                            }
+                                            textElement->AddBindText(BindName);
+                                            isAdd = true;
+                                            i = j;
+                                            break;
+                                        }
+                                        BindName += *j;
+                                    }
+                                }
+                                if(isAdd)
+                                    continue;
+                            }
+
+                            str += *i;
+                        }
+                        if(!str.is_empty())
+                            textElement->AddText(str);
+                    }
                     else if(child->_fullName == TextName && child->tempElement)
                         textElement->AddInlineText((TextElement*)child->tempElement);
                     else if(child->tempElement)

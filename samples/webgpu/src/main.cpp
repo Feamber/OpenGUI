@@ -1,6 +1,12 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "appbase.h"
 #include "webgpu.h"
+#include "OpenGUI/XmlParser/EventBind.h"
+#include "OpenGUI/XmlParser/AttributeBind.h"
+#include "OpenGUI/Core/ostring/ostr.h"
+#include <ctime>
+#include <functional>
+#include<assert.h>
 
 std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 extern void InstallInput();
@@ -532,15 +538,16 @@ int main(int , char* []) {
 		}
 	});
 
+	static Name AddEventName = "Add";
 	SampleWindow* win3 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [](OGUI::VisualElement* ve)
 	{
-		std::vector<VisualElement*> tests;
 		VisualElement* test = QueryFirst(ve, "#AddButton");
 		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
 		{
 			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
 			{
 				element.SetPseudoClass(PseudoStates::Active, true);
+				EventBind::Broadcast(AddEventName);
 				return true;
 			}
 			return false;
@@ -582,12 +589,45 @@ int main(int , char* []) {
 		test->_eventHandler.Register<MouseLeaveEvent, handler3>(*test);
 	});
 
+	ostr::string hour = "00";
+	AttrSource hourAttr("hour", &hour);
+
+	ostr::string minute = "00";
+	AttrSource minuteAttr("minute", &minute);
+
+	ostr::string second = "00";
+	AttrSource secondAttr("second", &second);
+
+	int count = 0;
+	AttrSource countAttr("count", &count);
+	std::function<void()> AddEventFun = [&count, &countAttr]()
+	{
+		++count;
+		countAttr.DataChange();
+	};
+	std::shared_ptr<EventBind::Handler> AddEvent = EventBind::AddHandler<>(AddEventName, AddEventFun);
+
 	// main loop
 	while(win1 || win2 || win3)
 	{
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");
+
+		char buffer[4];
+		time_t t = time(0);
+
+		strftime(buffer, sizeof(buffer), "%H", localtime(&t));
+		hour = buffer;
+		hourAttr.DataChange();
+
+		strftime(buffer, sizeof(buffer), "%M", localtime(&t));
+		minute = buffer;
+		minuteAttr.DataChange();
+
+		strftime(buffer, sizeof(buffer), "%S", localtime(&t));
+		second = buffer;
+		secondAttr.DataChange();
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && (win1 || win2 || win3)) 

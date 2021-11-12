@@ -57,8 +57,8 @@ namespace OGUI
         Sync();
     }
 
-    AttrBind::AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun)
-        : fullName(fullName), changeFun(), changePostFun(changePostFun), type(type), data(data)
+    AttrBind::AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun, AssignFunc assignFunc)
+        : fullName(fullName), changeFun(), changePostFun(changePostFun), assignFunc(assignFunc), type(type), data(data)
     {
         auto result = AllAttrBind.try_emplace(fullName).first;
         auto& attrBindList = result->second;
@@ -79,7 +79,15 @@ namespace OGUI
     void AttrBind::Sync(const AttrSource& source)
     {
         if(data)
-            changePostFun(AttrConverter(source.type, source.data, type, data));
+        {
+            if(source.type == type)
+            {
+                assignFunc(data, source.data);
+                changePostFun(true);
+            }
+            else
+                changePostFun(AttrConverter(source.type, source.data, type, data));
+        }
         else
             changeFun(source);
     }
@@ -131,6 +139,11 @@ namespace OGUI
         RegisterAttrConverter<int, float>([](void* source, void* out)
             {
                 *((float*)out) = *((int*)source);
+                return true;
+            });
+        RegisterAttrConverter<int, ostr::string>([](void* source, void* out)
+            {
+                *((ostr::string*)out) = std::to_string(*((int*)source));
                 return true;
             });
         

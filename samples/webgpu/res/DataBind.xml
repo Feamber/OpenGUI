@@ -4,6 +4,6 @@
     <VisualElement name="AddButton" class="Button">
         <Text class="Text">Add</Text>
     </VisualElement>
-    <Text name="CountText" class="Text,InfoText">0</Text>
-    <Text name="TimeText" class="Text,InfoText">19:36</Text>
+    <Text name="CountText" class="Text,InfoText">点击次数：@{count} 次</Text>
+    <Text name="TimeText" class="Text,InfoText">@{hour}:@{minute}.@{second}</Text>
 </Root>
