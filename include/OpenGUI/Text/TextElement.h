@@ -1,9 +1,11 @@
+#include <memory>
 #ifndef UE4Runtime
 #pragma once
 
 //https://www.w3.org/TR/2021/CRD-css-text-3-20210316
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/open_string.h"
+#include "OpenGUI/XmlParser/AttributeBind.h"
 #include <variant>
 
 namespace godot
@@ -12,6 +14,12 @@ namespace godot
 }
 namespace OGUI
 {
+    struct OGUI_API BindText : public std::enable_shared_from_this<BindText>
+    {
+        std::shared_ptr<AttrBind> Bind;
+        ostr::string text;
+    };
+
     class TextElement : public VisualElement
     {
     public:
@@ -20,7 +28,7 @@ namespace OGUI
 		std::string_view GetTypeName() override { return "TextElement"; }
 		std::string_view GetFullTypeName() override { return "OGUI::TextElement"; }
 
-        using InlineType = std::variant<ostr::string, VisualElement*, TextElement*>;
+        using InlineType = std::variant<ostr::string, VisualElement*, TextElement*, std::shared_ptr<BindText>>;
         std::vector<InlineType> _inlines;
 
         godot::TextParagraph* _paragraph = nullptr;
@@ -29,6 +37,7 @@ namespace OGUI
         void AddInlineElement(VisualElement* element);
         void AddInlineText(TextElement* text);
         void AddText(ostr::string text);
+        void AddBindText(Name fullAttrName);
         void BuildParagraph();
 
         void MarkLayoutDirty() override;

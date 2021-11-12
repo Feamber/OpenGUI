@@ -164,6 +164,19 @@ namespace OGUI
         _paragraphDirty = true;
     }
 
+    void TextElement::AddBindText(Name fullAttrName)
+    {
+        std::shared_ptr<BindText> newBind(new BindText());
+        newBind->Bind = std::make_shared<AttrBind>(fullAttrName, &newBind->text, [this](bool isApply)
+        {
+            if(isApply)
+                _paragraphDirty = true;
+        });
+
+        _inlines.push_back(InlineType{newBind});
+        _paragraphDirty = true;
+    }
+
     void TextElement::BuildParagraph()
     {
         if(_paragraphDirty)
@@ -194,6 +207,11 @@ namespace OGUI
                 [&](TextElement*& child) 
                 { 
                     child->BuildParagraphRec(p, txt); 
+                },
+                [&](std::shared_ptr<BindText>& Bind) 
+                { 
+                    godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
+                    p->add_string((wchar_t*)Bind->text.raw().data(), GetTestFont(), txt.fontSize, color); 
                 }
             }, inl);
         }
@@ -201,6 +219,7 @@ namespace OGUI
     
     void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
     {
+        BuildParagraph();
         VisualElement::DrawPrimitive(Ctx);
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
@@ -226,6 +245,7 @@ namespace OGUI
             std::visit(overloaded
             {
                 [](ostr::string& ) {},
+                [](std::shared_ptr<BindText>& ) {},
                 [&](VisualElement*& child) 
                 { 
                     children.push_back(child); 
