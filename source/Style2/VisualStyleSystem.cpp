@@ -1,6 +1,8 @@
-#include "OpenGUI/Core/ostring/ostr.h"
-#include "OpenGUI/Style2/Properties.h"
+
 #define DLL_IMPLEMENTATION
+#include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Style2/ComputedAnim.h"
+#include "OpenGUI/Style2/Properties.h"
 #include <algorithm>
 #include <bitset>
 #include "OpenGUI/Style2/VisualStyleSystem.h"
@@ -417,49 +419,58 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	}
 }
 
+namespace OGUI
+{
+	void UpdateAnimTime(std::vector<ComputedAnim>& anims)
+	{
+		auto& ctx = Context::Get();
+		auto curr = anims.begin();
+		auto valid = curr;
+		for(;valid != anims.end(); ++valid)
+		{
+			auto& anim = *valid;
+			float maxTime = anim.style.animationDuration * anim.style.animationIterationCount + anim.style.animationDelay;
+			bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
+			bool infinite = anim.style.animationIterationCount <= 0.f;
+			if (paused || (!infinite && anim.time >= maxTime))
+				anim.evaluating = false;
+			else
+				anim.evaluating = true;
+			if (!paused || anim.yielding)
+			{
+				if (anim.goingback)
+					anim.time = std::max(anim.style.animationDelay, anim.time - ctx._deltaTime);
+				else if (anim.style.animationIterationCount > 0.f)
+					anim.time = std::min(ctx._deltaTime + anim.time, maxTime);
+				else
+					anim.time += ctx._deltaTime;
+			}
+			if (anim.yielding)
+			{
+				bool shouldStop = false;
+				if (!anim.goingback && anim.style.animationIterationCount > 0 && anim.time >= maxTime)
+					shouldStop = true;
+				else if(anim.goingback && anim.time <= anim.style.animationDelay)
+					shouldStop = true;
+				if (shouldStop)
+					continue;
+			}
+			if(curr != valid)
+				*curr = std::move(*valid);
+			++curr;
+		}
+		anims.resize(curr - anims.begin());
+	}
+}
+
 void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 {
 	bool animationEvaling = false;
-	auto& ctx = Context::Get();
-	auto curr = element->_anims.begin();
-	auto valid = curr;
-	for(;valid != element->_anims.end(); ++valid)
-	{
-		auto& anim = *valid;
-		float maxTime = anim.style.animationDuration * anim.style.animationIterationCount + anim.style.animationDelay;
-		bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
-		bool infinite = anim.style.animationIterationCount <= 0.f;
-		if (paused || (!infinite && anim.time >= maxTime))
-			anim.evaluating = false;
-		else
-			anim.evaluating = true;
-		if (!paused || anim.yielding)
-		{
-			if (anim.goingback)
-				anim.time = std::max(anim.style.animationDelay, anim.time - ctx._deltaTime);
-			else if (anim.style.animationIterationCount > 0.f)
-				anim.time = std::min(ctx._deltaTime + anim.time, maxTime);
-			else
-				anim.time += ctx._deltaTime;
-		}
-		if (anim.yielding)
-		{
-			bool shouldStop = false;
-			if (!anim.goingback && anim.style.animationIterationCount > 0 && anim.time >= maxTime)
-				shouldStop = true;
-			else if(anim.goingback && anim.time <= anim.style.animationDelay)
-				shouldStop = true;
-			if (shouldStop)
-				continue;
-		}
-		if(curr != valid)
-			*curr = std::move(*valid);
-		++curr;
-	}
-	element->_anims.resize(curr - element->_anims.begin());
 	for (auto& ctx : element->_anims)
 		animationEvaling |= ctx.evaluating;
-	if (element->_anims.empty() && element->_prevEvaluating)
+	for (auto& ctx : element->_procedureAnims)
+		animationEvaling |= ctx.evaluating;
+	if (element->_anims.empty() && element->_procedureAnims.empty() && element->_prevEvaluating)
 	{
 		element->_style = element->_preAnimatedStyle;
 		element->SyncYogaStyle();
@@ -471,10 +482,15 @@ void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 		RestyleDamage damage = RestyleDamage::None;
 		for (auto& anim : element->_anims)
 			damage |= anim.Apply(element->_style);
+		for (auto& anim : element->_procedureAnims)
+			damage |= anim.Apply(element->_style);
 		if((damage & RestyleDamage::Yoga) == RestyleDamage::Yoga)
 			element->SyncYogaStyle();
 		if((damage & RestyleDamage::Transform) == RestyleDamage::Transform)
 			element->_transformDirty = true;
 	}
 	element->_prevEvaluating = animationEvaling;
+	
+	UpdateAnimTime(element->_anims);
+	UpdateAnimTime(element->_procedureAnims);
 }

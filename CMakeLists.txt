@@ -114,6 +114,7 @@ endif()
 
         
 link_libraries(OpenGUI)
+add_subdirectory(extensions)
 if(OPENGUI_SAMPLES)
     add_subdirectory(samples)
 endif(OPENGUI_SAMPLES)
