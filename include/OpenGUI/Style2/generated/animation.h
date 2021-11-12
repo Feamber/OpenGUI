@@ -16,9 +16,6 @@ namespace OGUI
     struct AnimStyle
     {
         constexpr static size_t hash = OGUI::hash("animation"sv);
-        //Resolved reference
-		StyleSheet* sheet;
-		StyleKeyframes* keyframes;
         struct Id
         {
             static constexpr size_t animationName = OGUI::hash("animation-name"sv);

@@ -172,9 +172,10 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
 }
 
 
-void OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
 {
     OGUI::StyleBackground* st = nullptr;
+    RestyleDamage damage = RestyleDamage::None;
     auto iter = style.structs.find(hash);
     bool owned = false;
     if(iter != style.structs.end())
@@ -235,6 +236,7 @@ void OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const 
             default: break;
         }
     }
+    return damage;
 }
 
 bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)

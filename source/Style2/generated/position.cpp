@@ -637,9 +637,10 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
 }
 
 
-void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
 {
     OGUI::StylePosition* st = nullptr;
+    RestyleDamage damage = RestyleDamage::None;
     auto iter = style.structs.find(hash);
     bool owned = false;
     if(iter != style.structs.end())
@@ -675,6 +676,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
         {
             case Id::transform:{
                 auto v = fget();
+                    damage |= RestyleDamage::Transform;
                 if(prop.alpha == 0.f)
                     v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.from));
                 else if(prop.alpha == 1.f)
@@ -687,6 +689,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::flexGrow:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->flexGrow = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -699,6 +702,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::flexShrink:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->flexShrink = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -711,6 +715,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::flexBasis:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->flexBasis = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -723,6 +728,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::left:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->left = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -735,6 +741,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::top:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->top = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -747,6 +754,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::right:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->right = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -759,6 +767,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::bottom:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->bottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -771,6 +780,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::marginLeft:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->marginLeft = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -783,6 +793,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::marginTop:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->marginTop = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -795,6 +806,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::marginRight:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->marginRight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -807,6 +819,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::marginBottom:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->marginBottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -819,6 +832,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::paddingLeft:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->paddingLeft = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -831,6 +845,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::paddingTop:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->paddingTop = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -843,6 +858,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::paddingRight:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->paddingRight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -855,6 +871,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::paddingBottom:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->paddingBottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -867,6 +884,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::width:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->width = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -879,6 +897,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::height:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->height = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -891,6 +910,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::position:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->position = sheet.Get<YGPositionType>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -903,6 +923,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::overflow:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->overflow = sheet.Get<YGOverflow>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -915,6 +936,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::alignSelf:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->alignSelf = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -927,6 +949,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::maxWidth:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->maxWidth = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -939,6 +962,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::maxHeight:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->maxHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -951,6 +975,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::minWidth:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->minWidth = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -963,6 +988,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::minHeight:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->minHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -975,6 +1001,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::flexDirection:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->flexDirection = sheet.Get<YGFlexDirection>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -987,6 +1014,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::alignContent:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->alignContent = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -999,6 +1027,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::alignItems:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->alignItems = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -1011,6 +1040,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::justifyContent:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->justifyContent = sheet.Get<YGJustify>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -1023,6 +1053,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::flexWrap:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->flexWrap = sheet.Get<YGWrap>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -1035,6 +1066,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
                 }
             case Id::flexDisplay:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->flexDisplay = sheet.Get<YGDisplay>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -1048,6 +1080,7 @@ void OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const St
             default: break;
         }
     }
+    return damage;
 }
 
 bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)

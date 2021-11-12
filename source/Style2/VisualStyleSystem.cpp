@@ -1,4 +1,5 @@
 #include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Style2/Properties.h"
 #define DLL_IMPLEMENTATION
 #include <algorithm>
 #include <bitset>
@@ -467,11 +468,13 @@ void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	if (animationEvaling)
 	{
 		element->_style = element->_preAnimatedStyle;
+		RestyleDamage damage = RestyleDamage::None;
 		for (auto& anim : element->_anims)
-			anim.Apply(element->_style);
-		//TODO: check dirty
-		element->SyncYogaStyle();
-		element->_transformDirty = true;
+			damage |= anim.Apply(element->_style);
+		if((damage & RestyleDamage::Yoga) == RestyleDamage::Yoga)
+			element->SyncYogaStyle();
+		if((damage & RestyleDamage::Transform) == RestyleDamage::Transform)
+			element->_transformDirty = true;
 	}
 	element->_prevEvaluating = animationEvaling;
 }

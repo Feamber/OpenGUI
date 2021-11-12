@@ -86,9 +86,11 @@ void OGUI::ComputedStyle::ApplyProperties(const StyleSheetStorage &sheet, const 
         desc.ApplyProperties(*this, sheet, props, parent);
 }
 
-void OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleSheetStorage &sheet, const gsl::span<AnimatedProperty> &props)
+OGUI::RestyleDamage OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleSheetStorage &sheet, const gsl::span<AnimatedProperty> &props)
 {
+    RestyleDamage damage = RestyleDamage::None;
     auto& registry = GetRegistry();
     for(auto& desc : registry.descriptions)
-        desc.ApplyAnimatedProperties(*this, sheet, props);
+        damage |= desc.ApplyAnimatedProperties(*this, sheet, props);
+    return damage;
 }

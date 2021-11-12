@@ -269,9 +269,10 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
 }
 
 
-void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
 {
     OGUI::StyleBorder* st = nullptr;
+    RestyleDamage damage = RestyleDamage::None;
     auto iter = style.structs.find(hash);
     bool owned = false;
     if(iter != style.structs.end())
@@ -307,6 +308,7 @@ void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const Styl
         {
             case Id::borderLeftWidth:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->borderLeftWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -319,6 +321,7 @@ void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const Styl
                 }
             case Id::borderTopWidth:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->borderTopWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -331,6 +334,7 @@ void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const Styl
                 }
             case Id::borderRightWidth:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->borderRightWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -343,6 +347,7 @@ void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const Styl
                 }
             case Id::borderBottomWidth:{
                 auto v = fget();
+                    damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
                     v->borderBottomWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -404,6 +409,7 @@ void OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const Styl
             default: break;
         }
     }
+    return damage;
 }
 
 bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)

@@ -173,9 +173,10 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
 }
 
 
-void OGUI::Style${struct.ident}::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
 {
     OGUI::Style${struct.ident}* st = nullptr;
+    RestyleDamage damage = RestyleDamage::None;
     auto iter = style.structs.find(hash);
     bool owned = false;
     if(iter != style.structs.end())
@@ -212,6 +213,9 @@ void OGUI::Style${struct.ident}::ApplyAnimatedProperties(ComputedStyle& style, c
         %for prop in struct.longhands:
             case Id::${prop.ident}:{
                 auto v = fget();
+                %if prop.restyle_damage:
+                    damage |= ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
+                %endif
                 if(prop.alpha == 0.f)
                 %if prop.is_vector:
                     v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.from));
@@ -234,6 +238,7 @@ void OGUI::Style${struct.ident}::ApplyAnimatedProperties(ComputedStyle& style, c
             default: break;
         }
     }
+    return damage;
 }
 
 bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
