@@ -2,6 +2,7 @@
 #include "appbase.h"
 #include "webgpu.h"
 
+std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 extern void InstallInput();
 
 class SampleWindow : public CSSWindow
@@ -452,8 +453,11 @@ int main(int , char* []) {
 			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
 			{
 				if(event.currentPhase == EventRoutePhase::Reach)
+				{
 					Context::Get().SetFocus(&element);
-				return true;
+					return true;
+				}
+				return false;
 			};
 			test->_eventHandler.Register<PointerDownEvent, handler>(*test);
 		}
