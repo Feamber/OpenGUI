@@ -1,0 +1,37 @@
+:root {
+    width: 700px;
+    height:600px;
+    background-color:rgb(255, 255, 255, 0.8);
+    background-image:url(res/test4.jpg);
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.Button {
+    width: 100px;
+    height:30px;
+    background-color: coral;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.Button:hover{
+    transform:  scale(1.05, 1.05);
+    background-color: rgb(80, 135, 255);
+}
+
+.Button:active{
+    transform:  scale(0.95, 0.95);
+    background-color: rgb(80, 255, 80);
+}
+
+.Text{
+    background-color:transparent;
+}
+
+.InfoText{
+    height:30px; 
+    width:120px;
+}

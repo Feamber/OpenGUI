@@ -1,4 +1,5 @@
 #define DLL_IMPLEMENTATION
+#include <memory>
 #include "Yoga.h"
 #include "OpenGUI/Style/StyleSelector.h"
 #include "OpenGUI/Configure.h"
@@ -102,6 +103,7 @@ void OGUI::VisualElement::GetChildren(std::vector<VisualElement *>& children)
 
 OGUI::VisualElement::VisualElement()
 {
+	Context::Get()._allElementHandle.insert(this);
 	CreateYogaNode();
 	_style = Style::GetInitialStyle();
 	RegisterFocusedEvent();
@@ -113,6 +115,9 @@ OGUI::VisualElement::~VisualElement()
 	{
 		YGNodeFree(_ygnode);
 	}
+
+	auto& allElementHandle = Context::Get()._allElementHandle;
+	allElementHandle.erase(this);
 }
 
 void OGUI::VisualElement::DrawPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
@@ -131,6 +136,15 @@ OGUI::VisualElement* OGUI::VisualElement::GetParent()
 OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 {
 	return _physical_parent;
+}
+
+bool OGUI::VisualElement::IsParent(OGUI::VisualElement* e)
+{
+	if(!e || !_physical_parent || e == this)
+		return false;
+	if(e == _physical_parent)
+		return true;
+	return _physical_parent->IsParent(e);
 }
 
 void OGUI::VisualElement::MarkDirty(DirtyReason reason)

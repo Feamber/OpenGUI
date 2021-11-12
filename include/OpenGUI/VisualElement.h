@@ -2,6 +2,7 @@
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Style/Style.h"
@@ -51,6 +52,7 @@ namespace OGUI
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
 		VisualElement* GetHierachyParent();
+		bool IsParent(VisualElement*);
 		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 
 		virtual bool IsA(std::string_view type) { return GetFullTypeName() == type; }

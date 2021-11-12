@@ -1,4 +1,7 @@
 #define DLL_IMPLEMENTATION
+#include <algorithm>
+#include <cstdio>
+#include <vector>
 #include <memory>
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Context.h"
@@ -159,7 +162,6 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWid
 	if (!root)
 		return false;
 	PointerDownEvent event;
-	//todo: what is mouse up is missing?
 	pointerDownCount++;
 	event.pointerType = "mouse";
 	event.button = button;
@@ -178,35 +180,22 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWid
 
 bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
 {
+	olog::Info(u"OnMouseUp PosX:{0}, PosY:{1}"_o, x, y);
 	auto root = GetWindowContext(window).GetWindowUI();
 	if (!root)
 		return false;
 	PointerUpEvent event;
-
-	pointerDownCount--;
 	event.pointerType = "mouse";
 	event.button = button;
-	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
 
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
-	//printf("X: %.2f, Y: %.2f\n", point.X, point.Y);
-	//olog::info("Mouse Up");
 
-	//auto picked = PickRecursive(root, point);
-	//if (picked)
-	//{
-	//	if (picked != currentFocus)
-	//	{
-	//		picked->SetPseudoClass(PseudoStates::Focus, false);
-	//		if (auto currF = currentFocus)
-	//		{
-	//			currF->SetPseudoClass(PseudoStates::Focus, false);
-	//		}
-	//	}
-	//	currentFocus = picked;
-	//	RouteEvent(picked, event);
-	//}
+	auto picked = PickRecursive(root, point);
+	if (picked)
+	{
+		RouteEvent(picked, event);
+	}
 	return false;
 }
 
@@ -217,10 +206,65 @@ bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKe
 	return false;
 }
 
-bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, bool relative, int32 x, int32 y)
+bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, int32 windowWidth, int32 windowHeight, int32 x, int32 y, int32 relativeMotionX, int32 relativeMotionY)
 {
-	//auto root = GetWindowContext(window).GetWindowUI();
-	//olog::Info(u"Mouse PosX:{0}, PosY:{1}"_o, x, y);
+	static std::vector<VisualElement*> allHover;
+
+	auto root = GetWindowContext(window).GetWindowUI();
+	if (!root)
+		return false;
+
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+
+	auto picked = PickRecursive(root, point);
+	if (picked)
+	{
+		bool pickedHover = false;
+		for(auto it = allHover.begin(); it != allHover.end();)
+   		{
+			if(picked == *it)
+				pickedHover = true;
+   		    if(!IsElementValid(*it))
+   		        it=allHover.erase(it);
+   		    else
+   		        ++it;
+   		}
+		
+		if(!pickedHover)
+		{
+			MouseEnterEvent enterEvent;
+			enterEvent.pointerType = "mouse";
+			enterEvent.gestureType = EGestureEvent::None;
+			RouteEvent(picked, enterEvent);
+			allHover.push_back(picked);
+		}
+		for(auto it = allHover.begin(); it != allHover.end();)
+   		{
+   		    if(!picked->IsParent(*it) && picked != *it)
+   		    {
+				MouseLeaveEvent leaveEvent;
+				leaveEvent.pointerType = "mouse";
+				leaveEvent.gestureType = EGestureEvent::None;
+				RouteEvent(*it, leaveEvent);
+
+				it=allHover.erase(it);
+			}
+   		    else
+   		        ++it;
+   		}
+	}
+	else 
+	{
+		for(auto it = allHover.begin(); it != allHover.end();)
+   		{
+   		    MouseLeaveEvent leaveEvent;
+			leaveEvent.pointerType = "mouse";
+			leaveEvent.gestureType = EGestureEvent::None;
+			RouteEvent(*it, leaveEvent);
+
+			it=allHover.erase(it);
+   		}
+	}
 	return false;
 }
 
@@ -325,7 +369,6 @@ OGUI::Context& OGUI::Context::Get()
 	return ctx;
 }
 
-static OGUI::WindowContext NULL_WINDOW_CONTEXT = OGUI::WindowContext();
 OGUI::WindowContext& OGUI::Context::GetOrRegisterWindowContext(const OGUI::WindowHandle window)
 {
 	for(auto&& ctx : windowContexts)
@@ -348,6 +391,7 @@ OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHandle wi
 			return *ctx.get();
 	}
 	// warn("window context not found")
+	static OGUI::WindowContext NULL_WINDOW_CONTEXT = OGUI::WindowContext();
 	return NULL_WINDOW_CONTEXT;
 }
 
@@ -602,4 +646,9 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause caus
 	}
 
 	return true;
+}
+
+bool OGUI::Context::IsElementValid(OGUI::VisualElement* e) const
+{
+	return _allElementHandle.find(e) != _allElementHandle.end();
 }

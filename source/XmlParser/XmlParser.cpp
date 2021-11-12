@@ -148,7 +148,7 @@ namespace OGUI
                     }
                 }
                 else 
-                    fullName = XmlBase::DefaultNamespace + u":"_o + name;
+                    fullName = XmlBase::DefaultNamespace + u":"_o + xmlName;
 
                 auto xmlElement = std::make_shared<XmlElement>(false, fullName);
                 const tinyxml2::XMLAttribute* attr = xml_element->FirstAttribute();
@@ -591,7 +591,7 @@ namespace OGUI
     void XmlBase::RegisterOGUIXmlParser()
     {
         RegisterXmlParser(
-            RootName,
+            XmlBase::RootName,
             OnParseXmlElement_Empty,
             OnParseXmlElement_Empty, 
             OnParseXmlElement_Empty, 
@@ -605,7 +605,7 @@ namespace OGUI
         );
 
         RegisterXmlParser(
-            VisualElementName,
+            XmlBase::VisualElementName,
             OnParseXmlElement_Empty,
             OnParseXmlElement_Empty, 
             OnParseXmlElement_Empty, 
@@ -619,7 +619,7 @@ namespace OGUI
         );
 
         RegisterXmlParser(
-            StyleName,
+            XmlBase::StyleName,
             [](ParseXmlState& state, XmlElement& xe)
             {
                 ostr::string path;
@@ -665,7 +665,7 @@ namespace OGUI
         );
 
         RegisterXmlParser(
-            TemplateName,
+            XmlBase::TemplateName,
             [](ParseXmlState& state, XmlElement& xe)
             {
                 ostr::string name;
@@ -700,7 +700,7 @@ namespace OGUI
         );
 
         RegisterXmlParser(
-            InstanceName,
+            XmlBase::InstanceName,
             OnParseXmlElement_Empty,
             OnParseXmlElement_Empty, 
             [](ParseXmlState& state, XmlElement& xe)
@@ -775,7 +775,7 @@ namespace OGUI
 
         // 主要属性覆盖逻辑在 OGUI:Instance 里面
         RegisterXmlParser(
-            AttributeOverridesName,
+            XmlBase::AttributeOverridesName,
             [](ParseXmlState& state, XmlElement& xe)
             {
                 if (!xe.parent.expired() && xe.parent.lock()->_fullName == InstanceName) 
@@ -791,7 +791,7 @@ namespace OGUI
         );
 
         RegisterXmlParser(
-            TextName,
+            XmlBase::TextName,
             OnParseXmlElement_Empty,
             OnParseXmlElement_Empty, 
             OnParseXmlElement_Empty, 

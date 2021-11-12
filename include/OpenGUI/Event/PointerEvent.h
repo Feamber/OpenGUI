@@ -37,8 +37,16 @@ namespace OGUI
     };
     struct PointerClickEvent : PointerData {};
     struct PointerDoubleClickEvent : PointerData {};
-    struct MouseEnterEvent : PointerData {};
-    struct MouseLeaveEvent : PointerData {};
+    struct MouseEnterEvent : PointerData 
+    {
+        EventRoutePhase currentPhase = EventRoutePhase::None;
+        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+    };
+    struct MouseLeaveEvent : PointerData 
+    {
+        EventRoutePhase currentPhase = EventRoutePhase::None;
+        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+    };
     struct TouchGestureEvent : PointerData {};
     struct TouchFirstMoveEvent : PointerData {};
     struct TouchPressureChangeEvent : PointerData {};

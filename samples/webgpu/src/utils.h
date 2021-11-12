@@ -244,7 +244,9 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, v
         }
         case SDL_MOUSEMOTION:
         {
-            ctx.OnMouseMove(hWnd, true, event.motion.xrel, event.motion.yrel);
+			int width, height;
+            SDL_GetWindowSize(window, &width, &height);
+            ctx.OnMouseMove(hWnd, width, height, event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
             break;
         }
         case SDL_KEYDOWN:

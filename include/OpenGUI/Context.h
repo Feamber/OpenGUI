@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
-
+#include <set>
 
 namespace godot
 {
@@ -58,6 +58,9 @@ namespace OGUI
 		Context();
 		~Context();
 
+		std::set<VisualElement*> _allElementHandle;
+		inline bool IsElementValid(VisualElement*) const;
+
 #pragma region FocusNavigation
 		std::vector<EKeyCode> keyNavigation_Up {EKeyCode::W, EKeyCode::Up};
 		std::vector<EKeyCode> keyNavigation_Down {EKeyCode::S, EKeyCode::Down};
@@ -96,7 +99,7 @@ namespace OGUI
 		bool OnMouseDown(const WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
 		bool OnMouseUp(const WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
 		bool OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseMove(const WindowHandle window, bool relative, int32 x, int32 y);
+		bool OnMouseMove(const OGUI::WindowHandle window, int32 windowWidth, int32 windowHeight, int32 x, int32 y, int32 relativeMotionX, int32 relativeMotionY);
 		bool OnMouseMoveHP(const WindowHandle window, bool relative, float x, float y);
 		bool OnMouseWheel(const WindowHandle window, float delta);
 

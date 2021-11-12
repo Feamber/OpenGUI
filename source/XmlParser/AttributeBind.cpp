@@ -20,6 +20,10 @@ namespace OGUI
     {
         auto result = AllAttrSource.try_emplace(fullName, this);
         isValid = result.second;
+        if(isValid)
+            DataChange();
+        else
+            olog::Warn(u"重复注册AttrSource fullName：{}"_o, fullName.ToStringView());
     }
 
     AttrSource::~AttrSource()
@@ -40,12 +44,7 @@ namespace OGUI
         {
             auto& attrBindList = find->second;
             for(auto bind : attrBindList)
-            {
-                if(bind->data)
-                    bind->changePostFun(AttrConverter(type, data, bind->type, bind->data));
-                else
-                    bind->changeFun(*this);
-            }
+                bind->Sync(*this);
         }
     }
 
@@ -55,6 +54,7 @@ namespace OGUI
         auto result = AllAttrBind.try_emplace(fullName).first;
         auto& attrBindList = result->second;
         attrBindList.push_back(this);
+        Sync();
     }
 
     AttrBind::AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun)
@@ -63,6 +63,7 @@ namespace OGUI
         auto result = AllAttrBind.try_emplace(fullName).first;
         auto& attrBindList = result->second;
         attrBindList.push_back(this);
+        Sync();
     }
 
     AttrBind::~AttrBind()
@@ -72,6 +73,23 @@ namespace OGUI
         {
             auto& attrBindList = find->second;
             attrBindList.erase(std::find(attrBindList.begin(), attrBindList.end(), this));
+        }
+    }
+
+    void AttrBind::Sync(const AttrSource& source)
+    {
+        if(data)
+            changePostFun(AttrConverter(source.type, source.data, type, data));
+        else
+            changeFun(source);
+    }
+
+    void AttrBind::Sync()
+    {
+        auto find = AllAttrSource.find(fullName);
+        if(find != AllAttrSource.end())
+        {
+            Sync(*find->second);
         }
     }
 

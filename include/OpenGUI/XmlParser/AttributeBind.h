@@ -31,6 +31,9 @@ namespace OGUI
         AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun);
         ~AttrBind();
 
+        void Sync(const AttrSource& source);
+        void Sync();
+
         Name fullName;
         OnChange changeFun;
         OnChangePost changePostFun;

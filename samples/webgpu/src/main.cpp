@@ -155,11 +155,14 @@ public:
 	std::vector<std::string> allCssFile;
     std::vector<std::string> allXmlFile;
 
+	std::function<void(OGUI::VisualElement*)> onReloadedEvent;
+
 	// Bare minimum pipeline to draw a triangle using the above shaders.
  	uint8_t white_tex0[1024 * 1024 * 4];
 
-	Window(int width, int height, const char *title, const char *xmlFile)
+	Window(int width, int height, const char *title, const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
 	{
+		this->onReloadedEvent = std::move(onReloadedEvent);
 		window = SDL_CreateWindow(title,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			width, height, 0
@@ -230,87 +233,7 @@ public:
 	void OnReloaded()
 	{
 		auto ve = cWnd->GetWindowUI()->_children[0];
-		if (auto child2 = QueryFirst(ve, "#Child2"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit! Child2"_o);
-				return true;
-			};
-
-			child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
-		}
-
-		{
-			std::vector<VisualElement*> tests;
-			QueryAll(ve, ".Element", tests);
-			for (auto [i, test] : ipair(tests))
-			{
-				constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-				{
-					if(event.currentPhase == EventRoutePhase::Reach)
-						Context::Get().SetFocus(&element);
-					return true;
-				};
-				test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-			}
-		}
-
-		if (auto child1 = QueryFirst(ve, "#Child1"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit!"_o);
-				return true;
-			};
-			constexpr auto handlerDown = +[](KeyDownEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Down!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerUp = +[](KeyUpEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is up!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerHold = +[](KeyHoldEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Holding!"_o);
-				}
-				return false;
-			};
-			child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
-			child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
-			child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
-			child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
-		}
-		{
-			std::vector<VisualElement*> tests;
-			QueryAll(ve, ".Test", tests);
-			for (auto [i, test] : ipair(tests))
-				if (i % 2 == 0)
-					test->_styleClasses.push_back("Bigger");
-		}
-
+		onReloadedEvent(ve);
 		ve->_pseudoMask |= (int)PseudoStates::Root;
 	}
 
@@ -833,16 +756,150 @@ int main(int , char* []) {
 	}
 	BuildSDLMap();
 
-	Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml");
-	Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml");
+	Window* win3 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [](OGUI::VisualElement* ve)
+	{
+		std::vector<VisualElement*> tests;
+		VisualElement* test = QueryFirst(ve, "#AddButton");
+		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			{
+				element.SetPseudoClass(PseudoStates::Active, true);
+				return true;
+			}
+			return false;
+		};
+		test->_eventHandler.Register<PointerDownEvent, handler>(*test);
+
+		constexpr auto handler4 = +[](PointerUpEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			{	
+				element.SetPseudoClass(PseudoStates::Active, false);
+				return true;
+			}
+			return false;
+		};
+		test->_eventHandler.Register<PointerUpEvent, handler4>(*test);
+
+		constexpr auto handler2 = +[](MouseEnterEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			{
+				element.SetPseudoClass(PseudoStates::Hover, true);
+				return true;
+			}
+			return false;
+		};
+		test->_eventHandler.Register<MouseEnterEvent, handler2>(*test);
+
+		constexpr auto handler3 = +[](MouseLeaveEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach)
+			{
+				element.SetPseudoClass(PseudoStates::Hover, false);
+				element.SetPseudoClass(PseudoStates::Active, false);
+				return true;
+			}
+			return false;
+		};
+		test->_eventHandler.Register<MouseLeaveEvent, handler3>(*test);
+	});
+
+	Window* win1 = nullptr;
+	// Window* win1 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml", [](OGUI::VisualElement* ve)
+	// {
+	// 	std::vector<VisualElement*> tests;
+	// 	QueryAll(ve, ".Element", tests);
+	// 	for (auto [i, test] : ipair(tests))
+	// 	{
+	// 		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+	// 		{
+	// 			if(event.currentPhase == EventRoutePhase::Reach)
+	// 				Context::Get().SetFocus(&element);
+	// 			return true;
+	// 		};
+	// 		test->_eventHandler.Register<PointerDownEvent, handler>(*test);
+	// 	}
+	// });
+
+	Window* win2 = nullptr;
+	// Window* win2 = new Window(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml", [](OGUI::VisualElement* ve)
+	// {
+	// 	if (auto child2 = QueryFirst(ve, "#Child2"))
+	// 	{
+	// 		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+	// 		{
+	// 			if(event.currentPhase == EventRoutePhase::Reach)
+	// 				Context::Get().SetFocus(&element);
+
+	// 			using namespace ostr::literal;
+	// 			olog::Info(u"Oh ♂ shit! Child2"_o);
+	// 			return true;
+	// 		};
+
+	// 		child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
+	// 	}
+
+	// 	if (auto child1 = QueryFirst(ve, "#Child1"))
+	// 	{
+	// 		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+	// 		{
+	// 			if(event.currentPhase == EventRoutePhase::Reach)
+	// 				Context::Get().SetFocus(&element);
+
+	// 			using namespace ostr::literal;
+	// 			olog::Info(u"Oh ♂ shit!"_o);
+	// 			return true;
+	// 		};
+	// 		constexpr auto handlerDown = +[](KeyDownEvent& event)
+	// 		{
+	// 			using namespace ostr::literal;
+	// 			if (event.key == EKeyCode::W)
+	// 			{
+	// 				olog::Info(u"W is Down!"_o);
+	// 			}
+	// 			return false;
+	// 		};
+	// 		constexpr auto handlerUp = +[](KeyUpEvent& event)
+	// 		{
+	// 			using namespace ostr::literal;
+	// 			if (event.key == EKeyCode::W)
+	// 			{
+	// 				olog::Info(u"W is up!"_o);
+	// 			}
+	// 			return false;
+	// 		};
+	// 		constexpr auto handlerHold = +[](KeyHoldEvent& event)
+	// 		{
+	// 			using namespace ostr::literal;
+	// 			if (event.key == EKeyCode::W)
+	// 			{
+	// 				olog::Info(u"W is Holding!"_o);
+	// 			}
+	// 			return false;
+	// 		};
+	// 		child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
+	// 		child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
+	// 		child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
+	// 		child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
+	// 	}
+	// 	{
+	// 		std::vector<VisualElement*> tests;
+	// 		QueryAll(ve, ".Test", tests);
+	// 		for (auto [i, test] : ipair(tests))
+	// 			if (i % 2 == 0)
+	// 				test->_styleClasses.push_back("Bigger");
+	// 	}
+	// });
 
 	// main loop
-	while(win1 || win2)
+	while(win1 || win2 || win3)
 	{
 		using namespace ostr::literal;
 
 		SDL_Event event;
-		while (SDL_PollEvent(&event) && (win1 || win2)) 
+		while (SDL_PollEvent(&event) && (win1 || win2 || win3)) 
 		{
 			olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			if(win1 && SDL_GetWindowID(win1->window) == event.window.windowID)
@@ -861,9 +918,18 @@ int main(int , char* []) {
 					win2 = nullptr;
 				}
 			}
+			else if(win3 && SDL_GetWindowID(win3->window) == event.window.windowID)
+			{
+				if(!SDLEventHandler(event, win3->window, win3->hWnd))
+				{
+					delete win3;
+					win3 = nullptr;
+				}
+			}
 		}
 		if(win1) win1->Update();
 		if(win2) win2->Update();
+		if(win3) win3->Update();
 	}
 	SDL_Quit();
 	return 0;
