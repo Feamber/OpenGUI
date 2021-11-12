@@ -222,7 +222,8 @@ namespace OGUI
                     return false;
                 }
                 return true;
-                }
+            }
+            return true;
         };
 
         std::shared_ptr<XmlAsset> ParseXml(const char* str, ParseXmlState& state)
@@ -480,6 +481,7 @@ namespace OGUI
     XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, std::string& out)
     {
         auto search = e.attributes.find(name);
+        auto n = name.ToStringView();
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
@@ -902,7 +904,7 @@ namespace OGUI
         // !焦点空间在失去焦点后保持当前空间内的焦点
         FindAttribute(xe, XmlBase::Attr_KeepFocused, element->isKeeyScopeFocused);
         // !导航循环模式
-        static std::map<ostr::string, ENavCycleMode> NavCycleMode = 
+        static const std::map<ostr::string, ENavCycleMode> NavCycleMode = 
         {
             {"None",        ENavCycleMode::None},
             {"Automatic",   ENavCycleMode::Automatic},
@@ -915,7 +917,7 @@ namespace OGUI
         // !是否接受焦点（启用了才能被导航到）
         FindAttribute(xe, XmlBase::Attr_Focusable, element->focusable);
         // !导航模式
-        static std::map<ostr::string, ENavMode> NavMode = 
+        static const std::map<ostr::string, ENavMode> NavMode = 
         {
             {"None",        ENavMode::None},
             {"Automatic",   ENavMode::Automatic},
@@ -931,5 +933,6 @@ namespace OGUI
         FindAttribute(xe, Attr_NavLeft, element->navExplicitLeft);
         // !向右导航目标（使用css选择器语法）
         FindAttribute(xe, Attr_NavRight, element->navExplicitRight);
+        return true;
     };
 }

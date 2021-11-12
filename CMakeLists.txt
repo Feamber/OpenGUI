@@ -64,7 +64,7 @@ add_subdirectory(thirdparty)
 file(GLOB_RECURSE sources source/*.cpp)
 file(GLOB_RECURSE headers include/*.h)
 
-if(${OPENGUI_LIB})
+if(OPENGUI_LIB)
     add_library(OpenGUI STATIC
         ${sources} 
         ${headers} 
@@ -73,7 +73,7 @@ if(${OPENGUI_LIB})
 else()
     add_library(OpenGUI SHARED ${sources} ${headers})
     message(STATUS "LibraryType: Shared Lib")
-endif(${OPENGUI_LIB})
+endif(OPENGUI_LIB)
 
 if(OPENGUI_USE_TRACY)
     add_library(TracyD SHARED ${TRACY_SOURCE})
