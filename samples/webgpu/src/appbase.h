@@ -145,10 +145,12 @@ public:
 	std::string mainXmlFile;
 	std::vector<std::string> allCssFile;
     std::vector<std::string> allXmlFile;
+	std::function<void(OGUI::VisualElement*)> onReloadedEvent;
 
-	FORCEINLINE CSSWindow(int width, int height, const char *title, const char *xmlFile)
+	FORCEINLINE CSSWindow(int width, int height, const char *title, const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
         :AppWindow(width, height, title)
     {
+		this->onReloadedEvent = std::move(onReloadedEvent);
         LoadResource(xmlFile);
     }
 
@@ -272,87 +274,7 @@ private:
     void OnReloaded()
 	{
 		auto ve = cWnd->GetWindowUI()->_children[0];
-		if (auto child2 = QueryFirst(ve, "#Child2"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit! Child2"_o);
-				return true;
-			};
-
-			child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
-		}
-
-		{
-			std::vector<VisualElement*> tests;
-			QueryAll(ve, ".Element", tests);
-			for (auto [i, test] : ipair(tests))
-			{
-				constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-				{
-					if(event.currentPhase == EventRoutePhase::Reach)
-						Context::Get().SetFocus(&element);
-					return true;
-				};
-				test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-			}
-		}
-
-		if (auto child1 = QueryFirst(ve, "#Child1"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit!"_o);
-				return true;
-			};
-			constexpr auto handlerDown = +[](KeyDownEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Down!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerUp = +[](KeyUpEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is up!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerHold = +[](KeyHoldEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Holding!"_o);
-				}
-				return false;
-			};
-			child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
-			child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
-			child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
-			child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
-		}
-		{
-			std::vector<VisualElement*> tests;
-			QueryAll(ve, ".Test", tests);
-			for (auto [i, test] : ipair(tests))
-				if (i % 2 == 0)
-					test->_styleClasses.push_back("Bigger");
-		}
-
+		onReloadedEvent(ve);
 		ve->_pseudoMask |= (int)PseudoStates::Root;
 	}
 };
