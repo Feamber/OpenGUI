@@ -45,7 +45,7 @@ link_directories(${OPENGUI_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:
 
 project(OpenGUI)
 
-include(RTTI) 
+include(Configure) 
 include(Download) 
 set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 

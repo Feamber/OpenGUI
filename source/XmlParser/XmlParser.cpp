@@ -481,7 +481,6 @@ namespace OGUI
     XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, std::string& out)
     {
         auto search = e.attributes.find(name);
-        auto n = name.ToStringView();
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
