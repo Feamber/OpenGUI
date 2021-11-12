@@ -230,7 +230,7 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		offset.y = -offset.y;
 		_worldTransform = multiply(evaluate(pos.transform), ComputedTransform::translate(offset)).to_3D();
-		_worldTransform = multiply(_worldTransform, parent->_worldTransform);
+		_worldTransform = math::multiply(_worldTransform, parent->_worldTransform);
 	}
 	else
 	{

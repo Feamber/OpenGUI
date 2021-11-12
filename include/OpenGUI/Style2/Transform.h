@@ -51,5 +51,8 @@ namespace OGUI
         TransformFunction();
     };
     ComputedTransform evaluate(gsl::span<const TransformFunction> transformList);
-    FORCEINLINE ComputedTransform multiply(ComputedTransform a, ComputedTransform b);
+    FORCEINLINE ComputedTransform multiply(ComputedTransform a, ComputedTransform b)
+    {
+        return {math::multiply(a.m, b.m), math::multiply(b.m, a.trans) + b.trans};
+    }
 }

@@ -3,11 +3,6 @@
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Core/Math.h"
 
-OGUI::ComputedTransform OGUI::multiply(ComputedTransform a, ComputedTransform b)
-{
-    return {math::multiply(a.m, b.m), math::multiply(b.m, a.trans) + b.trans};
-}
-
 OGUI::ComputedTransform OGUI::ComputedTransform::ident()
 {
     ComputedTransform result;
