@@ -35,5 +35,5 @@
     <engine:VisualElement name="" class="Test"/> 
     <engine:VisualElement name="" class="Test"/> 
     <engine:VisualElement name="" class="Test"/> 
-    <engine:Text name="Child3" class="Child"> asd阿斯顿 </engine:Text>
+    <engine:Text name="Child3" class="Child">asd词组测试非常规测试</engine:Text>
 </engine:Root>

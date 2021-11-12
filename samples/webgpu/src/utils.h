@@ -7,31 +7,40 @@
 
 // 0 ~ 1 => -1 ~ 1
 static char const triangle_vert_wgsl[] = R"(
-	[[location(0)]] var<in>  aPos : vec2<f32>;
-	[[location(1)]] var<in>  aUV  : vec2<f32>;
-	[[location(2)]] var<in>  aCol : vec4<f32>;
-	[[location(0)]] var<out> vCol : vec4<f32>;
-	[[location(1)]] var<out> vUV : vec2<f32>;
-	[[builtin(position)]] var<out> Position : vec4<f32>;
-	[[stage(vertex)]] fn main() -> void {
-		Position = vec4<f32>(aPos * 2.0, 1.0, 1.0);
-		vCol = aCol;
-        vUV = aUV;
-        vUV.y = 1.0 - vUV.y;
+	[[block]]
+	struct VertexIn {
+		[[location(0)]] aPos : vec2<f32>;
+		[[location(1)]] aUV  : vec2<f32>;
+		[[location(2)]] aCol : vec4<f32>;
+	};
+	struct VertexOut {
+		[[location(0)]] vCol : vec4<f32>;
+		[[location(1)]] vUV  : vec2<f32>;
+		[[builtin(position)]] Position : vec4<f32>;
+	};
+	[[stage(vertex)]] fn main(input : VertexIn) -> VertexOut {
+		var output : VertexOut;
+		output.Position = vec4<f32>(input.aPos * 2.0, 1.0, 1.0);
+		output.vCol = input.aCol;
+        output.vUV = input.aUV;
+        output.vUV.y = 1.0 - output.vUV.y;
+		return output;
 	}
 )";
 
 
 static char const triangle_frag_wgsl[] = R"(
-	[[location(0)]] var<in> vCol : vec4<f32>;
-	[[location(1)]] var<in> vUV : vec2<f32>;
-	[[location(0)]] var<out> fragColor : vec4<f32>;
+	struct VertexOut {
+		[[location(0)]] vCol : vec4<f32>;
+		[[location(1)]] vUV  : vec2<f32>;
+		[[builtin(position)]] Position : vec4<f32>;
+	};
+    [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+    [[group(0), binding(1)]] var mySampler : sampler;
 
-    [[binding(0), set(0)]] var<uniform_constant> myTexture : texture_2d<f32>;
-    [[binding(1), set(0)]] var<uniform_constant> mySampler : sampler;
-
-	[[stage(fragment)]] fn main() -> void {
-		fragColor = vCol * textureSample(myTexture, mySampler, vUV);
+	[[stage(fragment)]] 
+	fn main(input : VertexOut) ->  [[location(0)]] vec4<f32> {
+		return input.vCol * textureSample(myTexture, mySampler, input.vUV);
     }
 )";
 
@@ -52,13 +61,6 @@ inline static WGPUShaderModule createShader(WGPUDevice device, const char* const
 	return wgpuDeviceCreateShaderModule(device, &desc);
 }
 
-/**
- * Helper to create a buffer.
- *
- * \param[in] data pointer to the start of the raw data
- * \param[in] size number of bytes in \a data
- * \param[in] usage type of buffer
- */
 inline static WGPUBuffer createBuffer(WGPUDevice device, WGPUQueue queue,
     const void* data, size_t size, WGPUBufferUsage usage) {
 	WGPUBufferDescriptor desc = {};
@@ -67,6 +69,12 @@ inline static WGPUBuffer createBuffer(WGPUDevice device, WGPUQueue queue,
 	WGPUBuffer buffer = wgpuDeviceCreateBuffer(device, &desc);
 	wgpuQueueWriteBuffer(queue, buffer, 0, data, size);
 	return buffer;
+}
+
+inline static void writeBuffer(WGPUQueue queue, WGPUBuffer buffer,
+    const void* data, size_t size) 
+{
+	wgpuQueueWriteBuffer(queue, buffer, 0, data, size);
 }
 
 inline static WGPUTextureFormat translate(OGUI::PixelFormat format)
@@ -122,7 +130,7 @@ inline static WGPU_OGUI_Texture* createTexture(
     WGPU_OGUI_Texture* result = new WGPU_OGUI_Texture();
 
     WGPUTextureDescriptor descriptor = {};
-    descriptor.usage = WGPUTextureUsage_Sampled | WGPUTextureUsage_CopyDst;
+    descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
     descriptor.dimension = WGPUTextureDimension_2D;
     descriptor.size = {bitmap.width, bitmap.height, 1};
     descriptor.mipLevelCount = 1;
@@ -131,7 +139,7 @@ inline static WGPU_OGUI_Texture* createTexture(
     auto tex = wgpuDeviceCreateTexture(device, &descriptor);
     result->texture = tex;
 
-    WGPUTextureCopyView cpyView = {};
+    WGPUImageCopyTexture cpyView = {};
     cpyView.texture = tex;
     cpyView.mipLevel = 0;
     cpyView.origin = { 0, 0, 0 };
@@ -163,8 +171,7 @@ inline static void updateTexture(
     const OGUI::Bitmap& bitmap
 )
 {
-
-    WGPUTextureCopyView cpyView = {};
+    WGPUImageCopyTexture cpyView = {};
     cpyView.texture = texture->texture;
     cpyView.mipLevel = 0;
     cpyView.origin = { 0, 0, 0 };
@@ -201,7 +208,7 @@ inline static void freeBitMap(OGUI::Bitmap& bm)
 #include "OpenGUI/Context.h"
 static std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 
-inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, void* hWnd)
+inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, OGUI::WindowHandle hWnd)
 {
     using namespace OGUI;
     auto& ctx = OGUI::Context::Get();
@@ -408,3 +415,29 @@ inline static void BuildSDLMap()
 	gEKeyCodeLut[SDLK_y] = EKeyCode::Y;
 	gEKeyCodeLut[SDLK_z] = EKeyCode::Z;
 }
+
+FORCEINLINE auto InitializeWGPUDevice() 
+	-> std::tuple<webgpu::instance*, WGPUDevice, WGPUQueue>
+{
+	auto init_window = SDL_CreateWindow("TestWindow",
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		50, 50, 0
+	);
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(init_window, &wmInfo);
+#if defined(_WIN32) || defined(_WIN64)
+	const auto hWnd = (window::Handle)wmInfo.info.win.window;
+#endif
+	if(auto wgpu = webgpu::create(hWnd))
+	{
+		auto device = getDevice(wgpu);
+		auto queue = wgpuDeviceGetQueue(device);
+		SDL_DestroyWindow(init_window);
+		return std::make_tuple(wgpu, device, queue);
+	}
+	return {nullptr, nullptr, nullptr};
+}
+
+bool InstallBitmapParser();
+bool InstallLogger();

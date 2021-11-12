@@ -5,15 +5,14 @@
 #include <memory>
 #include <string>
 #include "OpenGUI/Core/Math.h"
-#include "OpenGUI/Style/Style.h"
+#include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "event/event.h"
 #include "yoga/Yoga.h"
-#include "OpenGUI/Style/StyleSheet.h"
-#include "OpenGUI/Style/Style.h"
+#include "OpenGUI/Style2/ComputedStyle.h"
 #include "OpenGUI/Event/EventHandler.h"
-#include "OpenGUI/Animation/AnimStyle.h"
+#include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/FocusEvent.h"
 
@@ -55,7 +54,7 @@ namespace OGUI
 		bool IsParent(VisualElement*);
 		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 
-		virtual bool IsA(std::string_view type) { return GetFullTypeName() == type; }
+		virtual bool IsA(std::string_view type) { return GetTypeName() == type; }
 		virtual std::string_view GetTypeName() { return "VisualElement"; }
 		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
 
@@ -123,9 +122,8 @@ namespace OGUI
 		bool _procedureStyleDirty = false;
 		bool _layoutDirty = false;
 		Rect _prevLayout;
-		Style _style;
-		Style _preAnimatedStyle;
-		struct CachedStyle* _sharedStyle = nullptr;
+		ComputedStyle _style;
+		ComputedStyle _preAnimatedStyle;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
@@ -141,8 +139,7 @@ namespace OGUI
 
 #pragma region Animation
 	public:
-		std::vector<AnimationStyle> _animStyles;
-		std::vector<AnimRunContext> _animContext;
+		std::vector<ComputedAnim> _anims;
 		bool _prevEvaluating = false;
 #pragma endregion
 

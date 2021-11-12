@@ -4,11 +4,11 @@
 
 namespace OGUI
 {
-    class AsyncImage
+    class AsyncTexture2D
 	{
 		friend class RenderTextureManager;
 	public:
-		~AsyncImage();
+		~AsyncTexture2D();
 		inline const TextureHandle Get(void) const
 		{
 			return _handle;
@@ -18,26 +18,12 @@ namespace OGUI
 			return is_ready;
 		}
 	protected:
+		// Setup in RenderTextureManager::Update
 		TextureHandle _handle = nullptr;
 		std::atomic_bool is_ready;
 	};
 
 	using Region = Rect;
-	class AsyncStaticAtlas : public AsyncImage
-	{
-		friend class RenderTextureManager;
-	public:
-		
-	protected:
-		OGUI::vector<std::string_view> region_names;
-	};
-
-	class AsyncDynamicAtlas : public AsyncStaticAtlas
-	{
-		
-	public:
-		
-	};
 
 	enum ERenderTextureType
 	{
@@ -48,12 +34,12 @@ namespace OGUI
 		Count
 	};
 
-	class AsyncRenderTexture
+	class AsyncRenderTexture 
 	{
 		friend class RenderTextureManager;
 	public:
 		~AsyncRenderTexture();
-		AsyncRenderTexture(std::shared_ptr<AsyncImage> image_handle, ERenderTextureType type);
+		AsyncRenderTexture(std::unique_ptr<AsyncTexture2D> image_handle, ERenderTextureType type);
 		inline const TextureHandle Get(void) const
 		{
 			return device_image->Get();
@@ -63,8 +49,7 @@ namespace OGUI
 			return device_image->valid();
 		}
 	protected:
-		std::shared_ptr<AsyncImage> device_image;
-		std::shared_ptr<AsyncStaticAtlas> static_atlas;
+		std::unique_ptr<AsyncTexture2D> device_image;
 
 		ERenderTextureType texture_type;
 	};

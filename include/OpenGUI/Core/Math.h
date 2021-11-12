@@ -193,5 +193,23 @@ namespace math
 		Vector3f scale{scale2d.X, scale2d.Y, 1};
 		return make_transform(pos, scale, rot);
 	}
+
+	FORCEINLINE float2x2 multiply
+	(
+		float2x2 a, float2x2 b
+	)
+	{
+		auto va = a.data_view(), vb = b.data_view();
+		float result[] = {va[0]*vb[0] + va[1]*vb[2], va[0]*vb[1] + va[1]*vb[3], va[2]*vb[0] + va[3]*vb[2], va[2]*vb[1] + va[3]*vb[3]};
+		return float2x2{result};
+	}
+
+	FORCEINLINE Vector2f multiply
+	(
+		float2x2 a, Vector2f b
+	)
+	{
+		return Vector2f{b.x * a.M[0][0] + b.y * a.M[1][0], b.x*a.M[0][1] + b.y * a.M[1][1]};
+	}
 }
 }

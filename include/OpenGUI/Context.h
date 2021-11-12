@@ -1,8 +1,7 @@
 #pragma once
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include "OpenGUI/Core/AsyncFile.h"
-#include "OpenGUI/Style/VisualStyleSystem.h"
-#include "OpenGUI/Animation/VisualAnimationSystem.h"
+#include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/Types.h"
 #include <algorithm>
@@ -28,7 +27,6 @@ namespace OGUI
 	class Context;
 	class RenderTextureManager;
 
-	using WindowHandle = void*;
 	class WindowContext
 	{
 		friend class Context;
@@ -36,16 +34,12 @@ namespace OGUI
 		WindowContext();
 		~WindowContext();
 
-		inline float GetWindowX() const { return X; }
-		inline float GetWindowY() const { return Y; }
-		inline void SetWindowX(float newX) { X = newX; }
-		inline void SetWindowY(float newY) { Y = newY; }
+		inline float GetWidth() const { return window->GetWidth(); }
+		inline float GetHeight() const { return window->GetHeight(); }
 		inline WindowHandle GetWindowHandle() const { return window; }
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
 		std::shared_ptr<PrimitiveDraw::DrawContext> currentDrawCtx;
-		std::shared_ptr<RenderInterface> renderImpl;
-		std::unique_ptr<RenderTextureManager> textureManager;
 	protected:
 		float X; float Y;
 		WindowHandle window;
@@ -81,7 +75,6 @@ namespace OGUI
 
 		//Systems
 		VisualStyleSystem styleSystem;
-		VisualAnimationSystem animSystem;
 
 		//Global States
 		float _deltaTime = 0.f;
@@ -91,6 +84,7 @@ namespace OGUI
 		WindowContext& Create(const WindowHandle window);
 		void Remove(const WindowHandle window);
 		void Update(const WindowHandle window, float dt);
+		void PreparePrimitives(const WindowHandle window);
 		void Render(const WindowHandle window);
 		void MarkDirty(VisualElement* element, DirtyReason reason);
 
@@ -112,10 +106,12 @@ namespace OGUI
 		VisualElement* _elementUnderCursor = nullptr;
 	public:
 		std::unique_ptr<godot::TextServer> _textServer;
+		std::unique_ptr<RenderTextureManager> textureManager;
 		//Hooks
 		std::unique_ptr<InputInterface>  inputImpl;
 		std::unique_ptr<SystemInterface> systemImpl;
 		std::unique_ptr<LogInterface> logImpl;
+		std::unique_ptr<RenderInterface> renderImpl;
 		
 		std::unique_ptr<FileInterface>   fileImpl;
 		std::unique_ptr<BitmapParserInterface>   bmParserImpl;

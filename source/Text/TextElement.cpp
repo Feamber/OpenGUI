@@ -14,6 +14,7 @@
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "godot/text_server_adv.h"
+#include "OpenGUI/Style2/generated/text.h"
 
 
     // helper type for the visitor #4
@@ -30,7 +31,7 @@ namespace OGUI
         {
             data.reset(new godot::FontData);
             auto& ctx = Context::Get().fileImpl;
-            auto f = ctx->Open("res/Vera.ttf");
+            auto f = ctx->Open("res/fireflysung.ttf");
             if(!f)
                 return nullptr;
             auto length = ctx->Length(f);
@@ -168,12 +169,13 @@ namespace OGUI
         if(_paragraphDirty)
         {
             _paragraph->clear();
-            BuildParagraphRec(_paragraph);
+            auto& txt = StyleText::Get(_style);
+            BuildParagraphRec(_paragraph, txt);
             MarkLayoutDirty();
         }
     }
 
-    void TextElement::BuildParagraphRec(godot::TextParagraph* p)
+    void TextElement::BuildParagraphRec(godot::TextParagraph* p, const StyleText& txt)
     {
         for(auto& inl : _inlines)
         {
@@ -181,7 +183,8 @@ namespace OGUI
             {
                 [&](ostr::string& text) 
                 { 
-                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), _style.fontSize); 
+                    godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
+                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), txt.fontSize, color); 
                 },
                 [&](VisualElement*& child) 
                 { 
@@ -190,7 +193,7 @@ namespace OGUI
                 },
                 [&](TextElement*& child) 
                 { 
-                    child->BuildParagraphRec(p); 
+                    child->BuildParagraphRec(p, txt); 
                 }
             }, inl);
         }

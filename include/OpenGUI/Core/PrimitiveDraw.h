@@ -26,10 +26,7 @@ namespace OGUI
 
     using VertexList = std::vector<Vertex>;
     using IndexList = std::vector<uint16_t>;
-    struct BatchedPrimDrawSpan {
-        PrimDraw* start;
-        uint64_t count;
-    };
+
     struct OGUI_API PrimDrawList
     {
         inline void ValidateAndBatch()
@@ -54,7 +51,7 @@ namespace OGUI
             // batch not implemented now.
             //std::sort(command_list.begin(), command_list.end(),
             //    [](const PrimDraw& a, const PrimDraw& b){
-            //        return a.texture.value < b.texture.value;
+            //        return a.texture < b.texture;
             //    });
         }
         VertexList vertices;

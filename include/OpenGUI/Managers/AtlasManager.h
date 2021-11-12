@@ -8,7 +8,6 @@ namespace OGUI
     class IOThread;
     class AsyncRenderTexture;
     class AsyncBitmap;
-    class AsyncDynamicAtlas;
 
     
 }

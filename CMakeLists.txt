@@ -45,8 +45,6 @@ link_directories(${OPENGUI_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:
 
 project(OpenGUI)
 
-add_subdirectory(thirdparty)
-
 include(RTTI) 
 include(Download) 
 set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
@@ -55,9 +53,12 @@ set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 option(OPENGUI_USE_FREETYPE "Use FreeType as Text Rasterization Lib." ON)
 option(OPENGUI_USE_HARFBUZZ "Use Harfbuzz as Text Shape Lib." ON)
 option(OPENGUI_USE_ICU "Use libICU" ON)
+option(OPENGUI_USE_TRACY "Use Tracy" ON)
 option(OPENGUI_LIB "Build VM as Static Library." OFF)
 option(OPENGUI_TESTS "Build Test Targets." ON)
 option(OPENGUI_SAMPLES "Build Test Targets." ON)
+
+add_subdirectory(thirdparty)
 
 # Start Configure OpenGUI
 file(GLOB_RECURSE sources source/*.cpp)
@@ -74,6 +75,13 @@ else()
     message(STATUS "LibraryType: Shared Lib")
 endif(${OPENGUI_LIB})
 
+if(OPENGUI_USE_TRACY)
+    add_library(TracyD SHARED ${TRACY_SOURCE})
+    target_include_directories(TracyD PUBLIC ${TRACY_INCLUDE_DIR})
+    target_compile_definitions(OpenGUI PUBLIC -DUSE_TRACY)
+    target_link_libraries(OpenGUI PUBLIC TracyD)
+endif()
+
 target_include_directories(OpenGUI 
     PUBLIC 
     include
@@ -82,7 +90,9 @@ target_include_directories(OpenGUI
     include/External/icu/common
     include/External/harfbuzz
     ${PLATFORM_INCLUDES}
+    ${TRACY_INCLUDE_DIR}
 )
+
 target_link_libraries(OpenGUI 
     PUBLIC fmt freetype harfbuzz icucommon
 )

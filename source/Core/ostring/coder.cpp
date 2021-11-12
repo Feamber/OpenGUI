@@ -1,5 +1,5 @@
-#include "OpenGui/Core/ostring/coder.h"
-#include "OpenGui/Core/ostring/helpers.h"
+#include "OpenGUI/Core/ostring/coder.h"
+#include "OpenGUI/Core/ostring/helpers.h"
 #include <string>
 #include <string_view>
 

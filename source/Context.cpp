@@ -17,11 +17,10 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
-#include "text/godot/text_server_adv.h"
+#include "Text/godot/text_server_adv.h"
 
 OGUI::WindowContext::WindowContext()
 {
-	textureManager = std::make_unique<RenderTextureManager>(*this);
 	ui = new VisualWindow();
 };
 
@@ -125,29 +124,36 @@ void OGUI::Context::Remove(const OGUI::WindowHandle window)
 		}
 	}
 }
-
+ 
 void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 {
 	auto& wctx = GetOrRegisterWindowContext(window);
 	auto root = wctx.GetWindowUI();
-	wctx.textureManager->Update();
+	// Texture Streaming
+	textureManager->Update();
 	// Update Window
 	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
 	_deltaTime = dt;
-	animSystem.Update(root);
 	styleSystem.Update(root);
 	UpdateLayout(root);
 	TransformRec(root);
 }
 
-void OGUI::Context::Render(const OGUI::WindowHandle window)
+void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 {
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
 	wctx.currentDrawCtx->resolution = Vector2f(wctx.X, wctx.Y);
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
-	if(wctx.renderImpl) wctx.renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims);
+	wctx.currentDrawCtx->prims.ValidateAndBatch();
+}
+
+void OGUI::Context::Render(const OGUI::WindowHandle window)
+{
+	auto& wctx = GetWindowContext(window);
+	if(renderImpl.get()) 
+		renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims, wctx);
 }
 
 void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
@@ -378,8 +384,8 @@ OGUI::WindowContext& OGUI::Context::GetOrRegisterWindowContext(const OGUI::Windo
 	}
 	WindowContext& newOne = *windowContexts.emplace_back(std::make_unique<WindowContext>()).get();
 	newOne.window = window;
-	newOne.X = 0;
-	newOne.Y = 0;
+	newOne.X = window->GetWidth();
+	newOne.Y = window->GetHeight();
 	return newOne;
 }
 
