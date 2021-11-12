@@ -8,7 +8,7 @@ import os.path
 import re
 import sys
 
-from data import PHYSICAL_CORNERS, PHYSICAL_SIDES, PHYSICAL_SIZES, Longhand, Shorthand, StyleStruct
+from data import PHYSICAL_CORNERS, PHYSICAL_SIDES, PHYSICAL_SIZES, StyleStruct, render, write
 import data
 
 
@@ -93,7 +93,7 @@ def gen_border():
 def gen_text():
     struct = StyleStruct("text", True)
     def add_longhand(*args, **kwargs):
-        struct.longhands.append(Longhand(*args, **kwargs))
+        struct.add_longhand(*args, **kwargs)
     add_longhand("font-size", "float", "20.f")
     add_longhand("color", "Color4f", "Color4f(0,0,0,1)")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
@@ -109,7 +109,7 @@ def gen_text():
 def gen_background():
     struct = StyleStruct("background", False)
     def add_longhand(*args, **kwargs):
-        struct.longhands.append(Longhand(*args, **kwargs))
+        struct.add_longhand(*args, **kwargs)
     add_longhand("background-color",	"Color4f",	    "Color4f(1.f,1.f,1.f,1.f)")	
     add_longhand("background-image",	"std::string",	"{}", parser = "ParseUrl")
     struct.headers.append("OpenGUI/Core/Math.h")
@@ -125,7 +125,7 @@ def gen_background():
 def gen_animation():
     struct = StyleStruct("animation", False)
     def add_longhand(*args, **kwargs):
-        struct.longhands.append(Longhand(*args, **kwargs))
+        struct.add_longhand(*args, **kwargs)
     add_longhand("animation-name", "std::string", "{}")
     add_longhand("animation-duration", "float", "1.f", parser = "ParseTime")
     add_longhand("animation-delay", "float", "0.f", parser = "ParseTime")
@@ -146,52 +146,12 @@ def gen_animation():
     write(HEADER_OUT_DIR, "animation.h", header_file)
     write(SOURCE_OUT_DIR, "animation.cpp", source_file)
 
-
-
 def main():
     gen_position()
     gen_border()
     gen_text()
     gen_background()
     gen_animation()
-
-
-def abort(message):
-    print(message, file=sys.stderr)
-    sys.exit(1)
-    
-def render(filename, **context):
-    try:
-        lookup = TemplateLookup(
-            directories=[BASE], input_encoding="utf8", strict_undefined=True
-        )
-        template = Template(
-            open(filename, "rb").read(),
-            filename=filename,
-            input_encoding="utf8",
-            lookup=lookup,
-            strict_undefined=True,
-        )
-        # Uncomment to debug generated Python code:
-        # write("/tmp", "mako_%s.py" % os.path.basename(filename), template.code)
-        return template.render(**context)
-    except Exception:
-        # Uncomment to see a traceback in generated Python code:
-        # raise
-        abort(exceptions.text_error_template().render())
-
-
-RE_PYTHON_ADDR = re.compile(r"<.+? object at 0x[0-9a-fA-F]+>")
-        
-def write(directory, filename, content):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    full_path = os.path.join(directory, filename)
-    open(full_path, "wb").write(content.encode("utf-8"))
-
-    python_addr = RE_PYTHON_ADDR.search(content)
-    if python_addr:
-        abort('Found "{}" in {} ({})'.format(python_addr.group(0), filename, full_path))
 
 if __name__ == "__main__":
     main()

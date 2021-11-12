@@ -202,3 +202,42 @@ class StyleStruct(object):
         sub_properties = [self.name_to_longhand[s] for s in sub_properties]
         shorthand = Shorthand(name, sub_properties, *args, **kwargs)
         self.shorthands.append(shorthand)
+
+        
+
+def abort(message):
+    print(message, file=sys.stderr)
+    sys.exit(1)
+    
+def render(filename, **context):
+    try:
+        lookup = TemplateLookup(
+            directories=[BASE], input_encoding="utf8", strict_undefined=True
+        )
+        template = Template(
+            open(filename, "rb").read(),
+            filename=filename,
+            input_encoding="utf8",
+            lookup=lookup,
+            strict_undefined=True,
+        )
+        # Uncomment to debug generated Python code:
+        # write("/tmp", "mako_%s.py" % os.path.basename(filename), template.code)
+        return template.render(**context)
+    except Exception:
+        # Uncomment to see a traceback in generated Python code:
+        # raise
+        abort(exceptions.text_error_template().render())
+
+
+RE_PYTHON_ADDR = re.compile(r"<.+? object at 0x[0-9a-fA-F]+>")
+        
+def write(directory, filename, content):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    full_path = os.path.join(directory, filename)
+    open(full_path, "wb").write(content.encode("utf-8"))
+
+    python_addr = RE_PYTHON_ADDR.search(content)
+    if python_addr:
+        abort('Found "{}" in {} ({})'.format(python_addr.group(0), filename, full_path))

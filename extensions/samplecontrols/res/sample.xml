@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:Root xmlns:engine="OGUI">
+    <engine:Style path="res/sample.css"/>
+</engine:Root>

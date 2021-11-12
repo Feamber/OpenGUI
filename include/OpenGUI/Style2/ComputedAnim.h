@@ -11,6 +11,12 @@ namespace OGUI
 		bool yielding = false;
 		bool evaluating = true;
 
+        void SetTime(float t)
+        {
+            time = t;
+            evaluating = true;
+        }
+
         AnimStyle style;
         StyleSheet* sheet;
         struct Frame
