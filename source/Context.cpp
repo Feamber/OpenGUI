@@ -213,10 +213,8 @@ void OGUI::Context::ReleasePointer()
 	inputImpl->CapturePointer(window->handle, false);
 	if(_windowUnderCursor)
 	{
-		int sx, sy;
-		inputImpl->GetCursorPos(sx, sy);
-		int x = sx, y = sy;
-		inputImpl->ClientToScreen(_windowUnderCursor, x, y);
+		int x, y;
+		inputImpl->GetCursorPos(x, y);
 		int32 windowWidth = _windowUnderCursor->GetWidth(), windowHeight =  _windowUnderCursor->GetHeight();
 		auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
 		auto picked = PickElement(_windowUnderCursor, point);

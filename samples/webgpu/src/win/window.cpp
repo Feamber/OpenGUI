@@ -47,13 +47,7 @@ namespace OGUI
 		}
 		virtual bool GetCursorPos(int32& x, int32& y) override
 		{
-			POINT cursor;
-			if (::GetCursorPos(&cursor))
-			{
-				x = cursor.x;
-				y = cursor.y;
-				return true;
-			}
+			SDL_GetMouseState(&x, &y);
 			return false;
 		}
 		virtual bool IsKeyToggled(EMouseKey key_code) override
@@ -95,20 +89,6 @@ namespace OGUI
 			SDL_CaptureMouse((SDL_bool)enabled);
 			//SDL_SetWindowGrab(winImpl->window, (SDL_bool)enabled);
 		}
-
-		virtual void ClientToScreen(WindowHandle window, int& x, int& y) override 
-		{
-			POINT p{x, y};
-			::ClientToScreen((HWND)window->GetNativeHandle(), &p);
-			x = p.x; y = p.y;
-		};
-
-		virtual void ScreenToClient(WindowHandle window, int& x, int& y) override
-		{
-			POINT p{x, y};
-			::ScreenToClient((HWND)window->GetNativeHandle(), &p);
-			x = p.x; y = p.y;
-		};
 	};
 }
 
