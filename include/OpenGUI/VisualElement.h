@@ -143,8 +143,8 @@ namespace OGUI
 		std::vector<ComputedAnim> _anims;
 		std::vector<ComputedAnim> _procedureAnims;
 		bool _prevEvaluating = false;
-		void PlayAnimation(const AnimStyle& style);
-		void SetAnimationTime(std::string_view name);
+		bool PlayAnimation(const AnimStyle& style);
+		void SetAnimationTime(std::string_view name, float time);
 #pragma endregion
 
 #pragma region PseudoElement

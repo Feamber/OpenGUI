@@ -1,5 +1,12 @@
 
 import re
+import os.path
+import sys
+
+BASE = os.path.dirname(__file__.replace("\\", "/"))
+from mako import exceptions
+from mako.lookup import TemplateLookup
+from mako.template import Template
 
 PHYSICAL_SIDES = ["left", "top", "right", "bottom"]
 LOGICAL_SIDES = ["block-start", "block-end", "inline-start", "inline-end"]

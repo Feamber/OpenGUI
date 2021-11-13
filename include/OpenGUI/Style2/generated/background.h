@@ -13,7 +13,7 @@
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
-    struct StyleBackground
+    struct OGUI_API StyleBackground
     {
         constexpr static std::string_view name = "background"sv;
         constexpr static size_t hash = OGUI::hash(name);
@@ -26,11 +26,11 @@ namespace OGUI
         Color4f backgroundColor;
         std::string backgroundImage;
         void Initialize();
-        OGUI_API static const StyleBackground& GetDefault();
-        OGUI_API static const StyleBackground& Get(const ComputedStyle& style);
-        OGUI_API static StyleBackground* TryGet(const ComputedStyle& style);
-        OGUI_API static StyleBackground& GetOrAdd(ComputedStyle& style);
-        OGUI_API static void Dispose(ComputedStyle& style);
+        static const StyleBackground& GetDefault();
+        static const StyleBackground& Get(const ComputedStyle& style);
+        static StyleBackground* TryGet(const ComputedStyle& style);
+        static StyleBackground& GetOrAdd(ComputedStyle& style);
+        static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);

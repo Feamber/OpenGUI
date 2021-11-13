@@ -9,6 +9,7 @@
 #include <ctime>
 #include <functional>
 #include<assert.h>
+#include "SampleControls.h"
 
 std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 extern void InstallInput();
@@ -567,6 +568,106 @@ SampleWindow* CreateCssTestWindow()
 	});
 }
 
+	static Name hour_ = "hour";
+	static Name minute_ = "minute";
+	static Name second_ = "second";
+	static Name count_ = "count";
+
+struct DataBindSample : public AttrBag
+{
+	ostr::string hour = "00";
+	ostr::string minute = "00";
+	ostr::string second = "00";
+	int count = 0;
+	std::shared_ptr<EventBind::Handler> AddEvent;
+	DataBindSample()
+	{
+		AddSource({hour_, &hour});
+		AddSource({minute_, &minute});
+		AddSource({second_, &second});
+		AddSource({count_, &count});
+		AddEvent = EventBind::AddHandler<PointerDownEvent&, VisualElement&>("Add", 
+		{[&](PointerDownEvent& event, VisualElement& element)
+		{
+			++count;
+			Notify(count_);
+		}});
+	}
+
+	SampleWindow* MakeWindow()
+	{
+		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [&](OGUI::VisualElement* ve)
+		{
+			VisualElement* test = QueryFirst(ve, "#AddButton");
+			BindButtonEvents(test);
+			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+			{
+				if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+				{
+					static Name pointerDownName = "pointer-down";
+					if(auto bind = element.GetEventBind(pointerDownName))
+						EventBind::Broadcast<PointerDownEvent&, VisualElement&>(*bind, event, element);  //派发事件
+					return true;
+				}
+				return false;
+			};
+			test->_eventHandler.Register<PointerDownEvent, handler>(*test);
+			
+			//所有文字绑定到数据源上
+			std::vector<VisualElement*> Texts;
+			QueryAll(ve, "TextElement", Texts);
+			for(auto Text : Texts)
+				((TextElement*)Text)->Bind(*this);
+		});
+	}
+
+	void Update()
+	{
+		char buffer[4];
+		time_t t = time(0);
+
+		strftime(buffer, sizeof(buffer), "%H", localtime(&t));
+		hour = buffer;
+		Notify(hour_);
+
+		strftime(buffer, sizeof(buffer), "%M", localtime(&t));
+		minute = buffer;
+		Notify(minute_);
+
+		strftime(buffer, sizeof(buffer), "%S", localtime(&t));
+		second = buffer;
+		Notify(second_);
+	}
+};
+	static Name value_ = "value";
+
+struct ExternalControlSample : public AttrBag
+{
+	float value = 0.f;
+	ExternalControlSample()
+	{
+		AddSource({value_, &value});
+		AddBind({value_, &value, [&](bool valid)
+		{
+			olog::Info(u"value updated: {}"_o.format(value));
+			Notify(value_);
+		}});
+	}
+
+	SampleWindow* MakeWindow()
+	{
+		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", "res/samplecontrols/sample.xml", [&](OGUI::VisualElement* ve)
+		{
+			VisualElement* test = QueryFirst(ve, "#TestSlider");
+			Bind(*test);
+			std::vector<VisualElement*> allElement;
+			QueryAll(ve, "*",  allElement);
+			for(auto element : allElement)
+				element->Bind(*this);
+		});
+	}
+};
+
 int main(int , char* []) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
@@ -587,55 +688,9 @@ int main(int , char* []) {
 	}
 
 	std::vector<SampleWindow*> windows;
-
-	ostr::string hour = "00";
-	static Name hour_ = "hour";
-
-	ostr::string minute = "00";
-	static Name minute_ = "minute";
-
-	ostr::string second = "00";
-	static Name second_ = "second";
-
-	int count = 0;
-	static Name count_ = "count";
-
-	AttrBag bag; //创建数据包
-	bag.AddSource({hour_, &hour});
-	bag.AddSource({minute_, &minute});
-	bag.AddSource({second_, &second});
-	bag.AddSource({count_, &count});
-	// 提供事件处理
-	std::shared_ptr<EventBind::Handler> AddEvent = EventBind::AddHandler<PointerDownEvent&, VisualElement&>("Add", 
-	{[&](PointerDownEvent& event, VisualElement& element)
-	{
-		++count;
-		bag.Notify(count_);
-	}});
-	SampleWindow* win3 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [&](OGUI::VisualElement* ve)
-	{
-		VisualElement* test = QueryFirst(ve, "#AddButton");
-		BindButtonEvents(test);
-		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
-			{
-				static Name pointerDownName = "pointer-down";
-				if(auto bind = element.GetEventBind(pointerDownName))
-					EventBind::Broadcast<PointerDownEvent&, VisualElement&>(*bind, event, element);  //派发事件
-				return true;
-			}
-			return false;
-		};
-		test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-		
-		//所有文字绑定到数据源上
-		std::vector<VisualElement*> Texts;
-		QueryAll(ve, "TextElement", Texts);
-		for(auto Text : Texts)
-			((TextElement*)Text)->Bind(bag);
-	});
-	windows.push_back(win3);
+	SampleControls::Install();
+	ExternalControlSample sample;
+	windows.push_back(sample.MakeWindow());
 
 	// main loop
 	while(!windows.empty())
@@ -643,21 +698,6 @@ int main(int , char* []) {
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");
-
-		char buffer[4];
-		time_t t = time(0);
-
-		strftime(buffer, sizeof(buffer), "%H", localtime(&t));
-		hour = buffer;
-		bag.Notify(hour_);
-
-		strftime(buffer, sizeof(buffer), "%M", localtime(&t));
-		minute = buffer;
-		bag.Notify(minute_);
-
-		strftime(buffer, sizeof(buffer), "%S", localtime(&t));
-		second = buffer;
-		bag.Notify(second_);
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && !windows.empty()) 

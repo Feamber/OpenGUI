@@ -15,7 +15,7 @@
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
-    struct StyleBorder
+    struct OGUI_API StyleBorder
     {
         constexpr static std::string_view name = "border"sv;
         constexpr static size_t hash = OGUI::hash(name);
@@ -41,11 +41,11 @@ namespace OGUI
         YGValue borderBottomRightRadius;
         YGValue borderBottomLeftRadius;
         void Initialize();
-        OGUI_API static const StyleBorder& GetDefault();
-        OGUI_API static const StyleBorder& Get(const ComputedStyle& style);
-        OGUI_API static StyleBorder* TryGet(const ComputedStyle& style);
-        OGUI_API static StyleBorder& GetOrAdd(ComputedStyle& style);
-        OGUI_API static void Dispose(ComputedStyle& style);
+        static const StyleBorder& GetDefault();
+        static const StyleBorder& Get(const ComputedStyle& style);
+        static StyleBorder* TryGet(const ComputedStyle& style);
+        static StyleBorder& GetOrAdd(ComputedStyle& style);
+        static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);

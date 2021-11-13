@@ -12,7 +12,7 @@
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
-    struct StyleText
+    struct OGUI_API StyleText
     {
         constexpr static std::string_view name = "text"sv;
         constexpr static size_t hash = OGUI::hash(name);
@@ -25,11 +25,11 @@ namespace OGUI
         float fontSize;
         Color4f color;
         void Initialize();
-        OGUI_API static const StyleText& GetDefault();
-        OGUI_API static const StyleText& Get(const ComputedStyle& style);
-        OGUI_API static StyleText* TryGet(const ComputedStyle& style);
-        OGUI_API static StyleText& GetOrAdd(ComputedStyle& style);
-        OGUI_API static void Dispose(ComputedStyle& style);
+        static const StyleText& GetDefault();
+        static const StyleText& Get(const ComputedStyle& style);
+        static StyleText* TryGet(const ComputedStyle& style);
+        static StyleText& GetOrAdd(ComputedStyle& style);
+        static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);

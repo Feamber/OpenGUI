@@ -90,9 +90,13 @@ namespace OGUI
 
     void AttrBag::Notify(Name name)
     {
-         auto iter = sources.find(name);
+        if(_guard)
+            return;
+        _guard = true;
+        auto iter = sources.find(name);
         if(iter!=sources.end())
             iter->second.DataChange();
+        _guard = false;
     }
 
     void AttrBag::Bind(AttrBag& other)
@@ -157,7 +161,7 @@ namespace OGUI
         {
             for(auto& bind : by->binds)
                 bind.source = nullptr;
-            by->bindingTo.erase(std::remove(by->bindingTo.begin(), bindingTo.end(), this), by->bindingTo.end());
+            by->bindingTo.erase(std::remove(by->bindingTo.begin(), by->bindingTo.end(), this), by->bindingTo.end());
         }
     }
 
@@ -226,6 +230,11 @@ namespace OGUI
         RegisterAttrConverter<float, int>([](void* source, void* out)
             {
                 *((int*)out) = *((float*)source);
+                return true;
+            });
+        RegisterAttrConverter<float, ostr::string>([](void* source, void* out)
+            {
+                *((ostr::string*)out) = std::to_string(*((float*)source));
                 return true;
             });
         

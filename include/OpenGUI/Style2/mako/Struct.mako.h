@@ -13,7 +13,7 @@
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
-    struct Style${struct.ident}
+    struct OGUI_API Style${struct.ident}
     {
         constexpr static std::string_view name = "${struct.name}"sv;
         constexpr static size_t hash = OGUI::hash(name);
@@ -31,11 +31,11 @@ namespace OGUI
         ${prop.storage_type} ${prop.ident};
     %endfor
         void Initialize();
-        OGUI_API static const Style${struct.ident}& GetDefault();
-        OGUI_API static const Style${struct.ident}& Get(const ComputedStyle& style);
-        OGUI_API static Style${struct.ident}* TryGet(const ComputedStyle& style);
-        OGUI_API static Style${struct.ident}& GetOrAdd(ComputedStyle& style);
-        OGUI_API static void Dispose(ComputedStyle& style);
+        static const Style${struct.ident}& GetDefault();
+        static const Style${struct.ident}& Get(const ComputedStyle& style);
+        static Style${struct.ident}* TryGet(const ComputedStyle& style);
+        static Style${struct.ident}& GetOrAdd(ComputedStyle& style);
+        static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);

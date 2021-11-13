@@ -238,6 +238,7 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 	event.button = button;
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
+	event.position = point;
 	RouteEvent(picked, event);
 	return true;
 }
@@ -255,6 +256,7 @@ bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button,
 	event.pointerType = "mouse";
 	event.button = button;
 	event.gestureType = EGestureEvent::None;
+	event.position = point;
 	RouteEvent(picked, event);
 	return true;
 }
@@ -274,6 +276,13 @@ bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, int32 x, int32 
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
 	auto picked = PickElement(window, point);
 	UpdateHover(picked);
+	if (!picked)
+		return false;
+	PointerMoveEvent event;
+	event.pointerType = "mouse";
+	event.gestureType = EGestureEvent::None;
+	event.position = point;
+	RouteEvent(picked, event);
 	return false;
 }
 

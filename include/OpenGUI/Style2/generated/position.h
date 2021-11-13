@@ -17,7 +17,7 @@
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
-    struct StylePosition
+    struct OGUI_API StylePosition
     {
         constexpr static std::string_view name = "position"sv;
         constexpr static size_t hash = OGUI::hash(name);
@@ -89,11 +89,11 @@ namespace OGUI
         YGWrap flexWrap;
         YGDisplay flexDisplay;
         void Initialize();
-        OGUI_API static const StylePosition& GetDefault();
-        OGUI_API static const StylePosition& Get(const ComputedStyle& style);
-        OGUI_API static StylePosition* TryGet(const ComputedStyle& style);
-        OGUI_API static StylePosition& GetOrAdd(ComputedStyle& style);
-        OGUI_API static void Dispose(ComputedStyle& style);
+        static const StylePosition& GetDefault();
+        static const StylePosition& Get(const ComputedStyle& style);
+        static StylePosition* TryGet(const ComputedStyle& style);
+        static StylePosition& GetOrAdd(ComputedStyle& style);
+        static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);

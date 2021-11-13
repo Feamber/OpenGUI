@@ -1,0 +1,32 @@
+:root {
+    width: 700px;
+    height:600px;
+    background-color:rgb(255, 255, 255, 0.8);
+    background-image:url(res/test4.jpg);
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#TestSlider {
+    width : 200px;
+    height : 20px;
+    background-color: white;
+}
+
+#SliderBar {
+    width : 20px;
+    height : 40px;
+    transform: translate(-10px, 10px);
+    background-color: royalblue;
+}
+
+TextElement {
+    background-color: transparent;
+}
+
+@keyframes SliderBar-slide {
+    to {
+        transform: translate(190px, 10px);
+    }
+}

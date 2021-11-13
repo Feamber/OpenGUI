@@ -64,6 +64,7 @@ namespace OGUI
         void Bind(AttrBag& other);
         void Unbind(AttrBag& other);
         ~AttrBag();
+        bool _guard = false;
     protected:
         void Clear();
     };

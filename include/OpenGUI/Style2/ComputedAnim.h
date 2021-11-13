@@ -4,7 +4,7 @@
 
 namespace OGUI
 {
-    struct ComputedAnim
+    struct OGUI_API ComputedAnim
     {
 		float time = 0.f;
 		bool goingback = false;

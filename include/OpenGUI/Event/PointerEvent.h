@@ -8,6 +8,8 @@ namespace OGUI
 
     struct PointerData
     {
+        EventRoutePhase currentPhase = EventRoutePhase::None;
+        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
         int pointerId = 0;
         std::string_view pointerType = "unknown";
         bool isPrimary = true;
@@ -26,26 +28,18 @@ namespace OGUI
     
     struct PointerDownEvent : PointerData 
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
     };
     struct PointerMoveEvent : PointerData {};
     struct PointerUpEvent : PointerData 
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
     };
     struct PointerClickEvent : PointerData {};
     struct PointerDoubleClickEvent : PointerData {};
     struct MouseEnterEvent : PointerData 
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
     };
     struct MouseLeaveEvent : PointerData 
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
     };
     struct TouchGestureEvent : PointerData {};
     struct TouchFirstMoveEvent : PointerData {};

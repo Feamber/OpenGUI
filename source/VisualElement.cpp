@@ -280,18 +280,38 @@ OGUI::Rect OGUI::VisualElement::GetLayout()
 
 OGUI::Rect OGUI::VisualElement::GetRect()
 {
-	Vector2f LB = Vector2f::vector_zero();
-	Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
-	return
+	if(_layoutType == LayoutType::Flex)
 	{
-		- WH / 2,
-		WH / 2,
-	};
+		Vector2f LB = Vector2f::vector_zero();
+		Vector2f WH = {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
+		return
+		{
+			- WH / 2,
+			WH / 2,
+		};
+	}
+	else if(_layoutType == LayoutType::Inline)
+	{
+		auto size = _inlineLayout.max - _inlineLayout.min;
+		return 
+		{
+			- size / 2,
+			size / 2
+		};
+	}
+	else
+		return Rect();
 }
 
 OGUI::Vector2f OGUI::VisualElement::GetSize()
 {
-	return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
+	
+	if(_layoutType == LayoutType::Flex)
+		return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
+	else if(_layoutType == LayoutType::Inline)
+		return _inlineLayout.max - _inlineLayout.min;
+	else
+		return Vector2f();
 }
 
 void OGUI::VisualElement::MarkLayoutDirty()
@@ -855,4 +875,30 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 	}
 
 	return nullptr;
+}
+
+bool OGUI::VisualElement::PlayAnimation(const AnimStyle& style)
+{
+	std::vector<StyleSheet*> sheets;
+    for(VisualElement* e = this; e; e=e->_logical_parent)
+        for(auto sheet : e->_styleSheets)
+            sheets.push_back(sheet);
+	ComputedAnim anim;
+	anim.style = style;
+	if(!anim.Init(sheets))
+		return false;
+	_procedureAnims.push_back(std::move(anim));
+	return true;
+}
+
+void OGUI::VisualElement::SetAnimationTime(std::string_view name, float time)
+{
+	olog::Info(u"{}"_o.format(time));
+	for(auto& anim : _procedureAnims)
+		if(anim.style.animationName == name)
+			anim.SetTime(time);
+			
+	for(auto& anim : _anims)
+		if(anim.style.animationName == name)
+			anim.SetTime(time);
 }

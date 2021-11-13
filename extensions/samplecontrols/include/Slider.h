@@ -1,6 +1,8 @@
 #pragma once
+#include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Bind/AttributeBind.h"
+#include <vector>
 
 namespace SampleControls
 {
@@ -10,21 +12,27 @@ namespace SampleControls
         Horizontal,
         Vertical
     };
-    class Slider : public VisualElement
+    class OGUI_API Slider : public VisualElement
     {
     public:
-        float _minValue;
-        float _maxValue;
-        float _value;
+        float _minValue = 0.f;
+        float _maxValue = 1.f;
+        float _value = 0.f;
         SliderDirection _direction;
 
         Slider();
-        void Initialize();
         static void RegisterXml();
-        void OnMouseDown(struct PointerDownEvent& event);
-        void OnMouseMove(struct PointerMoveEvent& event);
-        void OnMouseUp(struct PointerUpEvent& event);
-        void OnMinMaxChanged() {};
-        void OnValueChanged() {};
+        bool OnMouseDown(struct PointerDownEvent& event);
+        bool OnMouseMove(struct PointerMoveEvent& event);
+        bool OnMouseUp(struct PointerUpEvent& event);
+        void OnMinMaxChanged();
+        void OnValueChanged();
+        std::vector<VisualElement*> _animatedChildren;
+        Vector2f _dragStartPos;
+        float _dragStartValue;
+        bool _dragging = false;
+    private:
+        void Initialize(VisualElement* child, std::vector<StyleSheet*>& sheets);
+        void InitializeChildren();
     };
 }

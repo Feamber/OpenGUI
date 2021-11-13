@@ -1,7 +1,4 @@
 
-from mako import exceptions
-from mako.lookup import TemplateLookup
-from mako.template import Template
 
 import json
 import os.path
