@@ -628,6 +628,11 @@ namespace OGUI
 
     void XmlBase::RegisterOGUIXmlParser()
     {
+        static bool isRegister = false;
+        if(isRegister)
+            return;
+        isRegister = true;
+        
         RegisterXmlParser(
             XmlBase::RootName,
             OnParseXmlElement_Empty,
@@ -960,7 +965,7 @@ namespace OGUI
             TemplateContainer* templateContainer = nullptr;
             while (find) 
             {
-                if(find->IsA("OGUI::TemplateContainer"))
+                if(find->IsA("TemplateContainer"))
                 {
                     templateContainer = (TemplateContainer*)find;
                     break;
