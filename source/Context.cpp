@@ -17,12 +17,14 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
-#include "OpenGUI/XmlParser/AttributeBind.h"
+#include "OpenGUI/Bind/AttributeBind.h"
 #include "Text/godot/text_server_adv.h"
 
-OGUI::WindowContext::WindowContext()
+OGUI::WindowContext::WindowContext(WindowHandle window)
+	: window(window)
 {
 	ui = new VisualWindow();
+	ui->handle = window;
 };
 
 OGUI::WindowContext::~WindowContext()
@@ -132,8 +134,6 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	auto root = wctx.GetWindowUI();
 	// Texture Streaming
 	textureManager->Update();
-	// Update Window
-	inputImpl->GetWindowProperties(window, wctx.X, wctx.Y);	
 	_deltaTime = dt;
 	styleSystem.Update(root);
 	UpdateLayout(root);
@@ -145,7 +145,7 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
-	wctx.currentDrawCtx->resolution = Vector2f(wctx.X, wctx.Y);
+	wctx.currentDrawCtx->resolution = Vector2f(wctx.GetWidth(), wctx.GetHeight());
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }
@@ -162,11 +162,77 @@ void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)
 
 }
 
-bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
+void OGUI::Context::UpdateHover(VisualElement* picked)
 {
-	olog::Info(u"OnMouseDown PosX:{0}, PosY:{1}"_o, x, y);
+	if(picked == _elementUnderCursor)
+		return;
+	if (picked && _elementUnderCursor != picked)
+	{
+		MouseEnterEvent enterEvent;
+		enterEvent.pointerType = "mouse";
+		enterEvent.gestureType = EGestureEvent::None;
+		RouteEvent(picked, enterEvent);
+	}
+	if(_elementUnderCursor != nullptr && IsElementValid(_elementUnderCursor))
+	{
+		MouseLeaveEvent leaveEvent;
+		leaveEvent.pointerType = "mouse";
+		leaveEvent.gestureType = EGestureEvent::None;
+		RouteEvent(_elementUnderCursor, leaveEvent);
+	}
+	_elementUnderCursor = picked;
+}
+
+OGUI::VisualElement*  OGUI::Context::PickElement(const WindowHandle window, Vector2f point)
+{
+	if(_elementCapturingCursor)
+		return _elementCapturingCursor;
 	auto root = GetWindowContext(window).GetWindowUI();
 	if (!root)
+		return nullptr;
+	return PickRecursive(root, point);;
+}
+
+void OGUI::Context::CapturePointer(VisualElement* element)
+{
+	auto root = element->GetRoot();
+	if(!root->IsA("VisualWindow"))
+		return;
+	auto window = (VisualWindow*)root;
+	inputImpl->CapturePointer(window->handle, true);
+	_elementCapturingCursor = element;
+}
+
+void OGUI::Context::ReleasePointer()
+{
+	auto root = _elementCapturingCursor->GetRoot();
+	_elementCapturingCursor = nullptr;
+	if(!root->IsA("VisualWindow"))
+		return;
+	auto window = (VisualWindow*)root;
+	inputImpl->CapturePointer(window->handle, false);
+	if(_windowUnderCursor)
+	{
+		int sx, sy;
+		inputImpl->GetCursorPos(sx, sy);
+		int x = sx, y = sy;
+		inputImpl->ClientToScreen(_windowUnderCursor, x, y);
+		int32 windowWidth = _windowUnderCursor->GetWidth(), windowHeight =  _windowUnderCursor->GetHeight();
+		auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+		auto picked = PickElement(_windowUnderCursor, point);
+		UpdateHover(picked);
+	}
+}
+
+bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
+{
+	olog::Info(u"OnMouseDown PosX:{0}, PosY:{1}"_o, x, y);
+	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
+	_windowUnderCursor = window;
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+	auto picked = PickElement(window, point);
+	UpdateHover(picked);
+	if(!picked)
 		return false;
 	PointerDownEvent event;
 	pointerDownCount++;
@@ -174,117 +240,70 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, float windowWid
 	event.button = button;
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
-
-	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
-
-	auto picked = PickRecursive(root, point);
-	if (picked)
-	{
-		RouteEvent(picked, event);
-	}
-	return false;
+	RouteEvent(picked, event);
+	return true;
 }
 
-bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
 	olog::Info(u"OnMouseUp PosX:{0}, PosY:{1}"_o, x, y);
-	auto root = GetWindowContext(window).GetWindowUI();
-	if (!root)
+	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
+	_windowUnderCursor = window;
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+	auto picked = PickElement(window, point);
+	if (!picked)
 		return false;
 	PointerUpEvent event;
 	event.pointerType = "mouse";
 	event.button = button;
 	event.gestureType = EGestureEvent::None;
-
-	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
-
-	auto picked = PickRecursive(root, point);
-	if (picked)
-	{
-		RouteEvent(picked, event);
-	}
-	return false;
+	RouteEvent(picked, event);
+	return true;
 }
 
 bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
 {
+	_windowUnderCursor = window;
 	//auto root = GetWindowContext(window).GetWindowUI();
 	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
 	return false;
 }
 
-bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, int32 windowWidth, int32 windowHeight, int32 x, int32 y, int32 relativeMotionX, int32 relativeMotionY)
+bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, int32 x, int32 y, int32 relativeMotionX, int32 relativeMotionY)
 {
-	static std::vector<VisualElement*> allHover;
-
-	auto root = GetWindowContext(window).GetWindowUI();
-	if (!root)
-		return false;
-
+	_windowUnderCursor = window;
+	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
-
-	auto picked = PickRecursive(root, point);
-	if (picked)
-	{
-		bool pickedHover = false;
-		for(auto it = allHover.begin(); it != allHover.end();)
-   		{
-			if(picked == *it)
-				pickedHover = true;
-   		    if(!IsElementValid(*it))
-   		        it=allHover.erase(it);
-   		    else
-   		        ++it;
-   		}
-		
-		if(!pickedHover)
-		{
-			MouseEnterEvent enterEvent;
-			enterEvent.pointerType = "mouse";
-			enterEvent.gestureType = EGestureEvent::None;
-			RouteEvent(picked, enterEvent);
-			allHover.push_back(picked);
-		}
-		for(auto it = allHover.begin(); it != allHover.end();)
-   		{
-   		    if(!picked->IsParent(*it) && picked != *it)
-   		    {
-				MouseLeaveEvent leaveEvent;
-				leaveEvent.pointerType = "mouse";
-				leaveEvent.gestureType = EGestureEvent::None;
-				RouteEvent(*it, leaveEvent);
-
-				it=allHover.erase(it);
-			}
-   		    else
-   		        ++it;
-   		}
-	}
-	else 
-	{
-		for(auto it = allHover.begin(); it != allHover.end();)
-   		{
-   		    MouseLeaveEvent leaveEvent;
-			leaveEvent.pointerType = "mouse";
-			leaveEvent.gestureType = EGestureEvent::None;
-			RouteEvent(*it, leaveEvent);
-
-			it=allHover.erase(it);
-   		}
-	}
+	auto picked = PickElement(window, point);
+	UpdateHover(picked);
 	return false;
 }
 
 bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative, float x, float y)
 {
+	_windowUnderCursor = window;
 	//auto root = GetWindowContext(window).GetWindowUI();
 	return false;
 }
 
 bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
 {
+	_windowUnderCursor = window;
 	auto root = GetWindowContext(window).GetWindowUI();
 	olog::Info(u"Mouse WheelY:{}"_o, delta);
+	return false;
+}
+
+bool  OGUI::Context::OnMouseEnter(const WindowHandle window)
+{
+	_windowUnderCursor = window;
+	return false;
+}
+
+bool  OGUI::Context::OnMouseLeave(const WindowHandle window)
+{
+	if(_windowUnderCursor == window)
+		_windowUnderCursor = nullptr;
 	return false;
 }
 
@@ -384,10 +403,7 @@ OGUI::WindowContext& OGUI::Context::GetOrRegisterWindowContext(const OGUI::Windo
 		if(ctx->window == window)
 			return *ctx.get();
 	}
-	WindowContext& newOne = *windowContexts.emplace_back(std::make_unique<WindowContext>()).get();
-	newOne.window = window;
-	newOne.X = window->GetWidth();
-	newOne.Y = window->GetHeight();
+	WindowContext& newOne = *windowContexts.emplace_back(std::make_unique<WindowContext>(window)).get();
 	return newOne;
 }
 
@@ -399,7 +415,7 @@ OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHandle wi
 			return *ctx.get();
 	}
 	// warn("window context not found")
-	static OGUI::WindowContext NULL_WINDOW_CONTEXT = OGUI::WindowContext();
+	static OGUI::WindowContext NULL_WINDOW_CONTEXT = OGUI::WindowContext(nullptr);
 	return NULL_WINDOW_CONTEXT;
 }
 

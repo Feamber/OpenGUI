@@ -356,11 +356,9 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		std::vector<bool> dynbitset;
 		dynbitset.resize(anims.size());
 		std::vector<ComputedAnim> newAnims;
-		auto curr = element->_anims.begin();
-		auto valid = curr;
-		for(;valid != element->_anims.end(); ++valid)
+
+		auto iter = std::remove_if(element->_anims.begin(), element->_anims.end(), [&](ComputedAnim& anim)
 		{
-			auto& anim = *valid;
 			bool founded = false;
 			for(int i=0; i<anims.size(); ++i)
 			{
@@ -398,13 +396,12 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 					anim.goingback = anim.style.animationYieldMode == EAnimYieldMode::GoBack;
 				}
 				else 
-					continue;
+					return true;
 			}
-			if(curr != valid)
-				*curr = std::move(*valid);
-			++curr;
-		}
-		element->_anims.resize(curr - element->_anims.begin());
+			return false;
+		});
+		if(iter != element->_anims.end())
+			element->_anims.erase(iter, element->_anims.end());
 
 		for (int i = 0; i < dynbitset.size(); ++i)
 		{
@@ -424,11 +421,8 @@ namespace OGUI
 	void UpdateAnimTime(std::vector<ComputedAnim>& anims)
 	{
 		auto& ctx = Context::Get();
-		auto curr = anims.begin();
-		auto valid = curr;
-		for(;valid != anims.end(); ++valid)
+		auto iter = std::remove_if(anims.begin(), anims.end(), [&](ComputedAnim& anim)
 		{
-			auto& anim = *valid;
 			float maxTime = anim.style.animationDuration * anim.style.animationIterationCount + anim.style.animationDelay;
 			bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
 			bool infinite = anim.style.animationIterationCount <= 0.f;
@@ -453,13 +447,12 @@ namespace OGUI
 				else if(anim.goingback && anim.time <= anim.style.animationDelay)
 					shouldStop = true;
 				if (shouldStop)
-					continue;
+					return true;
 			}
-			if(curr != valid)
-				*curr = std::move(*valid);
-			++curr;
-		}
-		anims.resize(curr - anims.begin());
+			return false;
+		});
+		if(iter != anims.end())
+			anims.erase(iter, anims.end());
 	}
 }
 

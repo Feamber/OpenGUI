@@ -1,12 +1,12 @@
 #include <algorithm>
 #define DLL_IMPLEMENTATION
-#include "OpenGUI/XmlParser/EventBind.h"
+#include "OpenGUI/Bind/EventBind.h"
 
 namespace OGUI
 {
     namespace EventBind
     {
-        OGUI_API std::map<Name, std::vector<Handler*>> _AllEventHandler;
+        OGUI_API std::unordered_map<Name, std::vector<Handler*>> _AllEventHandler;
 
         Handler::~Handler()
         {

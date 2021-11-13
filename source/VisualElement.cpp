@@ -1,5 +1,6 @@
-
 #define DLL_IMPLEMENTATION
+#include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/Parse.h"
@@ -115,6 +116,9 @@ OGUI::VisualElement::VisualElement()
 	CreateYogaNode();
 	_style = ComputedStyle::Create(nullptr);
 	RegisterFocusedEvent();
+	
+	_eventHandler.Register<MouseEnterEvent, &VisualElement::_OnMouseEnter>(this);
+	_eventHandler.Register<MouseLeaveEvent, &VisualElement::_OnMouseLeave>(this);
 }
 
 OGUI::VisualElement::~VisualElement()
@@ -394,6 +398,14 @@ void OGUI::VisualElement::ResetStyles()
 		_afterElement->_ResetStyles();
 }
 
+OGUI::Name* OGUI::VisualElement::GetEventBind(Name event)
+{
+	auto iter = _eventBag.find(event);
+	if(iter == _eventBag.end())
+		return nullptr;
+	return &iter->second;
+}
+
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
 	auto rect = GetRect();
@@ -469,10 +481,10 @@ void OGUI::VisualElement::ReleaseBeforePseudoElement()
 
 void OGUI::VisualElement::RegisterFocusedEvent()
 {
-	_eventHandler.Register<GotKeyboardFocusEvent, &VisualElement::OnGotKeyboardFocus_Internal>(this);
-	_eventHandler.Register<LostKeyboardFocusEvent, &VisualElement::OnLostKeyboardFocus_Internal>(this);
-	_eventHandler.Register<GotFocusEvent, &VisualElement::OnGotFocus_Internal>(this);
-	_eventHandler.Register<LostFocusEvent, &VisualElement::OnLostFocus_Internal>(this);
+	_eventHandler.Register<GotKeyboardFocusEvent, &VisualElement::_OnGotKeyboardFocus>(this);
+	_eventHandler.Register<LostKeyboardFocusEvent, &VisualElement::_OnLostKeyboardFocus>(this);
+	_eventHandler.Register<GotFocusEvent, &VisualElement::_OnGotFocus>(this);
+	_eventHandler.Register<LostFocusEvent, &VisualElement::_OnLostFocus>(this);
 }
 
 std::vector<OGUI::VisualElement*> OGUI::VisualElement::GetFocusScopeChildren()
@@ -501,31 +513,50 @@ std::vector<OGUI::VisualElement*> OGUI::VisualElement::GetFocusScopeChildren()
 	return out;
 }
 
-bool OGUI::VisualElement::OnGotKeyboardFocus_Internal(struct GotKeyboardFocusEvent& event)
+bool OGUI::VisualElement::_OnGotKeyboardFocus(struct GotKeyboardFocusEvent& event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::KeyboardFocus, true);
 	return false;
 }
 
-bool OGUI::VisualElement::OnLostKeyboardFocus_Internal(struct LostKeyboardFocusEvent& event)
+bool OGUI::VisualElement::_OnLostKeyboardFocus(struct LostKeyboardFocusEvent& event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::KeyboardFocus, false);
 	return false;
 }
 
-bool OGUI::VisualElement::OnGotFocus_Internal(struct GotFocusEvent& event)
+bool OGUI::VisualElement::_OnGotFocus(struct GotFocusEvent& event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::Focus, true);
 	return false;
 }
 
-bool OGUI::VisualElement::OnLostFocus_Internal(struct LostFocusEvent& event)
+bool OGUI::VisualElement::_OnLostFocus(struct LostFocusEvent& event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach)
 		SetPseudoClass(PseudoStates::Focus, false);
+	return false;
+}
+
+bool OGUI::VisualElement::_OnMouseEnter(struct MouseEnterEvent &event)
+{
+	if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+	{
+		hovered++;
+		SetPseudoClass(PseudoStates::Hover, true);
+	}
+	return false;
+}
+
+bool OGUI::VisualElement::_OnMouseLeave(struct MouseLeaveEvent &event)
+{
+	if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+		hovered--;
+	if(hovered == 0)
+		SetPseudoClass(PseudoStates::Hover, false);
 	return false;
 }
 

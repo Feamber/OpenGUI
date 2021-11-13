@@ -3,77 +3,43 @@
 #include <typeindex>
 #include <vector>
 #include "OpenGUI/Core/olog.h"
-#include "OpenGUI/XmlParser/AttributeBind.h"
+#include "OpenGUI/Bind/AttributeBind.h"
 
 namespace OGUI
 {
     namespace AttributeBind 
     {
-         static std::unordered_map<Name, AttrSource*> AllAttrSource;
-         static std::unordered_map<Name, std::vector<AttrBind*>> AllAttrBind;
          static std::unordered_map<std::type_index, std::unordered_map<std::type_index, AttrConverterFun>> AllConverter;
     }
     using namespace AttributeBind;
 
-    AttrSource::AttrSource(Name fullName, std::type_index type, void* data)
-        : fullName(fullName), type(type), data(data)
+    AttrSource::AttrSource(Name inName, std::type_index type, void* data)
+        : name(inName), type(type), data(data)
     {
-        auto result = AllAttrSource.try_emplace(fullName, this);
-        isValid = result.second;
-        if(isValid)
-            DataChange();
-        else
-            olog::Warn(u"重复注册AttrSource fullName：{}"_o, fullName.ToStringView());
     }
 
     AttrSource::~AttrSource()
     {
-        if(!isValid)
-            return;
-        
-        AllAttrSource.erase(fullName);
     }
 
     void AttrSource::DataChange() const
     {
-        if(!isValid)
-            return;
-
-        auto find = AllAttrBind.find(fullName);
-        if(find != AllAttrBind.end())
-        {
-            auto& attrBindList = find->second;
-            for(auto bind : attrBindList)
+        for(auto bind : binds)
                 bind->Sync(*this);
-        }
     }
 
-    AttrBind::AttrBind(Name fullName, OnChange changeFun)
-        : fullName(fullName), changeFun(changeFun), changePostFun(), type(typeid(nullptr)), data(nullptr)
+    AttrBind::AttrBind(Name inName, OnChange changeFun)
+        : name(inName), changeFun(changeFun), changePostFun(), type(typeid(nullptr)), data(nullptr)
     {
-        auto result = AllAttrBind.try_emplace(fullName).first;
-        auto& attrBindList = result->second;
-        attrBindList.push_back(this);
-        Sync();
     }
 
-    AttrBind::AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun, AssignFunc assignFunc)
-        : fullName(fullName), changeFun(), changePostFun(changePostFun), assignFunc(assignFunc), type(type), data(data)
+    AttrBind::AttrBind(Name inName, std::type_index type, void* data, OnChangePost changePostFun, AssignFunc assignFunc)
+        : name(inName), changeFun(), changePostFun(changePostFun), assignFunc(assignFunc), type(type), data(data)
     {
-        auto result = AllAttrBind.try_emplace(fullName).first;
-        auto& attrBindList = result->second;
-        attrBindList.push_back(this);
-        Sync();
     }
 
     AttrBind::~AttrBind()
     {
-        auto find = AllAttrBind.find(fullName);
-        if(find != AllAttrBind.end())
-        {
-            auto& attrBindList = find->second;
-            attrBindList.erase(std::find(attrBindList.begin(), attrBindList.end(), this));
-        }
     }
 
     void AttrBind::Sync(const AttrSource& source)
@@ -94,10 +60,104 @@ namespace OGUI
 
     void AttrBind::Sync()
     {
-        auto find = AllAttrSource.find(fullName);
-        if(find != AllAttrSource.end())
+        if(source)
+            Sync(*source);
+    }
+
+    void AttrBag::AddBind(AttrBind bind)
+    {
+        if(!bindingBy.empty())
         {
-            Sync(*find->second);
+            olog::Warn(u"已绑定的数据包不可添加内容"_o);
+            return;
+        }
+        binds.emplace_back(std::move(bind));
+    }
+
+    void AttrBag::AddSource(AttrSource src)
+    {
+        if(!bindingBy.empty())
+        {
+            olog::Warn(u"已绑定的数据包不可添加内容"_o);
+            return;
+        }
+        auto iter = sources.find(src.name);
+        if(iter!=sources.end())
+            olog::Warn(u"忽略重复注册的AttrSource name:{}"_o, src.name.ToStringView());
+        else
+            sources.try_emplace(src.name, std::move(src));
+    }
+
+    void AttrBag::Notify(Name name)
+    {
+         auto iter = sources.find(name);
+        if(iter!=sources.end())
+            iter->second.DataChange();
+    }
+
+    void AttrBag::Bind(AttrBag& other)
+    {
+        for(auto& bind : binds)
+        {
+            auto iter = other.sources.find(bind.name);
+            if(iter != other.sources.end())
+            {
+                iter->second.binds.emplace_back(&bind);
+                bind.source = &iter->second;
+                bind.Sync(iter->second);
+            }
+        }
+        bindingTo.emplace_back(&other);
+        other.bindingBy.emplace_back(this);
+    }
+
+    void AttrBag::Unbind(AttrBag& other)
+    {
+        auto iter = std::find(bindingTo.begin(), bindingTo.end(), &other);
+        if(iter == bindingTo.end())
+            return;
+        for(auto& bind : binds)
+        {
+            auto iter = other.sources.find(bind.name);
+            if(iter != other.sources.end())
+            {
+                auto& ob = iter->second.binds;
+                ob.erase(std::remove(ob.begin(), ob.end(), &bind), ob.end());
+            }
+            bind.source = nullptr;
+        }
+        bindingTo.erase(std::remove(bindingTo.begin(), bindingTo.end(), &other), bindingTo.end());
+        other.bindingBy.erase(std::remove(other.bindingBy.begin(), other.bindingBy.end(), this), other.bindingBy.end());
+    }
+
+    void AttrBag::Clear()
+    {
+        for(auto& bind : binds)
+            bind.source = nullptr;
+        for(auto& source : sources)
+            source.second.binds.clear();
+    }
+
+    AttrBag::~AttrBag()
+    {
+        for(auto to : bindingTo)
+        {
+            for(auto& bind : binds)
+            {
+                auto iter = to->sources.find(bind.name);
+                if(iter != to->sources.end())
+                {
+                    auto& ob = iter->second.binds;
+                    ob.erase(std::remove(ob.begin(), ob.end(), &bind), ob.end());
+                }
+            }
+            to->bindingBy.erase(std::remove(to->bindingBy.begin(), to->bindingBy.end(), this), to->bindingBy.end());
+        }
+        for(auto by : bindingBy)
+        {
+            for(auto& bind : by->binds)
+                bind.source = nullptr;
+            by->bindingTo.erase(std::remove(by->bindingTo.begin(), bindingTo.end(), this), by->bindingTo.end());
         }
     }
 

@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
@@ -15,6 +16,8 @@
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/Bind/AttributeBind.h"
+#include "OpenGUI/Bind/EventBind.h"
 
 namespace OGUI
 {
@@ -43,7 +46,7 @@ namespace OGUI
 		Inline
 	};
 
-	class OGUI_API VisualElement
+	class OGUI_API VisualElement : public AttrBag
 	{
 	public:
 		VisualElement();
@@ -157,8 +160,9 @@ namespace OGUI
 
 #pragma region Event
 	public:
+		EventBind::EventBag _eventBag;
 		EventHandler _eventHandler;
-
+		Name* GetEventBind(Name event);
 		bool Intersect(Vector2f point);
 #pragma endregion
 
@@ -176,11 +180,15 @@ namespace OGUI
 
 		void RegisterFocusedEvent();
 
-		bool OnGotKeyboardFocus_Internal(struct GotKeyboardFocusEvent& event);
-		bool OnLostKeyboardFocus_Internal(struct LostKeyboardFocusEvent& event);
+		bool _OnGotKeyboardFocus(struct GotKeyboardFocusEvent& event);
+		bool _OnLostKeyboardFocus(struct LostKeyboardFocusEvent& event);
 
-		bool OnGotFocus_Internal(struct GotFocusEvent& event);
-		bool OnLostFocus_Internal(struct LostFocusEvent& event);
+		bool _OnGotFocus(struct GotFocusEvent& event);
+		bool _OnLostFocus(struct LostFocusEvent& event);
+
+		bool _OnMouseEnter(struct MouseEnterEvent& event);
+		bool _OnMouseLeave(struct MouseLeaveEvent& event);
+		int hovered = 0;
 #pragma endregion
 
 #pragma region FocusScope

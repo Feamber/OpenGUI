@@ -31,7 +31,7 @@ namespace OGUI
 	{
 		friend class Context;
 	public:
-		WindowContext();
+		WindowContext(WindowHandle window);
 		~WindowContext();
 
 		inline float GetWidth() const { return window->GetWidth(); }
@@ -41,7 +41,6 @@ namespace OGUI
 
 		std::shared_ptr<PrimitiveDraw::DrawContext> currentDrawCtx;
 	protected:
-		float X; float Y;
 		WindowHandle window;
 		VisualWindow* ui;
 	};
@@ -90,12 +89,19 @@ namespace OGUI
 
 		//Message Handling
 		//reference : UE4 Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h
-		bool OnMouseDown(const WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
-		bool OnMouseUp(const WindowHandle window, float windowWidth, float windowHeight, EMouseKey button, int32 x, int32 y);
+		bool OnMouseDown(const WindowHandle window, EMouseKey button, int32 x, int32 y);
+		bool OnMouseUp(const WindowHandle window, EMouseKey button, int32 x, int32 y);
 		bool OnMouseDoubleClick(const WindowHandle window, EMouseKey button, int32 x, int32 y);
-		bool OnMouseMove(const OGUI::WindowHandle window, int32 windowWidth, int32 windowHeight, int32 x, int32 y, int32 relativeMotionX, int32 relativeMotionY);
+		bool OnMouseMove(const OGUI::WindowHandle window, int32 x, int32 y, int32 relativeMotionX, int32 relativeMotionY);
 		bool OnMouseMoveHP(const WindowHandle window, bool relative, float x, float y);
 		bool OnMouseWheel(const WindowHandle window, float delta);
+		bool OnMouseEnter(const WindowHandle window);
+		bool OnMouseLeave(const WindowHandle window);
+
+		void UpdateHover(VisualElement* element);
+		VisualElement* PickElement(const WindowHandle window, Vector2f point);
+		void CapturePointer(VisualElement* element);
+		void ReleasePointer();
 
 		bool OnKeyDown(const WindowHandle window, EKeyCode keyCode);
 		bool OnKeyUp(const WindowHandle window, EKeyCode keyCode);
@@ -103,7 +109,9 @@ namespace OGUI
 		void OnActivateWindow(const WindowHandle window);
 			
 		static Context& Get();
+		WindowHandle _windowUnderCursor = nullptr;
 		VisualElement* _elementUnderCursor = nullptr;
+		VisualElement* _elementCapturingCursor = nullptr;
 	public:
 		std::unique_ptr<godot::TextServer> _textServer;
 		std::unique_ptr<RenderTextureManager> textureManager;

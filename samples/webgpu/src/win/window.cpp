@@ -1,11 +1,14 @@
 /// TODO: change this into SDLs input
 #include "window.h"
+#include "SDL2/SDL_mouse.h"
+#include "SDL2/SDL_video.h"
 #include "glue.h"
 #include "../utils.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Event/PointerEvent.h"
+#include "../appbase.h"
 
 namespace OGUI
 {
@@ -86,25 +89,26 @@ namespace OGUI
 			return ret;
 		}
 
+		void CapturePointer(WindowHandle window, bool enabled) override
+		{
+			auto winImpl = (AppWindow*)window;
+			SDL_CaptureMouse((SDL_bool)enabled);
+			//SDL_SetWindowGrab(winImpl->window, (SDL_bool)enabled);
+		}
+
 		virtual void ClientToScreen(WindowHandle window, int& x, int& y) override 
 		{
 			POINT p{x, y};
-			::ClientToScreen((HWND)window, &p);
+			::ClientToScreen((HWND)window->GetNativeHandle(), &p);
 			x = p.x; y = p.y;
 		};
 
 		virtual void ScreenToClient(WindowHandle window, int& x, int& y) override
 		{
 			POINT p{x, y};
-			::ScreenToClient((HWND)window, &p);
+			::ScreenToClient((HWND)window->GetNativeHandle(), &p);
 			x = p.x; y = p.y;
 		};
-
-		virtual void GetWindowProperties(WindowHandle window, float& width, float& height) override
-		{
-			width = WINDOW_WIN_W;
-			height = WINDOW_WIN_H;
-		}
 	};
 }
 

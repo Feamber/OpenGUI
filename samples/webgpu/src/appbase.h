@@ -105,6 +105,10 @@ public:
 #endif
 		UpdateTimer.Reset();
     }
+	void * GetNativeHandle() override
+	{
+		return window;
+	}
 
 	int GetWidth() const override {return width;}
 	int GetHeight() const override {return height;}

@@ -3,15 +3,11 @@ namespace OGUI
     template<class T>
     bool EventHandler::Handle(T& event)
     {
+        bool handled = false;
         for (auto& callback : _callbacks)
-        {
             if (callback.eventType == typeid(T))
-            {
-                if (callback.trampoline(callback.payload, (void*)&event))
-                    return true;
-            }
-        }
-        return false;
+                handled |= callback.trampoline(callback.payload, (void*)&event);
+        return handled;
     }
 
 

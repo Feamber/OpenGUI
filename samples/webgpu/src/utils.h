@@ -229,7 +229,7 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, O
             int width, height;
             SDL_GetWindowSize(window, &width, &height);
             //olog::info(u"Width: {}, Height: {}"_o.format(width, height));
-            ctx.OnMouseDown(hWnd, (float)width, (float)height, buttonCode, event.button.x, event.button.y);
+            ctx.OnMouseDown(hWnd, buttonCode, event.button.x, event.button.y);
             break;
         }
         case SDL_MOUSEBUTTONUP:
@@ -246,14 +246,14 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, O
             }
             int width, height;
             SDL_GetWindowSize(window, &width, &height);
-            ctx.OnMouseUp(hWnd, (float)width, (float)height, buttonCode, event.button.x, event.button.y);
+            ctx.OnMouseUp(hWnd, buttonCode, event.button.x, event.button.y);
             break;
         }
         case SDL_MOUSEMOTION:
         {
 			int width, height;
             SDL_GetWindowSize(window, &width, &height);
-            ctx.OnMouseMove(hWnd, width, height, event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+            ctx.OnMouseMove(hWnd, event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
             break;
         }
         case SDL_KEYDOWN:
@@ -284,10 +284,21 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, O
             break;
         }
         case SDL_WINDOWEVENT:
-			if(event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-				ctx.OnActivateWindow(hWnd);
-			else if(event.window.event == SDL_WINDOWEVENT_CLOSE)
-            	return false;
+			switch(event.window.event)
+			{
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+					ctx.OnActivateWindow(hWnd);
+					break;
+				case SDL_WINDOWEVENT_CLOSE:
+            		return false;
+				case SDL_WINDOWEVENT_ENTER:
+					ctx.OnMouseEnter(hWnd);
+					break;
+				case SDL_WINDOWEVENT_LEAVE:
+					ctx.OnMouseLeave(hWnd);
+					break;
+			}
+			break;
     }
     return true;
 }

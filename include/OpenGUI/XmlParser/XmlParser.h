@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Bind/AttributeBind.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/ostring/osv.h"
 #include "OpenGUI/Core/ostring/ostr.h"
@@ -104,18 +105,18 @@ namespace OGUI
             OK,
             ErrorType,
             NotExist,
-            DataBind, // '$'开头的
+            InvalidBind
         };
 
         template<typename Enum>
-        FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, std::string& out);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out);
+        FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, std::string& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {});
 
         OGUI_API bool IsDataBind(ostr::string_view value);
 
@@ -157,13 +158,18 @@ namespace OGUI
     }
 
     template<typename Enum>
-    XmlParserHelper::FindResult XmlParserHelper::FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, AttrBag* bag, AttrBind::OnChangePost changePostFun)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-                return FindResult::DataBind;
+            {
+                if(!bag)
+                    return FindResult::InvalidBind;
+                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
+                return FindResult::OK;
+            }
 
             auto find = allEnumValue.find(search->second);
             if(find != allEnumValue.end())

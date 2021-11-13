@@ -1,8 +1,10 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Text/TextElement.h"
 #include "appbase.h"
 #include "webgpu.h"
-#include "OpenGUI/XmlParser/EventBind.h"
-#include "OpenGUI/XmlParser/AttributeBind.h"
+#include "OpenGUI/Bind/EventBind.h"
+#include "OpenGUI/Bind/AttributeBind.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include <ctime>
 #include <functional>
@@ -431,26 +433,49 @@ protected:
 	}
 };
 
-int main(int , char* []) {
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
-		return -1;
-	}
+void BindButtonEvents(VisualElement* test)
+{
 
-    RegisterBuiltinStructs();
-	using namespace OGUI;
-	using namespace ostr::literal;
-	auto& ctx = Context::Get();
-	InstallLogger();	
-	InstallInput();
-	InstallBitmapParser();
-	{
-		ctx.renderImpl = std::make_unique<OGUIWebGPURenderer>();
-		ctx.textureManager = std::make_unique<RenderTextureManager>();
-		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
-	}
+		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			{
+				element.SetPseudoClass(PseudoStates::Active, true);
+				Context::Get().CapturePointer(&element);
+				return true;
+			}
+			return false;
+		};
+		test->_eventHandler.Register<PointerDownEvent, handler>(*test);
 
-	SampleWindow* win1 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml", [](OGUI::VisualElement* ve)
+		constexpr auto handler4 = +[](PointerUpEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			{	
+				element.SetPseudoClass(PseudoStates::Active, false);
+				Context::Get().ReleasePointer();
+				return true;
+			}
+			return false;
+		};
+		test->_eventHandler.Register<PointerUpEvent, handler4>(*test);
+
+		constexpr auto handler3 = +[](MouseLeaveEvent& event, VisualElement& element)
+		{
+			if(event.currentPhase == EventRoutePhase::Reach)
+			{
+				element.SetPseudoClass(PseudoStates::Active, false);
+				return true;
+			}
+			return false;
+		};
+		test->_eventHandler.Register<MouseLeaveEvent, handler3>(*test);
+
+}
+
+SampleWindow* CreateNavigationTestWindow()
+{
+	return  new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml", [](OGUI::VisualElement* ve)
 	{
 		std::vector<VisualElement*> tests;
 		QueryAll(ve, ".Element", tests);
@@ -468,8 +493,11 @@ int main(int , char* []) {
 			test->_eventHandler.Register<PointerDownEvent, handler>(*test);
 		}
 	});
+}
 
-	SampleWindow* win2 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml", [](OGUI::VisualElement* ve)
+SampleWindow* CreateCssTestWindow()
+{
+	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml", [](OGUI::VisualElement* ve)
 	{
 		if (auto child2 = QueryFirst(ve, "#Child2"))
 		{
@@ -537,78 +565,80 @@ int main(int , char* []) {
 					test->_styleClasses.push_back("Bigger");
 		}
 	});
+}
 
-	static Name AddEventName = "Add";
-	SampleWindow* win3 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [](OGUI::VisualElement* ve)
+int main(int , char* []) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
+		return -1;
+	}
+
+    RegisterBuiltinStructs();
+	using namespace OGUI;
+	using namespace ostr::literal;
+	auto& ctx = Context::Get();
+	InstallLogger();	
+	InstallInput();
+	InstallBitmapParser();
+	{
+		ctx.renderImpl = std::make_unique<OGUIWebGPURenderer>();
+		ctx.textureManager = std::make_unique<RenderTextureManager>();
+		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
+	}
+
+	std::vector<SampleWindow*> windows;
+
+	ostr::string hour = "00";
+	static Name hour_ = "hour";
+
+	ostr::string minute = "00";
+	static Name minute_ = "minute";
+
+	ostr::string second = "00";
+	static Name second_ = "second";
+
+	int count = 0;
+	static Name count_ = "count";
+
+	AttrBag bag; //创建数据包
+	bag.AddSource({hour_, &hour});
+	bag.AddSource({minute_, &minute});
+	bag.AddSource({second_, &second});
+	bag.AddSource({count_, &count});
+	// 提供事件处理
+	std::shared_ptr<EventBind::Handler> AddEvent = EventBind::AddHandler<PointerDownEvent&, VisualElement&>("Add", 
+	{[&](PointerDownEvent& event, VisualElement& element)
+	{
+		++count;
+		bag.Notify(count_);
+	}});
+	SampleWindow* win3 = new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [&](OGUI::VisualElement* ve)
 	{
 		VisualElement* test = QueryFirst(ve, "#AddButton");
+		BindButtonEvents(test);
 		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
 		{
 			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
 			{
-				element.SetPseudoClass(PseudoStates::Active, true);
-				EventBind::Broadcast(AddEventName);
+				static Name pointerDownName = "pointer-down";
+				if(auto bind = element.GetEventBind(pointerDownName))
+					EventBind::Broadcast<PointerDownEvent&, VisualElement&>(*bind, event, element);  //派发事件
 				return true;
 			}
 			return false;
 		};
 		test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-
-		constexpr auto handler4 = +[](PointerUpEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
-			{	
-				element.SetPseudoClass(PseudoStates::Active, false);
-				return true;
-			}
-			return false;
-		};
-		test->_eventHandler.Register<PointerUpEvent, handler4>(*test);
-
-		constexpr auto handler2 = +[](MouseEnterEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
-			{
-				element.SetPseudoClass(PseudoStates::Hover, true);
-				return true;
-			}
-			return false;
-		};
-		test->_eventHandler.Register<MouseEnterEvent, handler2>(*test);
-
-		constexpr auto handler3 = +[](MouseLeaveEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach)
-			{
-				element.SetPseudoClass(PseudoStates::Hover, false);
-				element.SetPseudoClass(PseudoStates::Active, false);
-				return true;
-			}
-			return false;
-		};
-		test->_eventHandler.Register<MouseLeaveEvent, handler3>(*test);
+		
+		//所有文字绑定到数据源上
+		std::vector<VisualElement*> Texts;
+		QueryAll(ve, "TextElement", Texts);
+		for(auto Text : Texts)
+			((TextElement*)Text)->Bind(bag);
 	});
-
-	ostr::string hour = "00";
-	AttrSource hourAttr("hour", &hour);
-
-	ostr::string minute = "00";
-	AttrSource minuteAttr("minute", &minute);
-
-	ostr::string second = "00";
-	AttrSource secondAttr("second", &second);
-
-	int count = 0;
-	AttrSource countAttr("count", &count);
-	std::function<void()> AddEventFun = [&count, &countAttr]()
-	{
-		++count;
-		countAttr.DataChange();
-	};
-	std::shared_ptr<EventBind::Handler> AddEvent = EventBind::AddHandler<>(AddEventName, AddEventFun);
+	windows.push_back(win3);
 
 	// main loop
-	while(win1 || win2 || win3)
+	while(!windows.empty())
 	{
 		using namespace ostr::literal;
 		
@@ -619,48 +649,38 @@ int main(int , char* []) {
 
 		strftime(buffer, sizeof(buffer), "%H", localtime(&t));
 		hour = buffer;
-		hourAttr.DataChange();
+		bag.Notify(hour_);
 
 		strftime(buffer, sizeof(buffer), "%M", localtime(&t));
 		minute = buffer;
-		minuteAttr.DataChange();
+		bag.Notify(minute_);
 
 		strftime(buffer, sizeof(buffer), "%S", localtime(&t));
 		second = buffer;
-		secondAttr.DataChange();
+		bag.Notify(second_);
 
 		SDL_Event event;
-		while (SDL_PollEvent(&event) && (win1 || win2 || win3)) 
+		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
-			if(win1 && SDL_GetWindowID(win1->window) == event.window.windowID)
+			
+			auto iter = std::remove_if(windows.begin(), windows.end(), [&](SampleWindow* win)
 			{
-				if(!SDLEventHandler(event, win1->window, win1))
-				{
-					delete win1;
-					win1 = nullptr;
-				}
-			}
-			else if(win2 && SDL_GetWindowID(win2->window) == event.window.windowID)
-			{
-				if(!SDLEventHandler(event, win2->window, win2))
-				{
-					delete win2;
-					win2 = nullptr;
-				}
-			}
-			else if(win3 && SDL_GetWindowID(win3->window) == event.window.windowID)
-			{
-				if(!SDLEventHandler(event, win3->window, win3))
-				{
-					delete win3;
-					win3 = nullptr;
-				}
-			}
+					if(SDL_GetWindowID(win->window) == event.window.windowID)
+					{
+						if(!SDLEventHandler(event, win->window, win))
+						{
+							delete win;
+							return true;
+						}
+					}
+					return false;
+			});
+			if(iter != windows.end())
+				windows.erase(iter, windows.end());
 		}
-		if(win1) win1->Update();
-		if(win2) win2->Update();
-		if(win3) win3->Update();
+		for(auto win : windows)
+			win->Update();
 	}
 	SDL_Quit();
 	return 0;

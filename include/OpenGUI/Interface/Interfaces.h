@@ -18,6 +18,7 @@ namespace OGUI
 
 	struct OGUI_API WindowInterface
 	{
+		virtual void* GetNativeHandle() = 0;
 		virtual int GetWidth() const = 0;
 		virtual int GetHeight() const = 0;
 		virtual bool Update() = 0;
@@ -36,7 +37,7 @@ namespace OGUI
 		virtual bool IsKeyToggled(EMouseKey key_code) = 0;
 		virtual void ClientToScreen(WindowHandle window, int& x, int& y) = 0;
 		virtual void ScreenToClient(WindowHandle window, int& x, int& y) = 0;
-		virtual void GetWindowProperties(WindowHandle window, float& width, float& height) = 0;
+		virtual void CapturePointer(WindowHandle window, bool enabled) = 0;
 		virtual OGUI::Vector2f GetDpiScale() = 0;
  		virtual void SetHighPrecisionMouseMode(WindowHandle window, bool Enable) = 0;
 	};

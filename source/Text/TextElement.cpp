@@ -164,14 +164,14 @@ namespace OGUI
         _paragraphDirty = true;
     }
 
-    void TextElement::AddBindText(Name fullAttrName)
+    void TextElement::AddBindText(Name attrName)
     {
         std::shared_ptr<BindText> newBind(new BindText());
-        newBind->Bind = std::make_shared<AttrBind>(fullAttrName, &newBind->text, [this](bool isApply)
+        AddBind({attrName, &newBind->text, [this](bool isApply)
         {
             if(isApply)
                 _paragraphDirty = true;
-        });
+        }});
 
         _inlines.push_back(InlineType{newBind});
         _paragraphDirty = true;

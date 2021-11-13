@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Bind/AttributeBind.h"
 
 namespace SampleControls
 {
@@ -19,8 +20,11 @@ namespace SampleControls
 
         Slider();
         void Initialize();
+        static void RegisterXml();
         void OnMouseDown(struct PointerDownEvent& event);
         void OnMouseMove(struct PointerMoveEvent& event);
         void OnMouseUp(struct PointerUpEvent& event);
+        void OnMinMaxChanged() {};
+        void OnValueChanged() {};
     };
 }

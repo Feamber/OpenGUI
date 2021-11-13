@@ -11,16 +11,16 @@ namespace OGUI
 {
     struct OGUI_API AttrSource : public std::enable_shared_from_this<AttrSource>
     {
-        bool isValid; // 有重名的就会注册失败
-        Name fullName;
+        Name name;
         std::type_index type;
         void* data;
+        std::vector<struct AttrBind*> binds;
 
         void DataChange() const;
 
-        AttrSource(Name fullName, std::type_index type, void* data);
+        AttrSource(Name name, std::type_index type, void* data);
         template<typename T>
-        AttrSource(Name fullName, T* data) :AttrSource(fullName, std::type_index(typeid(T)), (void*)data) {};
+        AttrSource(Name name, T* data) :AttrSource(name, std::type_index(typeid(T)), (void*)data) {};
         ~AttrSource();
     };
 
@@ -30,11 +30,11 @@ namespace OGUI
         using OnChangePost = std::function<void(bool /*是否应用成功（没找到AttrConverter就会false）*/)>;
         using AssignFunc = std::function<void(void* /*dst*/, void* /*src*/)>;
 
-        AttrBind(Name fullName, OnChange changeFun);
-        AttrBind(Name fullName, std::type_index type, void* data, OnChangePost changePostFun, AssignFunc assignFunc);
+        AttrBind(Name name, OnChange changeFun);
+        AttrBind(Name name, std::type_index type, void* data, OnChangePost changePostFun, AssignFunc assignFunc);
         template<typename T>
-        AttrBind(Name fullName, T* data, OnChangePost changePostFun)
-            : AttrBind(fullName, std::type_index(typeid(T)), (void*)data, changePostFun, [](void* dst, void* src){ *(T*)dst = *(T*)src; })
+        AttrBind(Name name, T* data, OnChangePost changePostFun = {})
+            : AttrBind(name, std::type_index(typeid(T)), (void*)data, changePostFun, [](void* dst, void* src){ *(T*)dst = *(T*)src; })
         {
             
         };
@@ -43,12 +43,29 @@ namespace OGUI
         void Sync(const AttrSource& source);
         void Sync();
 
-        Name fullName;
+        Name name;
         OnChange changeFun;
         OnChangePost changePostFun;
         AssignFunc assignFunc;
         std::type_index type;
         void* data;
+        AttrSource* source = nullptr;
+    };
+
+    struct OGUI_API AttrBag
+    {
+        std::vector<AttrBind> binds;
+        std::unordered_map<Name, AttrSource> sources;
+        std::vector<AttrBag*> bindingTo;
+        std::vector<AttrBag*> bindingBy;
+        void AddBind(AttrBind bind);
+        void AddSource(AttrSource src);
+        void Notify(Name name);
+        void Bind(AttrBag& other);
+        void Unbind(AttrBag& other);
+        ~AttrBag();
+    protected:
+        void Clear();
     };
 
     using AttrConverterFun = std::function<bool(void* source, void* target)>;

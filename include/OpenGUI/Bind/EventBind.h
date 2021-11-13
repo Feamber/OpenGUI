@@ -13,7 +13,8 @@ namespace OGUI
 {
     namespace EventBind
     {
-        extern OGUI_API std::map<Name, std::vector<struct Handler*>> _AllEventHandler;
+        extern OGUI_API std::unordered_map<Name, std::vector<struct Handler*>> _AllEventHandler;
+        using EventBag = std::unordered_map<Name, Name>;
 
         struct OGUI_API Handler : public std::enable_shared_from_this<Handler>
         {
