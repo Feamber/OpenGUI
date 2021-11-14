@@ -33,7 +33,6 @@ void SampleControls::Slider::RegisterXml()
                     {"vertical",   SliderDirection::Vertical},
                 };
                 FindAttributeEnum(xe, "direction", Directions, ve->_direction);
-                ve->BuildBD();
                 return true;
             },
             [](InstantiateXmlState&, XmlElement& xe, VisualElement* e, VisualElement*)

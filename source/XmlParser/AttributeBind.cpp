@@ -72,7 +72,7 @@ namespace OGUI
 
     void AttrBag::AddBind(AttrBind bind)
     {
-        if(!bindingBy.empty())
+        if(_builded)
         {
             olog::Warn(u"已绑定的数据包不可添加内容"_o);
             return;
@@ -82,7 +82,7 @@ namespace OGUI
 
     void AttrBag::AddSource(AttrSource src)
     {
-        if(!bindingBy.empty())
+        if(_builded)
         {
             olog::Warn(u"已绑定的数据包不可添加内容"_o);
             return;
@@ -94,14 +94,17 @@ namespace OGUI
             sources.try_emplace(src.name, std::move(src));
     }
 
-    void AttrBag::BuildBD()
+    void AttrBag::Build()
     {
+        if(_builded)
+            return;
         for(auto& bind : binds)
         {
             auto iter = sources.find(bind.name);
             if(iter != sources.end())
                 bind.bdBind = &iter->second;
         }
+        _builded = true;
     }
 
     void AttrBag::Notify(Name name, bool force)
@@ -113,6 +116,10 @@ namespace OGUI
 
     void AttrBag::Bind(AttrBag& other)
     {
+        if(!_builded)
+            Build();
+        if(!other._builded)
+            other.Build();
         for(auto& bind : binds)
         {
             auto iter = other.sources.find(bind.name);
@@ -144,14 +151,6 @@ namespace OGUI
         }
         bindingTo.erase(std::remove(bindingTo.begin(), bindingTo.end(), &other), bindingTo.end());
         other.bindingBy.erase(std::remove(other.bindingBy.begin(), other.bindingBy.end(), this), other.bindingBy.end());
-    }
-
-    void AttrBag::Clear()
-    {
-        for(auto& bind : binds)
-            bind.source = nullptr;
-        for(auto& source : sources)
-            source.second.binds.clear();
     }
 
     AttrBag::~AttrBag()

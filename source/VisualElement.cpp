@@ -226,7 +226,6 @@ OGUI::VisualElement* OGUI::VisualElement::GetLayoutRoot()
 
 void OGUI::VisualElement::CalculateLayout()
 {
-	//TODO: mark transform dirty
 	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
 	if(YGNodeGetHasNewLayout(_ygnode))
 	{

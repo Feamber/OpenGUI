@@ -60,15 +60,15 @@ namespace OGUI
         std::unordered_map<Name, AttrSource> sources;
         std::vector<AttrBag*> bindingTo;
         std::vector<AttrBag*> bindingBy;
+        bool _builded = false;
         void AddBind(AttrBind bind);
         void AddSource(AttrSource src);
         void Notify(Name name, bool force = false);
         void Bind(AttrBag& other);
         void Unbind(AttrBag& other);
-        void BuildBD();
         ~AttrBag();
     protected:
-        void Clear();
+        void Build();
     };
 
     using AttrConverterFun = std::function<bool(void* source, void* target)>;

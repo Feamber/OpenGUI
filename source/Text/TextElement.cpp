@@ -185,6 +185,7 @@ namespace OGUI
             auto& txt = StyleText::Get(_style);
             BuildParagraphRec(_paragraph, txt);
             MarkLayoutDirty();
+            _paragraphDirty = false;
         }
     }
 
@@ -229,6 +230,7 @@ namespace OGUI
 
     void TextElement::MarkLayoutDirty()
     {
+        Context::Get()._layoutDirty = true;
         YGNodeMarkDirty(_ygnode);
     }
 
