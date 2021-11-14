@@ -1,12 +1,12 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
+
 #define DLL_IMPLEMENTATION
 #include <memory>
 #include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
-#include "position_shorthands.h"
 
 const OGUI::StylePosition& OGUI::StylePosition::GetDefault()
 {
@@ -1088,12 +1088,6 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
     size_t hash = OGUI::hash(name);
 
     //shorthands
-    switch(hash)
-    {
-        case Id::margin:
-            return Parse::ParseMargin(sheet, name, value, rule, errorMsg);
-        default: break;
-    }
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)

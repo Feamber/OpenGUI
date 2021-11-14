@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Configure.h"
 #include <type_traits>
 #include <string>
 namespace OGUI
@@ -9,5 +10,5 @@ namespace OGUI
         return a;
     }
     
-    std::string Lerp(std::string a, std::string b, float alpha);
+    OGUI_API std::string Lerp(std::string a, std::string b, float alpha);
 }

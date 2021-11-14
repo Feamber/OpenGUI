@@ -1,10 +1,11 @@
 #pragma once
+#include "OpenGUI/Configure.h"
 #include <string_view>
 #include "OpenGUI/Style2/Properties.h"
 
 namespace OGUI
 {
-    bool ParseValue(std::string_view str, std::string& value);
-	bool ParseUrl(std::string_view str, std::string& value);
-	bool ParseValue(std::string_view str, StyleKeyword& value);
+    OGUI_API bool ParseValue(std::string_view str, std::string& value);
+	OGUI_API bool ParseUrl(std::string_view str, std::string& value);
+	OGUI_API bool ParseValue(std::string_view str, StyleKeyword& value);
 }

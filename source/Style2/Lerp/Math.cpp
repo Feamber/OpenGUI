@@ -4,24 +4,6 @@
 
 namespace OGUI
 {
-    float OGUI::Lerp(float a, float b, float alpha)
-    {
-        return a * (1-alpha) + b * alpha;
-    }
-    double OGUI::Lerp(double a, double b, float alpha)
-    {
-        return a * (1-alpha) + b * alpha;
-    }
-    Vector2f OGUI::Lerp(Vector2f a, Vector2f b, float alpha)
-    {
-        return a * (1-alpha) + b * alpha;
-    }
-    //https://developer.mozilla.org/en-US/docs/Web/CSS/color_value#interpolation
-    Color4f OGUI::Lerp(Color4f a, Color4f b, float alpha)
-    {
-        return a * (1-alpha) + b * alpha;
-    }
-    
     ComputedTransform Lerp(ComputedTransform a, ComputedTransform b, float alpha)
     {
         Vector2f atr, asc, ask, btr, bsc, bsk;

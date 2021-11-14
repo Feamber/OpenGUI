@@ -1,5 +1,6 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
+
 #define DLL_IMPLEMENTATION
 #include <memory>
 #include "OpenGUI/Style2/generated/animation.h"

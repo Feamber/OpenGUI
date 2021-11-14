@@ -3,7 +3,6 @@ import re
 import os.path
 import sys
 
-BASE = os.path.dirname(__file__.replace("\\", "/"))
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -49,6 +48,7 @@ ALL_RULES = STYLE_RULE | PAGE_RULE | KEYFRAME_RULE
 DEFAULT_RULES = STYLE_RULE | KEYFRAME_RULE
 DEFAULT_RULES_AND_PAGE = DEFAULT_RULES | PAGE_RULE
 DEFAULT_RULES_EXCEPT_KEYFRAME = STYLE_RULE
+
 
 # Rule name to value dict
 RULE_VALUES = {
@@ -190,7 +190,7 @@ class Shorthand(Property):
 
 
 class StyleStruct(object):
-    def __init__(self, name, inherited):
+    def __init__(self, name, inherited, header_dir, source_dir, include_dir):
         self.name = name
         self.name_lower = to_snake_case(name)
         self.ident = to_camel_case(self.name_lower)
@@ -199,6 +199,10 @@ class StyleStruct(object):
         self.headers = []
         self.inherited = inherited
         self.name_to_longhand = {}
+        self.header_path = os.path.join(header_dir, self.name + ".h")
+        self.source_path = os.path.join(source_dir, self.name + ".cpp")
+        self.shorthand_path = os.path.join(source_dir, self.name + "_shorthands.h")
+        self.include_path = os.path.relpath(self.header_path, include_dir).replace(os.path.sep, '/')
 
     def add_longhand(self, *args, **kwargs):
         longhand = Longhand(*args, **kwargs)
@@ -211,40 +215,46 @@ class StyleStruct(object):
         self.shorthands.append(shorthand)
 
         
+BASE = os.path.dirname(__file__.replace("\\", "/"))
+ROOT = os.path.join(BASE, "../")
+DEFAULT_HEADER_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.mako.h")
+DEFAULT_SOURCE_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.mako.cpp")
+class renderer(object):
+    def __init__(self, base):
+        self.base = base
 
-def abort(message):
-    print(message, file=sys.stderr)
-    sys.exit(1)
-    
-def render(filename, **context):
-    try:
-        lookup = TemplateLookup(
-            directories=[BASE], input_encoding="utf8", strict_undefined=True
-        )
-        template = Template(
-            open(filename, "rb").read(),
-            filename=filename,
-            input_encoding="utf8",
-            lookup=lookup,
-            strict_undefined=True,
-        )
-        # Uncomment to debug generated Python code:
-        # write("/tmp", "mako_%s.py" % os.path.basename(filename), template.code)
-        return template.render(**context)
-    except Exception:
-        # Uncomment to see a traceback in generated Python code:
-        # raise
-        abort(exceptions.text_error_template().render())
-
-
-RE_PYTHON_ADDR = re.compile(r"<.+? object at 0x[0-9a-fA-F]+>")
+    def abort(self, message):
+        print(message, file=sys.stderr)
+        sys.exit(1)
         
-def write(directory, filename, content):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    full_path = os.path.join(directory, filename)
-    open(full_path, "wb").write(content.encode("utf-8"))
+    def render(self, filename, **context):
+        try:
+            lookup = TemplateLookup(
+                directories=[self.base], input_encoding="utf8", strict_undefined=True
+            )
+            template = Template(
+                open(filename, "rb").read(),
+                filename=filename,
+                input_encoding="utf8",
+                lookup=lookup,
+                strict_undefined=True,
+            )
+            # Uncomment to debug generated Python code:
+            # write("/tmp", "mako_%s.py" % os.path.basename(filename), template.code)
+            return template.render(**context)
+        except Exception:
+            # Uncomment to see a traceback in generated Python code:
+            # raise
+            self.abort(exceptions.text_error_template().render())
 
-    python_addr = RE_PYTHON_ADDR.search(content)
-    if python_addr:
-        abort('Found "{}" in {} ({})'.format(python_addr.group(0), filename, full_path))
+            
+    def write(self, path, content):
+        RE_PYTHON_ADDR = re.compile(r"<.+? object at 0x[0-9a-fA-F]+>")
+        directory = os.path.dirname(path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        open(path, "wb").write(content.encode("utf-8"))
+
+        python_addr = RE_PYTHON_ADDR.search(content)
+        if python_addr:
+            self.abort('Found "{}" in {} ({})'.format(python_addr.group(0), os.path.basename(path), path))

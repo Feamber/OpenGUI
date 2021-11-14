@@ -1,23 +1,38 @@
-
-
 import json
 import os.path
 import re
 import sys
 
-from data import PHYSICAL_CORNERS, PHYSICAL_SIDES, PHYSICAL_SIZES, StyleStruct, render, write
-import data
-
-
 BASE = os.path.dirname(__file__.replace("\\", "/"))
 ROOT = os.path.join(BASE, "../../../..")
-sys.path.insert(0, os.path.join(BASE, "Mako-1.1.2-py2.py3-none-any.whl"))
-sys.path.insert(0, BASE)  # For importing `data.py`
+
+sys.path.insert(0, ROOT)
+from tool.style_codegen import PHYSICAL_CORNERS, PHYSICAL_SIDES, PHYSICAL_SIZES, StyleStruct, renderer, DEFAULT_HEADER_TEMPLATE_PATH, DEFAULT_SOURCE_TEMPLATE_PATH
 HEADER_OUT_DIR = os.path.join(ROOT, "include/OpenGUI/Style2/generated")
 SOURCE_OUT_DIR = os.path.join(ROOT, "source/Style2/generated")
+INCLUDE_DIR = os.path.join(ROOT, "include")
+RENDERER = renderer(BASE)
+
+def render(filename, **context):
+    return RENDERER.render(filename, **context)
+def write(path, content):
+    RENDERER.write(path, content)
+
+def make_struct(name, inherited):
+    return StyleStruct(name, inherited, HEADER_OUT_DIR, SOURCE_OUT_DIR, INCLUDE_DIR)
+
+def render_struct(struct, shorthand_path = None):
+    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
+    source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
+    write(struct.header_path, header_file)
+    write(struct.source_path, source_file)
+    if shorthand_path:
+        shorthand_template = os.path.join(BASE, shorthand_path)
+        shorthand_file = render(shorthand_template, struct = struct)
+        write(struct.shorthand_path, shorthand_file)
 
 def gen_position():
-    struct = StyleStruct("position", False)
+    struct = make_struct("position", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
     add_longhand("transform",       "TransformFunction","{}"      ,vector=True    ,restyle_damage="Transform")
@@ -46,8 +61,6 @@ def gen_position():
     add_longhand("justify-content",	"YGJustify",		"YGJustifyFlexStart"   ,restyle_damage="Yoga")
     add_longhand("flex-wrap",		"YGWrap",			"YGWrapNoWrap"   ,restyle_damage="Yoga")		
     add_longhand("flex-display",	"YGDisplay",		"YGDisplayFlex"   ,restyle_damage="Yoga")	
-    shorthand_template = os.path.join(BASE, "shorthands/position.mako.h")
-    shorthand_file = render(shorthand_template, struct = struct,  data = data)
 
     struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Core/Math.h")
@@ -56,55 +69,40 @@ def gen_position():
     struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
-    header_template = os.path.join(BASE, "Struct.mako.h")
-    header_file = render(header_template, struct = struct,  data = data)
-    source_template = os.path.join(BASE, "Struct.mako.cpp")
-    source_file = render(source_template, struct = struct,  data = data)
-    write(HEADER_OUT_DIR, "position.h", header_file)
-    write(SOURCE_OUT_DIR, "position_shorthands.h", shorthand_file)
-    write(SOURCE_OUT_DIR, "position.cpp", source_file)
+    render_struct(struct, "shorthands/position.mako.h")
 
 def gen_border():
-    struct = StyleStruct("border", False)
+    struct = make_struct("border", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
     for side in PHYSICAL_SIDES:
         add_longhand("border-{0}-width".format(side), "float", "0.f"   ,restyle_damage="Yoga")
     for corner in PHYSICAL_CORNERS:
         add_longhand("border-{0}-radius".format(corner), "YGValue", "YGValueZero")
-    shorthand_template = os.path.join(BASE, "shorthands/border.mako.h")
-    shorthand_file = render(shorthand_template, struct = struct,  data = data)
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
     struct.headers.append("yoga/Yoga.h")
-    header_template = os.path.join(BASE, "Struct.mako.h")
-    header_file = render(header_template, struct = struct,  data = data)
-    source_template = os.path.join(BASE, "Struct.mako.cpp")
-    source_file = render(source_template, struct = struct,  data = data)
-    write(HEADER_OUT_DIR, "border.h", header_file)
-    write(SOURCE_OUT_DIR, "border_shorthands.h", shorthand_file)
-    write(SOURCE_OUT_DIR, "border.cpp", source_file)
+    render_struct(struct, "shorthands/border.mako.h")
     
 def gen_text():
-    struct = StyleStruct("text", True)
+    struct = make_struct("text", True)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
     add_longhand("font-size", "float", "20.f")
     add_longhand("color", "Color4f", "Color4f(0,0,0,1)")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
-    header_template = os.path.join(BASE, "Struct.mako.h")
-    header_file = render(header_template, struct = struct,  data = data)
-    source_template = os.path.join(BASE, "Struct.mako.cpp")
-    source_file = render(source_template, struct = struct,  data = data)
-    write(HEADER_OUT_DIR, "text.h", header_file)
-    write(SOURCE_OUT_DIR, "text.cpp", source_file)
+    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
+    source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
+    write(struct.header_path, header_file)
+    write(struct.source_path, source_file)
+    render_struct(struct)
 
 
 def gen_background():
-    struct = StyleStruct("background", False)
+    struct = make_struct("background", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
     add_longhand("background-color",	"Color4f",	    "Color4f(1.f,1.f,1.f,1.f)")	
@@ -112,15 +110,14 @@ def gen_background():
     struct.headers.append("OpenGUI/Core/Math.h")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
-    header_template = os.path.join(BASE, "Struct.mako.h")
-    header_file = render(header_template, struct = struct,  data = data)
-    source_template = os.path.join(BASE, "Struct.mako.cpp")
-    source_file = render(source_template, struct = struct,  data = data)
-    write(HEADER_OUT_DIR, "background.h", header_file)
-    write(SOURCE_OUT_DIR, "background.cpp", source_file)
+    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
+    source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
+    write(struct.header_path, header_file)
+    write(struct.source_path, source_file)
+    render_struct(struct)
 
 def gen_animation():
-    struct = StyleStruct("animation", False)
+    struct = make_struct("animation", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
     add_longhand("animation-name", "std::string", "{}")
@@ -137,11 +134,11 @@ def gen_animation():
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     struct.headers.append("OpenGUI/Style2/AnimTypes.h")
     header_template = os.path.join(BASE, "AnimStruct.mako.h")
-    header_file = render(header_template, struct = struct,  data = data)
+    header_file = render(header_template, struct = struct)
     source_template = os.path.join(BASE, "AnimStruct.mako.cpp")
-    source_file = render(source_template, struct = struct,  data = data)
-    write(HEADER_OUT_DIR, "animation.h", header_file)
-    write(SOURCE_OUT_DIR, "animation.cpp", source_file)
+    source_file = render(source_template, struct = struct)
+    write(struct.header_path, header_file)
+    write(struct.source_path, source_file)
 
 def main():
     gen_position()

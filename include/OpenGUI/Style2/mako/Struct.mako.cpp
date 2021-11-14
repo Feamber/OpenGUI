@@ -1,8 +1,11 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
+<%! 
+    from tool.style_codegen import to_small_camel_case, to_camel_case
+%>
 #define DLL_IMPLEMENTATION
 #include <memory>
-#include "OpenGUI/Style2/generated/${struct.name}.h"
+#include "${struct.include_path}"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -251,7 +254,7 @@ bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::
     {
     %for prop in struct.shorthands:
         case Id::${prop.ident}:
-            return Parse::Parse${data.to_camel_case(prop.name)}(sheet, name, value, rule, errorMsg);
+            return Parse::Parse${to_camel_case(prop.name)}(sheet, name, value, rule, errorMsg);
     %endfor
         default: break;
     }

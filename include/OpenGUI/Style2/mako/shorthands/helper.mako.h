@@ -1,6 +1,6 @@
 <%! 
-    from data import to_small_camel_case, to_camel_case
-    from data import (LOGICAL_CORNERS, PHYSICAL_CORNERS, LOGICAL_SIDES,
+    from tool.style_codegen import to_small_camel_case, to_camel_case
+    from tool.style_codegen import (LOGICAL_CORNERS, PHYSICAL_CORNERS, LOGICAL_SIDES,
                       PHYSICAL_SIDES, LOGICAL_SIZES, LOGICAL_AXES)
 %>
 <%def name="shorthand(name, sub_properties)">

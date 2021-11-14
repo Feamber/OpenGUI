@@ -2,6 +2,7 @@
 //generated from Style2/mako/Struct.mako.h
 
 #pragma once
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/Common.h"

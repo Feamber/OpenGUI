@@ -22,10 +22,14 @@ namespace OGUI
     {
     }
 
-    void AttrSource::DataChange() const
+    void AttrSource::DataChange(bool force) const
     {
+        if(_guard)
+            return;
+        _guard = true;
         for(auto bind : binds)
-                bind->Sync(*this);
+                bind->Sync(*this, force);
+        _guard = false;
     }
 
     AttrBind::AttrBind(Name inName, OnChange changeFun)
@@ -42,8 +46,10 @@ namespace OGUI
     {
     }
 
-    void AttrBind::Sync(const AttrSource& source)
+    void AttrBind::Sync(const AttrSource& source, bool force)
     {
+        if(bdBind && bdBind->_guard && !force)
+            return;
         if(data)
         {
             if(source.type == type)
@@ -88,15 +94,21 @@ namespace OGUI
             sources.try_emplace(src.name, std::move(src));
     }
 
-    void AttrBag::Notify(Name name)
+    void AttrBag::BuildBD()
     {
-        if(_guard)
-            return;
-        _guard = true;
+        for(auto& bind : binds)
+        {
+            auto iter = sources.find(bind.name);
+            if(iter != sources.end())
+                bind.bdBind = &iter->second;
+        }
+    }
+
+    void AttrBag::Notify(Name name, bool force)
+    {
         auto iter = sources.find(name);
         if(iter!=sources.end())
-            iter->second.DataChange();
-        _guard = false;
+            iter->second.DataChange(force);
     }
 
     void AttrBag::Bind(AttrBag& other)
@@ -195,59 +207,59 @@ namespace OGUI
 
     void RegisterBaseAttrConverter()
     {
-        RegisterAttrConverter<int, int32>([](void* source, void* out)
+        RegisterAttrConverter<int, int32>([](int& source, int32 out)
             {
-                *((int32*)out) = *((int*)source);
+                out =source;
                 return true;
             });
-        RegisterAttrConverter<int, float>([](void* source, void* out)
+        RegisterAttrConverter<int, float>([](int& source, float& out)
             {
-                *((float*)out) = *((int*)source);
+                out =source;
                 return true;
             });
-        RegisterAttrConverter<int, ostr::string>([](void* source, void* out)
+        RegisterAttrConverter<int, ostr::string>([](int& source, ostr::string& out)
             {
-                *((ostr::string*)out) = std::to_string(*((int*)source));
-                return true;
-            });
-        
-        RegisterAttrConverter<int32, int>([](void* source, void* out)
-            {
-                *((int*)out) = *((int32*)source);
-                return true;
-            });
-        RegisterAttrConverter<int32, float>([](void* source, void* out)
-            {
-                *((float*)out) = *((int32*)source);
-                return true;
-            });
-
-        RegisterAttrConverter<float, int32>([](void* source, void* out)
-            {
-                *((int32*)out) = *((float*)source);
-                return true;
-            });
-        RegisterAttrConverter<float, int>([](void* source, void* out)
-            {
-                *((int*)out) = *((float*)source);
-                return true;
-            });
-        RegisterAttrConverter<float, ostr::string>([](void* source, void* out)
-            {
-                *((ostr::string*)out) = std::to_string(*((float*)source));
+                out = std::to_string(source);
                 return true;
             });
         
-        RegisterAttrConverter<ostr::string, std::string>([](void* source, void* out)
+        RegisterAttrConverter<int32, int>([](int32& source, int& out)
             {
-                auto strv = (*(ostr::string*)source).to_sv();
-                *((std::string*)out) = {strv.begin(), strv.end()};
+                out = source;
+                return true;
+            });
+        RegisterAttrConverter<int32, float>([](int32& source, float& out)
+            {
+                out = source;
                 return true;
             });
 
-        RegisterAttrConverter<std::string, ostr::string>([](void* source, void* out)
+        RegisterAttrConverter<float, int32>([](float& source, int32& out)
             {
-                *((ostr::string*)out) = *((std::string*)source);
+                out = source;
+                return true;
+            });
+        RegisterAttrConverter<float, int>([](float& source, int& out)
+            {
+                out = source;
+                return true;
+            });
+        RegisterAttrConverter<float, ostr::string>([](float& source, ostr::string& out)
+            {
+                out = std::to_string(source);
+                return true;
+            });
+        
+        RegisterAttrConverter<ostr::string, std::string>([](ostr::string& source, std::string& out)
+            {
+                auto strv = source.to_sv();
+                out = {strv.begin(), strv.end()};
+                return true;
+            });
+
+        RegisterAttrConverter<std::string, ostr::string>([](std::string& source, ostr::string& out)
+            {
+                out = source;
                 return true;
             });
     }

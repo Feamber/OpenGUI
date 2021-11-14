@@ -23,19 +23,6 @@ void OGUI::RegisterStyleStruct(const StyleDesc& desc)
     registry.descriptions.push_back(desc);
 }
 
-template<class T>
-OGUI::StyleDesc GetDesc()
-{
-    OGUI::StyleDesc desc;
-    desc.hash = T::hash;
-    desc.inherited = T::inherited;
-    desc.name = T::name;
-    desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
-    desc.ApplyProperties = &T::ApplyProperties;
-    desc.ParseProperties = &T::ParseProperties;
-    return desc;
-}
-
 void OGUI::RegisterBuiltinStructs()
 {
     RegisterStyleStruct(GetDesc<StyleText>());

@@ -2,6 +2,7 @@
 //generated from Style2/mako/Struct.mako.h
 
 #pragma once
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/Common.h"
@@ -55,7 +56,6 @@ namespace OGUI
             static constexpr size_t justifyContent = OGUI::hash("justify-content"sv);
             static constexpr size_t flexWrap = OGUI::hash("flex-wrap"sv);
             static constexpr size_t flexDisplay = OGUI::hash("flex-display"sv);
-            static constexpr size_t margin = OGUI::hash("margin"sv);
         };
         std::vector<TransformFunction> transform;
         float flexGrow;

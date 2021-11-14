@@ -15,8 +15,9 @@ namespace OGUI
         std::type_index type;
         void* data;
         std::vector<struct AttrBind*> binds;
+        mutable bool _guard = false;
 
-        void DataChange() const;
+        void DataChange(bool force = false) const;
 
         AttrSource(Name name, std::type_index type, void* data);
         template<typename T>
@@ -40,7 +41,7 @@ namespace OGUI
         };
         ~AttrBind();
 
-        void Sync(const AttrSource& source);
+        void Sync(const AttrSource& source, bool force = false);
         void Sync();
 
         Name name;
@@ -50,6 +51,7 @@ namespace OGUI
         std::type_index type;
         void* data;
         AttrSource* source = nullptr;
+        AttrSource* bdBind = nullptr;
     };
 
     struct OGUI_API AttrBag
@@ -60,11 +62,11 @@ namespace OGUI
         std::vector<AttrBag*> bindingBy;
         void AddBind(AttrBind bind);
         void AddSource(AttrSource src);
-        void Notify(Name name);
+        void Notify(Name name, bool force = false);
         void Bind(AttrBag& other);
         void Unbind(AttrBag& other);
+        void BuildBD();
         ~AttrBag();
-        bool _guard = false;
     protected:
         void Clear();
     };
@@ -74,10 +76,13 @@ namespace OGUI
     OGUI_API bool AttrConverter(std::type_index sourceType, void* source, std::type_index targetType, void* target);
     OGUI_API void RegisterBaseAttrConverter();
 
-    template<typename sourceType, typename targetType>
-    bool RegisterAttrConverter(AttrConverterFun converter)
+    template<typename sourceType, typename targetType, class F>
+    bool RegisterAttrConverter(F converter)
     {
-        return RegisterAttrConverter(typeid(sourceType), typeid(targetType), converter);
+        return RegisterAttrConverter(typeid(sourceType), typeid(targetType), [converter](void* source, void* out)
+        {
+            return converter(*(sourceType*)source, *(targetType*)out);
+        });
     };
 
     template<typename sourceType, typename targetType>

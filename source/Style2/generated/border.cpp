@@ -1,12 +1,12 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.mako.cpp
+
 #define DLL_IMPLEMENTATION
 #include <memory>
 #include "OpenGUI/Style2/generated/border.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
-#include "border_shorthands.h"
 
 const OGUI::StyleBorder& OGUI::StyleBorder::GetDefault()
 {
@@ -417,12 +417,6 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
     size_t hash = OGUI::hash(name);
 
     //shorthands
-    switch(hash)
-    {
-        case Id::borderRadius:
-            return Parse::ParseBorderRadius(sheet, name, value, rule, errorMsg);
-        default: break;
-    }
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)

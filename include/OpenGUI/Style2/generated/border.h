@@ -2,6 +2,7 @@
 //generated from Style2/mako/Struct.mako.h
 
 #pragma once
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/Common.h"
@@ -30,7 +31,6 @@ namespace OGUI
             static constexpr size_t borderTopRightRadius = OGUI::hash("border-top-right-radius"sv);
             static constexpr size_t borderBottomRightRadius = OGUI::hash("border-bottom-right-radius"sv);
             static constexpr size_t borderBottomLeftRadius = OGUI::hash("border-bottom-left-radius"sv);
-            static constexpr size_t borderRadius = OGUI::hash("border-radius"sv);
         };
         float borderLeftWidth;
         float borderTopWidth;

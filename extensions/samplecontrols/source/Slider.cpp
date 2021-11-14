@@ -25,7 +25,7 @@ void SampleControls::Slider::RegisterXml()
                 FindAttribute(xe, "min-value", ve->_minValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
                 ve->_value = ve->_minValue;
                 FindAttribute(xe, "max-value", ve->_maxValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
-                FindAttribute(xe, "value", ve->_value, ve, [ve](bool valid){ve->OnValueChanged();}) ;
+                FindAttribute(xe, "value", ve->_value, ve, [ve](bool valid){ve->OnValueChanged();}, true) ;
                 
                 static const std::map<ostr::string, SliderDirection> Directions = 
                 {
@@ -33,6 +33,7 @@ void SampleControls::Slider::RegisterXml()
                     {"vertical",   SliderDirection::Vertical},
                 };
                 FindAttributeEnum(xe, "direction", Directions, ve->_direction);
+                ve->BuildBD();
                 return true;
             },
             [](InstantiateXmlState&, XmlElement& xe, VisualElement* e, VisualElement*)
@@ -72,11 +73,6 @@ void SampleControls::Slider::Initialize(VisualElement* child, std::vector<StyleS
 
 SampleControls::Slider::Slider()
 {
-    AddSource({
-        "value",
-        &_value
-    });
-
     _eventHandler.Register<PointerDownEvent, &Slider::OnMouseDown>(this);
     _eventHandler.Register<PointerMoveEvent, &Slider::OnMouseMove>(this);
     _eventHandler.Register<PointerUpEvent, &Slider::OnMouseUp>(this);
