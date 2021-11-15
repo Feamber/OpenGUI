@@ -31,6 +31,7 @@ namespace OGUI
             static constexpr size_t borderTopRightRadius = OGUI::hash("border-top-right-radius"sv);
             static constexpr size_t borderBottomRightRadius = OGUI::hash("border-bottom-right-radius"sv);
             static constexpr size_t borderBottomLeftRadius = OGUI::hash("border-bottom-left-radius"sv);
+            static constexpr size_t borderRadius = OGUI::hash("border-radius"sv);
         };
         float borderLeftWidth;
         float borderTopWidth;

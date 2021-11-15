@@ -243,7 +243,6 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
 {
     size_t hash = OGUI::hash(name);
 
-    //shorthands
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)

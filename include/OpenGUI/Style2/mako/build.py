@@ -3,7 +3,7 @@ import os.path
 import re
 import sys
 
-BASE = os.path.dirname(__file__.replace("\\", "/"))
+BASE = os.path.dirname(os.path.realpath(__file__).replace("\\", "/"))
 ROOT = os.path.join(BASE, "../../../..")
 
 sys.path.insert(0, ROOT)
@@ -22,14 +22,14 @@ def make_struct(name, inherited):
     return StyleStruct(name, inherited, HEADER_OUT_DIR, SOURCE_OUT_DIR, INCLUDE_DIR)
 
 def render_struct(struct, shorthand_path = None):
-    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
-    source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
-    write(struct.header_path, header_file)
-    write(struct.source_path, source_file)
     if shorthand_path:
         shorthand_template = os.path.join(BASE, shorthand_path)
         shorthand_file = render(shorthand_template, struct = struct)
         write(struct.shorthand_path, shorthand_file)
+    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
+    source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
+    write(struct.header_path, header_file)
+    write(struct.source_path, source_file)
 
 def gen_position():
     struct = make_struct("position", False)
@@ -94,10 +94,6 @@ def gen_text():
     add_longhand("color", "Color4f", "Color4f(0,0,0,1)")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
-    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
-    source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
-    write(struct.header_path, header_file)
-    write(struct.source_path, source_file)
     render_struct(struct)
 
 
@@ -110,10 +106,6 @@ def gen_background():
     struct.headers.append("OpenGUI/Core/Math.h")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
-    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
-    source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
-    write(struct.header_path, header_file)
-    write(struct.source_path, source_file)
     render_struct(struct)
 
 def gen_animation():

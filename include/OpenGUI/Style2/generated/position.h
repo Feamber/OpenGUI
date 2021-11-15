@@ -56,6 +56,7 @@ namespace OGUI
             static constexpr size_t justifyContent = OGUI::hash("justify-content"sv);
             static constexpr size_t flexWrap = OGUI::hash("flex-wrap"sv);
             static constexpr size_t flexDisplay = OGUI::hash("flex-display"sv);
+            static constexpr size_t margin = OGUI::hash("margin"sv);
         };
         std::vector<TransformFunction> transform;
         float flexGrow;

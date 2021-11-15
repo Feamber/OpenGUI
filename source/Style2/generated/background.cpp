@@ -244,7 +244,6 @@ bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::strin
 {
     size_t hash = OGUI::hash(name);
 
-    //shorthands
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)

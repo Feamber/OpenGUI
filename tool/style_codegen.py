@@ -187,6 +187,7 @@ class Shorthand(Property):
             aliases=aliases,
             flags = flags
         )
+        self.sub_properties = sub_properties
 
 
 class StyleStruct(object):
@@ -215,7 +216,7 @@ class StyleStruct(object):
         self.shorthands.append(shorthand)
 
         
-BASE = os.path.dirname(__file__.replace("\\", "/"))
+BASE = os.path.dirname(os.path.realpath(__file__).replace(os.path.sep, "/"))
 ROOT = os.path.join(BASE, "../")
 DEFAULT_HEADER_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.mako.h")
 DEFAULT_SOURCE_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.mako.cpp")

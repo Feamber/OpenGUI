@@ -248,17 +248,6 @@ bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::
 {
     size_t hash = OGUI::hash(name);
 
-    //shorthands
-    %if struct.shorthands:
-    switch(hash)
-    {
-    %for prop in struct.shorthands:
-        case Id::${prop.ident}:
-            return Parse::Parse${to_camel_case(prop.name)}(sheet, name, value, rule, errorMsg);
-    %endfor
-        default: break;
-    }
-    %endif
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
@@ -270,10 +259,27 @@ bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::
                 rule.properties.push_back({hash,(int)keyword});
                 return true;
         %endfor
+        %for prop in struct.shorthands:
+            case Id::${prop.ident}:
+            %for subprop in prop.sub_properties:
+                rule.properties.push_back({Id::${subprop.ident},(int)keyword});
+            %endfor
+        %endfor
             default: break;
         }
         return false;
     }
+    %if struct.shorthands:
+    //shorthands
+    switch(hash)
+    {
+    %for prop in struct.shorthands:
+        case Id::${prop.ident}:
+            return Parse::Parse${to_camel_case(prop.name)}(sheet, name, value, rule, errorMsg);
+    %endfor
+        default: break;
+    }
+    %endif
     //longhands
     switch(hash)
     {

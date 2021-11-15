@@ -7,6 +7,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "border_shorthands.h"
 
 const OGUI::StyleBorder& OGUI::StyleBorder::GetDefault()
 {
@@ -416,7 +417,6 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
 {
     size_t hash = OGUI::hash(name);
 
-    //shorthands
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
@@ -447,9 +447,21 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             case Id::borderBottomLeftRadius:
                 rule.properties.push_back({hash,(int)keyword});
                 return true;
+            case Id::borderRadius:
+                rule.properties.push_back({Id::borderTopLeftRadius,(int)keyword});
+                rule.properties.push_back({Id::borderTopRightRadius,(int)keyword});
+                rule.properties.push_back({Id::borderBottomRightRadius,(int)keyword});
+                rule.properties.push_back({Id::borderBottomLeftRadius,(int)keyword});
             default: break;
         }
         return false;
+    }
+    //shorthands
+    switch(hash)
+    {
+        case Id::borderRadius:
+            return Parse::ParseBorderRadius(sheet, name, value, rule, errorMsg);
+        default: break;
     }
     //longhands
     switch(hash)

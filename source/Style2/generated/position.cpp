@@ -7,6 +7,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "position_shorthands.h"
 
 const OGUI::StylePosition& OGUI::StylePosition::GetDefault()
 {
@@ -1087,7 +1088,6 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
 {
     size_t hash = OGUI::hash(name);
 
-    //shorthands
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
@@ -1187,9 +1187,21 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             case Id::flexDisplay:
                 rule.properties.push_back({hash,(int)keyword});
                 return true;
+            case Id::margin:
+                rule.properties.push_back({Id::marginLeft,(int)keyword});
+                rule.properties.push_back({Id::marginTop,(int)keyword});
+                rule.properties.push_back({Id::marginRight,(int)keyword});
+                rule.properties.push_back({Id::marginBottom,(int)keyword});
             default: break;
         }
         return false;
+    }
+    //shorthands
+    switch(hash)
+    {
+        case Id::margin:
+            return Parse::ParseMargin(sheet, name, value, rule, errorMsg);
+        default: break;
     }
     //longhands
     switch(hash)
