@@ -38,7 +38,7 @@ namespace OGUI
     // 初始化完子级元素的时候
     using OnInitElementChildPost = std::function<bool(InstantiateXmlState&, XmlElement& /*xmlElement*/, VisualElement* /*element*/, VisualElement* /*parent*/)>;
 
-    OGUI_API std::shared_ptr<XmlAsset> LoadXmlFile(const char* filePath, ParseXmlState& state, bool useCache = true);
+    OGUI_API std::shared_ptr<XmlAsset> LoadXmlFile(const char* filePath, ParseXmlState& state);
     OGUI_API std::shared_ptr<XmlAsset> ParseXml(const char* str, ParseXmlState& state);
     OGUI_API bool RegisterXmlParser
     (
@@ -59,6 +59,8 @@ namespace OGUI
 
         std::vector<std::string> allCssFile;
         std::vector<std::string> allXmlFile;
+
+        bool useFileCache = true;
     };
 
     struct OGUI_API InstantiateXmlState

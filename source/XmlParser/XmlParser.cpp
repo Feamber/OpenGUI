@@ -385,11 +385,11 @@ namespace OGUI
         }
     }
 
-    std::shared_ptr<XmlAsset> LoadXmlFile(const char* filePath, ParseXmlState& state, bool useCache)
+    std::shared_ptr<XmlAsset> LoadXmlFile(const char* filePath, ParseXmlState& state)
     {
         static std::unordered_map<std::string, std::string> cache;
         auto find = cache.find(filePath);
-        if(find == cache.end() || !useCache)
+        if(find == cache.end() || !state.useFileCache)
         {
             std::ifstream ifs(filePath);
 		    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
