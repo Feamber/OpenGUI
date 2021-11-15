@@ -6,26 +6,23 @@
 namespace OGUI
 {
 
-    struct KeyData
+    struct KeyData : public EventBase
     {
         EGestureEvent gestureType = EGestureEvent::None;
         EKeyCode key;
     };
 
-    struct KeyDownEvent : KeyData
+    struct OGUI_API KeyDownEvent : KeyData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
-    struct KeyUpEvent : KeyData
+    struct OGUI_API KeyUpEvent : KeyData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
-    struct KeyHoldEvent : KeyData
+    struct OGUI_API KeyHoldEvent : KeyData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
 }

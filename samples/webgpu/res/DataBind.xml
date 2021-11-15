@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Root>
     <Style path="res/DataBind.css"/>
-    <VisualElement name="AddButton" class="Button" v-pointer-down="Add">
+    <VisualElement name="AddButton" class="Button" on:pointer-down="Add">
         <Text class="Text">Add</Text>
     </VisualElement>
     <Text name="CountText" class="Text,InfoText">点击次数：${count} 次</Text>

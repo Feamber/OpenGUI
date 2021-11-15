@@ -942,8 +942,8 @@ namespace OGUI
         for(auto& attr : xe.attributes)
         {
             using namespace ostr::literal;
-            if(attr.first.ToStringView().start_with(u"v-"_o))
-                element->_eventBag.try_emplace(attr.first.ToStringView().substring(2), attr.second);
+            if(attr.first.ToStringView().start_with(u"on:"_o))
+                element->_eventBag.try_emplace(attr.first.ToStringView().substring(3), attr.second);
         }
 
         // !插入槽位
