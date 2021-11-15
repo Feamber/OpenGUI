@@ -644,10 +644,6 @@ int main(int , char* []) {
 	DataBindSample sample;
 	windows.push_back(sample.MakeWindow());
 	windows.push_back(CreateCssTestWindow());
-
-	DataBindSample sample2;
-	windows.push_back(sample2.MakeWindow());
-
 	// main loop
 	while(!windows.empty())
 	{
@@ -659,7 +655,6 @@ int main(int , char* []) {
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
-			sample2.Update();
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](SampleWindow* win)
 			{

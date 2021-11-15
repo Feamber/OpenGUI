@@ -14,15 +14,15 @@ namespace OGUI
 
     struct OGUI_API KeyDownEvent : KeyData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API KeyUpEvent : KeyData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API KeyHoldEvent : KeyData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
 }

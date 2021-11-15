@@ -270,6 +270,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		element->ResetStyles();
 	if(element->_selectorDirty)
 	{
+		element->_dependencyPseudoMask = element->_triggerPseudoMask = PseudoStates::None;
 		element->_selectorDirty = false;
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
@@ -387,7 +388,9 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 					break;
 				}
 			}
-
+			if(_cacheInvalidated)
+				if(!anim.Init(matchingContext.styleSheetStack))
+					return true;
 			if(!founded)
 			{
 				if(anim.style.animationYieldMode != EAnimYieldMode::Stop)

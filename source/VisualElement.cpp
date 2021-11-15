@@ -119,6 +119,7 @@ OGUI::VisualElement::VisualElement()
 	
 	_eventHandler.Register<PointerEnterEvent, &VisualElement::_OnMouseEnter>(this);
 	_eventHandler.Register<PointerLeaveEvent, &VisualElement::_OnMouseLeave>(this);
+	_eventHandler.Register<PointerScrollEvent, &VisualElement::_OnMouseScroll>(this);
 }
 
 OGUI::VisualElement::~VisualElement()
@@ -448,11 +449,17 @@ bool OGUI::VisualElement::Intersect(Vector2f point)
 void OGUI::VisualElement::SetPseudoClass(PseudoStates state, bool b)
 {
 	if (b)
+	{
 		_pseudoMask |= state;
+		if((_triggerPseudoMask & state) != PseudoStates::None)
+			_selectorDirty = true;
+	}
 	else
+	{
 		_pseudoMask &= ~state;
-	if ((_triggerPseudoMask & _pseudoMask) != PseudoStates::None || (_dependencyPseudoMask & ~_pseudoMask) != PseudoStates::None)
-		_selectorDirty = true;
+		if((_dependencyPseudoMask & state) != PseudoStates::None)
+			_selectorDirty = true;
+	}	
 }
 
 void OGUI::VisualElement::InitInlineStyle(std::string_view str)
@@ -590,6 +597,25 @@ bool OGUI::VisualElement::_OnMouseLeave(struct PointerLeaveEvent &event)
 		hovered--;
 	if(hovered == 0)
 		SetPseudoClass(PseudoStates::Hover, false);
+	return false;
+}
+
+bool OGUI::VisualElement::_OnMouseScroll(PointerScrollEvent& event)
+{
+	if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+	{
+		//TODO: detect overflow
+		bool hadOverflow = false;//YGNodeLayoutGetHadOverflow(_ygnode);
+		if(!hadOverflow)
+			return false;
+		float delta = event.wheelOrGestureDelta.y;
+		_scrollPos.y += delta;
+		Traverse([](VisualElement* child)
+		{
+			child->_transformDirty = true;
+		});
+		return true;
+	}
 	return false;
 }
 

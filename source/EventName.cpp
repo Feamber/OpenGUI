@@ -6,109 +6,114 @@
 
 namespace OGUI
 {
-    const Name& PreGotKeyboardFocusEvent::eventName() 
+    const Name& PreGotKeyboardFocusEvent::GetEventName() 
     {
         static Name name = "pre-got-keyboard-focus";
         return name;
     };
-    const Name& PreLostKeyboardFocusEvent::eventName()
+    const Name& PreLostKeyboardFocusEvent::GetEventName()
     {
         static Name name = "pre-lost-keyboard-focus";
         return name;
     };
-    const Name& PreGotFocusEvent::eventName()
+    const Name& PreGotFocusEvent::GetEventName()
     {
         static Name name = "pre-got-focus";
         return name;
     };
-    const Name& PreLostFocusEvent::eventName()
+    const Name& PreLostFocusEvent::GetEventName()
     {
         static Name name = "pre-lost-focus";
         return name;
     };
-    const Name& GotKeyboardFocusEvent::eventName()
+    const Name& GotKeyboardFocusEvent::GetEventName()
     {
         static Name name = "got-keyboard-focus";
         return name;
     };
-    const Name& LostKeyboardFocusEvent::eventName()
+    const Name& LostKeyboardFocusEvent::GetEventName()
     {
         static Name name = "lost-keyboard-focus";
         return name;
     };
-    const Name& GotFocusEvent::eventName()
+    const Name& GotFocusEvent::GetEventName()
     {
         static Name name = "got-focus";
         return name;
     };
-    const Name& LostFocusEvent::eventName()
+    const Name& LostFocusEvent::GetEventName()
     {
         static Name name = "lost-focus";
         return name;
     };
     
-    const Name& KeyDownEvent::eventName()
+    const Name& KeyDownEvent::GetEventName()
     {
         static Name name = "key-down";
         return name;
     };
-    const Name& KeyUpEvent::eventName()
+    const Name& KeyUpEvent::GetEventName()
     {
         static Name name = "key-up";
         return name;
     };
-    const Name& KeyHoldEvent::eventName()
+    const Name& KeyHoldEvent::GetEventName()
     {
         static Name name = "key-hold";
         return name;
     };
 
-    const Name& PointerDownEvent::eventName()
+    const Name& PointerDownEvent::GetEventName()
     {
         static Name name = "pointer-down";
         return name;
     };
-    const Name& PointerMoveEvent::eventName()
+    const Name& PointerMoveEvent::GetEventName()
     {
         static Name name = "pointer-move";
         return name;
     };
-    const Name& PointerUpEvent::eventName()
+    const Name& PointerUpEvent::GetEventName()
     {
         static Name name = "pointer-up";
         return name;
     };
-    const Name& PointerClickEvent::eventName()
+    const Name& PointerClickEvent::GetEventName()
     {
         static Name name = "pointer-click";
         return name;
     };
-    const Name& PointerDoubleClickEvent::eventName()
+    const Name& PointerDoubleClickEvent::GetEventName()
     {
         static Name name = "pointer-double-click";
         return name;
     };
-    const Name& PointerEnterEvent::eventName()
+    const Name& PointerEnterEvent::GetEventName()
     {
         static Name name = "pointer-enter";
         return name;
     };
-    const Name& PointerLeaveEvent::eventName()
+    const Name& PointerLeaveEvent::GetEventName()
     {
         static Name name = "pointer-leave";
         return name;
     };
-    const Name& TouchGestureEvent::eventName()
+    const Name& PointerScrollEvent::GetEventName()
+    {
+        static Name name = "pointer-scroll";
+        return name;
+    };
+    const Name& TouchGestureEvent::GetEventName()
     {
         static Name name = "touch-gesture";
         return name;
     };
-    const Name& TouchFirstMoveEvent::eventName()
+    const Name& TouchFirstMoveEvent::GetEventName()
     {
         static Name name = "touch-first-move";
         return name;
     };
-    const Name& TouchPressureChangeEvent::eventName()
+    const Name& TouchPressureChangeEvent::GetEventName()
     {
         static Name name = "touch-pressure-change";
         return name;

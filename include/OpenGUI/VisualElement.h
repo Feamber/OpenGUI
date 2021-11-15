@@ -226,9 +226,9 @@ namespace OGUI
 #pragma endregion
 
 #pragma region Scroll
-		bool _OnMouseScroll(struct PointerEnterEvent& event);
+		bool _OnMouseScroll(struct PointerScrollEvent& event);
         Vector2f _scrollPos;
-#pragma endregion
+#pragma endregion 
 	};
 }
 

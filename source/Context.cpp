@@ -196,7 +196,8 @@ void OGUI::Context::CapturePointer(int id, VisualElement* element)
 		return;
 	auto window = (VisualWindow*)root;
 	inputImpl->CapturePointer(window->handle, true);
-	_elementCapturingCursor = element;
+	_elementUnderCursor = _elementCapturingCursor = element;
+	UpdateHover(_elementUnderCursor);
 }
 
 void OGUI::Context::ReleasePointer(int id)
@@ -292,9 +293,15 @@ bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative
 
 bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
 {
-	_windowUnderCursor = window;
-	auto root = GetWindowContext(window).GetWindowUI();
-	olog::Info(u"Mouse WheelY:{}"_o, delta);
+	auto picked = _elementUnderCursor;
+	if (!picked)
+		return false;
+	PointerScrollEvent event;
+	event.pointerType = "mouse";
+	event.button = EMouseKey::MB;
+	event.gestureType = EGestureEvent::None;
+	event.wheelOrGestureDelta.y = delta;
+	RouteEvent(picked, event);
 	return false;
 }
 
