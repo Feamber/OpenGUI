@@ -99,6 +99,10 @@ namespace OGUI
 			ctx._layoutDirty = false;
 		}
 	}
+	void UpdateScrollSize(VisualElement* element)
+	{
+
+	}
 }
 
 OGUI::WindowContext& OGUI::Context::Create(const OGUI::WindowHandle window)
