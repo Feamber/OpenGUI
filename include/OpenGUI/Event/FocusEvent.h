@@ -8,7 +8,7 @@ namespace OGUI
 {
     class VisualElement;
 
-    struct FocusDataBase
+    struct FocusDataBase : public EventBase
     {
         FocusChangeCause cause;
         std::string_view causeDescribe;
@@ -26,28 +26,24 @@ namespace OGUI
         VisualElement* newFocused = nullptr;
     };
 
-    struct PreGotKeyboardFocusEvent : PreKeyboardFocusData
+    struct OGUI_API PreGotKeyboardFocusEvent : PreKeyboardFocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
-    struct PreLostKeyboardFocusEvent : PreKeyboardFocusData
+    struct OGUI_API PreLostKeyboardFocusEvent : PreKeyboardFocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
-    struct PreGotFocusEvent : PreFocusData
+    struct OGUI_API PreGotFocusEvent : PreFocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
-    struct PreLostFocusEvent : PreFocusData
+    struct OGUI_API PreLostFocusEvent : PreFocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
     struct FocusData : public FocusDataBase
@@ -62,28 +58,24 @@ namespace OGUI
         VisualElement* currentFocused = nullptr;
     };
 
-    struct GotKeyboardFocusEvent : KeyboardFocusData
+    struct OGUI_API GotKeyboardFocusEvent : KeyboardFocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
-    struct LostKeyboardFocusEvent : KeyboardFocusData
+    struct OGUI_API LostKeyboardFocusEvent : KeyboardFocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
-    struct GotFocusEvent : FocusData
+    struct OGUI_API GotFocusEvent : FocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
-    struct LostFocusEvent : FocusData
+    struct OGUI_API LostFocusEvent : FocusData
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        static const Name& eventName();
     };
 
 }

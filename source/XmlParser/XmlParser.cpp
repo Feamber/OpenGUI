@@ -385,11 +385,11 @@ namespace OGUI
         }
     }
 
-    std::shared_ptr<XmlAsset> LoadXmlFile(const char* filePath, ParseXmlState& state, bool useCache)
+    std::shared_ptr<XmlAsset> LoadXmlFile(const char* filePath, ParseXmlState& state)
     {
         static std::unordered_map<std::string, std::string> cache;
         auto find = cache.find(filePath);
-        if(find == cache.end() || !useCache)
+        if(find == cache.end() || !state.useFileCache)
         {
             std::ifstream ifs(filePath);
 		    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
@@ -893,8 +893,8 @@ namespace OGUI
         for(auto& attr : xe.attributes)
         {
             using namespace ostr::literal;
-            if(attr.first.ToStringView().start_with(u"v-"_o))
-                element->_eventBag.try_emplace(attr.first.ToStringView().substring(2), attr.second);
+            if(attr.first.ToStringView().start_with(u"on:"_o))
+                element->_eventBag.try_emplace(attr.first.ToStringView().substring(3), attr.second);
         }
 
         // !插入槽位

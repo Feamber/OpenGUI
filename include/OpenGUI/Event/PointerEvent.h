@@ -6,10 +6,8 @@
 namespace OGUI
 {
 
-    struct PointerData
+    struct PointerData : public EventBase
     {
-        EventRoutePhase currentPhase = EventRoutePhase::None;
-        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
         int pointerId = 0;
         std::string_view pointerType = "unknown";
         bool isPrimary = true;
@@ -26,21 +24,44 @@ namespace OGUI
         float pressure = 0;
     };
     
-    struct PointerDownEvent : PointerData 
+    struct OGUI_API PointerDownEvent : PointerData 
     {
+        static const Name& eventName();
     };
-    struct PointerMoveEvent : PointerData {};
-    struct PointerUpEvent : PointerData 
+    struct OGUI_API PointerMoveEvent : PointerData 
     {
+        static const Name& eventName();
     };
-    struct PointerClickEvent : PointerData {};
-    struct PointerDoubleClickEvent : PointerData {};
-    struct PointerEnterEvent : PointerData 
-    {};
-    struct PointerLeaveEvent : PointerData 
-    {};
-    struct MouseWheelEvent : PointerData {};
-    struct TouchGestureEvent : PointerData {};
-    struct TouchFirstMoveEvent : PointerData {};
-    struct TouchPressureChangeEvent : PointerData {};
+    struct OGUI_API PointerUpEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
+    struct OGUI_API PointerClickEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
+    struct OGUI_API PointerDoubleClickEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
+    struct OGUI_API PointerEnterEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
+    struct OGUI_API PointerLeaveEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
+    struct OGUI_API TouchGestureEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
+    struct OGUI_API TouchFirstMoveEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
+    struct OGUI_API TouchPressureChangeEvent : PointerData 
+    {
+        static const Name& eventName();
+    };
 }

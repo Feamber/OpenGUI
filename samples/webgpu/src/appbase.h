@@ -202,6 +202,7 @@ private:
 					{
 						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 						ParseXmlState xmlState;
+						xmlState.useFileCache = false;
 						auto asset = LoadXmlFile(mainXmlFile.c_str(), xmlState);
 
 						if(asset)

@@ -13,7 +13,7 @@ namespace OGUI
 {
     namespace EventBind
     {
-        extern OGUI_API std::unordered_map<Name, std::vector<struct Handler*>> _AllEventHandler;
+        OGUI_API std::unordered_map<Name, std::vector<struct Handler*>>& GetAllEventHandler();
         using EventBag = std::unordered_map<Name, Name>;
 
         struct OGUI_API Handler : public std::enable_shared_from_this<Handler>
@@ -27,8 +27,8 @@ namespace OGUI
         template <typename ... Args>
         void Broadcast(Name eventName, Args... args)
         {
-            auto find = _AllEventHandler.find(eventName);
-            if(find != _AllEventHandler.end())
+            auto find = GetAllEventHandler().find(eventName);
+            if(find != GetAllEventHandler().end())
             {
                 for(auto& handler : find->second)
                 {
@@ -45,7 +45,7 @@ namespace OGUI
         template <typename ... Args>
         std::shared_ptr<Handler> AddHandler(Name eventName, std::function<void(Args...)> fun)
         {
-            auto result = _AllEventHandler.try_emplace(eventName);
+            auto result = GetAllEventHandler().try_emplace(eventName);
             auto& list = result.first->second;
             for(auto& handler : list)
             {

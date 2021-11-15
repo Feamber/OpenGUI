@@ -1,5 +1,6 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Event/PointerEvent.h"
+#include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Text/TextElement.h"
 #include "appbase.h"
@@ -547,11 +548,14 @@ struct DataBindSample : public AttrBag
 		AddSource({minute_, &minute});
 		AddSource({second_, &second});
 		AddSource({count_, &count});
-		AddEvent = EventBind::AddHandler<PointerClickEvent&, VisualElement&>("Add", 
-		{[&](PointerClickEvent& event, VisualElement& element)
+		AddEvent = EventBind::AddHandler<const Name&, EventBase&, VisualElement&>("Add", 
+		{[&](const Name& eventName, EventBase& event, VisualElement& element)
 		{
-			++count;
-			Notify(count_);
+			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			{
+				++count;
+				Notify(count_);
+			}
 		}});
 	}
 
@@ -560,18 +564,6 @@ struct DataBindSample : public AttrBag
 		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [&](OGUI::VisualElement* ve)
 		{
 			VisualElement* test = QueryFirst(ve, "#AddButton");
-			constexpr auto handler = +[](PointerClickEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
-				{
-					static Name pointerDownName = "pointer-down";
-					if(auto bind = element.GetEventBind(pointerDownName))
-						EventBind::Broadcast<PointerClickEvent&, VisualElement&>(*bind, event, element);  //派发事件
-					return true;
-				}
-				return false;
-			};
-			test->_eventHandler.Register<PointerClickEvent, handler>(*test);
 			
 			//所有文字绑定到数据源上
 			std::vector<VisualElement*> Texts;
@@ -653,6 +645,9 @@ int main(int , char* []) {
 	windows.push_back(sample.MakeWindow());
 	windows.push_back(CreateCssTestWindow());
 
+	DataBindSample sample2;
+	windows.push_back(sample2.MakeWindow());
+
 	// main loop
 	while(!windows.empty())
 	{
@@ -664,6 +659,7 @@ int main(int , char* []) {
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
+			sample2.Update();
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](SampleWindow* win)
 			{

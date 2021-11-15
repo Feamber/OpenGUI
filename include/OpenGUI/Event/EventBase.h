@@ -1,5 +1,6 @@
 #pragma once
-
+#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Configure.h"
 namespace OGUI
 {
     enum class EventRoutePhase : int
@@ -11,5 +12,11 @@ namespace OGUI
         BubbleUp = 8,
         All = TrickleDown | Reach | Broadcast | BubbleUp,
         NoBroadcast = TrickleDown | Reach | BubbleUp,
+    };
+
+    struct EventBase
+    {
+        static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
+        EventRoutePhase currentPhase = EventRoutePhase::None;
     };
 }
