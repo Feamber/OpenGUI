@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Root>
+<Root xmlns:sample="SampleControls">
     <Style path="res/DataBind.css"/>
-    <VisualElement name="AddButton" class="Button" v-pointer-down="Add">
+    <sample:Button name="AddButton" class="Button" v-pointer-down="Add">
         <Text class="Text">Add</Text>
-    </VisualElement>
+    </sample:Button>
     <Text name="CountText" class="Text,InfoText">点击次数：${count} 次</Text>
     <Text name="TimeText" class="Text,InfoText">${hour} : ${minute} . ${second}</Text>
 </Root>

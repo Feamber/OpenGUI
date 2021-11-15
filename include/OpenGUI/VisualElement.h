@@ -9,6 +9,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Style2/Selector.h"
 #include "event/event.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -107,9 +108,9 @@ namespace OGUI
 	public:
 		LayoutType _layoutType = LayoutType::Flex;
 		YGNodeRef _ygnode;
-		uint32_t _triggerPseudoMask = 0;
-		uint32_t _dependencyPseudoMask = 0;
-		uint32_t _pseudoMask = 0;
+		PseudoStates _triggerPseudoMask = PseudoStates::None;
+		PseudoStates _dependencyPseudoMask = PseudoStates::None;
+		PseudoStates _pseudoMask = PseudoStates::None;
 
 		//TODO: should we merge these two
 		std::unique_ptr<InlineStyle> _inlineStyle;
@@ -158,12 +159,14 @@ namespace OGUI
 		void ReleaseAfterPseudoElement();
 #pragma endregion
 
-#pragma region Event
+#pragma region Bind
 	public:
+		std::unordered_map<Name, Name> _bindBag;
 		EventBind::EventBag _eventBag;
 		EventHandler _eventHandler;
 		Name* GetEventBind(Name event);
-		bool Intersect(Vector2f point);
+		void Notify(Name prop, bool force = false);
+		virtual bool Intersect(Vector2f point);
 #pragma endregion
 
 #pragma region Focused
@@ -185,9 +188,12 @@ namespace OGUI
 
 		bool _OnGotFocus(struct GotFocusEvent& event);
 		bool _OnLostFocus(struct LostFocusEvent& event);
+#pragma endregion
 
-		bool _OnMouseEnter(struct MouseEnterEvent& event);
-		bool _OnMouseLeave(struct MouseLeaveEvent& event);
+#pragma region Hover
+	public:
+		bool _OnMouseEnter(struct PointerEnterEvent& event);
+		bool _OnMouseLeave(struct PointerLeaveEvent& event);
 		int hovered = 0;
 #pragma endregion
 
@@ -217,6 +223,11 @@ namespace OGUI
 		time_t navDebugLastUpdate = 0;
 
 		VisualElement* FindNextNavTarget(ENavDirection direction);
+#pragma endregion
+
+#pragma region Scroll
+		bool _OnMouseScroll(struct PointerEnterEvent& event);
+        Vector2f _scrollPos;
 #pragma endregion
 	};
 }

@@ -117,8 +117,8 @@ OGUI::VisualElement::VisualElement()
 	_style = ComputedStyle::Create(nullptr);
 	RegisterFocusedEvent();
 	
-	_eventHandler.Register<MouseEnterEvent, &VisualElement::_OnMouseEnter>(this);
-	_eventHandler.Register<MouseLeaveEvent, &VisualElement::_OnMouseLeave>(this);
+	_eventHandler.Register<PointerEnterEvent, &VisualElement::_OnMouseEnter>(this);
+	_eventHandler.Register<PointerLeaveEvent, &VisualElement::_OnMouseLeave>(this);
 }
 
 OGUI::VisualElement::~VisualElement()
@@ -245,6 +245,7 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto playout = parent->GetLayout();
 		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		offset.y = -offset.y;
+		offset += parent->_scrollPos;
 		_worldTransform = multiply(evaluate(pos.transform), ComputedTransform::translate(offset)).to_3D();
 		_worldTransform = math::multiply(_worldTransform, parent->_worldTransform);
 	}
@@ -401,11 +402,13 @@ bool OGUI::VisualElement::ContainClass(std::string_view cls)
 void OGUI::VisualElement::_ResetStyles()
 {
 	_selectorDirty = true;
+	_style = ComputedStyle();
+	_preAnimatedStyle = ComputedStyle();
 	//dosent clean this cause we want to inherit anim context
 	//_animContext.clear();
 	//_animStyles.clear();
-	_triggerPseudoMask = 0;
-	_dependencyPseudoMask = 0;
+	_triggerPseudoMask = PseudoStates::None;
+	_dependencyPseudoMask = PseudoStates::None;
 }
 
 void OGUI::VisualElement::ResetStyles()
@@ -425,19 +428,30 @@ OGUI::Name* OGUI::VisualElement::GetEventBind(Name event)
 	return &iter->second;
 }
 
+void OGUI::VisualElement::Notify(Name prop, bool force)
+{
+	auto iter =_bindBag.find(prop);
+	if(iter != _bindBag.end())
+		AttrBag::Notify(iter->second, force);
+}
+
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
+	auto invTransform = math::inverse(_worldTransform);
+	Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
+	const Vector4f result = math::multiply(dummy, invTransform);
+	Vector2f localPoint = {result.X, result.Y};
 	auto rect = GetRect();
-	return rect.IntersectPoint(point);
+	return rect.IntersectPoint(localPoint);
 }
 
 void OGUI::VisualElement::SetPseudoClass(PseudoStates state, bool b)
 {
 	if (b)
-		_pseudoMask |= (uint32_t)state;
+		_pseudoMask |= state;
 	else
-		_pseudoMask &= ~(uint32_t)state;
-	if ((_triggerPseudoMask & _pseudoMask) != 0 || (_dependencyPseudoMask & ~_pseudoMask) != 0)
+		_pseudoMask &= ~state;
+	if ((_triggerPseudoMask & _pseudoMask) != PseudoStates::None || (_dependencyPseudoMask & ~_pseudoMask) != PseudoStates::None)
 		_selectorDirty = true;
 }
 
@@ -560,7 +574,7 @@ bool OGUI::VisualElement::_OnLostFocus(struct LostFocusEvent& event)
 	return false;
 }
 
-bool OGUI::VisualElement::_OnMouseEnter(struct MouseEnterEvent &event)
+bool OGUI::VisualElement::_OnMouseEnter(struct PointerEnterEvent &event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
 	{
@@ -570,7 +584,7 @@ bool OGUI::VisualElement::_OnMouseEnter(struct MouseEnterEvent &event)
 	return false;
 }
 
-bool OGUI::VisualElement::_OnMouseLeave(struct MouseLeaveEvent &event)
+bool OGUI::VisualElement::_OnMouseLeave(struct PointerLeaveEvent &event)
 {
 	if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
 		hovered--;

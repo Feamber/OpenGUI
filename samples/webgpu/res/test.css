@@ -4,6 +4,8 @@
     justify-content:flex-start;
     align-items:flex-start;
     align-content: flex-start;
+    flex-direction: row;
+    overflow: scroll;
     flex-wrap: wrap;
     background-color:rgb(255, 255, 255, 0.8);
     background-image:url(res/test4.jpg);
@@ -42,6 +44,13 @@ TextElement{
     align-items:center;
     background-color: initial;
     background-image:url(res/test.jpg); 
+}
+#Child1 {
+    justify-content:flex-start;
+    align-content: flex-start;
+    flex-direction: row;
+    overflow: scroll;
+    flex-wrap: wrap;
 }
 
 #Child3 { 

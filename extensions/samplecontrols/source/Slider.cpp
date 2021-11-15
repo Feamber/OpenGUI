@@ -8,7 +8,7 @@ void SampleControls::Slider::RegisterXml()
 {
     using namespace XmlParserHelper;
     RegisterXmlParser(
-            "OGUI:Slider",
+            "SampleControls:Slider",
             OnParseXmlElement_Empty,
             OnParseXmlElement_Empty, 
             OnParseXmlElement_Empty, 
@@ -116,7 +116,7 @@ bool SampleControls::Slider::OnMouseDown(struct PointerDownEvent& event)
         OnValueChanged();
     }
     _dragging = true;
-    Context::Get().CapturePointer(this); // start drag
+    Context::Get().CapturePointer(event.pointerId, this); // start drag
     return true;
 }
 
@@ -139,6 +139,6 @@ bool SampleControls::Slider::OnMouseUp(struct PointerUpEvent& event)
     if(event.currentPhase != EventRoutePhase::Reach || !_dragging)
         return false;
     _dragging = false;
-    Context::Get().ReleasePointer();
+    Context::Get().ReleasePointer(event.pointerId);
     return true;
 }

@@ -55,7 +55,7 @@ namespace OGUI
 			if (!match)
 				return false;
 		}
-		if (selector.pseudoMask != 0)
+		if (selector.pseudoMask != PseudoStates::None)
 		{
 			match = (selector.pseudoMask & element->_pseudoMask) == selector.pseudoMask;
 			if (match)
@@ -63,7 +63,7 @@ namespace OGUI
 			else
 				element->_triggerPseudoMask |= selector.pseudoMask;
 		}
-		if (selector.reversedPseudoMask != 0)
+		if (selector.reversedPseudoMask != PseudoStates::None)
 		{
 			match &= (selector.pseudoMask & ~element->_pseudoMask) == selector.pseudoMask;
 			if (match)
@@ -318,6 +318,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 
 void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors)
 {
+	element->_styleDirty = true;
 	auto parent = element->_logical_parent ? &element->_logical_parent->_style : nullptr;
 	ComputedStyle resolvedStyle = ComputedStyle::Create(parent);
 	std::vector<AnimStyle> anims;
@@ -469,7 +470,7 @@ void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 		element->SyncYogaStyle();
 		element->_transformDirty = true;
 	}
-	if (animationEvaling)
+	if (animationEvaling || element->_styleDirty)
 	{
 		element->_style = element->_preAnimatedStyle;
 		RestyleDamage damage = RestyleDamage::None;

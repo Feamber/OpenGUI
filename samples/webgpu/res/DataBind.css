@@ -17,12 +17,12 @@
     align-items: center;
 }
 
-.Button:hover{
+Button:hover{
     transform:  scale(1.05, 1.05);
     background-color: rgb(80, 135, 255);
 }
 
-.Button:active{
+Button:active{
     transform:  scale(0.95, 0.95);
     background-color: rgb(80, 255, 80);
 }

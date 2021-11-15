@@ -12,13 +12,13 @@ namespace OGUI
             BroadcastEvent<T>(next, event); });
     }
 
-    void BuildRoutePath(VisualElement* target, std::vector<VisualElement*>& path)
+    inline void BuildRoutePath(VisualElement* target, std::vector<VisualElement*>& path)
     {
         for (auto parent = target->GetHierachyParent(); parent != nullptr; parent = parent->GetHierachyParent())
             path.push_back(parent);
     }
 
-    EventRoutePhase NextPhase(EventRoutePhase current, int mask)
+    inline EventRoutePhase NextPhase(EventRoutePhase current, int mask)
     {
         int value = (int)current;
         mask &= ~(value | (value - 1));

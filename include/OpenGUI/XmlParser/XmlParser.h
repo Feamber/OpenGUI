@@ -1,10 +1,10 @@
 #pragma once
-#include "OpenGUI/Bind/AttributeBind.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/ostring/osv.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/Name.h"
 #include "OpenGUI/Core/olog.h"
+#include "OpenGUI/VisualElement.h"
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -109,19 +109,35 @@ namespace OGUI
         };
 
         template<typename Enum>
-        FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, std::string& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, AttrBag* bag = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, std::string& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
 
         OGUI_API bool IsDataBind(ostr::string_view value);
 
         OGUI_API bool OnParseXmlElement_Empty(ParseXmlState&, XmlElement&);
         OGUI_API bool OnInstantiateXmlElement_Empty(InstantiateXmlState&, XmlElement&, VisualElement*, VisualElement*);
+
+        
+
+        template<class T>
+        FindResult AddBind(Name name, ostr::string_view bindName, T& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+        {
+            if(!owner)
+                return FindResult::InvalidBind;
+            owner->AddBind({bindName, &out, std::move(changePostFun)});
+            if(bidirectional)
+            {
+                owner->_bindBag.emplace(name, bindName);
+                owner->AddSource({bindName, &out});
+            }
+            return FindResult::OK;
+        }
     }
 
     namespace XmlBase
@@ -158,20 +174,13 @@ namespace OGUI
     }
 
     template<typename Enum>
-    XmlParserHelper::FindResult XmlParserHelper::FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
 
             auto find = allEnumValue.find(search->second);
             if(find != allEnumValue.end())

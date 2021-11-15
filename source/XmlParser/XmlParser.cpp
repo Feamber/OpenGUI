@@ -466,40 +466,26 @@ namespace OGUI
         return state.root;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
             out = search->second;
             return FindResult::OK;
         }
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, std::string& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, std::string& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
             auto sv = search->second.to_sv();
             out = {sv.begin(), sv.end()};
             return FindResult::OK;
@@ -507,20 +493,13 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, bool& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, bool& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
             if(!search->second.to_sv().is_bool())
             {
                 olog::Warn(u"XmlParserHelper::FindAttribute bool ErrorType! XmlElementFullName:{} AttributeName:{} AttributeValue:{}"_o, e.fullName, name.ToStringView(), search->second);
@@ -532,20 +511,13 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, int& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, int& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
             if(!search->second.to_sv().is_integer())
             {
                 olog::Warn(u"XmlParserHelper::FindAttribute int ErrorType! XmlElementFullName:{} AttributeName:{} AttributeValue:{}"_o, e.fullName, name.ToStringView(), search->second);
@@ -557,20 +529,13 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, float& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
             if(!search->second.to_sv().is_number())
             {
                 olog::Warn(u"XmlParserHelper::FindAttribute float ErrorType! XmlElementFullName:{} AttributeName:{} AttributeValue:{}"_o, e.fullName, name.ToStringView(), search->second);
@@ -582,20 +547,13 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
             std::vector<ostr::string_view> array;
             if(search->second.split(splitter, array))
                 for(const auto& str : array)
@@ -607,20 +565,13 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, AttrBag* bag, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-            {
-                if(!bag)
-                    return FindResult::InvalidBind;
-                bag->AddBind({search->second.substring(1), &out, std::move(changePostFun)});
-                if(bidirectional)
-                    bag->AddSource({search->second.substring(1), &out});
-                return FindResult::OK;
-            }
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
             std::vector<ostr::string_view> array;
             if(search->second.split(splitter, array))
                 for(const auto& str : array)

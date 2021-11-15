@@ -62,15 +62,11 @@ namespace OGUI
 		for (auto& child : element->_children)
 			if(auto picked = PickRecursive(child, point))
 				return picked;
-		auto invTransform = math::inverse(element->_worldTransform);
-		Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
-		const Vector4f result = math::multiply(dummy, invTransform);
-		Vector2f localPoint = {result.X, result.Y};
 
 		//std::cout << "OnMouseDown: " << localPoint.X << "," << localPoint.Y << std::endl;
 		//std::cout << "Name: " << element->_name << std::endl;
 		//std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
-		if (element->Intersect(localPoint))
+		if (element->Intersect(point))
 		{
 			if (element->_isPseudoElement)
 				return element->GetHierachyParent();
@@ -168,14 +164,14 @@ void OGUI::Context::UpdateHover(VisualElement* picked)
 		return;
 	if (picked && _elementUnderCursor != picked)
 	{
-		MouseEnterEvent enterEvent;
+		PointerEnterEvent enterEvent;
 		enterEvent.pointerType = "mouse";
 		enterEvent.gestureType = EGestureEvent::None;
 		RouteEvent(picked, enterEvent);
 	}
 	if(_elementUnderCursor != nullptr && IsElementValid(_elementUnderCursor))
 	{
-		MouseLeaveEvent leaveEvent;
+		PointerLeaveEvent leaveEvent;
 		leaveEvent.pointerType = "mouse";
 		leaveEvent.gestureType = EGestureEvent::None;
 		RouteEvent(_elementUnderCursor, leaveEvent);
@@ -193,7 +189,7 @@ OGUI::VisualElement*  OGUI::Context::PickElement(const WindowHandle window, Vect
 	return PickRecursive(root, point);;
 }
 
-void OGUI::Context::CapturePointer(VisualElement* element)
+void OGUI::Context::CapturePointer(int id, VisualElement* element)
 {
 	auto root = element->GetRoot();
 	if(!root->IsA("VisualWindow"))
@@ -203,7 +199,7 @@ void OGUI::Context::CapturePointer(VisualElement* element)
 	_elementCapturingCursor = element;
 }
 
-void OGUI::Context::ReleasePointer()
+void OGUI::Context::ReleasePointer(int id)
 {
 	auto root = _elementCapturingCursor->GetRoot();
 	_elementCapturingCursor = nullptr;
@@ -274,6 +270,7 @@ bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, int32 x, int32 
 	_windowUnderCursor = window;
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+	
 	auto picked = PickElement(window, point);
 	UpdateHover(picked);
 	if (!picked)

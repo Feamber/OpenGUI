@@ -6,4 +6,6 @@ void SampleControls::Install()
 {
     RegisterStyleStruct(GetDesc<StyleSample>());
     Slider::RegisterXml();
+    Button::RegisterXml();
+    CheckBox::RegisterXml();
 }

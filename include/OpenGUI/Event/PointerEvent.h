@@ -35,12 +35,11 @@ namespace OGUI
     };
     struct PointerClickEvent : PointerData {};
     struct PointerDoubleClickEvent : PointerData {};
-    struct MouseEnterEvent : PointerData 
-    {
-    };
-    struct MouseLeaveEvent : PointerData 
-    {
-    };
+    struct PointerEnterEvent : PointerData 
+    {};
+    struct PointerLeaveEvent : PointerData 
+    {};
+    struct MouseWheelEvent : PointerData {};
     struct TouchGestureEvent : PointerData {};
     struct TouchFirstMoveEvent : PointerData {};
     struct TouchPressureChangeEvent : PointerData {};

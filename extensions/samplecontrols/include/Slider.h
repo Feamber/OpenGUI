@@ -20,6 +20,8 @@ namespace SampleControls
         float _value = 0.f;
         SliderDirection _direction;
 
+        std::string_view GetTypeName() override { return "Slider"; }
+        std::string_view GetFullTypeName() override { return "SampleControls::Slider"; };
         Slider();
         static void RegisterXml();
         bool OnMouseDown(struct PointerDownEvent& event);

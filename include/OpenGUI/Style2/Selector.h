@@ -9,6 +9,7 @@ namespace OGUI
 {
 	enum class PseudoStates : uint32_t
 	{
+		None = 0,
 		Active = 1 << 0,
 		Hover = 1 << 1,
 		Checked = 1 << 2,
@@ -17,6 +18,7 @@ namespace OGUI
 		KeyboardFocus = 1 << 5,
 		Root = 1 << 6,
 	};
+	ENUM_CLASS_FLAGS(PseudoStates)
 
 	enum class PseudoElements : uint32_t
 	{
@@ -48,8 +50,8 @@ namespace OGUI
 			std::string value;
 		};
 		std::vector<Part> parts;
-		uint32_t pseudoMask = 0;
-		uint32_t reversedPseudoMask = 0; 
+		PseudoStates pseudoMask = PseudoStates::None;
+		PseudoStates reversedPseudoMask = PseudoStates::None; 
 		StyleSelectorRelationship relationship = StyleSelectorRelationship::None;
 
 		void AddPseudoClass(std::string_view name);

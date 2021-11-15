@@ -24,9 +24,9 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view name)
 			return;
 	}
 	if (!reverse)
-		pseudoMask |= (uint32_t)state;
+		pseudoMask |= state;
 	else
-		reversedPseudoMask |= (uint32_t)state;
+		reversedPseudoMask |= state;
 }
 
 template<class T>
@@ -60,8 +60,8 @@ void OGUI::StyleComplexSelector::UpdateSpecificity()
 					break;
 			}
 		}
-		specificity += bitcount(sel.pseudoMask) * classWeight;
-		specificity += bitcount(sel.reversedPseudoMask) * classWeight;
+		specificity += bitcount((uint32_t)sel.pseudoMask) * classWeight;
+		specificity += bitcount((uint32_t)sel.reversedPseudoMask) * classWeight;
 	}
 }
 
