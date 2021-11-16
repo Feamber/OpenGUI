@@ -119,7 +119,6 @@ OGUI::VisualElement::VisualElement()
 	
 	_eventHandler.Register<PointerEnterEvent, &VisualElement::_OnMouseEnter>(this);
 	_eventHandler.Register<PointerLeaveEvent, &VisualElement::_OnMouseLeave>(this);
-	_eventHandler.Register<PointerScrollEvent, &VisualElement::_OnMouseScroll>(this);
 }
 
 OGUI::VisualElement::~VisualElement()
@@ -254,7 +253,9 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto playout = parent->GetLayout();
 		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		offset.y = -offset.y;
-		offset += parent->GetScrollPos();
+		auto& pos = StylePosition::Get(_style);
+		if(pos.position == YGPositionTypeRelative)
+			offset += parent->GetScrollPos();
 		_worldTransform = multiply(GetStyleTransform(), ComputedTransform::translate(offset)).to_3D();
 		_worldTransform = math::multiply(_worldTransform, parent->_worldTransform);
 	}
@@ -416,6 +417,14 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetDisplay(_ygnode, pos.flexDisplay);
 }
 
+OGUI::RestyleDamage OGUI::VisualElement::ApplyProcedureStyle()
+{
+	RestyleDamage damage = RestyleDamage::None;
+	for(auto& ovr : _styleOverriding)
+		damage |= ovr();
+	return damage;
+}
+
 bool OGUI::VisualElement::ContainClass(std::string_view cls)
 {
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
@@ -457,8 +466,15 @@ void OGUI::VisualElement::Notify(Name prop, bool force)
 		AttrBag::Notify(iter->second, force);
 }
 
+bool OGUI::VisualElement::Visible() const
+{
+	return !(StylePosition::Get(_style).flexDisplay == YGDisplayNone);
+}
+
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
+	if(!Visible())
+		return false;
 	auto invTransform = math::inverse(_worldTransform);
 	Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
 	const Vector4f result = math::multiply(dummy, invTransform);
@@ -618,41 +634,6 @@ bool OGUI::VisualElement::_OnMouseLeave(struct PointerLeaveEvent &event)
 		hovered--;
 	if(hovered == 0)
 		SetPseudoClass(PseudoStates::Hover, false);
-	return false;
-}
-
-bool OGUI::VisualElement::_OnMouseScroll(PointerScrollEvent& event)
-{
-	if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
-	{
-		//TODO: detect overflow
-		bool scrollX = IsScrollingX();
-		bool scrollY = IsScrollingY();
-		if(!scrollX && !scrollY)
-			return false;
-		float delta = event.wheelOrGestureDelta.y;
-		if(scrollY) //优先滚动竖直方向
-		{
-			_scrollOffset.y += delta * 10.f;
-			float axisY = GetScrollingAxisY();
-			float minY = _scrollMax.y * (axisY * 0.5f - 0.5f) + _scrollMin.y * (axisY * 0.5f + 0.5f);
-			float maxY = _scrollMax.y * (axisY * 0.5f + 0.5f) + _scrollMin.y * (axisY * 0.5f - 0.5f);
-			_scrollOffset.y = std::clamp(_scrollOffset.y, minY, maxY);
-		}
-		else if(scrollX)
-		{
-			_scrollOffset.x += delta * 10.f;
-			float axisX = GetScrollingAxisX();
-			float minX = _scrollMax.x * (axisX * 0.5f - 0.5f) + _scrollMin.x * (axisX * 0.5f + 0.5f);
-			float maxX = _scrollMax.x * (axisX * 0.5f + 0.5f) + _scrollMin.x * (axisX * 0.5f - 0.5f);
-			_scrollOffset.x = std::clamp(_scrollOffset.x, minX, maxX);
-		}
-		Traverse([](VisualElement* child)
-		{
-			child->_transformDirty = true;
-		});
-		return true;
-	}
 	return false;
 }
 
@@ -989,6 +970,9 @@ void OGUI::VisualElement::UpdateScrollSize()
 		Rect scrollRect{};
 		Traverse([&](VisualElement* child)
 		{
+			auto& pos = StylePosition::Get(child->_style);
+			if(pos.position != YGPositionTypeRelative)
+				return;
 			auto baseLayout = child->GetLayout();
 			auto offset = (baseLayout.max + baseLayout.min)/2;
 			auto rect = child->GetRect();
@@ -1032,12 +1016,12 @@ void OGUI::VisualElement::UpdateScrollSize()
 }
 bool OGUI::VisualElement::IsScrollingX() const
 {
-	return _scrollMax.y > 0 || _scrollMin.y < 0; 
+	return _scrollMax.x > 0 || _scrollMin.x < 0; 
 }
 
 bool OGUI::VisualElement::IsScrollingY() const
 {
-	return _scrollMax.x > 0 || _scrollMin.x < 0; 
+	return _scrollMax.y > 0 || _scrollMin.y < 0; 
 }
 
 
@@ -1117,6 +1101,36 @@ float OGUI::VisualElement::GetScrollingAxisY() const
 		default:
 			return 0.f;
 	}
+}
+
+void OGUI::VisualElement::AddScroll(Vector2f delta)
+{
+	SetScroll(_scrollOffset + delta);
+}
+
+void OGUI::VisualElement::SetScroll(Vector2f offset)
+{
+	if(IsScrollingY())
+	{
+		_scrollOffset.y = offset.y;
+		float axisY = GetScrollingAxisY();
+		float minY = _scrollMax.y * (axisY * 0.5f - 0.5f) + _scrollMin.y * (axisY * 0.5f + 0.5f);
+		float maxY = _scrollMax.y * (axisY * 0.5f + 0.5f) + _scrollMin.y * (axisY * 0.5f - 0.5f);
+		_scrollOffset.y = std::clamp(_scrollOffset.y, minY, maxY);
+	}
+	if(IsScrollingX())
+	{
+		_scrollOffset.x = offset.x;
+		float axisX = GetScrollingAxisX();
+		float minX = _scrollMax.x * (axisX * 0.5f - 0.5f) + _scrollMin.x * (axisX * 0.5f + 0.5f);
+		float maxX = _scrollMax.x * (axisX * 0.5f + 0.5f) + _scrollMin.x * (axisX * 0.5f - 0.5f);
+		_scrollOffset.x = std::clamp(_scrollOffset.x, minX, maxX);
+	}
+	if(IsScrolling())
+		Traverse([](VisualElement* child)
+		{
+			child->_transformDirty = true;
+		});
 }
 
 OGUI::Vector2f OGUI::VisualElement::GetScrollPos()

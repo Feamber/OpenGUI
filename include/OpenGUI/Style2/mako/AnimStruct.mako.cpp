@@ -26,7 +26,7 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
             switch(prop.id)
             {
             %for prop in struct.longhands:
-                case Id::${prop.ident}:
+                case Ids::${prop.ident}:
                     ${prop.ident} = ${prop.initial_value};
                     break;
             %endfor
@@ -38,7 +38,7 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
             switch(prop.id)
             {
             %for prop in struct.longhands:
-                case Id::${prop.ident}:
+                case Ids::${prop.ident}:
                     ${prop.ident} = sheet.Get<${prop.view_type}>(prop.value);
                     break;
             %endfor
@@ -58,7 +58,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
     switch(hash)
     {
     %for prop in struct.shorthands:
-        case Id::${prop.ident}:
+        case Ids::${prop.ident}:
             return Parse::Parse${to_camel_case(prop.name)}(sheet, name, value, rule, errorMsg)
     %endfor
         default: break;
@@ -70,7 +70,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
     switch(hash)
     {
     %for prop in struct.longhands:
-        case Id::${prop.ident}:{
+        case Ids::${prop.ident}:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {

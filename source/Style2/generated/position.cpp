@@ -151,157 +151,157 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             {
                 switch(prop.id)
                 {
-                case Id::transform:{
+                case Ids::transform:{
                     auto v = fget();
                     v->transform = {};
                     break;
                     }
-                case Id::flexGrow:{
+                case Ids::flexGrow:{
                     auto v = fget();
                     v->flexGrow = 0.f;
                     break;
                     }
-                case Id::flexShrink:{
+                case Ids::flexShrink:{
                     auto v = fget();
                     v->flexShrink = 1.f;
                     break;
                     }
-                case Id::flexBasis:{
+                case Ids::flexBasis:{
                     auto v = fget();
                     v->flexBasis = YGValueAuto;
                     break;
                     }
-                case Id::left:{
+                case Ids::left:{
                     auto v = fget();
                     v->left = YGValueAuto;
                     break;
                     }
-                case Id::top:{
+                case Ids::top:{
                     auto v = fget();
                     v->top = YGValueAuto;
                     break;
                     }
-                case Id::right:{
+                case Ids::right:{
                     auto v = fget();
                     v->right = YGValueAuto;
                     break;
                     }
-                case Id::bottom:{
+                case Ids::bottom:{
                     auto v = fget();
                     v->bottom = YGValueAuto;
                     break;
                     }
-                case Id::marginLeft:{
+                case Ids::marginLeft:{
                     auto v = fget();
                     v->marginLeft = YGValueZero;
                     break;
                     }
-                case Id::marginTop:{
+                case Ids::marginTop:{
                     auto v = fget();
                     v->marginTop = YGValueZero;
                     break;
                     }
-                case Id::marginRight:{
+                case Ids::marginRight:{
                     auto v = fget();
                     v->marginRight = YGValueZero;
                     break;
                     }
-                case Id::marginBottom:{
+                case Ids::marginBottom:{
                     auto v = fget();
                     v->marginBottom = YGValueZero;
                     break;
                     }
-                case Id::paddingLeft:{
+                case Ids::paddingLeft:{
                     auto v = fget();
                     v->paddingLeft = YGValueZero;
                     break;
                     }
-                case Id::paddingTop:{
+                case Ids::paddingTop:{
                     auto v = fget();
                     v->paddingTop = YGValueZero;
                     break;
                     }
-                case Id::paddingRight:{
+                case Ids::paddingRight:{
                     auto v = fget();
                     v->paddingRight = YGValueZero;
                     break;
                     }
-                case Id::paddingBottom:{
+                case Ids::paddingBottom:{
                     auto v = fget();
                     v->paddingBottom = YGValueZero;
                     break;
                     }
-                case Id::width:{
+                case Ids::width:{
                     auto v = fget();
                     v->width = YGValueAuto;
                     break;
                     }
-                case Id::height:{
+                case Ids::height:{
                     auto v = fget();
                     v->height = YGValueAuto;
                     break;
                     }
-                case Id::position:{
+                case Ids::position:{
                     auto v = fget();
                     v->position = YGPositionTypeRelative;
                     break;
                     }
-                case Id::overflow:{
+                case Ids::overflow:{
                     auto v = fget();
                     v->overflow = YGOverflowVisible;
                     break;
                     }
-                case Id::alignSelf:{
+                case Ids::alignSelf:{
                     auto v = fget();
                     v->alignSelf = YGAlignAuto;
                     break;
                     }
-                case Id::maxWidth:{
+                case Ids::maxWidth:{
                     auto v = fget();
                     v->maxWidth = YGValueUndefined;
                     break;
                     }
-                case Id::maxHeight:{
+                case Ids::maxHeight:{
                     auto v = fget();
                     v->maxHeight = YGValueUndefined;
                     break;
                     }
-                case Id::minWidth:{
+                case Ids::minWidth:{
                     auto v = fget();
                     v->minWidth = YGValueAuto;
                     break;
                     }
-                case Id::minHeight:{
+                case Ids::minHeight:{
                     auto v = fget();
                     v->minHeight = YGValueAuto;
                     break;
                     }
-                case Id::flexDirection:{
+                case Ids::flexDirection:{
                     auto v = fget();
                     v->flexDirection = YGFlexDirectionRow;
                     break;
                     }
-                case Id::alignContent:{
+                case Ids::alignContent:{
                     auto v = fget();
                     v->alignContent = YGAlignFlexStart;
                     break;
                     }
-                case Id::alignItems:{
+                case Ids::alignItems:{
                     auto v = fget();
                     v->alignItems = YGAlignStretch;
                     break;
                     }
-                case Id::justifyContent:{
+                case Ids::justifyContent:{
                     auto v = fget();
                     v->justifyContent = YGJustifyFlexStart;
                     break;
                     }
-                case Id::flexWrap:{
+                case Ids::flexWrap:{
                     auto v = fget();
                     v->flexWrap = YGWrapNoWrap;
                     break;
                     }
-                case Id::flexDisplay:{
+                case Ids::flexDisplay:{
                     auto v = fget();
                     v->flexDisplay = YGDisplayFlex;
                     break;
@@ -313,157 +313,157 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             { 
                 switch(prop.id)
                 {
-                case Id::transform:{
+                case Ids::transform:{
                     auto v = fget();
                     v->transform = pst->transform;
                     break;
                     }
-                case Id::flexGrow:{
+                case Ids::flexGrow:{
                     auto v = fget();
                     v->flexGrow = pst->flexGrow;
                     break;
                     }
-                case Id::flexShrink:{
+                case Ids::flexShrink:{
                     auto v = fget();
                     v->flexShrink = pst->flexShrink;
                     break;
                     }
-                case Id::flexBasis:{
+                case Ids::flexBasis:{
                     auto v = fget();
                     v->flexBasis = pst->flexBasis;
                     break;
                     }
-                case Id::left:{
+                case Ids::left:{
                     auto v = fget();
                     v->left = pst->left;
                     break;
                     }
-                case Id::top:{
+                case Ids::top:{
                     auto v = fget();
                     v->top = pst->top;
                     break;
                     }
-                case Id::right:{
+                case Ids::right:{
                     auto v = fget();
                     v->right = pst->right;
                     break;
                     }
-                case Id::bottom:{
+                case Ids::bottom:{
                     auto v = fget();
                     v->bottom = pst->bottom;
                     break;
                     }
-                case Id::marginLeft:{
+                case Ids::marginLeft:{
                     auto v = fget();
                     v->marginLeft = pst->marginLeft;
                     break;
                     }
-                case Id::marginTop:{
+                case Ids::marginTop:{
                     auto v = fget();
                     v->marginTop = pst->marginTop;
                     break;
                     }
-                case Id::marginRight:{
+                case Ids::marginRight:{
                     auto v = fget();
                     v->marginRight = pst->marginRight;
                     break;
                     }
-                case Id::marginBottom:{
+                case Ids::marginBottom:{
                     auto v = fget();
                     v->marginBottom = pst->marginBottom;
                     break;
                     }
-                case Id::paddingLeft:{
+                case Ids::paddingLeft:{
                     auto v = fget();
                     v->paddingLeft = pst->paddingLeft;
                     break;
                     }
-                case Id::paddingTop:{
+                case Ids::paddingTop:{
                     auto v = fget();
                     v->paddingTop = pst->paddingTop;
                     break;
                     }
-                case Id::paddingRight:{
+                case Ids::paddingRight:{
                     auto v = fget();
                     v->paddingRight = pst->paddingRight;
                     break;
                     }
-                case Id::paddingBottom:{
+                case Ids::paddingBottom:{
                     auto v = fget();
                     v->paddingBottom = pst->paddingBottom;
                     break;
                     }
-                case Id::width:{
+                case Ids::width:{
                     auto v = fget();
                     v->width = pst->width;
                     break;
                     }
-                case Id::height:{
+                case Ids::height:{
                     auto v = fget();
                     v->height = pst->height;
                     break;
                     }
-                case Id::position:{
+                case Ids::position:{
                     auto v = fget();
                     v->position = pst->position;
                     break;
                     }
-                case Id::overflow:{
+                case Ids::overflow:{
                     auto v = fget();
                     v->overflow = pst->overflow;
                     break;
                     }
-                case Id::alignSelf:{
+                case Ids::alignSelf:{
                     auto v = fget();
                     v->alignSelf = pst->alignSelf;
                     break;
                     }
-                case Id::maxWidth:{
+                case Ids::maxWidth:{
                     auto v = fget();
                     v->maxWidth = pst->maxWidth;
                     break;
                     }
-                case Id::maxHeight:{
+                case Ids::maxHeight:{
                     auto v = fget();
                     v->maxHeight = pst->maxHeight;
                     break;
                     }
-                case Id::minWidth:{
+                case Ids::minWidth:{
                     auto v = fget();
                     v->minWidth = pst->minWidth;
                     break;
                     }
-                case Id::minHeight:{
+                case Ids::minHeight:{
                     auto v = fget();
                     v->minHeight = pst->minHeight;
                     break;
                     }
-                case Id::flexDirection:{
+                case Ids::flexDirection:{
                     auto v = fget();
                     v->flexDirection = pst->flexDirection;
                     break;
                     }
-                case Id::alignContent:{
+                case Ids::alignContent:{
                     auto v = fget();
                     v->alignContent = pst->alignContent;
                     break;
                     }
-                case Id::alignItems:{
+                case Ids::alignItems:{
                     auto v = fget();
                     v->alignItems = pst->alignItems;
                     break;
                     }
-                case Id::justifyContent:{
+                case Ids::justifyContent:{
                     auto v = fget();
                     v->justifyContent = pst->justifyContent;
                     break;
                     }
-                case Id::flexWrap:{
+                case Ids::flexWrap:{
                     auto v = fget();
                     v->flexWrap = pst->flexWrap;
                     break;
                     }
-                case Id::flexDisplay:{
+                case Ids::flexDisplay:{
                     auto v = fget();
                     v->flexDisplay = pst->flexDisplay;
                     break;
@@ -476,157 +476,157 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
         {
             switch(prop.id)
             {
-                case Id::transform:{
+                case Ids::transform:{
                     auto v = fget();
                     v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.value));
                     break;
                     }
-                case Id::flexGrow:{
+                case Ids::flexGrow:{
                     auto v = fget();
                     v->flexGrow = sheet.Get<float>(prop.value);
                     break;
                     }
-                case Id::flexShrink:{
+                case Ids::flexShrink:{
                     auto v = fget();
                     v->flexShrink = sheet.Get<float>(prop.value);
                     break;
                     }
-                case Id::flexBasis:{
+                case Ids::flexBasis:{
                     auto v = fget();
                     v->flexBasis = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::left:{
+                case Ids::left:{
                     auto v = fget();
                     v->left = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::top:{
+                case Ids::top:{
                     auto v = fget();
                     v->top = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::right:{
+                case Ids::right:{
                     auto v = fget();
                     v->right = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::bottom:{
+                case Ids::bottom:{
                     auto v = fget();
                     v->bottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::marginLeft:{
+                case Ids::marginLeft:{
                     auto v = fget();
                     v->marginLeft = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::marginTop:{
+                case Ids::marginTop:{
                     auto v = fget();
                     v->marginTop = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::marginRight:{
+                case Ids::marginRight:{
                     auto v = fget();
                     v->marginRight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::marginBottom:{
+                case Ids::marginBottom:{
                     auto v = fget();
                     v->marginBottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::paddingLeft:{
+                case Ids::paddingLeft:{
                     auto v = fget();
                     v->paddingLeft = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::paddingTop:{
+                case Ids::paddingTop:{
                     auto v = fget();
                     v->paddingTop = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::paddingRight:{
+                case Ids::paddingRight:{
                     auto v = fget();
                     v->paddingRight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::paddingBottom:{
+                case Ids::paddingBottom:{
                     auto v = fget();
                     v->paddingBottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::width:{
+                case Ids::width:{
                     auto v = fget();
                     v->width = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::height:{
+                case Ids::height:{
                     auto v = fget();
                     v->height = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::position:{
+                case Ids::position:{
                     auto v = fget();
                     v->position = sheet.Get<YGPositionType>(prop.value);
                     break;
                     }
-                case Id::overflow:{
+                case Ids::overflow:{
                     auto v = fget();
                     v->overflow = sheet.Get<YGOverflow>(prop.value);
                     break;
                     }
-                case Id::alignSelf:{
+                case Ids::alignSelf:{
                     auto v = fget();
                     v->alignSelf = sheet.Get<YGAlign>(prop.value);
                     break;
                     }
-                case Id::maxWidth:{
+                case Ids::maxWidth:{
                     auto v = fget();
                     v->maxWidth = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::maxHeight:{
+                case Ids::maxHeight:{
                     auto v = fget();
                     v->maxHeight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::minWidth:{
+                case Ids::minWidth:{
                     auto v = fget();
                     v->minWidth = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::minHeight:{
+                case Ids::minHeight:{
                     auto v = fget();
                     v->minHeight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::flexDirection:{
+                case Ids::flexDirection:{
                     auto v = fget();
                     v->flexDirection = sheet.Get<YGFlexDirection>(prop.value);
                     break;
                     }
-                case Id::alignContent:{
+                case Ids::alignContent:{
                     auto v = fget();
                     v->alignContent = sheet.Get<YGAlign>(prop.value);
                     break;
                     }
-                case Id::alignItems:{
+                case Ids::alignItems:{
                     auto v = fget();
                     v->alignItems = sheet.Get<YGAlign>(prop.value);
                     break;
                     }
-                case Id::justifyContent:{
+                case Ids::justifyContent:{
                     auto v = fget();
                     v->justifyContent = sheet.Get<YGJustify>(prop.value);
                     break;
                     }
-                case Id::flexWrap:{
+                case Ids::flexWrap:{
                     auto v = fget();
                     v->flexWrap = sheet.Get<YGWrap>(prop.value);
                     break;
                     }
-                case Id::flexDisplay:{
+                case Ids::flexDisplay:{
                     auto v = fget();
                     v->flexDisplay = sheet.Get<YGDisplay>(prop.value);
                     break;
@@ -675,7 +675,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
     {
         switch(prop.id)
         {
-            case Id::transform:{
+            case Ids::transform:{
                 auto v = fget();
                     damage |= RestyleDamage::Transform;
                 if(prop.alpha == 0.f)
@@ -688,7 +688,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->transform = OGUI::Lerp(sheet.Get<gsl::span<TransformFunction>>(prop.from), sheet.Get<gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::flexGrow:{
+            case Ids::flexGrow:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -701,7 +701,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexGrow = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::flexShrink:{
+            case Ids::flexShrink:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -714,7 +714,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexShrink = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::flexBasis:{
+            case Ids::flexBasis:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -727,7 +727,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexBasis = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::left:{
+            case Ids::left:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -740,7 +740,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::top:{
+            case Ids::top:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -753,7 +753,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->top = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::right:{
+            case Ids::right:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -766,7 +766,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->right = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::bottom:{
+            case Ids::bottom:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -779,7 +779,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->bottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::marginLeft:{
+            case Ids::marginLeft:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -792,7 +792,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::marginTop:{
+            case Ids::marginTop:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -805,7 +805,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::marginRight:{
+            case Ids::marginRight:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -818,7 +818,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::marginBottom:{
+            case Ids::marginBottom:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -831,7 +831,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::paddingLeft:{
+            case Ids::paddingLeft:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -844,7 +844,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::paddingTop:{
+            case Ids::paddingTop:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -857,7 +857,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::paddingRight:{
+            case Ids::paddingRight:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -870,7 +870,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::paddingBottom:{
+            case Ids::paddingBottom:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -883,7 +883,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::width:{
+            case Ids::width:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -896,7 +896,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->width = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::height:{
+            case Ids::height:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -909,7 +909,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->height = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::position:{
+            case Ids::position:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -922,7 +922,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->position = OGUI::Lerp(sheet.Get<YGPositionType>(prop.from), sheet.Get<YGPositionType>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::overflow:{
+            case Ids::overflow:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -935,7 +935,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->overflow = OGUI::Lerp(sheet.Get<YGOverflow>(prop.from), sheet.Get<YGOverflow>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::alignSelf:{
+            case Ids::alignSelf:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -948,7 +948,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->alignSelf = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::maxWidth:{
+            case Ids::maxWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -961,7 +961,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->maxWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::maxHeight:{
+            case Ids::maxHeight:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -974,7 +974,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->maxHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::minWidth:{
+            case Ids::minWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -987,7 +987,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->minWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::minHeight:{
+            case Ids::minHeight:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -1000,7 +1000,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->minHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::flexDirection:{
+            case Ids::flexDirection:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -1013,7 +1013,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexDirection = OGUI::Lerp(sheet.Get<YGFlexDirection>(prop.from), sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::alignContent:{
+            case Ids::alignContent:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -1026,7 +1026,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->alignContent = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::alignItems:{
+            case Ids::alignItems:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -1039,7 +1039,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->alignItems = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::justifyContent:{
+            case Ids::justifyContent:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -1052,7 +1052,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->justifyContent = OGUI::Lerp(sheet.Get<YGJustify>(prop.from), sheet.Get<YGJustify>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::flexWrap:{
+            case Ids::flexWrap:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -1065,7 +1065,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexWrap = OGUI::Lerp(sheet.Get<YGWrap>(prop.from), sheet.Get<YGWrap>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::flexDisplay:{
+            case Ids::flexDisplay:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -1084,132 +1084,139 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
     return damage;
 }
 
-bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
-    size_t hash = OGUI::hash(name);
+    size_t phash = OGUI::hash(prop);
 
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
     {
-        switch(hash)
+        switch(phash)
         {
-            case Id::transform:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::transform:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::flexGrow:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::flexGrow:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::flexShrink:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::flexShrink:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::flexBasis:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::flexBasis:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::left:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::left:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::top:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::top:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::right:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::right:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::bottom:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::bottom:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::marginLeft:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::marginLeft:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::marginTop:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::marginTop:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::marginRight:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::marginRight:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::marginBottom:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::marginBottom:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::paddingLeft:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::paddingLeft:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::paddingTop:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::paddingTop:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::paddingRight:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::paddingRight:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::paddingBottom:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::paddingBottom:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::width:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::width:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::height:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::height:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::position:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::position:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::overflow:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::overflow:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::alignSelf:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::alignSelf:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::maxWidth:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::maxWidth:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::maxHeight:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::maxHeight:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::minWidth:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::minWidth:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::minHeight:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::minHeight:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::flexDirection:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::flexDirection:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::alignContent:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::alignContent:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::alignItems:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::alignItems:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::justifyContent:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::justifyContent:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::flexWrap:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::flexWrap:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::flexDisplay:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::flexDisplay:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::margin:
-                rule.properties.push_back({Id::marginLeft,(int)keyword});
-                rule.properties.push_back({Id::marginTop,(int)keyword});
-                rule.properties.push_back({Id::marginRight,(int)keyword});
-                rule.properties.push_back({Id::marginBottom,(int)keyword});
+            case Ids::margin:
+                rule.properties.push_back({Ids::marginLeft,(int)keyword});
+                rule.properties.push_back({Ids::marginTop,(int)keyword});
+                rule.properties.push_back({Ids::marginRight,(int)keyword});
+                rule.properties.push_back({Ids::marginBottom,(int)keyword});
+            case Ids::padding:
+                rule.properties.push_back({Ids::paddingLeft,(int)keyword});
+                rule.properties.push_back({Ids::paddingTop,(int)keyword});
+                rule.properties.push_back({Ids::paddingRight,(int)keyword});
+                rule.properties.push_back({Ids::paddingBottom,(int)keyword});
             default: break;
         }
         return false;
     }
     //shorthands
-    switch(hash)
+    switch(phash)
     {
-        case Id::margin:
-            return Parse::ParseMargin(sheet, name, value, rule, errorMsg);
+        case Ids::margin:
+            return Parse::ParseMargin(sheet, prop, value, rule, errorMsg);
+        case Ids::padding:
+            return Parse::ParsePadding(sheet, prop, value, rule, errorMsg);
         default: break;
     }
     //longhands
-    switch(hash)
+    switch(phash)
     {
-        case Id::transform:{
+        case Ids::transform:{
             std::vector<TransformFunction> v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<gsl::span<TransformFunction>>(v)});
+                rule.properties.push_back({phash, sheet.Push<gsl::span<TransformFunction>>(v)});
             else
             {
                 errorMsg = "failed to parse transform value!";
@@ -1217,10 +1224,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::flexGrow:{
+        case Ids::flexGrow:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse flex-grow value!";
@@ -1228,10 +1235,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::flexShrink:{
+        case Ids::flexShrink:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse flex-shrink value!";
@@ -1239,10 +1246,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::flexBasis:{
+        case Ids::flexBasis:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse flex-basis value!";
@@ -1250,10 +1257,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::left:{
+        case Ids::left:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse left value!";
@@ -1261,10 +1268,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::top:{
+        case Ids::top:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse top value!";
@@ -1272,10 +1279,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::right:{
+        case Ids::right:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse right value!";
@@ -1283,10 +1290,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::bottom:{
+        case Ids::bottom:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse bottom value!";
@@ -1294,10 +1301,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::marginLeft:{
+        case Ids::marginLeft:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-left value!";
@@ -1305,10 +1312,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::marginTop:{
+        case Ids::marginTop:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-top value!";
@@ -1316,10 +1323,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::marginRight:{
+        case Ids::marginRight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-right value!";
@@ -1327,10 +1334,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::marginBottom:{
+        case Ids::marginBottom:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse margin-bottom value!";
@@ -1338,10 +1345,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::paddingLeft:{
+        case Ids::paddingLeft:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-left value!";
@@ -1349,10 +1356,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::paddingTop:{
+        case Ids::paddingTop:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-top value!";
@@ -1360,10 +1367,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::paddingRight:{
+        case Ids::paddingRight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-right value!";
@@ -1371,10 +1378,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::paddingBottom:{
+        case Ids::paddingBottom:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse padding-bottom value!";
@@ -1382,10 +1389,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::width:{
+        case Ids::width:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse width value!";
@@ -1393,10 +1400,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::height:{
+        case Ids::height:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse height value!";
@@ -1404,10 +1411,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::position:{
+        case Ids::position:{
             YGPositionType v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGPositionType>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGPositionType>(v)});
             else
             {
                 errorMsg = "failed to parse position value!";
@@ -1415,10 +1422,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::overflow:{
+        case Ids::overflow:{
             YGOverflow v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGOverflow>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGOverflow>(v)});
             else
             {
                 errorMsg = "failed to parse overflow value!";
@@ -1426,10 +1433,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::alignSelf:{
+        case Ids::alignSelf:{
             YGAlign v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGAlign>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGAlign>(v)});
             else
             {
                 errorMsg = "failed to parse align-self value!";
@@ -1437,10 +1444,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::maxWidth:{
+        case Ids::maxWidth:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse max-width value!";
@@ -1448,10 +1455,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::maxHeight:{
+        case Ids::maxHeight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse max-height value!";
@@ -1459,10 +1466,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::minWidth:{
+        case Ids::minWidth:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse min-width value!";
@@ -1470,10 +1477,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::minHeight:{
+        case Ids::minHeight:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse min-height value!";
@@ -1481,10 +1488,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::flexDirection:{
+        case Ids::flexDirection:{
             YGFlexDirection v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGFlexDirection>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGFlexDirection>(v)});
             else
             {
                 errorMsg = "failed to parse flex-direction value!";
@@ -1492,10 +1499,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::alignContent:{
+        case Ids::alignContent:{
             YGAlign v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGAlign>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGAlign>(v)});
             else
             {
                 errorMsg = "failed to parse align-content value!";
@@ -1503,10 +1510,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::alignItems:{
+        case Ids::alignItems:{
             YGAlign v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGAlign>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGAlign>(v)});
             else
             {
                 errorMsg = "failed to parse align-items value!";
@@ -1514,10 +1521,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::justifyContent:{
+        case Ids::justifyContent:{
             YGJustify v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGJustify>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGJustify>(v)});
             else
             {
                 errorMsg = "failed to parse justify-content value!";
@@ -1525,10 +1532,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::flexWrap:{
+        case Ids::flexWrap:{
             YGWrap v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGWrap>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGWrap>(v)});
             else
             {
                 errorMsg = "failed to parse flex-wrap value!";
@@ -1536,10 +1543,10 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             }
             return true;
         }
-        case Id::flexDisplay:{
+        case Ids::flexDisplay:{
             YGDisplay v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGDisplay>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGDisplay>(v)});
             else
             {
                 errorMsg = "failed to parse flex-display value!";

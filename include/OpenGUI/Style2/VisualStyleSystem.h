@@ -26,11 +26,12 @@ namespace OGUI
 		StyleMatchingContext matchingContext;
 		bool _cacheInvalidated = false;
 
-		void Traverse(VisualElement* element);
+		void Traverse(VisualElement* element, bool forceUpdate);
 
 		static void FindMatches(StyleMatchingContext& context, std::vector<SelectorMatchRecord>& matchedSelectors);
 		void ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors);
-		void UpdateAnim(VisualElement* element);
+		RestyleDamage UpdateAnim(VisualElement* element);
+		void UpdateStyle(VisualElement* element);
 
 	public:
 		OGUI_API void InvalidateCache();

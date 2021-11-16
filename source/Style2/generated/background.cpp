@@ -69,7 +69,7 @@ void OGUI::StyleBackground::Dispose(ComputedStyle& style)
 
 void OGUI::StyleBackground::Initialize()
 {
-    backgroundColor = Color4f(1.f,1.f,1.f,1.f);
+    backgroundColor = Color4f(0.f,0.f,0.f,0.f);
     backgroundImage = {};
 }
 
@@ -121,12 +121,12 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
             {
                 switch(prop.id)
                 {
-                case Id::backgroundColor:{
+                case Ids::backgroundColor:{
                     auto v = fget();
-                    v->backgroundColor = Color4f(1.f,1.f,1.f,1.f);
+                    v->backgroundColor = Color4f(0.f,0.f,0.f,0.f);
                     break;
                     }
-                case Id::backgroundImage:{
+                case Ids::backgroundImage:{
                     auto v = fget();
                     v->backgroundImage = {};
                     break;
@@ -138,12 +138,12 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
             { 
                 switch(prop.id)
                 {
-                case Id::backgroundColor:{
+                case Ids::backgroundColor:{
                     auto v = fget();
                     v->backgroundColor = pst->backgroundColor;
                     break;
                     }
-                case Id::backgroundImage:{
+                case Ids::backgroundImage:{
                     auto v = fget();
                     v->backgroundImage = pst->backgroundImage;
                     break;
@@ -156,12 +156,12 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
         {
             switch(prop.id)
             {
-                case Id::backgroundColor:{
+                case Ids::backgroundColor:{
                     auto v = fget();
                     v->backgroundColor = sheet.Get<Color4f>(prop.value);
                     break;
                     }
-                case Id::backgroundImage:{
+                case Ids::backgroundImage:{
                     auto v = fget();
                     v->backgroundImage = sheet.Get<std::string>(prop.value);
                     break;
@@ -210,7 +210,7 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
     {
         switch(prop.id)
         {
-            case Id::backgroundColor:{
+            case Ids::backgroundColor:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->backgroundColor = sheet.Get<Color4f>(prop.from);
@@ -222,7 +222,7 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                     v->backgroundColor = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::backgroundImage:{
+            case Ids::backgroundImage:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->backgroundImage = sheet.Get<std::string>(prop.from);
@@ -240,33 +240,33 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
     return damage;
 }
 
-bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
-    size_t hash = OGUI::hash(name);
+    size_t phash = OGUI::hash(prop);
 
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
     {
-        switch(hash)
+        switch(phash)
         {
-            case Id::backgroundColor:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::backgroundColor:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::backgroundImage:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::backgroundImage:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
             default: break;
         }
         return false;
     }
     //longhands
-    switch(hash)
+    switch(phash)
     {
-        case Id::backgroundColor:{
+        case Ids::backgroundColor:{
             Color4f v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<Color4f>(v)});
+                rule.properties.push_back({phash, sheet.Push<Color4f>(v)});
             else
             {
                 errorMsg = "failed to parse background-color value!";
@@ -274,10 +274,10 @@ bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::strin
             }
             return true;
         }
-        case Id::backgroundImage:{
+        case Ids::backgroundImage:{
             std::string v;
             if(ParseUrl(value, v))
-                rule.properties.push_back({hash, sheet.Push<std::string>(v)});
+                rule.properties.push_back({phash, sheet.Push<std::string>(v)});
             else
             {
                 errorMsg = "failed to parse background-image value!";

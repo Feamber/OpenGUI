@@ -8,4 +8,5 @@ void SampleControls::Install()
     Slider::RegisterXml();
     Button::RegisterXml();
     CheckBox::RegisterXml();
+    ScrollView::RegisterXml();
 }

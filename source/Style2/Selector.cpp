@@ -16,6 +16,7 @@ void OGUI::StyleSelector::AddPseudoClass(std::string_view name)
 		casestr("disabled") state = PseudoStates::Disabled; break;
 		casestr("focus") state = PseudoStates::Focus; break;
 		casestr("keyboardFocus") state = PseudoStates::KeyboardFocus; break;
+		casestr("scroll") state = PseudoStates::Scroll; break;
 		casestr("root") state = PseudoStates::Root; break;
 		casestr("inactive") state = PseudoStates::Active; reverse = true; break;
 		casestr("enabled") state = PseudoStates::Disabled;  reverse = true; break;

@@ -21,7 +21,7 @@ void OGUI::VisualStyleSystem::InvalidateCache()
 
 void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
 {
-	Traverse(Tree);
+	Traverse(Tree, false);
 	_cacheInvalidated = false;
 	OASSERT(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
@@ -93,7 +93,9 @@ namespace OGUI
 			{
 				if (index < count - 1 && selectors[index + 1].relationship == StyleSelectorRelationship::Descendent)
 				{
-					current = current->GetParent();
+					current = current->GetHierachyParent();
+					if(current)
+						current->_depended = true;
 					continue;
 				}
 				if (saved != nullptr)
@@ -106,13 +108,14 @@ namespace OGUI
 			}
 			if (index < count - 1 && selectors[index + 1].relationship == StyleSelectorRelationship::Descendent)
 			{
-				saved = current->GetParent();
+				saved = current->GetHierachyParent();
 				savedIndex = index;
 			}
 			if (--index < 0)
 				return true;
 
-			current = current->GetParent();
+			current = current->GetHierachyParent();
+			current->_depended = true;
 		}
 		return false;
 	}
@@ -124,6 +127,7 @@ namespace OGUI
 			return nullptr;
 		return QueryFirst(root, selector.value());
 	}
+
 	void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result)
 	{
 		auto selector = ParseSelector(str);
@@ -183,12 +187,12 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 	{
 		StyleSheet* sheet = context.styleSheetStack[i];
 		SelectorMatchRecord record{sheet, i, nullptr};
-		Lookup(context.currentElement, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
-		Lookup(context.currentElement, matchedSelectors, sheet->typeSelectors, "*", record);
+		Lookup(element, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
+		Lookup(element, matchedSelectors, sheet->typeSelectors, "*", record);
 		if(!element->_name.empty())
-			Lookup(context.currentElement, matchedSelectors, sheet->nameSelectors, element->_name, record);
+			Lookup(element, matchedSelectors, sheet->nameSelectors, element->_name, record);
 		for(auto& cls : element->_styleClasses)
-			Lookup(context.currentElement, matchedSelectors, sheet->classSelectors, cls, record);
+			Lookup(element, matchedSelectors, sheet->classSelectors, cls, record);
 	}
 }
 
@@ -253,10 +257,9 @@ namespace OGUI
 		//	append_hash(value, prop.value.index);
 		return value;
 	}
-
 }
 
-void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
+void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force)
 {
 	const std::vector<StyleSheet*>& ess = element->GetStyleSheets();
 	auto& sstack = matchingContext.styleSheetStack;
@@ -268,10 +271,13 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 	}
 	if (_cacheInvalidated)
 		element->ResetStyles();
+	element->_selectorDirty |= force;
 	if(element->_selectorDirty)
 	{
+		if(element->_depended)
+			force = true;
+		element->_depended = false;
 		element->_dependencyPseudoMask = element->_triggerPseudoMask = PseudoStates::None;
-		element->_selectorDirty = false;
 		matchingContext.currentElement = element;
 		std::vector<SelectorMatchRecord> result;
 		//TODO: share match result?
@@ -298,16 +304,17 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element)
 		}
 		matchingContext.currentElement = nullptr;
 	}
-	UpdateAnim(element);
+	UpdateStyle(element);
 	if(element->_beforeElement)
-		UpdateAnim(element->_beforeElement);
+		UpdateStyle(element->_beforeElement);
 	if(element->_afterElement)
-		UpdateAnim(element->_afterElement);
-	element->Traverse([this](VisualElement* element)
+		UpdateStyle(element->_afterElement);
+	element->Traverse([&](VisualElement* element)
 		{
 			if(!element->_isPseudoElement)
-				Traverse(element);
+				Traverse(element, force);
 		});
+	element->_selectorDirty = false;
 	element->_styleDirty = false;
 	int styleSheetCount = sstack.size();
 	auto start = sstack.begin();
@@ -351,8 +358,6 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	{
 		element->_preAnimatedStyle = std::move(resolvedStyle);
 		element->_style = element->_preAnimatedStyle;
-		element->SyncYogaStyle();
-		element->MarkStyleTransformDirty();
 	}
 	{
 		std::vector<bool> dynbitset;
@@ -460,8 +465,9 @@ namespace OGUI
 	}
 }
 
-void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
+OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 {
+	RestyleDamage damage = RestyleDamage::None;
 	bool animationEvaling = false;
 	for (auto& ctx : element->_anims)
 		animationEvaling |= ctx.evaluating;
@@ -476,18 +482,25 @@ void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	if (animationEvaling || element->_styleDirty)
 	{
 		element->_style = element->_preAnimatedStyle;
-		RestyleDamage damage = RestyleDamage::None;
 		for (auto& anim : element->_anims)
 			damage |= anim.Apply(element->_style);
 		for (auto& anim : element->_procedureAnims)
 			damage |= anim.Apply(element->_style);
-		if((damage & RestyleDamage::Yoga) == RestyleDamage::Yoga)
-			element->SyncYogaStyle();
-		if((damage & RestyleDamage::Transform) == RestyleDamage::Transform)
-			element->MarkStyleTransformDirty();
 	}
 	element->_prevEvaluating = animationEvaling;
 	
 	UpdateAnimTime(element->_anims);
 	UpdateAnimTime(element->_procedureAnims);
+	return damage;
+}
+
+void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
+{
+	RestyleDamage damage = RestyleDamage::None;
+	damage |= UpdateAnim(element);
+	damage |= element->ApplyProcedureStyle();
+	if((damage & RestyleDamage::Yoga) == RestyleDamage::Yoga || element->_selectorDirty)
+		element->SyncYogaStyle();
+	if((damage & RestyleDamage::Transform) == RestyleDamage::Transform || element->_selectorDirty)
+		element->MarkStyleTransformDirty();
 }

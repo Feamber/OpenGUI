@@ -288,7 +288,7 @@ namespace OGUI
             VisualElement* prevElement = state.stack.size() > 0 ? state.stack.front() : nullptr;
             if(!xmlParser.createElement(state, xmlElement, newElement, prevElement))
             {
-                 olog::Error(u"XML实例化错误，OnCreateElement失败：<{}>"_o, xmlElement.fullName);
+                olog::Error(u"XML实例化错误，OnCreateElement失败：<{}>"_o, xmlElement.fullName);
                 return false;
             }
             if(newElement)

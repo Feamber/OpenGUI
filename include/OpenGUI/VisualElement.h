@@ -64,6 +64,7 @@ namespace OGUI
 		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
 
 	public:
+		bool Visible() const;
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		virtual void DrawDebugPrimitive(PrimitiveDraw::DrawContext& Ctx);
@@ -73,7 +74,7 @@ namespace OGUI
 		std::string _name;
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
-
+		void SetVisibility(bool visible);
 #pragma region Hierachy
 		void UpdateRoot(VisualElement* child);
 		void PushChild(VisualElement* child);
@@ -122,6 +123,7 @@ namespace OGUI
 		
 		std::string backgroundImageUrl;
 
+		bool _depended = false;
 		bool _selectorDirty = true;
 		bool _styleDirty = false;
 		bool _transformDirty = false;
@@ -139,6 +141,9 @@ namespace OGUI
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout();
 		virtual void SyncYogaStyle();
+		RestyleDamage ApplyProcedureStyle();
+		using StyleOverridingFunc = std::function<RestyleDamage()>;
+		std::vector<StyleOverridingFunc> _styleOverriding;
 		bool ContainClass(std::string_view c);
 		void _ResetStyles();
 		void ResetStyles();
@@ -231,13 +236,14 @@ namespace OGUI
 #pragma endregion
 
 #pragma region Scroll
-		bool _OnMouseScroll(struct PointerScrollEvent& event);
-		void UpdateScrollSize();
+		virtual void UpdateScrollSize();
 		bool IsScrollingX() const;
 		bool IsScrollingY() const;
 		bool IsScrolling() const;
 		float GetScrollingAxisX() const;
 		float GetScrollingAxisY() const;
+		void AddScroll(Vector2f delta);
+		virtual void SetScroll(Vector2f offset);
 		bool _scrollSizeDirty = true;
 		Vector2f GetScrollPos();
         Vector2f _scrollOffset;

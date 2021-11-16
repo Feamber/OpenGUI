@@ -641,9 +641,8 @@ int main(int , char* []) {
 
 	std::vector<SampleWindow*> windows;
 	SampleControls::Install();
-	DataBindSample sample;
+	ExternalControlSample sample;
 	windows.push_back(sample.MakeWindow());
-	windows.push_back(CreateCssTestWindow());
 	// main loop
 	while(!windows.empty())
 	{
@@ -671,7 +670,6 @@ int main(int , char* []) {
 			if(iter != windows.end())
 				windows.erase(iter, windows.end());
 		}
-		sample.Update();
 		for(auto win : windows)
 			win->Update();
 	}

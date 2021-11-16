@@ -19,7 +19,7 @@ namespace OGUI
         constexpr static std::string_view name = "${struct.name}"sv;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = ${str(struct.inherited).lower()};
-        struct Id
+        struct Ids
         {
         %for prop in struct.longhands:
             static constexpr size_t ${prop.ident} = OGUI::hash("${prop.name}"sv);

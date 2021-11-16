@@ -30,34 +30,34 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
         {
             switch(prop.id)
             {
-                case Id::animationName:
+                case Ids::animationName:
                     animationName = {};
                     break;
-                case Id::animationDuration:
+                case Ids::animationDuration:
                     animationDuration = 1.f;
                     break;
-                case Id::animationDelay:
+                case Ids::animationDelay:
                     animationDelay = 0.f;
                     break;
-                case Id::animationDirection:
+                case Ids::animationDirection:
                     animationDirection = EAnimDirection::Normal;
                     break;
-                case Id::animationIterationCount:
+                case Ids::animationIterationCount:
                     animationIterationCount = 1.f;
                     break;
-                case Id::animationPlayState:
+                case Ids::animationPlayState:
                     animationPlayState = {};
                     break;
-                case Id::animationTimingFunction:
+                case Ids::animationTimingFunction:
                     animationTimingFunction = {};
                     break;
-                case Id::animationFillMode:
+                case Ids::animationFillMode:
                     animationFillMode = EAnimFillMode::Forwards;
                     break;
-                case Id::animationYieldMode:
+                case Ids::animationYieldMode:
                     animationYieldMode = EAnimYieldMode::GoBack;
                     break;
-                case Id::animationResumeMode:
+                case Ids::animationResumeMode:
                     animationResumeMode = EAnimResumeMode::Resume;
                     break;
                 default: break;
@@ -67,34 +67,34 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
         {
             switch(prop.id)
             {
-                case Id::animationName:
+                case Ids::animationName:
                     animationName = sheet.Get<std::string>(prop.value);
                     break;
-                case Id::animationDuration:
+                case Ids::animationDuration:
                     animationDuration = sheet.Get<float>(prop.value);
                     break;
-                case Id::animationDelay:
+                case Ids::animationDelay:
                     animationDelay = sheet.Get<float>(prop.value);
                     break;
-                case Id::animationDirection:
+                case Ids::animationDirection:
                     animationDirection = sheet.Get<EAnimDirection>(prop.value);
                     break;
-                case Id::animationIterationCount:
+                case Ids::animationIterationCount:
                     animationIterationCount = sheet.Get<float>(prop.value);
                     break;
-                case Id::animationPlayState:
+                case Ids::animationPlayState:
                     animationPlayState = sheet.Get<EAnimPlayState>(prop.value);
                     break;
-                case Id::animationTimingFunction:
+                case Ids::animationTimingFunction:
                     animationTimingFunction = sheet.Get<AnimTimingFunction>(prop.value);
                     break;
-                case Id::animationFillMode:
+                case Ids::animationFillMode:
                     animationFillMode = sheet.Get<EAnimFillMode>(prop.value);
                     break;
-                case Id::animationYieldMode:
+                case Ids::animationYieldMode:
                     animationYieldMode = sheet.Get<EAnimYieldMode>(prop.value);
                     break;
-                case Id::animationResumeMode:
+                case Ids::animationResumeMode:
                     animationResumeMode = sheet.Get<EAnimResumeMode>(prop.value);
                     break;
                 default: break;
@@ -114,7 +114,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
     //longhands
     switch(hash)
     {
-        case Id::animationName:{
+        case Ids::animationName:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -129,7 +129,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationDuration:{
+        case Ids::animationDuration:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -148,7 +148,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationDelay:{
+        case Ids::animationDelay:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -167,7 +167,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationDirection:{
+        case Ids::animationDirection:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -186,7 +186,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationIterationCount:{
+        case Ids::animationIterationCount:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -205,7 +205,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationPlayState:{
+        case Ids::animationPlayState:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -224,7 +224,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationTimingFunction:{
+        case Ids::animationTimingFunction:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -243,7 +243,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationFillMode:{
+        case Ids::animationFillMode:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -262,7 +262,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationYieldMode:{
+        case Ids::animationYieldMode:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {
@@ -281,7 +281,7 @@ bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::animationResumeMode:{
+        case Ids::animationResumeMode:{
             int count = std::min((int)tokens.size(), animCount);
             for(int i=0; i<count; ++i)
             {

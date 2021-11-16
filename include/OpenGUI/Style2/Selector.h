@@ -16,7 +16,8 @@ namespace OGUI
 		Disabled = 1 << 3,
 		Focus = 1 << 4,
 		KeyboardFocus = 1 << 5,
-		Root = 1 << 6,
+		Scroll = 1 << 6,
+		Root = 1 << 7,
 	};
 	ENUM_CLASS_FLAGS(PseudoStates)
 

@@ -130,7 +130,7 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
                 switch(prop.id)
                 {
             %for prop in struct.longhands:
-                case Id::${prop.ident}:{
+                case Ids::${prop.ident}:{
                     auto v = fget();
                     v->${prop.ident} = ${prop.initial_value};
                     break;
@@ -144,7 +144,7 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
                 switch(prop.id)
                 {
             %for prop in struct.longhands:
-                case Id::${prop.ident}:{
+                case Ids::${prop.ident}:{
                     auto v = fget();
                     v->${prop.ident} = pst->${prop.ident};
                     break;
@@ -159,7 +159,7 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
             switch(prop.id)
             {
             %for prop in struct.longhands:
-                case Id::${prop.ident}:{
+                case Ids::${prop.ident}:{
                     auto v = fget();
                 %if prop.is_vector:
                     v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.value));
@@ -214,7 +214,7 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
         switch(prop.id)
         {
         %for prop in struct.longhands:
-            case Id::${prop.ident}:{
+            case Ids::${prop.ident}:{
                 auto v = fget();
                 %if prop.restyle_damage:
                     damage |= ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
@@ -244,25 +244,25 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
     return damage;
 }
 
-bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
-    size_t hash = OGUI::hash(name);
+    size_t phash = OGUI::hash(prop);
 
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
     {
-        switch(hash)
+        switch(phash)
         {
         %for prop in struct.longhands:
-            case Id::${prop.ident}:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::${prop.ident}:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
         %endfor
         %for prop in struct.shorthands:
-            case Id::${prop.ident}:
+            case Ids::${prop.ident}:
             %for subprop in prop.sub_properties:
-                rule.properties.push_back({Id::${subprop.ident},(int)keyword});
+                rule.properties.push_back({Ids::${subprop.ident},(int)keyword});
             %endfor
         %endfor
             default: break;
@@ -271,23 +271,23 @@ bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::
     }
     %if struct.shorthands:
     //shorthands
-    switch(hash)
+    switch(phash)
     {
     %for prop in struct.shorthands:
-        case Id::${prop.ident}:
-            return Parse::Parse${to_camel_case(prop.name)}(sheet, name, value, rule, errorMsg);
+        case Ids::${prop.ident}:
+            return Parse::Parse${to_camel_case(prop.name)}(sheet, prop, value, rule, errorMsg);
     %endfor
         default: break;
     }
     %endif
     //longhands
-    switch(hash)
+    switch(phash)
     {
     %for prop in struct.longhands:
-        case Id::${prop.ident}:{
+        case Ids::${prop.ident}:{
             ${prop.storage_type} v;
             if(${prop.parser}(value, v))
-                rule.properties.push_back({hash, sheet.Push<${prop.view_type}>(v)});
+                rule.properties.push_back({phash, sheet.Push<${prop.view_type}>(v)});
             else
             {
                 errorMsg = "failed to parse ${prop.name} value!";

@@ -9,3 +9,8 @@ ${helpers.four_sides_shorthand(
     "margin",
     "margin-%s",
 )}
+
+${helpers.four_sides_shorthand(
+    "padding",
+    "padding-%s",
+)}

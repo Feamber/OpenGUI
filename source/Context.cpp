@@ -43,10 +43,21 @@ godot::TextServer* OGUI::Context::GetTextServer()
 	return _textServer.get();
 }
 
+template <class T>
+class backwards {
+    T& _obj;
+public:
+    backwards(T &obj) : _obj(obj) {}
+    auto begin() {return _obj.rbegin();}
+    auto end() {return _obj.rend();}
+};
+
 namespace OGUI
 {
 	void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
 	{
+		if(!element->Visible())
+			return;
 		element->DrawPrimitive(ctx);
 		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 	}
@@ -60,7 +71,9 @@ namespace OGUI
 
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
-		for (auto& child : element->_children)
+		std::vector<VisualElement*> children;
+		element->GetChildren(children);
+		for (auto child : backwards(children))
 			if(auto picked = PickRecursive(child, point))
 				return picked;
 
@@ -99,7 +112,11 @@ namespace OGUI
 	}
 	void UpdateScrollSize(VisualElement* element)
 	{
-		element->Traverse([&](VisualElement* next) { next->UpdateScrollSize(); UpdateScrollSize(next); });
+		element->Traverse([&](VisualElement* next) 
+		{ 
+			next->UpdateScrollSize(); 
+			UpdateScrollSize(next); 
+		});
 	}
 }
 
