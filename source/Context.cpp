@@ -1,3 +1,4 @@
+#include "Yoga.h"
 #define DLL_IMPLEMENTATION
 #include <algorithm>
 #include <cstdio>
@@ -76,15 +77,13 @@ namespace OGUI
 		
 		else return nullptr;
 	}
-	void CacheLayoutRec(VisualElement* element)
-	{
-		element->_prevLayout = element->GetLayout();
-		element->Traverse([&](VisualElement* next) { CacheLayoutRec(next); });
-	}
 	void CheckLayoutRec(VisualElement* element)
 	{
-		if (element->_prevLayout != element->GetLayout())
-			element->_transformDirty = true;
+		if (YGNodeGetHasNewLayout(element->_ygnode))
+		{
+			YGNodeSetHasNewLayout(element->_ygnode, false);
+			element->MarkTransformDirty();
+		}
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
 	}
@@ -93,7 +92,6 @@ namespace OGUI
 		auto& ctx = Context::Get();
 		if (ctx._layoutDirty)
 		{
-			CacheLayoutRec(element);
 			element->CalculateLayout();
 			CheckLayoutRec(element);
 			ctx._layoutDirty = false;
@@ -101,7 +99,7 @@ namespace OGUI
 	}
 	void UpdateScrollSize(VisualElement* element)
 	{
-
+		element->Traverse([&](VisualElement* next) { next->UpdateScrollSize(); UpdateScrollSize(next); });
 	}
 }
 
@@ -137,6 +135,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	_deltaTime = dt;
 	styleSystem.Update(root);
 	UpdateLayout(root);
+	UpdateScrollSize(root);
 	TransformRec(root);
 }
 

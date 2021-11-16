@@ -352,7 +352,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		element->_preAnimatedStyle = std::move(resolvedStyle);
 		element->_style = element->_preAnimatedStyle;
 		element->SyncYogaStyle();
-		element->_transformDirty = true;
+		element->MarkStyleTransformDirty();
 	}
 	{
 		std::vector<bool> dynbitset;
@@ -471,7 +471,7 @@ void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	{
 		element->_style = element->_preAnimatedStyle;
 		element->SyncYogaStyle();
-		element->_transformDirty = true;
+		element->MarkStyleTransformDirty();
 	}
 	if (animationEvaling || element->_styleDirty)
 	{
@@ -484,7 +484,7 @@ void OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 		if((damage & RestyleDamage::Yoga) == RestyleDamage::Yoga)
 			element->SyncYogaStyle();
 		if((damage & RestyleDamage::Transform) == RestyleDamage::Transform)
-			element->_transformDirty = true;
+			element->MarkStyleTransformDirty();
 	}
 	element->_prevEvaluating = animationEvaling;
 	

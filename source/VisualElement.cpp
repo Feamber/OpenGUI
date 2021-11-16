@@ -190,6 +190,7 @@ void OGUI::VisualElement::UpdateRoot(VisualElement* child)
 
 void OGUI::VisualElement::PushChild(VisualElement* child)
 {
+	_scrollSizeDirty = true;
 	child->_physical_parent = this;
 	InsertChild(child, _children.size());
 	child->_layoutType = LayoutType::Flex;
@@ -198,6 +199,7 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 {
+	_scrollSizeDirty = true;
 	child->_physical_parent = this;
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
 	_children.insert(_children.begin() + index, child);
@@ -207,6 +209,7 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 
 void OGUI::VisualElement::RemoveChild(VisualElement* child)
 {
+	_scrollSizeDirty = true;
     child->_physical_parent = nullptr;
     YGNodeRemoveChild(_ygnode, child->_ygnode);
 	auto end = std::remove(_children.begin(), _children.end(), child);
@@ -228,17 +231,22 @@ OGUI::VisualElement* OGUI::VisualElement::GetLayoutRoot()
 void OGUI::VisualElement::CalculateLayout()
 {
 	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
-	if(YGNodeGetHasNewLayout(_ygnode))
+}
+
+OGUI::ComputedTransform OGUI::VisualElement::GetStyleTransform() const
+{
+	if(_styleTransformDirty)
 	{
-		YGNodeSetHasNewLayout(_ygnode, false);
-		_transformDirty = true;
+		_styleTransformDirty = false;
+		auto& pos = StylePosition::Get(_style);
+		return _styleTransform = evaluate(pos.transform);
 	}
+	return _styleTransform;
 }
 
 void OGUI::VisualElement::UpdateWorldTransform()
 {
 	using namespace math;
-	auto& pos = StylePosition::Get(_style);
 	auto layout = GetLayout();
 	auto parent = GetHierachyParent();
 	if (parent)
@@ -246,20 +254,20 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto playout = parent->GetLayout();
 		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		offset.y = -offset.y;
-		offset += parent->_scrollPos;
-		_worldTransform = multiply(evaluate(pos.transform), ComputedTransform::translate(offset)).to_3D();
+		offset += parent->GetScrollPos();
+		_worldTransform = multiply(GetStyleTransform(), ComputedTransform::translate(offset)).to_3D();
 		_worldTransform = math::multiply(_worldTransform, parent->_worldTransform);
 	}
 	else
 	{
 		auto offset = -(layout.max - layout.min) / 2;
-		_worldTransform = evaluate(pos.transform).to_3D();
+		_worldTransform = GetStyleTransform().to_3D();
 	}
 	_worldPosition = {_worldTransform.M[3][0], _worldTransform.M[3][1]};
 	_transformDirty = false;
 }
 
-OGUI::Rect OGUI::VisualElement::GetLayout()
+OGUI::Rect OGUI::VisualElement::GetLayout() const
 {
 	if(_layoutType == LayoutType::Flex)
 	{
@@ -279,7 +287,7 @@ OGUI::Rect OGUI::VisualElement::GetLayout()
 		return Rect();
 }
 
-OGUI::Rect OGUI::VisualElement::GetRect()
+OGUI::Rect OGUI::VisualElement::GetRect() const
 {
 	if(_layoutType == LayoutType::Flex)
 	{
@@ -304,7 +312,7 @@ OGUI::Rect OGUI::VisualElement::GetRect()
 		return Rect();
 }
 
-OGUI::Vector2f OGUI::VisualElement::GetSize()
+OGUI::Vector2f OGUI::VisualElement::GetSize() const
 {
 	
 	if(_layoutType == LayoutType::Flex)
@@ -313,6 +321,19 @@ OGUI::Vector2f OGUI::VisualElement::GetSize()
 		return _inlineLayout.max - _inlineLayout.min;
 	else
 		return Vector2f();
+}
+
+void OGUI::VisualElement::MarkTransformDirty()
+{
+	_transformDirty = true;
+	if(_physical_parent)
+		_physical_parent->_scrollSizeDirty = true;
+}
+
+void OGUI::VisualElement::MarkStyleTransformDirty()
+{
+	_styleTransformDirty = true;
+	MarkTransformDirty();
 }
 
 void OGUI::VisualElement::MarkLayoutDirty()
@@ -605,11 +626,27 @@ bool OGUI::VisualElement::_OnMouseScroll(PointerScrollEvent& event)
 	if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
 	{
 		//TODO: detect overflow
-		bool hadOverflow = false;//YGNodeLayoutGetHadOverflow(_ygnode);
-		if(!hadOverflow)
+		bool scrollX = IsScrollingX();
+		bool scrollY = IsScrollingY();
+		if(!scrollX && !scrollY)
 			return false;
 		float delta = event.wheelOrGestureDelta.y;
-		_scrollPos.y += delta;
+		if(scrollY) //优先滚动竖直方向
+		{
+			_scrollOffset.y += delta * 10.f;
+			float axisY = GetScrollingAxisY();
+			float minY = _scrollMax.y * (axisY * 0.5f - 0.5f) + _scrollMin.y * (axisY * 0.5f + 0.5f);
+			float maxY = _scrollMax.y * (axisY * 0.5f + 0.5f) + _scrollMin.y * (axisY * 0.5f - 0.5f);
+			_scrollOffset.y = std::clamp(_scrollOffset.y, minY, maxY);
+		}
+		else if(scrollX)
+		{
+			_scrollOffset.x += delta * 10.f;
+			float axisX = GetScrollingAxisX();
+			float minX = _scrollMax.x * (axisX * 0.5f - 0.5f) + _scrollMin.x * (axisX * 0.5f + 0.5f);
+			float maxX = _scrollMax.x * (axisX * 0.5f + 0.5f) + _scrollMin.x * (axisX * 0.5f - 0.5f);
+			_scrollOffset.x = std::clamp(_scrollOffset.x, minX, maxX);
+		}
 		Traverse([](VisualElement* child)
 		{
 			child->_transformDirty = true;
@@ -642,20 +679,8 @@ void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, s
 	}
 }
 
-OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direction)
+namespace OGUI
 {
-	VisualElement* explicitTarget = nullptr;
-	if(direction == ENavDirection::Up && navExplicitUp != "")
-		explicitTarget = QueryFirst(GetRoot(), navExplicitUp);
-	else if(direction == ENavDirection::Down && navExplicitDown != "")
-		explicitTarget = QueryFirst(GetRoot(), navExplicitDown);
-	else if(direction == ENavDirection::Left && navExplicitLeft != "")
-		explicitTarget = QueryFirst(GetRoot(), navExplicitLeft);
-	else if(direction == ENavDirection::Right && navExplicitRight != "")
-		explicitTarget = QueryFirst(GetRoot(), navExplicitRight);
-	
-	if(explicitTarget) return explicitTarget;
-
 	struct Quad
 	{
 		Vector2f RU;
@@ -699,13 +724,13 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
     		LB = {rect.min.X, rect.min.Y};
 		}
 
-		Quad ToBoundingBox()
+		Rect ToBoundingBox()
 		{
 			float minX = RU.X < RB.X && RU.X < LU.X && RU.X < LB.X ? RU.X : RB.X < LU.X && RB.X < LB.X ? RB.X : LU.X < LB.X ? LU.X : LB.X;
 			float minY = RU.Y < RB.Y && RU.Y < LU.Y && RU.Y < LB.Y ? RU.Y : RB.Y < LU.Y && RB.Y < LB.Y ? RB.Y : LU.Y < LB.Y ? LU.Y : LB.Y;
 			float maxX = RU.X > RB.X && RU.X > LU.X && RU.X > LB.X ? RU.X : RB.X > LU.X && RB.X > LB.X ? RB.X : LU.X > LB.X ? LU.X : LB.X;
 			float maxY = RU.Y > RB.Y && RU.Y > LU.Y && RU.Y > LB.Y ? RU.Y : RB.Y > LU.Y && RB.Y > LB.Y ? RB.Y : LU.Y > LB.Y ? LU.Y : LB.Y;
-			return Quad({Vector2f(minX, minY), Vector2f(maxX, maxY)});
+			return Rect({Vector2f(minX, minY), Vector2f(maxX, maxY)});
 		}
 
 		Quad ToNavCollisionBox(ENavDirection direction, float width, float height)
@@ -776,6 +801,21 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 			return LU.Y - LB.Y;
 		}
 	};
+}
+
+OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direction)
+{
+	VisualElement* explicitTarget = nullptr;
+	if(direction == ENavDirection::Up && navExplicitUp != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitUp);
+	else if(direction == ENavDirection::Down && navExplicitDown != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitDown);
+	else if(direction == ENavDirection::Left && navExplicitLeft != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitLeft);
+	else if(direction == ENavDirection::Right && navExplicitRight != "")
+		explicitTarget = QueryFirst(GetRoot(), navExplicitRight);
+	
+	if(explicitTarget) return explicitTarget;
 	auto currentOrigin = this;
 	auto currentQuad = Quad(this);
 	auto currentCollision = this;
@@ -814,7 +854,7 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 			{
 				time_t seconds = time(NULL);
 				element->navDebugLastUpdate = seconds;
-				element->navDebugRect = elementQuad.ToRect();
+				element->navDebugRect = elementQuad;
 				element->FocusNavDebugState = ElementQuad;
 
 				currentOrigin->navDebugLastUpdate = seconds;
@@ -828,7 +868,7 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 			if(!isCycleMode && distance >= (minDistance == FLT_MAX ? FLT_MAX : minDistance + near)) continue;
 			if(isCycleMode && distance <= (maxDistance == 0.f ? 0.f : maxDistance - near)) continue;
 
-			auto elementAABB = elementQuad.ToBoundingBox();
+			Quad elementAABB = elementQuad;
 			float overlap = 0.f;
 			if(direction == ENavDirection::Up || direction == ENavDirection::Down)
 			{
@@ -940,4 +980,148 @@ void OGUI::VisualElement::SetAnimationTime(std::string_view name, float time)
 	for(auto& anim : _anims)
 		if(anim.style.animationName == name)
 			anim.SetTime(time);
+}
+
+void OGUI::VisualElement::UpdateScrollSize()
+{
+	if(_scrollSizeDirty)
+	{
+		Rect scrollRect{};
+		Traverse([&](VisualElement* child)
+		{
+			auto baseLayout = child->GetLayout();
+			auto offset = (baseLayout.max + baseLayout.min)/2;
+			auto rect = child->GetRect();
+			auto styleTransform = child->GetStyleTransform();
+			auto quad = Quad(rect, styleTransform.to_3D());
+			quad.RU += offset;
+    		quad.RB += offset;
+    		quad.LU += offset;
+    		quad.LB += offset;
+			auto relativeRect = quad.ToBoundingBox();
+			scrollRect.min.x = std::min(scrollRect.min.x, relativeRect.min.x);
+			scrollRect.min.y = std::min(scrollRect.min.y, relativeRect.min.y);
+			scrollRect.max.x = std::max(scrollRect.max.x, relativeRect.max.x);
+			scrollRect.max.y = std::max(scrollRect.max.y, relativeRect.max.y);
+		});
+		_scrollMax = scrollRect.max - GetSize();
+		_scrollMax.x = std::max(0.f, _scrollMax.x);
+		_scrollMax.y = std::max(0.f, _scrollMax.y);
+		_scrollMin = scrollRect.min;
+		if(_scrollMax.y > 0 || _scrollMin.y < 0)
+		{
+			float axisY = GetScrollingAxisY();
+			float minY = _scrollMax.y * (axisY * 0.5f - 0.5f) + _scrollMin.y * (axisY * 0.5f + 0.5f);
+			float maxY = _scrollMax.y * (axisY * 0.5f + 0.5f) + _scrollMin.y * (axisY * 0.5f - 0.5f);
+			_scrollOffset.y = std::clamp(_scrollOffset.y, minY, maxY);
+		}
+		else
+			_scrollOffset.y = 0;
+		if(_scrollMax.x > 0 || _scrollMin.x < 0)
+		{
+			float axisX = GetScrollingAxisX();
+			float minX = _scrollMax.x * (axisX * 0.5f - 0.5f) + _scrollMin.x * (axisX * 0.5f + 0.5f);
+			float maxX = _scrollMax.x * (axisX * 0.5f + 0.5f) + _scrollMin.x * (axisX * 0.5f - 0.5f);
+			_scrollOffset.x = std::clamp(_scrollOffset.x, minX, maxX);
+		}
+		else
+			_scrollOffset.x = 0;
+		
+		_scrollSizeDirty = false;
+	}
+}
+bool OGUI::VisualElement::IsScrollingX() const
+{
+	return _scrollMax.y > 0 || _scrollMin.y < 0; 
+}
+
+bool OGUI::VisualElement::IsScrollingY() const
+{
+	return _scrollMax.x > 0 || _scrollMin.x < 0; 
+}
+
+
+bool OGUI::VisualElement::IsScrolling() const
+{
+	return IsScrollingX() || IsScrollingY(); 
+}
+
+namespace OGUI
+{
+	float GetMainAxisScroll(const StylePosition& pos)
+	{
+		switch(pos.justifyContent)
+		{
+			case YGJustifyFlexStart:
+				return 1.f;
+			case YGJustifyFlexEnd:
+				return -1.f;
+			case YGJustifyCenter:
+			case YGJustifySpaceAround:
+			case YGJustifySpaceBetween:
+			case YGJustifySpaceEvenly:
+			default:
+				return 0.f;
+		}
+	}
+
+	float GetCrossAxisScroll(const StylePosition& pos)
+	{
+		switch(pos.alignContent)
+		{
+			case YGAlignStretch:
+			case YGAlignFlexStart:
+				return 1.f;
+			case YGAlignFlexEnd:
+				return -1.f;
+			case YGAlignCenter:
+			case YGAlignSpaceAround:
+			case YGAlignSpaceBetween:
+			default:
+				return 0.f;
+		}
+	}
+}
+
+float OGUI::VisualElement::GetScrollingAxisX() const
+{
+	auto& pos = StylePosition::Get(_style);
+	switch(pos.flexDirection)
+	{
+		case YGFlexDirectionRow:
+			return GetMainAxisScroll(pos);
+		case YGFlexDirectionRowReverse:
+			return -1.f * GetMainAxisScroll(pos);
+		case YGFlexDirectionColumn:
+			return GetCrossAxisScroll(pos);
+		case YGFlexDirectionColumnReverse:
+			return -1.f * GetCrossAxisScroll(pos);
+		default:
+			return 0.f;
+	}
+}
+
+float OGUI::VisualElement::GetScrollingAxisY() const
+{
+	auto& pos = StylePosition::Get(_style);
+	switch(pos.flexDirection)
+	{
+		case YGFlexDirectionRow:
+			return GetCrossAxisScroll(pos);
+		case YGFlexDirectionRowReverse:
+			return -1.f * GetCrossAxisScroll(pos);
+		case YGFlexDirectionColumn:
+			return GetMainAxisScroll(pos);
+		case YGFlexDirectionColumnReverse:
+			return -1.f * GetMainAxisScroll(pos);
+		default:
+			return 0.f;
+	}
+}
+
+OGUI::Vector2f OGUI::VisualElement::GetScrollPos()
+{
+	//Vector2f axis = {GetScrollingAxisX(), GetScrollingAxisY()};
+	//Vector2f pivot = Vector2f{-axis.x/2 + 0.5f, -axis.y/2 + 0.5f} * _scrollSize;
+	return _scrollOffset;
 }

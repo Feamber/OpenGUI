@@ -10,6 +10,7 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Style2/Transform.h"
 #include "event/event.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -95,11 +96,13 @@ namespace OGUI
 
 #pragma region Transform
 		Vector2f _worldPosition;
+		mutable ComputedTransform _styleTransform;
+		ComputedTransform GetStyleTransform() const;
 		float4x4 _worldTransform;
 		void UpdateWorldTransform();
-		Rect GetLayout();
-		Rect GetRect();
-		Vector2f GetSize();
+		Rect GetLayout() const;
+		Rect GetRect() const;
+		Vector2f GetSize() const;
 		Rect _inlineLayout;
 		//Rect _layout;
 #pragma endregion
@@ -122,13 +125,15 @@ namespace OGUI
 		bool _selectorDirty = true;
 		bool _styleDirty = false;
 		bool _transformDirty = false;
+		mutable bool _styleTransformDirty = true;
 		bool _layoutDirty = false;
-		Rect _prevLayout;
 		ComputedStyle _style;
 		ComputedStyle _preAnimatedStyle;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
+		void MarkTransformDirty();
+		void MarkStyleTransformDirty();
 		virtual void MarkLayoutDirty();
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
@@ -227,8 +232,17 @@ namespace OGUI
 
 #pragma region Scroll
 		bool _OnMouseScroll(struct PointerScrollEvent& event);
-        Vector2f _scrollPos;
-		Vector2f _scrollSize;
+		void UpdateScrollSize();
+		bool IsScrollingX() const;
+		bool IsScrollingY() const;
+		bool IsScrolling() const;
+		float GetScrollingAxisX() const;
+		float GetScrollingAxisY() const;
+		bool _scrollSizeDirty = true;
+		Vector2f GetScrollPos();
+        Vector2f _scrollOffset;
+		Vector2f _scrollMin;
+		Vector2f _scrollMax;
 #pragma endregion 
 	};
 }
