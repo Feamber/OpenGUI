@@ -1,5 +1,4 @@
 #include <memory>
-#ifndef UE4Runtime
 #pragma once
 
 //https://www.w3.org/TR/2021/CRD-css-text-3-20210316
@@ -46,4 +45,3 @@ namespace OGUI
         void BuildParagraphRec(godot::TextParagraph* p, const struct StyleText& txt);
     };
 }
-#endif

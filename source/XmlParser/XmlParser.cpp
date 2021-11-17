@@ -2,13 +2,6 @@
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Bind/AttributeBind.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
-#include <map>
-#include <vector>
-#include <list>
-#include <fstream>
-#include <string>
-#include <unordered_map>
-#include <memory>
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/XmlParser/TemplateContainer.h"
 #include "OpenGUI/Text/TextElement.h"
@@ -16,6 +9,13 @@
 #include "OpenGUI/Core/ostring/osv.h"
 #include "tinyxml2/tinyxml2.h"
 #include "OpenGUI/VisualElement.h"
+#include <map>
+#include <vector>
+#include <list>
+#include <fstream>
+#include <string>
+#include <unordered_map>
+#include <memory>
 
 namespace OGUI
 {
@@ -336,10 +336,10 @@ namespace OGUI
                 {
                     for(auto attr : child->attributes)
                     {
-                        auto find = override.find(attr.first);
-                        if(find != override.end())
+                        auto find2 = override.find(attr.first);
+                        if(find2 != override.end())
                         {
-                            override.erase(find);
+                            override.erase(find2);
                             if(override.size() == 0)
                                 return;
                         }
@@ -798,9 +798,9 @@ namespace OGUI
                                     for(auto attr : child->attributes)
                                         if(attr.first != XmlBase::Attr_ElementName && attr.first != XmlBase::Attr_Name)
                                             override[attr.first] = attr.second;
-                                    for(auto& child : root->children)
-                                        if(child->_fullName != AttributeOverridesName)
-                                            XmlHelper::AttributeOverrides(*child.get(), elementName, override);
+                                    for(auto& child2 : root->children)
+                                        if(child2->_fullName != AttributeOverridesName)
+                                            XmlHelper::AttributeOverrides(*child2.get(), elementName, override);
                                 }
                                 else
                                 {
