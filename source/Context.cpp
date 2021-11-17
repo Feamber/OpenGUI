@@ -171,7 +171,7 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
 	wctx.currentDrawCtx->resolution = Vector2f(wctx.GetWidth(), wctx.GetHeight());
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
-	wctx.currentDrawCtx->prims.ValidateAndBatch(window);
+	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }
 
 void OGUI::Context::Render(const OGUI::WindowHandle window)

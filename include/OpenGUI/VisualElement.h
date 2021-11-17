@@ -96,8 +96,6 @@ namespace OGUI
 		void Traverse(F&& f);
 #pragma endregion
 
-		Vector4u GetHardwareScissor() const;
-
 #pragma region Transform
 		Vector2f _worldPosition;
 		mutable ComputedTransform _styleTransform;

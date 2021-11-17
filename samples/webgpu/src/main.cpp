@@ -262,10 +262,6 @@ public:
 					}
 					wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 				}
-				if(last_cmd.scissor != cmd.scissor || last_index < 0)
-				{
-					wgpuRenderPassEncoderSetScissorRect(pass, cmd.scissor[0], cmd.scissor[1], cmd.scissor[2], cmd.scissor[3]);
-				}
 				wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
 					cmd.vertex_offset * sizeof(Vertex),
 					WGPU_WHOLE_SIZE
