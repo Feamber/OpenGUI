@@ -1,4 +1,5 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Style2/Selector.h"
@@ -161,7 +162,11 @@ public:
 		if(list.command_list.size() <= 0) return;
 		static size_t old_vb_size = 0;
 		static size_t old_ib_size = 0;
-		const auto this_vb_size = list.vertices.size() * sizeof(OGUI::Vertex);
+		std::vector<Vertex> vertices = list.vertices;
+		Vector2f resolution = {wctx.GetWidth(), wctx.GetHeight()};
+		for(auto& vertex : vertices) //normalize
+			vertex.position /= resolution;
+		const auto this_vb_size = vertices.size() * sizeof(OGUI::Vertex);
 		const auto this_ib_size = list.indices.size() * sizeof(OGUI::uint16_t);
 		{
 			ZoneScopedN("Prepare Buffers");
@@ -169,12 +174,12 @@ public:
 			if(old_vb_size < this_vb_size)
 			{
 				if (vertex_buffer) wgpuBufferRelease(vertex_buffer);
-				vertex_buffer = createBuffer(device, queue, list.vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
+				vertex_buffer = createBuffer(device, queue, vertices.data(), this_vb_size, WGPUBufferUsage_Vertex);
 				old_vb_size = this_vb_size;
 			}
 			else
 			{
-				writeBuffer(queue, vertex_buffer, list.vertices.data(), this_vb_size);
+				writeBuffer(queue, vertex_buffer, vertices.data(), this_vb_size);
 			}
 			if(old_ib_size < this_ib_size)
 			{
@@ -376,19 +381,22 @@ protected:
 		desc.layout = pipelineLayout;
 
 		// describe buffer layouts
-		WGPUVertexAttribute vertAttrs[3] = {};
+		WGPUVertexAttribute vertAttrs[5] = {};
 		vertAttrs[0].format = WGPUVertexFormat_Float32x2;
-		vertAttrs[0].offset = 0;
+		vertAttrs[0].offset = offsetof(Vertex, position);
 		vertAttrs[0].shaderLocation = 0;
 		vertAttrs[1].format = WGPUVertexFormat_Float32x2;
-		vertAttrs[1].offset = 2 * sizeof(float);
+		vertAttrs[1].offset = offsetof(Vertex, texcoord);
 		vertAttrs[1].shaderLocation = 1;
-		vertAttrs[2].format = WGPUVertexFormat_Float32x4;
-		vertAttrs[2].offset = 4 * sizeof(float);
+		vertAttrs[2].format = WGPUVertexFormat_Unorm8x4;
+		vertAttrs[2].offset = offsetof(Vertex, color);
 		vertAttrs[2].shaderLocation = 2;
+		vertAttrs[3].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[3].offset = offsetof(Vertex, clipUV);
+		vertAttrs[3].shaderLocation = 3;
 		WGPUVertexBufferLayout vertDesc = {};
-		vertDesc.arrayStride = 8 * sizeof(float);
-		vertDesc.attributeCount = 3;
+		vertDesc.arrayStride = sizeof(Vertex);
+		vertDesc.attributeCount = 4;
 		vertDesc.attributes = vertAttrs;
 
 		// shader stages

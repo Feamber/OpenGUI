@@ -1,8 +1,27 @@
+#include <limits>
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Core/PrimitiveDraw.h"
 
 namespace OGUI
 {
+    uint32_t ToColor32ABGR(Vector4f color)
+    {
+        color.x = std::clamp(color.x, 0.f, 1.f);   
+        color.y = std::clamp(color.y, 0.f, 1.f);   
+        color.z = std::clamp(color.z, 0.f, 1.f);   
+        color.w = std::clamp(color.w, 0.f, 1.f);   
+        uint8_t r = color.x * 255;
+        uint8_t g = color.y * 255;
+        uint8_t b = color.z * 255;
+        uint8_t a = color.w * 255;
+        return ((uint32_t)a << 24) + ((uint32_t)b << 16) + ((uint32_t)g << 8) + (uint32_t)r;
+    }
+
+    Vertex MakeVertex(Vector2f position, Vector2f UV, Color4f color)
+    {
+        return Vertex{ position, UV, ToColor32ABGR(color) };
+    }
+
     const Vector2f Transform(Vector2f p, const float4x4& transform)
     {
         const Vector4f dummy = Vector4f(p.X, p.Y, 0.f, 1.f);
@@ -18,13 +37,25 @@ namespace OGUI
     }
 
     OGUI_API void PrimitiveDraw::EndDraw(PrimDrawList& list,
-        const float4x4& transform, Vector2f resolution)
+        const float4x4& transform)
     {
         int count = list.vertices.size();
         for (int i = list.beginCount; i < count; ++i)
         {
-            list.vertices[i].position = Transform(list.vertices[i].position, transform);
-            list.vertices[i].position /= resolution;
+            auto& vertex = list.vertices[i];
+            vertex.position = Transform(vertex.position, transform);
+            if(!list.clipStack.empty())
+            {
+                auto& back = list.clipStack.back();
+                auto clipPos = Transform(vertex.position, math::inverse(back.transform));
+                auto size = back.rect.max - back.rect.min;
+                auto center = (back.rect.max + back.rect.min) / 2;
+                vertex.clipUV = (clipPos - center) * 2 / size;
+            }
+            else 
+            {
+                vertex.clipUV = Vector2f::vector_zero();
+            }
         }
     }
 
@@ -47,10 +78,10 @@ namespace OGUI
         const Vector2f LUUV = Vector2f(params.uv.min.X, params.uv.max.Y);
         const Vector2f LBUV = params.uv.min;
 
-        const auto vRU = Vertex{ RU, RUUV, params.color };
-        const auto vLU = Vertex{ LU, LUUV, params.color };
-        const auto vRB = Vertex{ RB, RBUV, params.color };
-        const auto vLB = Vertex{ LB, LBUV, params.color };
+        const auto vRU = MakeVertex( RU, RUUV, params.color );
+        const auto vLU = MakeVertex( LU, LUUV, params.color );
+        const auto vRB = MakeVertex( RB, RBUV, params.color );
+        const auto vLB = MakeVertex( LB, LBUV, params.color );
 
         list.vertices.emplace_back(vRU); // vcount + 0
         list.vertices.emplace_back(vLU); // vcount + 1
@@ -80,7 +111,7 @@ namespace OGUI
         Vector2f uvSizeHalf = (params.uv.max - params.uv.min) / 2;
 
         // center 
-        list.vertices.emplace_back(Vertex{ params.pos, uvCenter, params.color });
+        list.vertices.emplace_back(MakeVertex( params.pos, uvCenter, params.color ));
 
         // add border 
         double DeltaDegree = math::PI_ * 2 / sampleCount;
@@ -89,7 +120,7 @@ namespace OGUI
 			// add vertex 
 			Vector2f deltaPos;
 			math::sincos(deltaPos.Y, deltaPos.X, DeltaDegree * i);
-            list.vertices.emplace_back(Vertex{ params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color });
+            list.vertices.emplace_back(MakeVertex( params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color ));
 
 			// add index 
 			list.indices.emplace_back(vcount);
@@ -107,7 +138,7 @@ namespace OGUI
 		Vector2f uvSizeHalf = (params.uv.max - params.uv.min) / 2;
 
 		// center 
-		list.vertices.emplace_back(Vertex{ params.pos, uvCenter, params.color });
+		list.vertices.emplace_back(MakeVertex( params.pos, uvCenter, params.color ));
 
 		// add border 
 		double DeltaDegree = params.degree / sampleCount;
@@ -116,7 +147,7 @@ namespace OGUI
 			// add vertex 
 			Vector2f deltaPos;
 			math::sincos(deltaPos.Y, deltaPos.X, params.beginDegree + DeltaDegree * i);
-			list.vertices.emplace_back(Vertex{ params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color });
+			list.vertices.emplace_back(MakeVertex( params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color ));
 
 			// add index 
             if (i == 0) 

@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
@@ -53,7 +54,6 @@ namespace OGUI
 	public:
 		VisualElement();
 		virtual ~VisualElement();
-		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		VisualElement* GetParent();
 		VisualElement* GetHierachyParent();
 		bool IsParent(VisualElement*);
@@ -65,10 +65,11 @@ namespace OGUI
 
 	public:
 		bool Visible() const;
+		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		virtual void DrawDebugPrimitive(PrimitiveDraw::DrawContext& Ctx);
-		void ApplyClipping(PrimitiveDraw::DrawContext& Ctx);
+		ClipRect ApplyClipping(PrimitiveDraw::DrawContext& Ctx);
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
 		std::string _name;

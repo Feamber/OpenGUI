@@ -58,8 +58,13 @@ namespace OGUI
 	{
 		if(!element->Visible())
 			return;
+		auto clippingChild = element->IsClipping();
+		if(clippingChild)
+			ctx.prims.clipStack.push_back(element->ApplyClipping(ctx));
 		element->DrawPrimitive(ctx);
 		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
+		if(clippingChild)
+			ctx.prims.clipStack.pop_back();
 	}
 	void TransformRec(VisualElement* element, bool dirty = false)
 	{
@@ -169,7 +174,6 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
-	wctx.currentDrawCtx->resolution = Vector2f(wctx.GetWidth(), wctx.GetHeight());
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }

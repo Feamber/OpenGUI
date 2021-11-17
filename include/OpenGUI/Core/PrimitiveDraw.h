@@ -27,6 +27,12 @@ namespace OGUI
     using VertexList = std::vector<Vertex>;
     using IndexList = std::vector<uint16_t>;
 
+	struct ClipRect
+	{
+		Rect rect;
+		Matrix4x4 transform;
+	};
+
     struct OGUI_API PrimDrawList
     {
         inline void ValidateAndBatch()
@@ -57,6 +63,7 @@ namespace OGUI
         VertexList vertices;
         IndexList  indices;
         std::vector<PrimDraw> command_list;
+		std::vector<ClipRect> clipStack;
 		
 		int beginCount;
 		uint32_t __last_index = 0;
@@ -75,7 +82,6 @@ namespace OGUI
 		{
 			WindowContext& Window;
 			PrimDrawList prims;
-			Vector2f     resolution = Vector2f(0.f, 0.f);
 		}; 
 
 		struct OGUI_API BoxParams
@@ -130,7 +136,7 @@ namespace OGUI
 
 		// Call from DrawList.
 		OGUI_API void BeginDraw(PrimDrawList& list);
-		OGUI_API void EndDraw(PrimDrawList& list, const float4x4& transform, Vector2f resolution);
+		OGUI_API void EndDraw(PrimDrawList& list, const float4x4& transform);
 		OGUI_API void BoxShape(PrimDrawList& list, const BoxParams& params);
 		OGUI_API void CircleShape(PrimDrawList& list, const CircleParams& params, int32_t sampleCount = 20);
 		OGUI_API void FanShape(PrimDrawList& list, const FanParams& params, int32_t sampleCount = 10);

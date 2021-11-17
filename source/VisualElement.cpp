@@ -31,16 +31,11 @@ OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f 
 void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
 {
 	using namespace PrimitiveDraw;
-	//auto rectPixelPos = GetRect();
 	Rect rect = GetRect();
 	auto&& ctx = Context::Get();
-	//Rect rect_origin = GetRect();
-	//Rect rect = rectPixelPosToScreenPos(rect_origin, Ctx.resolution);
 	auto& bg = StyleBackground::Get(_style);
 	auto& bd = StyleBorder::Get(_style);
 	auto transform = _worldTransform;
-	//transform.M[3][0] /= Ctx.resolution.X;
-	//transform.M[3][1] /= Ctx.resolution.Y;
 	if (!bg.backgroundImage.empty())
 	{
 		//start new load
@@ -66,7 +61,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	params.radius[2] = bd.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = bd.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
 	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, params, 20);
-	EndDraw(Ctx.prims, transform, Ctx.resolution);
+	EndDraw(Ctx.prims, transform);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(OGUI::PrimitiveDraw::DrawContext & Ctx)
@@ -90,13 +85,15 @@ void OGUI::VisualElement::DrawDebugPrimitive(OGUI::PrimitiveDraw::DrawContext & 
 				Color4f(46, 225, 225, 0.3f);
 
 			PrimitiveDraw::PrimitiveDraw<BoxShape>(nullptr, Ctx.prims, params);
-			EndDraw(Ctx.prims, float4x4(), Ctx.resolution);
+			EndDraw(Ctx.prims, float4x4());
 		}
 	}
 }
 
-void OGUI::VisualElement::ApplyClipping(OGUI::PrimitiveDraw::DrawContext & Ctx)
-{}
+OGUI::ClipRect OGUI::VisualElement::ApplyClipping(OGUI::PrimitiveDraw::DrawContext & Ctx)
+{
+	return {GetRect(), _worldTransform};
+}
 
 bool OGUI::VisualElement::IsClipping()
 {
@@ -143,7 +140,6 @@ void OGUI::VisualElement::DrawPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
 	DrawBackgroundPrimitive(Ctx);
 	DrawBorderPrimitive(Ctx);
 	DrawDebugPrimitive(Ctx);
-	ApplyClipping(Ctx);
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetParent()

@@ -223,7 +223,7 @@ namespace OGUI
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1), godot::Color(1, 0, 0));
-        PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform, Ctx.resolution);
+        PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
     }
 
     void TextElement::MarkLayoutDirty()
