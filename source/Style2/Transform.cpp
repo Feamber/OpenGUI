@@ -45,7 +45,7 @@ OGUI::ComputedTransform OGUI::ComputedTransform::scale(Vector2f s)
     return result;
 }
 
-void OGUI::ComputedTransform::decompose(Vector2f& trans, float& rot, Vector2f& sk, Vector2f& sc) const
+void OGUI::ComputedTransform::decompose(Vector2f& inTrans, float& rot, Vector2f& sk, Vector2f& sc) const
 {
     auto v = m.data_view();
     float a = v[0], b = v[1], c = v[2], d = v[3];
@@ -67,7 +67,7 @@ void OGUI::ComputedTransform::decompose(Vector2f& trans, float& rot, Vector2f& s
         sk = {0, 0};
         sc = {0, 0};
     }
-    trans = this->trans;
+    inTrans = this->trans;
 }
 
 OGUI::Matrix4x4 OGUI::ComputedTransform::to_3D() const

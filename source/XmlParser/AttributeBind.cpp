@@ -46,22 +46,22 @@ namespace OGUI
     {
     }
 
-    void AttrBind::Sync(const AttrSource& source, bool force)
+    void AttrBind::Sync(const AttrSource& inSource, bool force)
     {
         if(bdBind && bdBind->_guard && !force)
             return;
         if(data)
         {
-            if(source.type == type)
+            if(inSource.type == type)
             {
-                assignFunc(data, source.data);
+                assignFunc(data, inSource.data);
                 changePostFun(true);
             }
             else
-                changePostFun(AttrConverter(source.type, source.data, type, data));
+                changePostFun(AttrConverter(inSource.type, inSource.data, type, data));
         }
         else
-            changeFun(source);
+            changeFun(inSource);
     }
 
     void AttrBind::Sync()
@@ -141,10 +141,10 @@ namespace OGUI
             return;
         for(auto& bind : binds)
         {
-            auto iter = other.sources.find(bind.name);
-            if(iter != other.sources.end())
+            auto iter2 = other.sources.find(bind.name);
+            if(iter2 != other.sources.end())
             {
-                auto& ob = iter->second.binds;
+                auto& ob = iter2->second.binds;
                 ob.erase(std::remove(ob.begin(), ob.end(), &bind), ob.end());
             }
             bind.source = nullptr;

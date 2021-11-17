@@ -14,6 +14,7 @@ namespace OGUI
     struct OGUI_API SystemInterface
 	{
 		virtual ~SystemInterface();
+		virtual std::string ToFullPath(const char* path) { return path; };
 	};
 
 	struct OGUI_API WindowInterface

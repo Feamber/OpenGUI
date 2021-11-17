@@ -1,8 +1,6 @@
-
+#define DLL_IMPLEMENTATION
 #include "YGValue.h"
 #include "Yoga.h"
-#define DLL_IMPLEMENTATION
-#ifndef UE4Runtime
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/Math/Vector.h"
 #include <memory>
@@ -275,4 +273,3 @@ namespace OGUI
             delete _paragraph;
     }
 }
-#endif
