@@ -120,12 +120,12 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
             {
                 switch(prop.id)
                 {
-                case Id::fontSize:{
+                case Ids::fontSize:{
                     auto v = fget();
                     v->fontSize = 20.f;
                     break;
                     }
-                case Id::color:{
+                case Ids::color:{
                     auto v = fget();
                     v->color = Color4f(0,0,0,1);
                     break;
@@ -137,12 +137,12 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
             { 
                 switch(prop.id)
                 {
-                case Id::fontSize:{
+                case Ids::fontSize:{
                     auto v = fget();
                     v->fontSize = pst->fontSize;
                     break;
                     }
-                case Id::color:{
+                case Ids::color:{
                     auto v = fget();
                     v->color = pst->color;
                     break;
@@ -155,12 +155,12 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
         {
             switch(prop.id)
             {
-                case Id::fontSize:{
+                case Ids::fontSize:{
                     auto v = fget();
                     v->fontSize = sheet.Get<float>(prop.value);
                     break;
                     }
-                case Id::color:{
+                case Ids::color:{
                     auto v = fget();
                     v->color = sheet.Get<Color4f>(prop.value);
                     break;
@@ -209,7 +209,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
     {
         switch(prop.id)
         {
-            case Id::fontSize:{
+            case Ids::fontSize:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->fontSize = sheet.Get<float>(prop.from);
@@ -221,7 +221,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                     v->fontSize = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::color:{
+            case Ids::color:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->color = sheet.Get<Color4f>(prop.from);
@@ -239,33 +239,33 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
     return damage;
 }
 
-bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
-    size_t hash = OGUI::hash(name);
+    size_t phash = OGUI::hash(prop);
 
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
     {
-        switch(hash)
+        switch(phash)
         {
-            case Id::fontSize:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::fontSize:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::color:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::color:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
             default: break;
         }
         return false;
     }
     //longhands
-    switch(hash)
+    switch(phash)
     {
-        case Id::fontSize:{
+        case Ids::fontSize:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse font-size value!";
@@ -273,10 +273,10 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
             }
             return true;
         }
-        case Id::color:{
+        case Ids::color:{
             Color4f v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<Color4f>(v)});
+                rule.properties.push_back({phash, sheet.Push<Color4f>(v)});
             else
             {
                 errorMsg = "failed to parse color value!";

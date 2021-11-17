@@ -23,7 +23,7 @@ namespace OGUI
         constexpr static std::string_view name = "position"sv;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
-        struct Id
+        struct Ids
         {
             static constexpr size_t transform = OGUI::hash("transform"sv);
             static constexpr size_t flexGrow = OGUI::hash("flex-grow"sv);
@@ -57,6 +57,7 @@ namespace OGUI
             static constexpr size_t flexWrap = OGUI::hash("flex-wrap"sv);
             static constexpr size_t flexDisplay = OGUI::hash("flex-display"sv);
             static constexpr size_t margin = OGUI::hash("margin"sv);
+            static constexpr size_t padding = OGUI::hash("padding"sv);
         };
         std::vector<TransformFunction> transform;
         float flexGrow;

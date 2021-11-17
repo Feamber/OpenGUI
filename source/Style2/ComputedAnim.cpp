@@ -6,6 +6,7 @@
 
 bool OGUI::ComputedAnim::Init(const gsl::span<StyleSheet*>& sheets)
 {
+    tracks.clear();
     StyleKeyframes* keyframes = nullptr;
 
     for (auto& s : sheets)

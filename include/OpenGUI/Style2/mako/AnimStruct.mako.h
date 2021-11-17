@@ -16,8 +16,7 @@ namespace OGUI
     using namespace std::literals::string_view_literals;
     struct OGUI_API AnimStyle
     {
-        constexpr static size_t hash = OGUI::hash("${struct.name}"sv);
-        struct Id
+        struct Ids
         {
         %for prop in struct.longhands:
             static constexpr size_t ${prop.ident} = OGUI::hash("${prop.name}"sv);

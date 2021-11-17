@@ -10,20 +10,20 @@ namespace OGUI
         { 
             if (next->_isPseudoElement)
                 return;
-            if(auto eventBind = next->GetEventBind(event.eventName()))
-				EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.eventName(), event, *next);
+            if(auto eventBind = next->GetEventBind(event.GetEventName()))
+				EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.GetEventName(), event, *next);
             next->_eventHandler.Handle(event);
             BroadcastEvent<T>(next, event); 
         });
     }
 
-    void BuildRoutePath(VisualElement* target, std::vector<VisualElement*>& path)
+    inline void BuildRoutePath(VisualElement* target, std::vector<VisualElement*>& path)
     {
         for (auto parent = target->GetHierachyParent(); parent != nullptr; parent = parent->GetHierachyParent())
             path.push_back(parent);
     }
 
-    EventRoutePhase NextPhase(EventRoutePhase current, int mask)
+    inline EventRoutePhase NextPhase(EventRoutePhase current, int mask)
     {
         int value = (int)current;
         mask &= ~(value | (value - 1));
@@ -46,8 +46,8 @@ namespace OGUI
             for (int i = count-1; i >= 0; --i)
             {
                 auto& element = routePath[i];
-                if(auto eventBind = element->GetEventBind(event.eventName()))
-					EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.eventName(), event, *element);
+                if(auto eventBind = element->GetEventBind(event.GetEventName()))
+					EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.GetEventName(), event, *element);
                 if(element->_eventHandler.Handle(event))
                     return true;
             }
@@ -55,15 +55,15 @@ namespace OGUI
         }
         if (currentPhase == EventRoutePhase::Reach)
         {
-            if(auto eventBind = target->GetEventBind(event.eventName()))
-				EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.eventName(), event, *target);
+            if(auto eventBind = target->GetEventBind(event.GetEventName()))
+				EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.GetEventName(), event, *target);
             if(target->_eventHandler.Handle(event))
                 return true;
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
                 {
-                    if(auto eventBind = parent->GetEventBind(event.eventName()))
-					    EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.eventName(), event, *parent);
+                    if(auto eventBind = parent->GetEventBind(event.GetEventName()))
+					    EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.GetEventName(), event, *parent);
                     if(parent->_eventHandler.Handle(event))
                         return true;
                 }
@@ -79,8 +79,8 @@ namespace OGUI
             if(routePath.size() == 0) BuildRoutePath(target, routePath);
             for(auto parent : routePath)
             {
-                if(auto eventBind = parent->GetEventBind(event.eventName()))
-				    EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.eventName(), event, *parent);
+                if(auto eventBind = parent->GetEventBind(event.GetEventName()))
+				    EventBind::Broadcast<const Name&, EventBase&, VisualElement&>(*eventBind, event.GetEventName(), event, *parent);
                 if(parent->_eventHandler.Handle(event))
                     return true;
             }

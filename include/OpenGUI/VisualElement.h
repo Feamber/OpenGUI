@@ -9,6 +9,8 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Style2/Transform.h"
 #include "event/event.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -62,6 +64,7 @@ namespace OGUI
 		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
 
 	public:
+		bool Visible() const;
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		virtual void DrawDebugPrimitive(PrimitiveDraw::DrawContext& Ctx);
@@ -71,7 +74,7 @@ namespace OGUI
 		std::string _name;
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
-
+		void SetVisibility(bool visible);
 #pragma region Hierachy
 		void UpdateRoot(VisualElement* child);
 		void PushChild(VisualElement* child);
@@ -92,13 +95,17 @@ namespace OGUI
 		void Traverse(F&& f);
 #pragma endregion
 
+		Vector4u GetHardwareScissor() const;
+
 #pragma region Transform
 		Vector2f _worldPosition;
+		mutable ComputedTransform _styleTransform;
+		ComputedTransform GetStyleTransform() const;
 		float4x4 _worldTransform;
 		void UpdateWorldTransform();
-		Rect GetLayout();
-		Rect GetRect();
-		Vector2f GetSize();
+		Rect GetLayout() const;
+		Rect GetRect() const;
+		Vector2f GetSize() const;
 		Rect _inlineLayout;
 		//Rect _layout;
 #pragma endregion
@@ -107,9 +114,9 @@ namespace OGUI
 	public:
 		LayoutType _layoutType = LayoutType::Flex;
 		YGNodeRef _ygnode;
-		uint32_t _triggerPseudoMask = 0;
-		uint32_t _dependencyPseudoMask = 0;
-		uint32_t _pseudoMask = 0;
+		PseudoStates _triggerPseudoMask = PseudoStates::None;
+		PseudoStates _dependencyPseudoMask = PseudoStates::None;
+		PseudoStates _pseudoMask = PseudoStates::None;
 
 		//TODO: should we merge these two
 		std::unique_ptr<InlineStyle> _inlineStyle;
@@ -118,21 +125,27 @@ namespace OGUI
 		
 		std::string backgroundImageUrl;
 
+		bool _depended = false;
 		bool _selectorDirty = true;
 		bool _styleDirty = false;
 		bool _transformDirty = false;
+		mutable bool _styleTransformDirty = true;
 		bool _layoutDirty = false;
-		Rect _prevLayout;
 		ComputedStyle _style;
 		ComputedStyle _preAnimatedStyle;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
+		void MarkTransformDirty();
+		void MarkStyleTransformDirty();
 		virtual void MarkLayoutDirty();
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout();
 		virtual void SyncYogaStyle();
+		RestyleDamage ApplyProcedureStyle();
+		using StyleOverridingFunc = std::function<RestyleDamage()>;
+		std::vector<StyleOverridingFunc> _styleOverriding;
 		bool ContainClass(std::string_view c);
 		void _ResetStyles();
 		void ResetStyles();
@@ -158,12 +171,14 @@ namespace OGUI
 		void ReleaseAfterPseudoElement();
 #pragma endregion
 
-#pragma region Event
+#pragma region Bind
 	public:
+		std::unordered_map<Name, Name> _bindBag;
 		EventBind::EventBag _eventBag;
 		EventHandler _eventHandler;
 		Name* GetEventBind(Name event);
-		bool Intersect(Vector2f point);
+		void Notify(Name prop, bool force = false);
+		virtual bool Intersect(Vector2f point);
 #pragma endregion
 
 #pragma region Focused
@@ -185,9 +200,12 @@ namespace OGUI
 
 		bool _OnGotFocus(struct GotFocusEvent& event);
 		bool _OnLostFocus(struct LostFocusEvent& event);
+#pragma endregion
 
-		bool _OnMouseEnter(struct MouseEnterEvent& event);
-		bool _OnMouseLeave(struct MouseLeaveEvent& event);
+#pragma region Hover
+	public:
+		bool _OnMouseEnter(struct PointerEnterEvent& event);
+		bool _OnMouseLeave(struct PointerLeaveEvent& event);
 		int hovered = 0;
 #pragma endregion
 
@@ -218,6 +236,22 @@ namespace OGUI
 
 		VisualElement* FindNextNavTarget(ENavDirection direction);
 #pragma endregion
+
+#pragma region Scroll
+		virtual void UpdateScrollSize();
+		bool IsScrollingX() const;
+		bool IsScrollingY() const;
+		bool IsScrolling() const;
+		float GetScrollingAxisX() const;
+		float GetScrollingAxisY() const;
+		void AddScroll(Vector2f delta);
+		virtual void SetScroll(Vector2f offset);
+		bool _scrollSizeDirty = true;
+		Vector2f GetScrollPos();
+        Vector2f _scrollOffset;
+		Vector2f _scrollMin;
+		Vector2f _scrollMax;
+#pragma endregion 
 	};
 }
 

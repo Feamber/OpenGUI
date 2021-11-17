@@ -21,7 +21,7 @@ namespace OGUI
         constexpr static std::string_view name = "border"sv;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
-        struct Id
+        struct Ids
         {
             static constexpr size_t borderLeftWidth = OGUI::hash("border-left-width"sv);
             static constexpr size_t borderTopWidth = OGUI::hash("border-top-width"sv);

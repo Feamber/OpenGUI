@@ -128,42 +128,42 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             {
                 switch(prop.id)
                 {
-                case Id::borderLeftWidth:{
+                case Ids::borderLeftWidth:{
                     auto v = fget();
                     v->borderLeftWidth = 0.f;
                     break;
                     }
-                case Id::borderTopWidth:{
+                case Ids::borderTopWidth:{
                     auto v = fget();
                     v->borderTopWidth = 0.f;
                     break;
                     }
-                case Id::borderRightWidth:{
+                case Ids::borderRightWidth:{
                     auto v = fget();
                     v->borderRightWidth = 0.f;
                     break;
                     }
-                case Id::borderBottomWidth:{
+                case Ids::borderBottomWidth:{
                     auto v = fget();
                     v->borderBottomWidth = 0.f;
                     break;
                     }
-                case Id::borderTopLeftRadius:{
+                case Ids::borderTopLeftRadius:{
                     auto v = fget();
                     v->borderTopLeftRadius = YGValueZero;
                     break;
                     }
-                case Id::borderTopRightRadius:{
+                case Ids::borderTopRightRadius:{
                     auto v = fget();
                     v->borderTopRightRadius = YGValueZero;
                     break;
                     }
-                case Id::borderBottomRightRadius:{
+                case Ids::borderBottomRightRadius:{
                     auto v = fget();
                     v->borderBottomRightRadius = YGValueZero;
                     break;
                     }
-                case Id::borderBottomLeftRadius:{
+                case Ids::borderBottomLeftRadius:{
                     auto v = fget();
                     v->borderBottomLeftRadius = YGValueZero;
                     break;
@@ -175,42 +175,42 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             { 
                 switch(prop.id)
                 {
-                case Id::borderLeftWidth:{
+                case Ids::borderLeftWidth:{
                     auto v = fget();
                     v->borderLeftWidth = pst->borderLeftWidth;
                     break;
                     }
-                case Id::borderTopWidth:{
+                case Ids::borderTopWidth:{
                     auto v = fget();
                     v->borderTopWidth = pst->borderTopWidth;
                     break;
                     }
-                case Id::borderRightWidth:{
+                case Ids::borderRightWidth:{
                     auto v = fget();
                     v->borderRightWidth = pst->borderRightWidth;
                     break;
                     }
-                case Id::borderBottomWidth:{
+                case Ids::borderBottomWidth:{
                     auto v = fget();
                     v->borderBottomWidth = pst->borderBottomWidth;
                     break;
                     }
-                case Id::borderTopLeftRadius:{
+                case Ids::borderTopLeftRadius:{
                     auto v = fget();
                     v->borderTopLeftRadius = pst->borderTopLeftRadius;
                     break;
                     }
-                case Id::borderTopRightRadius:{
+                case Ids::borderTopRightRadius:{
                     auto v = fget();
                     v->borderTopRightRadius = pst->borderTopRightRadius;
                     break;
                     }
-                case Id::borderBottomRightRadius:{
+                case Ids::borderBottomRightRadius:{
                     auto v = fget();
                     v->borderBottomRightRadius = pst->borderBottomRightRadius;
                     break;
                     }
-                case Id::borderBottomLeftRadius:{
+                case Ids::borderBottomLeftRadius:{
                     auto v = fget();
                     v->borderBottomLeftRadius = pst->borderBottomLeftRadius;
                     break;
@@ -223,42 +223,42 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
         {
             switch(prop.id)
             {
-                case Id::borderLeftWidth:{
+                case Ids::borderLeftWidth:{
                     auto v = fget();
                     v->borderLeftWidth = sheet.Get<float>(prop.value);
                     break;
                     }
-                case Id::borderTopWidth:{
+                case Ids::borderTopWidth:{
                     auto v = fget();
                     v->borderTopWidth = sheet.Get<float>(prop.value);
                     break;
                     }
-                case Id::borderRightWidth:{
+                case Ids::borderRightWidth:{
                     auto v = fget();
                     v->borderRightWidth = sheet.Get<float>(prop.value);
                     break;
                     }
-                case Id::borderBottomWidth:{
+                case Ids::borderBottomWidth:{
                     auto v = fget();
                     v->borderBottomWidth = sheet.Get<float>(prop.value);
                     break;
                     }
-                case Id::borderTopLeftRadius:{
+                case Ids::borderTopLeftRadius:{
                     auto v = fget();
                     v->borderTopLeftRadius = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::borderTopRightRadius:{
+                case Ids::borderTopRightRadius:{
                     auto v = fget();
                     v->borderTopRightRadius = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::borderBottomRightRadius:{
+                case Ids::borderBottomRightRadius:{
                     auto v = fget();
                     v->borderBottomRightRadius = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Id::borderBottomLeftRadius:{
+                case Ids::borderBottomLeftRadius:{
                     auto v = fget();
                     v->borderBottomLeftRadius = sheet.Get<YGValue>(prop.value);
                     break;
@@ -307,7 +307,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
     {
         switch(prop.id)
         {
-            case Id::borderLeftWidth:{
+            case Ids::borderLeftWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -320,7 +320,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderLeftWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::borderTopWidth:{
+            case Ids::borderTopWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -333,7 +333,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderTopWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::borderRightWidth:{
+            case Ids::borderRightWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -346,7 +346,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderRightWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::borderBottomWidth:{
+            case Ids::borderBottomWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
@@ -359,7 +359,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderBottomWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::borderTopLeftRadius:{
+            case Ids::borderTopLeftRadius:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->borderTopLeftRadius = sheet.Get<YGValue>(prop.from);
@@ -371,7 +371,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderTopLeftRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::borderTopRightRadius:{
+            case Ids::borderTopRightRadius:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->borderTopRightRadius = sheet.Get<YGValue>(prop.from);
@@ -383,7 +383,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderTopRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::borderBottomRightRadius:{
+            case Ids::borderBottomRightRadius:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->borderBottomRightRadius = sheet.Get<YGValue>(prop.from);
@@ -395,7 +395,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderBottomRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 break;
                 }
-            case Id::borderBottomLeftRadius:{
+            case Ids::borderBottomLeftRadius:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->borderBottomLeftRadius = sheet.Get<YGValue>(prop.from);
@@ -413,63 +413,63 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
     return damage;
 }
 
-bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
-    size_t hash = OGUI::hash(name);
+    size_t phash = OGUI::hash(prop);
 
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
     {
-        switch(hash)
+        switch(phash)
         {
-            case Id::borderLeftWidth:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderLeftWidth:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderTopWidth:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderTopWidth:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderRightWidth:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderRightWidth:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderBottomWidth:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderBottomWidth:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderTopLeftRadius:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderTopLeftRadius:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderTopRightRadius:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderTopRightRadius:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderBottomRightRadius:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderBottomRightRadius:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderBottomLeftRadius:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::borderBottomLeftRadius:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
-            case Id::borderRadius:
-                rule.properties.push_back({Id::borderTopLeftRadius,(int)keyword});
-                rule.properties.push_back({Id::borderTopRightRadius,(int)keyword});
-                rule.properties.push_back({Id::borderBottomRightRadius,(int)keyword});
-                rule.properties.push_back({Id::borderBottomLeftRadius,(int)keyword});
+            case Ids::borderRadius:
+                rule.properties.push_back({Ids::borderTopLeftRadius,(int)keyword});
+                rule.properties.push_back({Ids::borderTopRightRadius,(int)keyword});
+                rule.properties.push_back({Ids::borderBottomRightRadius,(int)keyword});
+                rule.properties.push_back({Ids::borderBottomLeftRadius,(int)keyword});
             default: break;
         }
         return false;
     }
     //shorthands
-    switch(hash)
+    switch(phash)
     {
-        case Id::borderRadius:
-            return Parse::ParseBorderRadius(sheet, name, value, rule, errorMsg);
+        case Ids::borderRadius:
+            return Parse::ParseBorderRadius(sheet, prop, value, rule, errorMsg);
         default: break;
     }
     //longhands
-    switch(hash)
+    switch(phash)
     {
-        case Id::borderLeftWidth:{
+        case Ids::borderLeftWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-left-width value!";
@@ -477,10 +477,10 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
-        case Id::borderTopWidth:{
+        case Ids::borderTopWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-top-width value!";
@@ -488,10 +488,10 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
-        case Id::borderRightWidth:{
+        case Ids::borderRightWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-right-width value!";
@@ -499,10 +499,10 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
-        case Id::borderBottomWidth:{
+        case Ids::borderBottomWidth:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse border-bottom-width value!";
@@ -510,10 +510,10 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
-        case Id::borderTopLeftRadius:{
+        case Ids::borderTopLeftRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-top-left-radius value!";
@@ -521,10 +521,10 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
-        case Id::borderTopRightRadius:{
+        case Ids::borderTopRightRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-top-right-radius value!";
@@ -532,10 +532,10 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
-        case Id::borderBottomRightRadius:{
+        case Ids::borderBottomRightRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-bottom-right-radius value!";
@@ -543,10 +543,10 @@ bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_vi
             }
             return true;
         }
-        case Id::borderBottomLeftRadius:{
+        case Ids::borderBottomLeftRadius:{
             YGValue v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<YGValue>(v)});
+                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
             else
             {
                 errorMsg = "failed to parse border-bottom-left-radius value!";

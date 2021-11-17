@@ -21,10 +21,10 @@ namespace OGUI
                 errorMsg = "failed to parse border-radius value!";
                 return false;
             }
-            rule.properties.push_back(StyleProperty{StyleBorder::Id::borderTopLeftRadius, sheet.Push(values[0])});
-            rule.properties.push_back(StyleProperty{StyleBorder::Id::borderTopRightRadius, sheet.Push(values[1])});
-            rule.properties.push_back(StyleProperty{StyleBorder::Id::borderBottomRightRadius, sheet.Push(values[2])});
-            rule.properties.push_back(StyleProperty{StyleBorder::Id::borderBottomLeftRadius, sheet.Push(values[3])});
+            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderTopLeftRadius, sheet.Push(values[0])});
+            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderTopRightRadius, sheet.Push(values[1])});
+            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderBottomRightRadius, sheet.Push(values[2])});
+            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderBottomLeftRadius, sheet.Push(values[3])});
             return true;
         }
     }

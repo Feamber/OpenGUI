@@ -120,7 +120,7 @@ void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             {
                 switch(prop.id)
                 {
-                case Id::someValue:{
+                case Ids::someValue:{
                     auto v = fget();
                     v->someValue = 0.5f;
                     break;
@@ -132,7 +132,7 @@ void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             { 
                 switch(prop.id)
                 {
-                case Id::someValue:{
+                case Ids::someValue:{
                     auto v = fget();
                     v->someValue = pst->someValue;
                     break;
@@ -145,7 +145,7 @@ void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetSt
         {
             switch(prop.id)
             {
-                case Id::someValue:{
+                case Ids::someValue:{
                     auto v = fget();
                     v->someValue = sheet.Get<float>(prop.value);
                     break;
@@ -194,7 +194,7 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
     {
         switch(prop.id)
         {
-            case Id::someValue:{
+            case Ids::someValue:{
                 auto v = fget();
                 if(prop.alpha == 0.f)
                     v->someValue = sheet.Get<float>(prop.from);
@@ -212,30 +212,30 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
     return damage;
 }
 
-bool OGUI::StyleSample::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+bool OGUI::StyleSample::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
 {
-    size_t hash = OGUI::hash(name);
+    size_t phash = OGUI::hash(prop);
 
     StyleKeyword keyword = StyleKeyword::None;
     ParseValue(value, keyword);
     if(keyword != StyleKeyword::None)
     {
-        switch(hash)
+        switch(phash)
         {
-            case Id::someValue:
-                rule.properties.push_back({hash,(int)keyword});
+            case Ids::someValue:
+                rule.properties.push_back({phash,(int)keyword});
                 return true;
             default: break;
         }
         return false;
     }
     //longhands
-    switch(hash)
+    switch(phash)
     {
-        case Id::someValue:{
+        case Ids::someValue:{
             float v;
             if(ParseValue(value, v))
-                rule.properties.push_back({hash, sheet.Push<float>(v)});
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
             else
             {
                 errorMsg = "failed to parse some-value value!";

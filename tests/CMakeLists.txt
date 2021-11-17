@@ -1,6 +1,5 @@
 project(OpenGUITests)
 enable_testing() 
-include(CTest)
 include(Catch)    
 
 add_library(TestCore STATIC TestCore.cpp)

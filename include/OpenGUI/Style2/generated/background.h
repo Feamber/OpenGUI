@@ -19,7 +19,7 @@ namespace OGUI
         constexpr static std::string_view name = "background"sv;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
-        struct Id
+        struct Ids
         {
             static constexpr size_t backgroundColor = OGUI::hash("background-color"sv);
             static constexpr size_t backgroundImage = OGUI::hash("background-image"sv);

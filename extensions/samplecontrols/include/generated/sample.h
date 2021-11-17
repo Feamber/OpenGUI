@@ -18,7 +18,7 @@ namespace OGUI
         constexpr static std::string_view name = "sample"sv;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
-        struct Id
+        struct Ids
         {
             static constexpr size_t someValue = OGUI::hash("some-value"sv);
         };

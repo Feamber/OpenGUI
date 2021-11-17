@@ -280,7 +280,7 @@ private:
 	{
 		auto ve = cWnd->GetWindowUI()->_children[0];
 		onReloadedEvent(ve);
-		ve->_pseudoMask |= (int)PseudoStates::Root;
+		ve->_pseudoMask |= PseudoStates::Root;
 	}
 };
 

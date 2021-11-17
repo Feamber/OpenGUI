@@ -100,8 +100,8 @@ namespace OGUI
 
 		void UpdateHover(VisualElement* element);
 		VisualElement* PickElement(const WindowHandle window, Vector2f point);
-		void CapturePointer(VisualElement* element);
-		void ReleasePointer();
+		void CapturePointer(int id, VisualElement* element);
+		void ReleasePointer(int id);
 
 		bool OnKeyDown(const WindowHandle window, EKeyCode keyCode);
 		bool OnKeyUp(const WindowHandle window, EKeyCode keyCode);

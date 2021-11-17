@@ -1,3 +1,4 @@
+#include "Yoga.h"
 #define DLL_IMPLEMENTATION
 #include <algorithm>
 #include <cstdio>
@@ -42,10 +43,21 @@ godot::TextServer* OGUI::Context::GetTextServer()
 	return _textServer.get();
 }
 
+template <class T>
+class backwards {
+    T& _obj;
+public:
+    backwards(T &obj) : _obj(obj) {}
+    auto begin() {return _obj.rbegin();}
+    auto end() {return _obj.rend();}
+};
+
 namespace OGUI
 {
 	void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
 	{
+		if(!element->Visible())
+			return;
 		element->DrawPrimitive(ctx);
 		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 	}
@@ -59,18 +71,16 @@ namespace OGUI
 
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
-		for (auto& child : element->_children)
+		std::vector<VisualElement*> children;
+		element->GetChildren(children);
+		for (auto child : backwards(children))
 			if(auto picked = PickRecursive(child, point))
 				return picked;
-		auto invTransform = math::inverse(element->_worldTransform);
-		Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
-		const Vector4f result = math::multiply(dummy, invTransform);
-		Vector2f localPoint = {result.X, result.Y};
 
 		//std::cout << "OnMouseDown: " << localPoint.X << "," << localPoint.Y << std::endl;
 		//std::cout << "Name: " << element->_name << std::endl;
 		//std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
-		if (element->Intersect(localPoint))
+		if (element->Intersect(point))
 		{
 			if (element->_isPseudoElement)
 				return element->GetHierachyParent();
@@ -80,15 +90,13 @@ namespace OGUI
 		
 		else return nullptr;
 	}
-	void CacheLayoutRec(VisualElement* element)
-	{
-		element->_prevLayout = element->GetLayout();
-		element->Traverse([&](VisualElement* next) { CacheLayoutRec(next); });
-	}
 	void CheckLayoutRec(VisualElement* element)
 	{
-		if (element->_prevLayout != element->GetLayout())
-			element->_transformDirty = true;
+		if (YGNodeGetHasNewLayout(element->_ygnode))
+		{
+			YGNodeSetHasNewLayout(element->_ygnode, false);
+			element->MarkTransformDirty();
+		}
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
 	}
@@ -97,11 +105,18 @@ namespace OGUI
 		auto& ctx = Context::Get();
 		if (ctx._layoutDirty)
 		{
-			CacheLayoutRec(element);
 			element->CalculateLayout();
 			CheckLayoutRec(element);
 			ctx._layoutDirty = false;
 		}
+	}
+	void UpdateScrollSize(VisualElement* element)
+	{
+		element->Traverse([&](VisualElement* next) 
+		{ 
+			next->UpdateScrollSize(); 
+			UpdateScrollSize(next); 
+		});
 	}
 }
 
@@ -137,6 +152,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	_deltaTime = dt;
 	styleSystem.Update(root);
 	UpdateLayout(root);
+	UpdateScrollSize(root);
 	TransformRec(root);
 }
 
@@ -147,7 +163,7 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
 	wctx.currentDrawCtx->resolution = Vector2f(wctx.GetWidth(), wctx.GetHeight());
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
-	wctx.currentDrawCtx->prims.ValidateAndBatch();
+	wctx.currentDrawCtx->prims.ValidateAndBatch(window);
 }
 
 void OGUI::Context::Render(const OGUI::WindowHandle window)
@@ -168,14 +184,14 @@ void OGUI::Context::UpdateHover(VisualElement* picked)
 		return;
 	if (picked && _elementUnderCursor != picked)
 	{
-		MouseEnterEvent enterEvent;
+		PointerEnterEvent enterEvent;
 		enterEvent.pointerType = "mouse";
 		enterEvent.gestureType = EGestureEvent::None;
 		RouteEvent(picked, enterEvent);
 	}
 	if(_elementUnderCursor != nullptr && IsElementValid(_elementUnderCursor))
 	{
-		MouseLeaveEvent leaveEvent;
+		PointerLeaveEvent leaveEvent;
 		leaveEvent.pointerType = "mouse";
 		leaveEvent.gestureType = EGestureEvent::None;
 		RouteEvent(_elementUnderCursor, leaveEvent);
@@ -193,17 +209,18 @@ OGUI::VisualElement*  OGUI::Context::PickElement(const WindowHandle window, Vect
 	return PickRecursive(root, point);;
 }
 
-void OGUI::Context::CapturePointer(VisualElement* element)
+void OGUI::Context::CapturePointer(int id, VisualElement* element)
 {
 	auto root = element->GetRoot();
 	if(!root->IsA("VisualWindow"))
 		return;
 	auto window = (VisualWindow*)root;
 	inputImpl->CapturePointer(window->handle, true);
-	_elementCapturingCursor = element;
+	_elementUnderCursor = _elementCapturingCursor = element;
+	UpdateHover(_elementUnderCursor);
 }
 
-void OGUI::Context::ReleasePointer()
+void OGUI::Context::ReleasePointer(int id)
 {
 	auto root = _elementCapturingCursor->GetRoot();
 	_elementCapturingCursor = nullptr;
@@ -274,6 +291,7 @@ bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, int32 x, int32 
 	_windowUnderCursor = window;
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+	
 	auto picked = PickElement(window, point);
 	UpdateHover(picked);
 	if (!picked)
@@ -295,9 +313,15 @@ bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative
 
 bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
 {
-	_windowUnderCursor = window;
-	auto root = GetWindowContext(window).GetWindowUI();
-	olog::Info(u"Mouse WheelY:{}"_o, delta);
+	auto picked = _elementUnderCursor;
+	if (!picked)
+		return false;
+	PointerScrollEvent event;
+	event.pointerType = "mouse";
+	event.button = EMouseKey::MB;
+	event.gestureType = EGestureEvent::None;
+	event.wheelOrGestureDelta.y = delta;
+	RouteEvent(picked, event);
 	return false;
 }
 

@@ -26,42 +26,46 @@ namespace OGUI
     
     struct OGUI_API PointerDownEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API PointerMoveEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API PointerUpEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API PointerClickEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API PointerDoubleClickEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
-    struct OGUI_API MouseEnterEvent : PointerData 
+    struct OGUI_API PointerEnterEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
-    struct OGUI_API MouseLeaveEvent : PointerData 
+    struct OGUI_API PointerLeaveEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
+    };
+    struct OGUI_API PointerScrollEvent : PointerData
+    {
+        static const Name& GetEventName();
     };
     struct OGUI_API TouchGestureEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API TouchFirstMoveEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
     struct OGUI_API TouchPressureChangeEvent : PointerData 
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 }

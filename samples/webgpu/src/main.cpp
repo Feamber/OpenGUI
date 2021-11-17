@@ -1,4 +1,5 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Text/TextElement.h"
@@ -261,6 +262,10 @@ public:
 					}
 					wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 				}
+				if(last_cmd.scissor != cmd.scissor || last_index < 0)
+				{
+					wgpuRenderPassEncoderSetScissorRect(pass, cmd.scissor[0], cmd.scissor[1], cmd.scissor[2], cmd.scissor[3]);
+				}
 				wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
 					cmd.vertex_offset * sizeof(Vertex),
 					WGPU_WHOLE_SIZE
@@ -435,46 +440,6 @@ protected:
 	}
 };
 
-void BindButtonEvents(VisualElement* test)
-{
-
-		constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
-			{
-				element.SetPseudoClass(PseudoStates::Active, true);
-				Context::Get().CapturePointer(&element);
-				return true;
-			}
-			return false;
-		};
-		test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-
-		constexpr auto handler4 = +[](PointerUpEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
-			{	
-				element.SetPseudoClass(PseudoStates::Active, false);
-				Context::Get().ReleasePointer();
-				return true;
-			}
-			return false;
-		};
-		test->_eventHandler.Register<PointerUpEvent, handler4>(*test);
-
-		constexpr auto handler3 = +[](MouseLeaveEvent& event, VisualElement& element)
-		{
-			if(event.currentPhase == EventRoutePhase::Reach)
-			{
-				element.SetPseudoClass(PseudoStates::Active, false);
-				return true;
-			}
-			return false;
-		};
-		test->_eventHandler.Register<MouseLeaveEvent, handler3>(*test);
-
-}
-
 SampleWindow* CreateNavigationTestWindow()
 {
 	return  new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml", [](OGUI::VisualElement* ve)
@@ -590,7 +555,7 @@ struct DataBindSample : public AttrBag
 		AddEvent = EventBind::AddHandler<const Name&, EventBase&, VisualElement&>("Add", 
 		{[&](const Name& eventName, EventBase& event, VisualElement& element)
 		{
-			if( eventName == PointerDownEvent::eventName() && event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
 			{
 				++count;
 				Notify(count_);
@@ -603,7 +568,6 @@ struct DataBindSample : public AttrBag
 		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [&](OGUI::VisualElement* ve)
 		{
 			VisualElement* test = QueryFirst(ve, "#AddButton");
-			BindButtonEvents(test);
 			
 			//所有文字绑定到数据源上
 			std::vector<VisualElement*> Texts;
@@ -683,10 +647,6 @@ int main(int , char* []) {
 	SampleControls::Install();
 	ExternalControlSample sample;
 	windows.push_back(sample.MakeWindow());
-
-	DataBindSample sample2;
-	windows.push_back(sample2.MakeWindow());
-
 	// main loop
 	while(!windows.empty())
 	{
@@ -698,7 +658,6 @@ int main(int , char* []) {
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
-			sample2.Update();
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](SampleWindow* win)
 			{

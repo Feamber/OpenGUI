@@ -24,7 +24,7 @@ namespace OGUI
                 return false;
             }
         %for index, side in enumerate(["left", "top", "right", "bottom"]):
-            rule.properties.push_back(StyleProperty{Style${struct.ident}::Id::${to_small_camel_case(sub_property_pattern % side)}, sheet.Push(values[${index}])});
+            rule.properties.push_back(StyleProperty{Style${struct.ident}::Ids::${to_small_camel_case(sub_property_pattern % side)}, sheet.Push(values[${index}])});
         %endfor
             return true;
         }
@@ -49,7 +49,7 @@ namespace OGUI
                 return false;
             }
         %for index, side in enumerate(["top-left", "top-right", "bottom-right", "bottom-left"]):
-            rule.properties.push_back(StyleProperty{Style${struct.ident}::Id::${to_small_camel_case(sub_property_pattern % side)}, sheet.Push(values[${index}])});
+            rule.properties.push_back(StyleProperty{Style${struct.ident}::Ids::${to_small_camel_case(sub_property_pattern % side)}, sheet.Push(values[${index}])});
         %endfor
             return true;
         }

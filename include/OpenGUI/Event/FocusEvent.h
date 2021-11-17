@@ -28,22 +28,22 @@ namespace OGUI
 
     struct OGUI_API PreGotKeyboardFocusEvent : PreKeyboardFocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
     struct OGUI_API PreLostKeyboardFocusEvent : PreKeyboardFocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
     struct OGUI_API PreGotFocusEvent : PreFocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
     struct OGUI_API PreLostFocusEvent : PreFocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
     struct FocusData : public FocusDataBase
@@ -60,22 +60,22 @@ namespace OGUI
 
     struct OGUI_API GotKeyboardFocusEvent : KeyboardFocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
     struct OGUI_API LostKeyboardFocusEvent : KeyboardFocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
     struct OGUI_API GotFocusEvent : FocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
     struct OGUI_API LostFocusEvent : FocusData
     {
-        static const Name& eventName();
+        static const Name& GetEventName();
     };
 
 }

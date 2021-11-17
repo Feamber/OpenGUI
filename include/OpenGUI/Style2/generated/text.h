@@ -18,7 +18,7 @@ namespace OGUI
         constexpr static std::string_view name = "text"sv;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = true;
-        struct Id
+        struct Ids
         {
             static constexpr size_t fontSize = OGUI::hash("font-size"sv);
             static constexpr size_t color = OGUI::hash("color"sv);
