@@ -298,6 +298,10 @@ void YGNode::setLayoutDimension(float dimension, int index) {
   layout_.dimensions[index] = dimension;
 }
 
+void YGNode::setLayoutContent(float dimension, int index) {
+  layout_.content[index] = dimension;
+}
+
 // If both left and right are defined, then use left. Otherwise return +left or
 // -right depending on which is defined.
 YGFloatOptional YGNode::relativePosition(

@@ -306,6 +306,7 @@ public:
   void setLayoutMeasuredDimension(float measuredDimension, int index);
   void setLayoutHadOverflow(bool hadOverflow);
   void setLayoutDimension(float dimension, int index);
+  void setLayoutContent(float dimension, int index);
   void setLayoutDirection(YGDirection direction);
   void setLayoutMargin(float margin, int index);
   void setLayoutBorder(float border, int index);

@@ -15,6 +15,7 @@ using namespace facebook::yoga;
 struct YGLayout {
   std::array<float, 4> position = {};
   std::array<float, 2> dimensions = {{YGUndefined, YGUndefined}};
+  std::array<float, 2> content = {{YGUndefined, YGUndefined}};
   std::array<float, 4> margin = {};
   std::array<float, 4> border = {};
   std::array<float, 4> padding = {};

@@ -115,11 +115,6 @@ namespace OGUI
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
 	}
-	void UpdateScrollRec(VisualElement* element)
-	{
-		element->SwitchScrollLayout();
-		element->Traverse([&](VisualElement* next) { UpdateScrollRec(next); });
-	}
 	void UpdateLayout(VisualElement* element)
 	{
 		auto& ctx = Context::Get();
@@ -130,7 +125,6 @@ namespace OGUI
 		{
 			element->CalculateLayout();
 			ctx._layoutDirty = false;
-			UpdateScrollRec(element);
 		}
 		CheckLayoutRec(element);
 	}

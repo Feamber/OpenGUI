@@ -961,6 +961,8 @@ YG_NODE_LAYOUT_PROPERTY_IMPL(float, Right, position[YGEdgeRight]);
 YG_NODE_LAYOUT_PROPERTY_IMPL(float, Bottom, position[YGEdgeBottom]);
 YG_NODE_LAYOUT_PROPERTY_IMPL(float, Width, dimensions[YGDimensionWidth]);
 YG_NODE_LAYOUT_PROPERTY_IMPL(float, Height, dimensions[YGDimensionHeight]);
+YG_NODE_LAYOUT_PROPERTY_IMPL(float, ContentWidth, content[YGDimensionWidth]);
+YG_NODE_LAYOUT_PROPERTY_IMPL(float, ContentHeight, content[YGDimensionHeight]);
 YG_NODE_LAYOUT_PROPERTY_IMPL(YGDirection, Direction, direction());
 YG_NODE_LAYOUT_PROPERTY_IMPL(bool, HadOverflow, hadOverflow());
 
@@ -2888,6 +2890,9 @@ static void YGNodelayoutImpl(
 
   // Max main dimension of all the lines.
   float maxLineMainDim = 0;
+
+  // Max main dimension of all the lines.
+  float maxLineConsumeMainDim = 0;
   YGCollectFlexItemsRowValues collectedFlexItemsValues;
   for (; endOfLineIndex < childCount;
        lineCount++, startOfLineIndex = endOfLineIndex) {
@@ -3040,7 +3045,7 @@ static void YGNodelayoutImpl(
               ownerWidth) -
           paddingAndBorderAxisCross;
     }
-
+    /*
     // If there's no flex wrap, the cross dimension is defined by the container.
     if (!isNodeFlexWrap && measureModeCrossDim == YGMeasureModeExactly) {
       collectedFlexItemsValues.crossDim = availableInnerCrossDim;
@@ -3055,7 +3060,7 @@ static void YGNodelayoutImpl(
             crossAxisownerSize,
             ownerWidth) -
         paddingAndBorderAxisCross;
-
+    */
     // STEP 7: CROSS-AXIS ALIGNMENT
     // We can skip child alignment if we're just measuring the container.
     if (performLayout) {
@@ -3208,6 +3213,8 @@ static void YGNodelayoutImpl(
     totalLineCrossDim += collectedFlexItemsValues.crossDim;
     maxLineMainDim =
         YGFloatMax(maxLineMainDim, collectedFlexItemsValues.mainDim);
+    maxLineConsumeMainDim =
+        YGFloatMax(maxLineConsumeMainDim, collectedFlexItemsValues.sizeConsumedOnCurrentLine);
   }
 
   if(!YGFloatIsUndefined(availableInnerCrossDim))
@@ -3471,6 +3478,7 @@ static void YGNodelayoutImpl(
             paddingAndBorderAxisMain),
         dim[mainAxis]);
   }
+  node->setLayoutContent(maxLineConsumeMainDim, dim[mainAxis]);
 
   if (measureModeCrossDim == YGMeasureModeUndefined ||
       (node->getStyle().overflow() != YGOverflowScroll &&
@@ -3503,6 +3511,7 @@ static void YGNodelayoutImpl(
             paddingAndBorderAxisCross),
         dim[crossAxis]);
   }
+  node->setLayoutContent(totalLineCrossDim + paddingAndBorderAxisCross, dim[crossAxis]);
 
   // As we only wrapped in normal direction yet, we need to reverse the
   // positions on wrap-reverse.

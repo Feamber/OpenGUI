@@ -256,16 +256,7 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	{
 		Vector2f offset;
 		auto playout = parent->GetLayout();
-		if(_scrollable && parent->ScrollActive())
-		{
-			auto slayout = parent->GetScrollLayout();
-			offset = (layout.min + layout.max)/2 - (slayout.max - slayout.min) / 2;
-			offset += (slayout.min + slayout.max)/2 - (playout.max - playout.min) / 2;
-		}
-		else
-		{
-			offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
-		}
+		offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
 		offset.y = -offset.y;
 		auto& pos = StylePosition::Get(_style);
 		if(_scrollable)
@@ -281,13 +272,6 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	_invTransform = math::inverse(_worldTransform);
 	_worldPosition = {_worldTransform.M[3][0], _worldTransform.M[3][1]};
 	_transformDirty = false;
-}
-
-OGUI::Rect OGUI::VisualElement::GetScrollLayout() const
-{
-	Vector2f LB = {YGNodeLayoutGetLeft(_scrollYGNode), YGNodeLayoutGetTop(_scrollYGNode)};
-	Vector2f WH = {YGNodeLayoutGetWidth(_scrollYGNode), YGNodeLayoutGetHeight(_scrollYGNode)};
-	return {LB, LB+WH};
 }
 
 OGUI::Rect OGUI::VisualElement::GetLayout() const
@@ -424,64 +408,15 @@ void OGUI::VisualElement::SyncYogaStyle()
 	else \
 		function(node, v.value)
 
-	if(ScrollActive())
-	{
-		//steal all content relative attribute
-		//reset _ygnode
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeLeft, YGValueZero);
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeTop, YGValueZero);
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeRight, YGValueZero);
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeBottom, YGValueZero);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, 0.f);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeTop, 0.f);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeRight, 0.f);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, 0.f);
-		YGNodeStyleSetFlexWrap(_ygnode, YGWrapNoWrap);
-
-		//set property on _scrollYGNode
-		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeLeft, pos.paddingLeft);
-		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeTop, pos.paddingTop);
-		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeRight, pos.paddingRight);
-		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeBottom, pos.paddingBottom);
-		/* TODO: scrollbar
-		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeLeft, pos.marginLeft);
-		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeTop, pos.marginTop);
-		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeRight, pos.marginRight);
-		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeBottom, pos.marginBottom);
-		*/
-		YGNodeStyleSetFlexShrink(_scrollYGNode, 0.f);
-		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeLeft, bd.borderLeftWidth);
-		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeTop, bd.borderTopWidth);
-		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeRight, bd.borderRightWidth);
-		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeBottom, bd.borderBottomWidth);
-		YGNodeStyleSetJustifyContent(_scrollYGNode, pos.justifyContent);
-		YGNodeStyleSetAlignContent(_scrollYGNode, pos.alignContent);
-		YGNodeStyleSetAlignItems(_scrollYGNode, pos.alignItems);
-		YGNodeStyleSetFlexWrap(_scrollYGNode, pos.flexWrap);	
-		YGNodeStyleSetFlexDirection(_scrollYGNode, pos.flexDirection);
-		if(ScrollOnRow()) //set expanding demension
-		{
-			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetWidth, YGValueUndefined);
-			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetHeight, pos.height);
-		}
-		else
-		{
-			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetWidth, pos.width);
-			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetHeight, YGValueUndefined);
-		}
-	}
-	else 
-	{
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeLeft, pos.paddingLeft);
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeTop, pos.paddingTop);
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeRight, pos.paddingRight);
-		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeBottom, pos.paddingBottom);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, bd.borderLeftWidth);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeTop, bd.borderTopWidth);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeRight, bd.borderRightWidth);
-		YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, bd.borderBottomWidth);
-		YGNodeStyleSetFlexWrap(_ygnode, pos.flexWrap);
-	}
+	SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeLeft, pos.paddingLeft);
+	SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeTop, pos.paddingTop);
+	SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeRight, pos.paddingRight);
+	SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeBottom, pos.paddingBottom);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, bd.borderLeftWidth);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeTop, bd.borderTopWidth);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeRight, bd.borderRightWidth);
+	YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, bd.borderBottomWidth);
+	YGNodeStyleSetFlexWrap(_ygnode, pos.flexWrap);
 	YGNodeStyleSetAlignItems(_ygnode, pos.alignItems);
 	YGNodeStyleSetAlignContent(_ygnode, pos.alignContent);
 	YGNodeStyleSetJustifyContent(_ygnode, pos.justifyContent);
@@ -1065,58 +1000,30 @@ bool OGUI::VisualElement::ScrollOnRow() const
 	return row != wrap;
 }
 
-bool OGUI::VisualElement::ScrollActive() const
-{
-	auto& pos = StylePosition::Get(_style);
-	if(!CanScroll())
-		return false;
-	bool overflowing = YGNodeLayoutGetHadOverflow(_ygnode);
-	return overflowing && _scrollYGNode;
-}
-
-void OGUI::VisualElement::SwitchScrollLayout()
-{
-	auto& pos = StylePosition::Get(_style);
-	bool scrolling = YGNodeLayoutGetHadOverflow(_ygnode) && CanScroll();
-	if(scrolling && _scrollYGNode == nullptr) //start scroll layout
-	{
-		auto config = YGConfigGetDefault();
-		_scrollYGNode = YGNodeNewWithConfig(config);
-		YGNodeSetContext(_scrollYGNode, this);
-		YGNodeRemoveAllChildren(_ygnode);
-		for(auto& child : _children)
-		{
-			if(!child->_scrollable)
-				YGNodeInsertChild(_ygnode, child->_ygnode, YGNodeGetChildCount(_ygnode));
-			else
-				YGNodeInsertChild(_scrollYGNode, child->_ygnode, YGNodeGetChildCount(_scrollYGNode));
-		}
-		YGNodeInsertChild(_ygnode, _scrollYGNode, 0);
-	}
-	else if(!scrolling && _scrollYGNode != nullptr)
-	{
-		int count = YGNodeGetChildCount(_scrollYGNode);
-		YGNodeRemoveAllChildren(_scrollYGNode);
-		YGNodeFree(_scrollYGNode);
-		_scrollYGNode = nullptr;
-		YGNodeRemoveAllChildren(_ygnode);
-		for(auto& child : _children)
-			YGNodeInsertChild(_ygnode, child->_ygnode, YGNodeGetChildCount(_ygnode));
-	}
-	else 
-		return;
-	SyncYogaStyle();
-	_scrollSizeDirty = true;
-}
-
 void OGUI::VisualElement::UpdateScrollSize()
 {
 	if(!CanScroll())
 		return;
 	if(_scrollSizeDirty)
 	{
-		Rect rect = {};
-		Vector2f size;
+		Rect rect = {Vector2f::vector_zero(), {YGNodeLayoutGetContentWidth(_ygnode), YGNodeLayoutGetContentHeight(_ygnode)}};
+		float axisY = GetScrollingAxisY();
+		float axisX = GetScrollingAxisX();
+		{
+			float minY = rect.max.y * (axisY * 0.5f - 0.5f) + rect.min.y * (axisY * 0.5f + 0.5f);
+			float maxY = rect.max.y * (axisY * 0.5f + 0.5f) + rect.min.y * (axisY * 0.5f - 0.5f);
+			float minX = rect.max.x * (axisX * 0.5f - 0.5f) + rect.min.x * (axisX * 0.5f + 0.5f);
+			float maxX = rect.max.x * (axisX * 0.5f + 0.5f) + rect.min.x * (axisX * 0.5f - 0.5f);
+			rect = {{minX, minY}, {maxX, maxY}};
+		}
+		Rect clientRect =  {Vector2f::vector_zero(), GetSize() };
+		{
+			float minY = clientRect.max.y * (axisY * 0.5f - 0.5f) + clientRect.min.y * (axisY * 0.5f + 0.5f);
+			float maxY = clientRect.max.y * (axisY * 0.5f + 0.5f) + clientRect.min.y * (axisY * 0.5f - 0.5f);
+			float minX = clientRect.max.x * (axisX * 0.5f - 0.5f) + clientRect.min.x * (axisX * 0.5f + 0.5f);
+			float maxX = clientRect.max.x * (axisX * 0.5f + 0.5f) + clientRect.min.x * (axisX * 0.5f - 0.5f);
+			clientRect = {{minX, minY}, {maxX, maxY}};
+		}
 		Traverse([&](VisualElement* child)
 		{
 			auto& pos = StylePosition::Get(child->_style);
@@ -1139,25 +1046,10 @@ void OGUI::VisualElement::UpdateScrollSize()
 			rect.max.x = std::max(rect.max.x, relativeRect.max.x);
 			rect.max.y = std::max(rect.max.y, relativeRect.max.y);
 		});
-		if(ScrollActive())
-		{
-			auto scrollRect = GetScrollLayout();
-			_scrollMin += scrollRect.min;
-			auto size = scrollRect.max - scrollRect.min;
-			rect.max.x = std::max(rect.max.x, size.x);
-			rect.max.y = std::max(rect.max.y, size.y);
-			_scrollMax = rect.max + scrollRect.min - GetSize();
-		}
-		else
-		{
-			_scrollMax = rect.max - GetSize();
-			_scrollMin = rect.min;
-		}
-		_scrollMax.x = std::max(0.f, _scrollMax.x);
-		_scrollMax.y = std::max(0.f, _scrollMax.y);
+		_scrollMax = rect.max - clientRect.max;
+		_scrollMin = rect.min - clientRect.min;
 		if(_scrollMax.y > 0 || _scrollMin.y < 0)
 		{
-			float axisY = GetScrollingAxisY();
 			float minY = _scrollMax.y * (axisY * 0.5f - 0.5f) + _scrollMin.y * (axisY * 0.5f + 0.5f);
 			float maxY = _scrollMax.y * (axisY * 0.5f + 0.5f) + _scrollMin.y * (axisY * 0.5f - 0.5f);
 			_scrollOffset.y = std::clamp(_scrollOffset.y, minY, maxY);
@@ -1166,7 +1058,6 @@ void OGUI::VisualElement::UpdateScrollSize()
 			_scrollOffset.y = 0;
 		if(_scrollMax.x > 0 || _scrollMin.x < 0)
 		{
-			float axisX = GetScrollingAxisX();
 			float minX = _scrollMax.x * (axisX * 0.5f - 0.5f) + _scrollMin.x * (axisX * 0.5f + 0.5f);
 			float maxX = _scrollMax.x * (axisX * 0.5f + 0.5f) + _scrollMin.x * (axisX * 0.5f - 0.5f);
 			_scrollOffset.x = std::clamp(_scrollOffset.x, minX, maxX);
@@ -1230,7 +1121,7 @@ namespace OGUI
 
 	float GetCrossAxisScroll(const StylePosition& pos)
 	{
-		switch(pos.alignContent)
+		switch(pos.alignItems)
 		{
 			case YGAlignStretch:
 			case YGAlignFlexStart:

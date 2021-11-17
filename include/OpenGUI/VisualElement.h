@@ -106,7 +106,6 @@ namespace OGUI
 		float4x4 _invTransform;
 		void UpdateWorldTransform();
 		Rect GetLayout() const;
-		Rect GetScrollLayout() const;
 		Rect GetRect() const;
 		Vector2f GetSize() const;
 		Rect _inlineLayout;
@@ -250,12 +249,9 @@ namespace OGUI
 		bool IsScrolling() const;
 		float GetScrollingAxisX() const;
 		float GetScrollingAxisY() const;
-		void SwitchScrollLayout();
 		bool ScrollOnRow() const;
-		bool ScrollActive() const;
 		void AddScroll(Vector2f delta);
 		virtual void SetScroll(Vector2f offset);
-		YGNodeRef _scrollYGNode = nullptr;
 		bool _scrollSizeDirty = true;
 		Vector2f GetScrollPos();
         Vector2f _scrollOffset;

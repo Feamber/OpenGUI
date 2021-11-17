@@ -282,6 +282,8 @@ WIN_EXPORT float YGNodeLayoutGetRight(YGNodeRef node);
 WIN_EXPORT float YGNodeLayoutGetBottom(YGNodeRef node);
 WIN_EXPORT float YGNodeLayoutGetWidth(YGNodeRef node);
 WIN_EXPORT float YGNodeLayoutGetHeight(YGNodeRef node);
+WIN_EXPORT float YGNodeLayoutGetContentWidth(YGNodeRef node);
+WIN_EXPORT float YGNodeLayoutGetContentHeight(YGNodeRef node);
 WIN_EXPORT YGDirection YGNodeLayoutGetDirection(YGNodeRef node);
 WIN_EXPORT bool YGNodeLayoutGetHadOverflow(YGNodeRef node);
 bool YGNodeLayoutGetDidLegacyStretchFlagAffectLayout(YGNodeRef node);
