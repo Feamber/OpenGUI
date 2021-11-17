@@ -89,7 +89,7 @@ void OGUI::StylePosition::Initialize()
     width = YGValueAuto;
     height = YGValueAuto;
     position = YGPositionTypeRelative;
-    overflow = YGOverflowVisible;
+    overflow = StyleOverflow::Visible;
     alignSelf = YGAlignAuto;
     maxWidth = YGValueUndefined;
     maxHeight = YGValueUndefined;
@@ -248,7 +248,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     }
                 case Ids::overflow:{
                     auto v = fget();
-                    v->overflow = YGOverflowVisible;
+                    v->overflow = StyleOverflow::Visible;
                     break;
                     }
                 case Ids::alignSelf:{
@@ -573,7 +573,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     }
                 case Ids::overflow:{
                     auto v = fget();
-                    v->overflow = sheet.Get<YGOverflow>(prop.value);
+                    v->overflow = sheet.Get<StyleOverflow>(prop.value);
                     break;
                     }
                 case Ids::alignSelf:{
@@ -926,13 +926,13 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
                 if(prop.alpha == 0.f)
-                    v->overflow = sheet.Get<YGOverflow>(prop.from);
+                    v->overflow = sheet.Get<StyleOverflow>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->overflow = sheet.Get<YGOverflow>(prop.to);
+                    v->overflow = sheet.Get<StyleOverflow>(prop.to);
                 else if(prop.from == prop.to)
-                    v->overflow = OGUI::Lerp(v->overflow, sheet.Get<YGOverflow>(prop.to), prop.alpha);
+                    v->overflow = OGUI::Lerp(v->overflow, sheet.Get<StyleOverflow>(prop.to), prop.alpha);
                 else
-                    v->overflow = OGUI::Lerp(sheet.Get<YGOverflow>(prop.from), sheet.Get<YGOverflow>(prop.to), prop.alpha);
+                    v->overflow = OGUI::Lerp(sheet.Get<StyleOverflow>(prop.from), sheet.Get<StyleOverflow>(prop.to), prop.alpha);
                 break;
                 }
             case Ids::alignSelf:{
@@ -1423,9 +1423,9 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             return true;
         }
         case Ids::overflow:{
-            YGOverflow v;
+            StyleOverflow v;
             if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGOverflow>(v)});
+                rule.properties.push_back({phash, sheet.Push<StyleOverflow>(v)});
             else
             {
                 errorMsg = "failed to parse overflow value!";

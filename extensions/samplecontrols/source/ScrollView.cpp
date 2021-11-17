@@ -53,6 +53,7 @@ void SampleControls::ScrollView::InitializeChildren()
         pos.justifyContent = YGJustifyCenter;
         return RestyleDamage::None;
     });
+    scrollbar->_scrollable = false;
     slider->_styleOverriding.push_back([=]()
     {
         auto& pos = StylePosition::GetOrAdd(slider->_style);
@@ -158,6 +159,9 @@ bool SampleControls::ScrollView::OnMouseMove(struct PointerMoveEvent& event)
     if(event.currentPhase != EventRoutePhase::Reach || !_dragging)
         return false;
     auto offset = event.position - _dragStartPos;
+    auto _invRotation = _invTransform;
+    _invRotation.M[3][0] = _invRotation.M[3][1] = _invRotation.M[3][2] = 0.f;
+    Transform(offset, _invRotation);
     offset.y = -offset.y;
     auto gap = GetSize().y - slider->GetSize().y;
     _sliderProgress = _dragStartValue + offset.y / gap;

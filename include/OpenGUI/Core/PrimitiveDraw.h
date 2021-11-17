@@ -30,8 +30,10 @@ namespace OGUI
 	struct ClipRect
 	{
 		Rect rect;
-		Matrix4x4 transform;
+		Matrix4x4 invTransform;
 	};
+
+	OGUI_API const Vector2f Transform(Vector2f p, const float4x4& transform);
 
     struct OGUI_API PrimDrawList
     {

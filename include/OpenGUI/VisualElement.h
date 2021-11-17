@@ -65,6 +65,7 @@ namespace OGUI
 
 	public:
 		bool Visible() const;
+		void UpdateVisiblity(const ClipRect& rect);
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
@@ -89,9 +90,9 @@ namespace OGUI
 		
 		VisualElement* _root = nullptr;
 		VisualElement* _layoutRoot = nullptr;
-		VisualElement* _physical_parent = nullptr;
+		VisualElement* _physicalParent = nullptr;
 		//There could be some node between logical parent and this widget for layout
-		VisualElement* _logical_parent = nullptr;
+		VisualElement* _logicalParent = nullptr;
 		bool _rerouteEvent;
 		template<class F>
 		void Traverse(F&& f);
@@ -102,11 +103,14 @@ namespace OGUI
 		mutable ComputedTransform _styleTransform;
 		ComputedTransform GetStyleTransform() const;
 		float4x4 _worldTransform;
+		float4x4 _invTransform;
 		void UpdateWorldTransform();
 		Rect GetLayout() const;
+		Rect GetScrollLayout() const;
 		Rect GetRect() const;
 		Vector2f GetSize() const;
 		Rect _inlineLayout;
+		Rect _prevLayout;
 		//Rect _layout;
 #pragma endregion
 
@@ -117,6 +121,7 @@ namespace OGUI
 		PseudoStates _triggerPseudoMask = PseudoStates::None;
 		PseudoStates _dependencyPseudoMask = PseudoStates::None;
 		PseudoStates _pseudoMask = PseudoStates::None;
+		bool _scrollable = true; //use this with absolute position
 
 		//TODO: should we merge these two
 		std::unique_ptr<InlineStyle> _inlineStyle;
@@ -239,13 +244,18 @@ namespace OGUI
 
 #pragma region Scroll
 		virtual void UpdateScrollSize();
+		bool CanScroll() const;
 		bool IsScrollingX() const;
 		bool IsScrollingY() const;
 		bool IsScrolling() const;
 		float GetScrollingAxisX() const;
 		float GetScrollingAxisY() const;
+		void SwitchScrollLayout();
+		bool ScrollOnRow() const;
+		bool ScrollActive() const;
 		void AddScroll(Vector2f delta);
 		virtual void SetScroll(Vector2f offset);
+		YGNodeRef _scrollYGNode = nullptr;
 		bool _scrollSizeDirty = true;
 		Vector2f GetScrollPos();
         Vector2f _scrollOffset;

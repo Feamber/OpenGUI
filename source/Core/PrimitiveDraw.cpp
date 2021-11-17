@@ -47,7 +47,7 @@ namespace OGUI
             if(!list.clipStack.empty())
             {
                 auto& back = list.clipStack.back();
-                auto clipPos = Transform(vertex.position, math::inverse(back.transform));
+                auto clipPos = Transform(vertex.position, back.invTransform);
                 auto size = back.rect.max - back.rect.min;
                 auto center = (back.rect.max + back.rect.min) / 2;
                 vertex.clipUV = (clipPos - center) * 2 / size;

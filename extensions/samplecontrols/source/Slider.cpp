@@ -47,7 +47,7 @@ void SampleControls::Slider::RegisterXml()
 void SampleControls::Slider::InitializeChildren()
 {
     std::vector<StyleSheet*> sheets;
-    for(VisualElement* e = this->_physical_parent; e; e=e->_physical_parent)
+    for(VisualElement* e = this->_physicalParent; e; e=e->_physicalParent)
         for(auto sheet : e->_styleSheets)
             sheets.push_back(sheet);
     Initialize(this, sheets);
@@ -125,6 +125,9 @@ bool SampleControls::Slider::OnMouseMove(struct PointerMoveEvent& event)
     if(event.currentPhase != EventRoutePhase::Reach || !_dragging)
         return false;
     auto offset = event.position - _dragStartPos;
+    auto _invRotation = _invTransform;
+    _invRotation.M[3][0] = _invRotation.M[3][1] = _invRotation.M[3][2] = 0.f;
+    Transform(offset, _invRotation);
     auto size = GetSize();
     float percentage = offset.X / size.X;
     _value = _dragStartValue + (_maxValue - _minValue) * percentage + _minValue;

@@ -103,25 +103,36 @@ namespace OGUI
 		
 		else return nullptr;
 	}
+	void CacheLayoutRec(VisualElement* element)
+	{
+		element->_prevLayout = element->GetLayout();
+		element->Traverse([&](VisualElement* next) { CacheLayoutRec(next); });
+	}
 	void CheckLayoutRec(VisualElement* element)
 	{
-		if (YGNodeGetHasNewLayout(element->_ygnode))
-		{
-			YGNodeSetHasNewLayout(element->_ygnode, false);
-			element->MarkTransformDirty();
-		}
+		if (element->_prevLayout != element->GetLayout())
+			element->_transformDirty = true;
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
+	}
+	void UpdateScrollRec(VisualElement* element)
+	{
+		element->SwitchScrollLayout();
+		element->Traverse([&](VisualElement* next) { UpdateScrollRec(next); });
 	}
 	void UpdateLayout(VisualElement* element)
 	{
 		auto& ctx = Context::Get();
-		if (ctx._layoutDirty)
+		if(!ctx._layoutDirty)
+			return;
+		CacheLayoutRec(element);
+		while (ctx._layoutDirty)
 		{
 			element->CalculateLayout();
-			CheckLayoutRec(element);
 			ctx._layoutDirty = false;
+			UpdateScrollRec(element);
 		}
+		CheckLayoutRec(element);
 	}
 	void UpdateScrollSize(VisualElement* element)
 	{
@@ -261,6 +272,8 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 	UpdateHover(picked);
 	if(!picked)
 		return false;
+		
+	bool overflow = YGNodeLayoutGetHadOverflow(picked->_ygnode); 
 	PointerDownEvent event;
 	pointerDownCount++;
 	event.pointerType = "mouse";

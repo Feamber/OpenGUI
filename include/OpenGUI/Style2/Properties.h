@@ -18,6 +18,15 @@ namespace OGUI
 		None
 	};
 
+	enum class StyleOverflow
+	{
+		Visible,
+		Hidden,
+		Clip,
+		Scroll,
+		Auto
+	};
+
 	enum class RestyleDamage
 	{
 		None = 0,

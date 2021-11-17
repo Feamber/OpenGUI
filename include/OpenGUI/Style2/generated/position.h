@@ -78,7 +78,7 @@ namespace OGUI
         YGValue width;
         YGValue height;
         YGPositionType position;
-        YGOverflow overflow;
+        StyleOverflow overflow;
         YGAlign alignSelf;
         YGValue maxWidth;
         YGValue maxHeight;

@@ -8,13 +8,11 @@
         <Text name="ValueText"> ${value} </Text>
     </VisualElement>
     <sample:ScrollView name="ScrollView">
-        <VisualElement name="Container">
-            <VisualElement class="ScrollElement"/>
-            <VisualElement class="ScrollElement"/>
-            <VisualElement class="ScrollElement"/>
-            <VisualElement class="ScrollElement"/>
-            <VisualElement class="ScrollElement"/>
-            <VisualElement class="ScrollElement"/>
-        </VisualElement>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
     </sample:ScrollView>
 </engine:Root>

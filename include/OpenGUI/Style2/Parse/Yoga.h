@@ -2,12 +2,13 @@
 #include "OpenGUI/Configure.h"
 #include <string_view>
 #include "yoga/Yoga.h"
+#include "OpenGUI/Style2/Properties.h"
 
 namespace OGUI
 {
 	OGUI_API bool ParseValue(std::string_view str, YGValue& value);
 	OGUI_API bool ParseValue(std::string_view str, YGPositionType& value);
-	OGUI_API bool ParseValue(std::string_view str, YGOverflow& value);
+	OGUI_API bool ParseValue(std::string_view str, StyleOverflow& value);
 	OGUI_API bool ParseValue(std::string_view str, YGAlign& value);
 	OGUI_API bool ParseValue(std::string_view str, YGFlexDirection& value);
 	OGUI_API bool ParseValue(std::string_view str, YGJustify& value);

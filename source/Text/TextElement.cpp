@@ -142,7 +142,7 @@ namespace OGUI
     {
         _inlines.push_back(InlineType{element});
         element->_layoutType = LayoutType::Inline;
-        element->_physical_parent = this;
+        element->_physicalParent = this;
         UpdateRoot(element);
         _paragraphDirty = true;
     }
@@ -151,7 +151,7 @@ namespace OGUI
     {
         _inlines.push_back(InlineType{text});
         text->_layoutType = LayoutType::Inline;
-        text->_physical_parent = this;
+        text->_physicalParent = this;
         UpdateRoot(text);
         _paragraphDirty = true;
     }
