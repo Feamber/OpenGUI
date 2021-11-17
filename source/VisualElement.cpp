@@ -28,6 +28,11 @@ OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f 
 	return result;
 }
 
+OGUI::Vector4u OGUI::VisualElement::GetHardwareScissor() const 
+{
+	return OGUI::Vector4u({0, 0, UINT32_MAX, UINT32_MAX}); 
+}
+
 void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
 {
 	using namespace PrimitiveDraw;
@@ -65,7 +70,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	params.radius[1] = bd.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = bd.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = bd.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
-	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, params, 20);
+	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, GetHardwareScissor(), params, 20);
 	EndDraw(Ctx.prims, transform, Ctx.resolution);
 }
 
@@ -89,7 +94,7 @@ void OGUI::VisualElement::DrawDebugPrimitive(OGUI::PrimitiveDraw::DrawContext & 
 				Color4f(225, 0, 0, 0.3f) : 
 				Color4f(46, 225, 225, 0.3f);
 
-			PrimitiveDraw::PrimitiveDraw<BoxShape>(nullptr, Ctx.prims, params);
+			PrimitiveDraw::PrimitiveDraw<BoxShape>(nullptr, Ctx.prims, GetHardwareScissor(), params);
 			EndDraw(Ctx.prims, float4x4(), Ctx.resolution);
 		}
 	}

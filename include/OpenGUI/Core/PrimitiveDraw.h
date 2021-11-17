@@ -13,6 +13,7 @@ namespace OGUI
         uint32_t element_count; // number of indices
 		
         TextureHandle texture; // affect patching
+		Vector4u      scissor;
 
         void*    p_next;
     };
@@ -29,7 +30,7 @@ namespace OGUI
 
     struct OGUI_API PrimDrawList
     {
-        inline void ValidateAndBatch()
+        inline void ValidateAndBatch(const OGUI::WindowHandle window)
         {
             const size_t ic = indices.size();
 			if(ic != __last_index)
@@ -39,7 +40,7 @@ namespace OGUI
 						(uint32_t)0, 
 						(uint32_t)__last_index,
 						(uint32_t)(ic - __last_index),
-						__last_tex, nullptr
+						__last_tex, __last_scissor, nullptr
 					}
 				); //封口
 			}
@@ -48,6 +49,13 @@ namespace OGUI
                 i_aligned
             );
 			__last_tex = nullptr;
+			for(auto&& cmd : command_list)
+			{
+				cmd.scissor[2] = (std::min)(cmd.scissor[2], (uint32)window->GetWidth()); 
+				cmd.scissor[3] = (std::min)(cmd.scissor[3], (uint32)window->GetHeight()); 
+				cmd.scissor[0] = (std::min)(cmd.scissor[0], (uint32)window->GetWidth() - cmd.scissor[2]); 
+				cmd.scissor[1] = (std::min)(cmd.scissor[0], (uint32)window->GetWidth() - cmd.scissor[3]); 
+			}
             // batch not implemented now.
             //std::sort(command_list.begin(), command_list.end(),
             //    [](const PrimDraw& a, const PrimDraw& b){
@@ -62,6 +70,7 @@ namespace OGUI
 		uint32_t __last_index = 0;
 		uint32_t __last_vertex = 0;
 		TextureHandle __last_tex = nullptr;//!!!!!
+		Vector4u      __last_scissor = Vector4u::vector_zero();
     };
 
     struct OGUI_API PersistantPrimDrawList 
@@ -141,10 +150,11 @@ namespace OGUI
 
 		template<auto ShapeF, typename... ShapeParams>
 		inline void PrimitiveDraw(TextureInterface* texture,
-			PrimDrawList& list, ShapeParams&&... params)
+			PrimDrawList& list, Vector4u scissor, ShapeParams&&... params)
 		{
 			// Generate DrawCall if texture is changed.
-			if(texture != list.__last_tex)
+			if(texture != list.__last_tex ||
+				scissor != list.__last_scissor)
 			{
 				const auto vc = (uint32_t)list.vertices.size();
 				const auto ic = (uint32_t)list.indices.size();
@@ -155,13 +165,15 @@ namespace OGUI
 							(uint32_t)0, 
 							(uint32_t)list.__last_index,
 							(uint32_t)(ic - list.__last_index),
-							list.__last_tex, nullptr
+							list.__last_tex, list.__last_scissor,
+							nullptr
 						}
 					);
 				}
 				list.__last_vertex = vc;
 				list.__last_index = ic;
 				list.__last_tex = texture;
+				list.__last_scissor = scissor;
 			}
 			ShapeF(list, std::forward<ShapeParams>(params)...);
 		}
