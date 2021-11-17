@@ -98,6 +98,12 @@ void OGUI::VisualElement::DrawDebugPrimitive(OGUI::PrimitiveDraw::DrawContext & 
 void OGUI::VisualElement::ApplyClipping(OGUI::PrimitiveDraw::DrawContext & Ctx)
 {}
 
+bool OGUI::VisualElement::IsClipping()
+{
+	auto& pos = StylePosition::Get(_style);
+	return pos.overflow != YGOverflow::YGOverflowVisible;
+}
+
 void OGUI::VisualElement::CreateYogaNode()
 {
 	auto config = YGConfigGetDefault();
@@ -1016,17 +1022,26 @@ void OGUI::VisualElement::UpdateScrollSize()
 }
 bool OGUI::VisualElement::IsScrollingX() const
 {
+	auto& pos = StylePosition::Get(_style);
+	if(pos.overflow == YGOverflow::YGOverflowVisible)
+		return false;
 	return _scrollMax.x > 0 || _scrollMin.x < 0; 
 }
 
 bool OGUI::VisualElement::IsScrollingY() const
 {
+	auto& pos = StylePosition::Get(_style);
+	if(pos.overflow == YGOverflow::YGOverflowVisible)
+		return false;
 	return _scrollMax.y > 0 || _scrollMin.y < 0; 
 }
 
 
 bool OGUI::VisualElement::IsScrolling() const
 {
+	auto& pos = StylePosition::Get(_style);
+	if(pos.overflow == YGOverflow::YGOverflowVisible)
+		return false;
 	return IsScrollingX() || IsScrollingY(); 
 }
 

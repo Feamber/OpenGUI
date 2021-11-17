@@ -73,6 +73,14 @@ namespace OGUI
 	{
 		std::vector<VisualElement*> children;
 		element->GetChildren(children);
+		bool clipping = element->IsClipping();
+		bool intersection = false;
+		if(clipping)
+		{
+			intersection = element->Intersect(point);
+			if(!intersection)
+				return nullptr;
+		}
 		for (auto child : backwards(children))
 			if(auto picked = PickRecursive(child, point))
 				return picked;
@@ -80,7 +88,7 @@ namespace OGUI
 		//std::cout << "OnMouseDown: " << localPoint.X << "," << localPoint.Y << std::endl;
 		//std::cout << "Name: " << element->_name << std::endl;
 		//std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
-		if (element->Intersect(point))
+		if (intersection || element->Intersect(point))
 		{
 			if (element->_isPseudoElement)
 				return element->GetHierachyParent();

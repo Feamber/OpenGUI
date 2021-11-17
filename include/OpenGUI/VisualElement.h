@@ -75,6 +75,7 @@ namespace OGUI
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 		void SetVisibility(bool visible);
+		bool IsClipping();
 #pragma region Hierachy
 		void UpdateRoot(VisualElement* child);
 		void PushChild(VisualElement* child);
