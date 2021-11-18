@@ -1,3 +1,4 @@
+#include "OpenGUI/Style2/AnimTypes.h"
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Style2/Properties.h"
@@ -91,7 +92,7 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
 
     if (t <= 0)
 	{
-		if (test(style.animationFillMode, EAnimFillMode::Backwards))
+		if (test(style.animationFillMode, EAnimFillMode::Backwards) || style.animationPlayState == EAnimPlayState::Paused)
 		{
 			//apply first frame
 			bool reversed = style.animationDirection == EAnimDirection::Reverse || style.animationDirection == EAnimDirection::AlternateReverse;
@@ -106,7 +107,7 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
 	}
     else if (style.animationIterationCount > 0 && iteration >= style.animationIterationCount && !goingback)
     {
-        if (test(style.animationFillMode, EAnimFillMode::Forwards))
+        if (test(style.animationFillMode, EAnimFillMode::Forwards) || style.animationPlayState == EAnimPlayState::Paused)
         {
             //apply last frame
             if (reversed)

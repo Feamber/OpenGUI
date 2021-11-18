@@ -211,6 +211,8 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
         {
             case Ids::fontSize:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->fontSize = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -223,6 +225,8 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 }
             case Ids::color:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->color = sheet.Get<Color4f>(prop.from);
                 else if(prop.alpha == 1.f)

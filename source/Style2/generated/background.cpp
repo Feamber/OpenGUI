@@ -212,6 +212,8 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
         {
             case Ids::backgroundColor:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->backgroundColor = sheet.Get<Color4f>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -224,6 +226,8 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                 }
             case Ids::backgroundImage:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->backgroundImage = sheet.Get<std::string>(prop.from);
                 else if(prop.alpha == 1.f)

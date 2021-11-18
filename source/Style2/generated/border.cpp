@@ -310,6 +310,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderLeftWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderLeftWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -323,6 +325,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderTopWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderTopWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -336,6 +340,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderRightWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderRightWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -349,6 +355,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderBottomWidth:{
                 auto v = fget();
                     damage |= RestyleDamage::Yoga;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderBottomWidth = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -361,6 +369,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                 }
             case Ids::borderTopLeftRadius:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderTopLeftRadius = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -373,6 +383,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                 }
             case Ids::borderTopRightRadius:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderTopRightRadius = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -385,6 +397,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                 }
             case Ids::borderBottomRightRadius:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderBottomRightRadius = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
@@ -397,6 +411,8 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                 }
             case Ids::borderBottomLeftRadius:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->borderBottomLeftRadius = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)

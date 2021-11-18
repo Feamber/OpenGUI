@@ -219,6 +219,8 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
                 %if prop.restyle_damage:
                     damage |= ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
                 %endif
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                 %if prop.is_vector:
                     v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.from));

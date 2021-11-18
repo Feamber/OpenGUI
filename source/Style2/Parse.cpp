@@ -27,7 +27,7 @@ namespace OGUI
 			ComplexPart			<- ([ ]+ Selector) / (w '>' w Selector)
 			Selector			<- SelectorPart+
 			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT>  / (':' <IDENT>)
-			PropertyList		<- Property? (_ ';' _ Property)* _
+			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
 			Property			<- <IDENT> w ':' w <(!(';'/'}') .)*>
 			~pseudoElement		<- 'before'/'after'
 			~KeyframeSelector	<- ( NUM  '%') / 'from' / 'to'

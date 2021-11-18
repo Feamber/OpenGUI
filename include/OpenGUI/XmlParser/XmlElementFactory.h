@@ -8,6 +8,7 @@ namespace OGUI
     class OGUI_API XmlElementFactory
     {
     public:
+        virtual ~XmlElementFactory() {}
         //static const Name& GetFullName();
 
         // 返回 false 表示解析失败，最好每个失败都有日志输出原因
