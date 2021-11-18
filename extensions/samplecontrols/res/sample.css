@@ -22,7 +22,6 @@
     flex-shrink: 0;
 }
 
-
 #ScrollView {
     width: 200px;
     height: 300px;
@@ -30,6 +29,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    overflow: scroll;
 }
 
 #ScrollView:scroll {

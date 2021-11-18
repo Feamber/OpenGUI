@@ -142,7 +142,7 @@ namespace OGUI
     {
         _inlines.push_back(InlineType{element});
         element->_layoutType = LayoutType::Inline;
-        element->_physical_parent = this;
+        element->_physicalParent = this;
         UpdateRoot(element);
         _paragraphDirty = true;
     }
@@ -151,7 +151,7 @@ namespace OGUI
     {
         _inlines.push_back(InlineType{text});
         text->_layoutType = LayoutType::Inline;
-        text->_physical_parent = this;
+        text->_physicalParent = this;
         UpdateRoot(text);
         _paragraphDirty = true;
     }
@@ -223,7 +223,7 @@ namespace OGUI
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1), godot::Color(1, 0, 0));
-        PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform, Ctx.resolution);
+        PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
     }
 
     void TextElement::MarkLayoutDirty()

@@ -58,8 +58,13 @@ namespace OGUI
 	{
 		if(!element->Visible())
 			return;
+		auto clippingChild = element->IsClipping();
+		if(clippingChild)
+			ctx.prims.clipStack.push_back(element->ApplyClipping(ctx));
 		element->DrawPrimitive(ctx);
 		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
+		if(clippingChild)
+			ctx.prims.clipStack.pop_back();
 	}
 	void TransformRec(VisualElement* element, bool dirty = false)
 	{
@@ -73,6 +78,14 @@ namespace OGUI
 	{
 		std::vector<VisualElement*> children;
 		element->GetChildren(children);
+		bool clipping = element->IsClipping();
+		bool intersection = false;
+		if(clipping)
+		{
+			intersection = element->Intersect(point);
+			if(!intersection)
+				return nullptr;
+		}
 		for (auto child : backwards(children))
 			if(auto picked = PickRecursive(child, point))
 				return picked;
@@ -80,7 +93,7 @@ namespace OGUI
 		//std::cout << "OnMouseDown: " << localPoint.X << "," << localPoint.Y << std::endl;
 		//std::cout << "Name: " << element->_name << std::endl;
 		//std::cout << "Rect: " << element->GetRect().min.X << element->GetRect().min.Y << std::endl;
-		if (element->Intersect(point))
+		if (intersection || element->Intersect(point))
 		{
 			if (element->_isPseudoElement)
 				return element->GetHierachyParent();
@@ -90,25 +103,36 @@ namespace OGUI
 		
 		else return nullptr;
 	}
+	void CacheLayoutRec(VisualElement* element)
+	{
+		element->_prevLayout = element->GetLayout();
+		element->Traverse([&](VisualElement* next) { CacheLayoutRec(next); });
+	}
 	void CheckLayoutRec(VisualElement* element)
 	{
-		if (YGNodeGetHasNewLayout(element->_ygnode))
-		{
-			YGNodeSetHasNewLayout(element->_ygnode, false);
-			element->MarkTransformDirty();
-		}
+		if (element->_prevLayout != element->GetLayout())
+			element->_transformDirty = true;
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
+	}
+	void UpdateScrollRec(VisualElement* element)
+	{
+		element->SwitchScrollLayout();
+		element->Traverse([&](VisualElement* next) { UpdateScrollRec(next); });
 	}
 	void UpdateLayout(VisualElement* element)
 	{
 		auto& ctx = Context::Get();
-		if (ctx._layoutDirty)
+		if(!ctx._layoutDirty)
+			return;
+		CacheLayoutRec(element);
+		while (ctx._layoutDirty)
 		{
 			element->CalculateLayout();
-			CheckLayoutRec(element);
 			ctx._layoutDirty = false;
+			UpdateScrollRec(element);
 		}
+		CheckLayoutRec(element);
 	}
 	void UpdateScrollSize(VisualElement* element)
 	{
@@ -161,9 +185,8 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
 	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
-	wctx.currentDrawCtx->resolution = Vector2f(wctx.GetWidth(), wctx.GetHeight());
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
-	wctx.currentDrawCtx->prims.ValidateAndBatch(window);
+	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }
 
 void OGUI::Context::Render(const OGUI::WindowHandle window)
@@ -249,6 +272,8 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 	UpdateHover(picked);
 	if(!picked)
 		return false;
+		
+	bool overflow = YGNodeLayoutGetHadOverflow(picked->_ygnode); 
 	PointerDownEvent event;
 	pointerDownCount++;
 	event.pointerType = "mouse";

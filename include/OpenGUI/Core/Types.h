@@ -16,7 +16,9 @@ namespace OGUI
         Vector2f position;
         Vector2f texcoord;
         // Alignment
-        Color4f  color; 
+		uint32_t  color; 
+
+		Vector2f clipUV; //uv in clipspace
     };
 
     enum PixelFormat

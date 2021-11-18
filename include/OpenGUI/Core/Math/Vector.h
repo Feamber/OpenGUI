@@ -34,16 +34,6 @@ namespace OGUI
         {
             return data_view()[idx];
         }
-        
-        FORCEINLINE bool operator==(const Vector V) const
-        {
-            return m_ == V.m_;
-        }
-
-        FORCEINLINE bool operator!=(const Vector V) const
-        {
-            return m_ != V.m_;
-        }
 
         T length_squared() const
         {

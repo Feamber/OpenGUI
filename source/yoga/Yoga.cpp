@@ -2224,9 +2224,9 @@ static float YGDistributeFreeSpaceSecondPass(
         layoutContext,
         depth,
         generationCount);
-    node->setLayoutHadOverflow(
-        node->getLayout().hadOverflow() |
-        currentRelativeChild->getLayout().hadOverflow());
+    //node->setLayoutHadOverflow(
+    //    node->getLayout().hadOverflow() |
+    //    currentRelativeChild->getLayout().hadOverflow());
   }
   return deltaFreeSpace;
 }
@@ -3210,6 +3210,13 @@ static void YGNodelayoutImpl(
         YGFloatMax(maxLineMainDim, collectedFlexItemsValues.mainDim);
   }
 
+  if(!YGFloatIsUndefined(availableInnerCrossDim))
+  {
+    node->setLayoutHadOverflow(
+        node->getLayout().hadOverflow() |
+        (availableInnerCrossDim - totalLineCrossDim < 0));
+  }
+  
   // STEP 8: MULTI-LINE CONTENT ALIGNMENT
   // currentLead stores the size of the cross dim
   if (performLayout && (isNodeFlexWrap || YGIsBaselineLayout(node))) {

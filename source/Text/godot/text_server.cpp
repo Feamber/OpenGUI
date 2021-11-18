@@ -996,7 +996,7 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 	srcRect.size.y = - p_src_rect.size.y;
 	params.uv = math_cast(srcRect);
 	params.color = math_cast(p_modulate);
-	PrimitiveDraw<BoxShape>(p_texture, list, OGUI::Vector4u::vector_zero(), params);
+	PrimitiveDraw<BoxShape>(p_texture, list, params);
 }
 
 void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const
@@ -1008,5 +1008,5 @@ void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_r
 	dstRect.size.y = - p_rect.size.y;
 	params.rect = math_cast(dstRect);
 	params.color = math_cast(p_color);
-	PrimitiveDraw<BoxShape>(nullptr, list, OGUI::Vector4u::vector_zero(), params);
+	PrimitiveDraw<BoxShape>(nullptr, list, params);
 }

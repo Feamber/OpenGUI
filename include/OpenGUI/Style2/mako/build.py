@@ -49,7 +49,7 @@ def gen_position():
     add_longhand("width",			"YGValue",			"YGValueAuto"   ,restyle_damage="Yoga")		
     add_longhand("height",			"YGValue",			"YGValueAuto"   ,restyle_damage="Yoga")		
     add_longhand("position",		"YGPositionType",	"YGPositionTypeRelative"   ,restyle_damage="Yoga")
-    add_longhand("overflow",		"YGOverflow",		"YGOverflowVisible"   ,restyle_damage="Yoga")
+    add_longhand("overflow",		"StyleOverflow",	"StyleOverflow::Visible"   ,restyle_damage="Yoga")
     add_longhand("align-self",		"YGAlign",			"YGAlignAuto"   ,restyle_damage="Yoga")		
     for size in PHYSICAL_SIZES:
         add_longhand("max-{0}".format(size), "YGValue", "YGValueUndefined"   ,restyle_damage="Yoga")	

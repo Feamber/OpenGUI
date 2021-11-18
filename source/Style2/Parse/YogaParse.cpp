@@ -54,13 +54,15 @@ bool OGUI::ParseValue(std::string_view str, YGPositionType& value)
 	}
 	return false;
 }
-bool OGUI::ParseValue(std::string_view str, YGOverflow& value)
+bool OGUI::ParseValue(std::string_view str, StyleOverflow& value)
 {
     switchstr(str)
 	{
-		casestr("visible") value = YGOverflowVisible; return true;
-		casestr("hidden") value = YGOverflowHidden; return true;
-		casestr("scroll") value = YGOverflowScroll; return true;
+		casestr("visible") value = StyleOverflow::Visible; return true;
+		casestr("hidden") value = StyleOverflow::Hidden; return true;
+		casestr("scroll") value = StyleOverflow::Scroll; return true;
+		casestr("clip") value = StyleOverflow::Clip; return true;
+		casestr("auto") value = StyleOverflow::Auto; return true;
 		default:
 			break;
 	}

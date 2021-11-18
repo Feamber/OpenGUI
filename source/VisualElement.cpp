@@ -1,3 +1,4 @@
+
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Event/PointerEvent.h"
@@ -15,6 +16,7 @@
 #include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Style2/generated/border.h"
 #include "Yoga.h"
+#include "YGValue.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
 #include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Context.h"
@@ -28,24 +30,14 @@ OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f 
 	return result;
 }
 
-OGUI::Vector4u OGUI::VisualElement::GetHardwareScissor() const 
-{
-	return OGUI::Vector4u({0, 0, UINT32_MAX, UINT32_MAX}); 
-}
-
 void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
 {
 	using namespace PrimitiveDraw;
-	//auto rectPixelPos = GetRect();
 	Rect rect = GetRect();
 	auto&& ctx = Context::Get();
-	//Rect rect_origin = GetRect();
-	//Rect rect = rectPixelPosToScreenPos(rect_origin, Ctx.resolution);
 	auto& bg = StyleBackground::Get(_style);
 	auto& bd = StyleBorder::Get(_style);
 	auto transform = _worldTransform;
-	//transform.M[3][0] /= Ctx.resolution.X;
-	//transform.M[3][1] /= Ctx.resolution.Y;
 	if (!bg.backgroundImage.empty())
 	{
 		//start new load
@@ -70,8 +62,8 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	params.radius[1] = bd.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = bd.borderBottomRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[3] = bd.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
-	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, GetHardwareScissor(), params, 20);
-	EndDraw(Ctx.prims, transform, Ctx.resolution);
+	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, params, 20);
+	EndDraw(Ctx.prims, transform);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(OGUI::PrimitiveDraw::DrawContext & Ctx)
@@ -94,14 +86,22 @@ void OGUI::VisualElement::DrawDebugPrimitive(OGUI::PrimitiveDraw::DrawContext & 
 				Color4f(225, 0, 0, 0.3f) : 
 				Color4f(46, 225, 225, 0.3f);
 
-			PrimitiveDraw::PrimitiveDraw<BoxShape>(nullptr, Ctx.prims, GetHardwareScissor(), params);
-			EndDraw(Ctx.prims, float4x4(), Ctx.resolution);
+			PrimitiveDraw::PrimitiveDraw<BoxShape>(nullptr, Ctx.prims, params);
+			EndDraw(Ctx.prims, float4x4());
 		}
 	}
 }
 
-void OGUI::VisualElement::ApplyClipping(OGUI::PrimitiveDraw::DrawContext & Ctx)
-{}
+OGUI::ClipRect OGUI::VisualElement::ApplyClipping(OGUI::PrimitiveDraw::DrawContext & Ctx)
+{
+	return {GetRect(), _invTransform};
+}
+
+bool OGUI::VisualElement::IsClipping()
+{
+	auto& pos = StylePosition::Get(_style);
+	return pos.overflow != StyleOverflow::Visible;
+}
 
 void OGUI::VisualElement::CreateYogaNode()
 {
@@ -142,26 +142,25 @@ void OGUI::VisualElement::DrawPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
 	DrawBackgroundPrimitive(Ctx);
 	DrawBorderPrimitive(Ctx);
 	DrawDebugPrimitive(Ctx);
-	ApplyClipping(Ctx);
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetParent()
 {
-	return _logical_parent;
+	return _logicalParent;
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 {
-	return _physical_parent;
+	return _physicalParent;
 }
 
 bool OGUI::VisualElement::IsParent(OGUI::VisualElement* e)
 {
-	if(!e || !_physical_parent || e == this)
+	if(!e || !_physicalParent || e == this)
 		return false;
-	if(e == _physical_parent)
+	if(e == _physicalParent)
 		return true;
-	return _physical_parent->IsParent(e);
+	return _physicalParent->IsParent(e);
 }
 
 void OGUI::VisualElement::MarkDirty(DirtyReason reason)
@@ -195,7 +194,7 @@ void OGUI::VisualElement::UpdateRoot(VisualElement* child)
 void OGUI::VisualElement::PushChild(VisualElement* child)
 {
 	_scrollSizeDirty = true;
-	child->_physical_parent = this;
+	child->_physicalParent = this;
 	InsertChild(child, _children.size());
 	child->_layoutType = LayoutType::Flex;
 	UpdateRoot(child);
@@ -204,7 +203,7 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 {
 	_scrollSizeDirty = true;
-	child->_physical_parent = this;
+	child->_physicalParent = this;
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
 	_children.insert(_children.begin() + index, child);
 	child->_layoutType = LayoutType::Flex;
@@ -214,7 +213,7 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 void OGUI::VisualElement::RemoveChild(VisualElement* child)
 {
 	_scrollSizeDirty = true;
-    child->_physical_parent = nullptr;
+    child->_physicalParent = nullptr;
     YGNodeRemoveChild(_ygnode, child->_ygnode);
 	auto end = std::remove(_children.begin(), _children.end(), child);
 	_children.erase(end, _children.end());
@@ -255,11 +254,21 @@ void OGUI::VisualElement::UpdateWorldTransform()
 	auto parent = GetHierachyParent();
 	if (parent)
 	{
+		Vector2f offset;
 		auto playout = parent->GetLayout();
-		auto offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
+		if(_scrollable && parent->ScrollActive())
+		{
+			auto slayout = parent->GetScrollLayout();
+			offset = (layout.min + layout.max)/2 - (slayout.max - slayout.min) / 2;
+			offset += (slayout.min + slayout.max)/2 - (playout.max - playout.min) / 2;
+		}
+		else
+		{
+			offset = (layout.min + layout.max)/2 - (playout.max - playout.min) / 2;
+		}
 		offset.y = -offset.y;
 		auto& pos = StylePosition::Get(_style);
-		if(pos.position == YGPositionTypeRelative)
+		if(_scrollable)
 			offset += parent->GetScrollPos();
 		_worldTransform = multiply(GetStyleTransform(), ComputedTransform::translate(offset)).to_3D();
 		_worldTransform = math::multiply(_worldTransform, parent->_worldTransform);
@@ -269,8 +278,16 @@ void OGUI::VisualElement::UpdateWorldTransform()
 		auto offset = -(layout.max - layout.min) / 2;
 		_worldTransform = GetStyleTransform().to_3D();
 	}
+	_invTransform = math::inverse(_worldTransform);
 	_worldPosition = {_worldTransform.M[3][0], _worldTransform.M[3][1]};
 	_transformDirty = false;
+}
+
+OGUI::Rect OGUI::VisualElement::GetScrollLayout() const
+{
+	Vector2f LB = {YGNodeLayoutGetLeft(_scrollYGNode), YGNodeLayoutGetTop(_scrollYGNode)};
+	Vector2f WH = {YGNodeLayoutGetWidth(_scrollYGNode), YGNodeLayoutGetHeight(_scrollYGNode)};
+	return {LB, LB+WH};
 }
 
 OGUI::Rect OGUI::VisualElement::GetLayout() const
@@ -332,8 +349,8 @@ OGUI::Vector2f OGUI::VisualElement::GetSize() const
 void OGUI::VisualElement::MarkTransformDirty()
 {
 	_transformDirty = true;
-	if(_physical_parent)
-		_physical_parent->_scrollSizeDirty = true;
+	if(_physicalParent)
+		_physicalParent->_scrollSizeDirty = true;
 }
 
 void OGUI::VisualElement::MarkStyleTransformDirty()
@@ -344,6 +361,28 @@ void OGUI::VisualElement::MarkStyleTransformDirty()
 
 void OGUI::VisualElement::MarkLayoutDirty()
 {
+}
+
+namespace OGUI
+{
+	YGOverflow ToYGOverflow(StyleOverflow o)
+	{
+		switch(o)
+		{
+			case StyleOverflow::Auto:
+				return YGOverflowScroll;
+			case StyleOverflow::Clip:
+				return YGOverflowVisible;
+			case StyleOverflow::Visible:
+				return YGOverflowVisible;
+			case StyleOverflow::Scroll:
+				return YGOverflowScroll;
+			case StyleOverflow::Hidden:
+				return YGOverflowHidden;
+			default:
+				return YGOverflowVisible;
+		}
+	}	
 }
 
 void OGUI::VisualElement::SyncYogaStyle()
@@ -360,65 +399,114 @@ void OGUI::VisualElement::SyncYogaStyle()
 	}
 	auto& pos = StylePosition::Get(_style);
 	auto& bd = StyleBorder::Get(_style);
+#define SetYGEdge(node, function, edge, v) \
+	if (v.unit == YGUnitPercent) \
+		function##Percent(node, edge, v.value); \
+	else \
+		function(node, edge, v.value)
+#define SetYGEdgeAuto(node, function, edge, v) \
+	if (v.unit == YGUnitPercent) \
+		function##Percent(node, edge, v.value); \
+	else if(v.unit == YGUnitAuto) \
+		function##Auto(node, edge); \
+	else \
+		function(node, edge, v.value)
+#define SetYGValueAuto(node, function, v) \
+	if (v.unit == YGUnitPercent) \
+		function##Percent(node, v.value); \
+	else if(v.unit == YGUnitAuto) \
+		function##Auto(node); \
+	else \
+		function(node, v.value)
+#define SetYGValue(node, function, v) \
+	if (v.unit == YGUnitPercent) \
+		function##Percent(node, v.value); \
+	else \
+		function(node, v.value)
+
+	if(ScrollActive())
+	{
+		//steal all content relative attribute
+		//reset _ygnode
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeLeft, YGValueZero);
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeTop, YGValueZero);
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeRight, YGValueZero);
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeBottom, YGValueZero);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, 0.f);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeTop, 0.f);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeRight, 0.f);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, 0.f);
+		YGNodeStyleSetFlexWrap(_ygnode, YGWrapNoWrap);
+
+		//set property on _scrollYGNode
+		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeLeft, pos.paddingLeft);
+		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeTop, pos.paddingTop);
+		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeRight, pos.paddingRight);
+		SetYGEdge(_scrollYGNode, YGNodeStyleSetPadding, YGEdgeBottom, pos.paddingBottom);
+		/* TODO: scrollbar
+		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeLeft, pos.marginLeft);
+		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeTop, pos.marginTop);
+		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeRight, pos.marginRight);
+		SetYGEdgeAuto(_scrollYGNode, YGNodeStyleSetMargin, YGEdgeBottom, pos.marginBottom);
+		*/
+		YGNodeStyleSetFlexShrink(_scrollYGNode, 0.f);
+		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeLeft, bd.borderLeftWidth);
+		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeTop, bd.borderTopWidth);
+		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeRight, bd.borderRightWidth);
+		YGNodeStyleSetBorder(_scrollYGNode, YGEdgeBottom, bd.borderBottomWidth);
+		YGNodeStyleSetJustifyContent(_scrollYGNode, pos.justifyContent);
+		YGNodeStyleSetAlignContent(_scrollYGNode, pos.alignContent);
+		YGNodeStyleSetAlignItems(_scrollYGNode, pos.alignItems);
+		YGNodeStyleSetFlexWrap(_scrollYGNode, pos.flexWrap);	
+		YGNodeStyleSetFlexDirection(_scrollYGNode, pos.flexDirection);
+		if(ScrollOnRow()) //set expanding demension
+		{
+			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetWidth, YGValueUndefined);
+			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetHeight, pos.height);
+		}
+		else
+		{
+			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetWidth, pos.width);
+			SetYGValueAuto(_scrollYGNode, YGNodeStyleSetHeight, YGValueUndefined);
+		}
+	}
+	else 
+	{
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeLeft, pos.paddingLeft);
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeTop, pos.paddingTop);
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeRight, pos.paddingRight);
+		SetYGEdge(_ygnode, YGNodeStyleSetPadding, YGEdgeBottom, pos.paddingBottom);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, bd.borderLeftWidth);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeTop, bd.borderTopWidth);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeRight, bd.borderRightWidth);
+		YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, bd.borderBottomWidth);
+		YGNodeStyleSetFlexWrap(_ygnode, pos.flexWrap);
+	}
+	YGNodeStyleSetAlignItems(_ygnode, pos.alignItems);
+	YGNodeStyleSetAlignContent(_ygnode, pos.alignContent);
+	YGNodeStyleSetJustifyContent(_ygnode, pos.justifyContent);
+	YGNodeStyleSetFlexDirection(_ygnode, pos.flexDirection);
 	YGNodeStyleSetFlexGrow(_ygnode, pos.flexGrow);
 	YGNodeStyleSetFlexShrink(_ygnode, pos.flexShrink);
-#define SetYGEdge(function, edge, v) \
-	if (v.unit == YGUnitPercent) \
-		function##Percent(_ygnode, edge, v.value); \
-	else \
-		function(_ygnode, edge, v.value)
-#define SetYGEdgeAuto(function, edge, v) \
-	if (v.unit == YGUnitPercent) \
-		function##Percent(_ygnode, edge, v.value); \
-	else if(v.unit == YGUnitAuto) \
-		function##Auto(_ygnode, edge); \
-	else \
-		function(_ygnode, edge, v.value)
-#define SetYGValueAuto(function, v) \
-	if (v.unit == YGUnitPercent) \
-		function##Percent(_ygnode, v.value); \
-	else if(v.unit == YGUnitAuto) \
-		function##Auto(_ygnode); \
-	else \
-		function(_ygnode, v.value)
-#define SetYGValue(function, v) \
-	if (v.unit == YGUnitPercent) \
-		function##Percent(_ygnode, v.value); \
-	else \
-		function(_ygnode, v.value)
+	SetYGValueAuto(_ygnode, YGNodeStyleSetFlexBasis, pos.flexBasis);
+	SetYGEdge(_ygnode, YGNodeStyleSetPosition, YGEdgeLeft, pos.left);
+	SetYGEdge(_ygnode, YGNodeStyleSetPosition, YGEdgeTop, pos.top);
+	SetYGEdge(_ygnode, YGNodeStyleSetPosition, YGEdgeRight, pos.right);
+	SetYGEdge(_ygnode, YGNodeStyleSetPosition, YGEdgeBottom, pos.bottom);
+	SetYGEdgeAuto(_ygnode, YGNodeStyleSetMargin, YGEdgeLeft, pos.marginLeft);
+	SetYGEdgeAuto(_ygnode, YGNodeStyleSetMargin, YGEdgeTop, pos.marginTop);
+	SetYGEdgeAuto(_ygnode, YGNodeStyleSetMargin, YGEdgeRight, pos.marginRight);
+	SetYGEdgeAuto(_ygnode, YGNodeStyleSetMargin, YGEdgeBottom, pos.marginBottom);
 
-	SetYGValueAuto(YGNodeStyleSetFlexBasis, pos.flexBasis);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeLeft, pos.left);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeTop, pos.top);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeRight, pos.right);
-	SetYGEdge(YGNodeStyleSetPosition, YGEdgeBottom, pos.bottom);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeLeft, pos.marginLeft);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeTop, pos.marginTop);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeRight, pos.marginRight);
-	SetYGEdgeAuto(YGNodeStyleSetMargin, YGEdgeBottom, pos.marginBottom);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeLeft, pos.paddingLeft);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeTop, pos.paddingTop);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeRight, pos.paddingRight);
-	SetYGEdge(YGNodeStyleSetPadding, YGEdgeBottom, pos.paddingBottom);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeLeft, bd.borderLeftWidth);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeTop, bd.borderTopWidth);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeRight, bd.borderRightWidth);
-	YGNodeStyleSetBorder(_ygnode, YGEdgeBottom, bd.borderBottomWidth);
-
-	SetYGValueAuto(YGNodeStyleSetWidth, pos.width);
-	SetYGValueAuto(YGNodeStyleSetHeight, pos.height);
+	SetYGValueAuto(_ygnode, YGNodeStyleSetWidth, pos.width);
+	SetYGValueAuto(_ygnode, YGNodeStyleSetHeight, pos.height);
 	YGNodeStyleSetPositionType(_ygnode, pos.position);
-	YGNodeStyleSetOverflow(_ygnode, pos.overflow);
+	YGNodeStyleSetOverflow(_ygnode, ToYGOverflow(pos.overflow));
 	YGNodeStyleSetAlignSelf(_ygnode, pos.alignSelf);
-	SetYGValue(YGNodeStyleSetMaxWidth, pos.maxWidth);
-	SetYGValue(YGNodeStyleSetMaxHeight, pos.maxHeight);
-	SetYGValue(YGNodeStyleSetMinWidth, pos.minWidth);
-	SetYGValue(YGNodeStyleSetMinHeight, pos.minHeight);
-	YGNodeStyleSetFlexDirection(_ygnode, pos.flexDirection);
-	YGNodeStyleSetAlignContent(_ygnode, pos.alignContent);
-	YGNodeStyleSetAlignItems(_ygnode, pos.alignItems);
-	YGNodeStyleSetJustifyContent(_ygnode, pos.justifyContent);
-	YGNodeStyleSetFlexWrap(_ygnode, pos.flexWrap);
+	SetYGValue(_ygnode, YGNodeStyleSetMaxWidth, pos.maxWidth);
+	SetYGValue(_ygnode, YGNodeStyleSetMaxHeight, pos.maxHeight);
+	SetYGValue(_ygnode, YGNodeStyleSetMinWidth, pos.minWidth);
+	SetYGValue(_ygnode, YGNodeStyleSetMinHeight, pos.minHeight);
 	YGNodeStyleSetDisplay(_ygnode, pos.flexDisplay);
 }
 
@@ -647,9 +735,9 @@ OGUI::VisualElement* OGUI::VisualElement::GetPrevFocusScope()
 	VisualElement* current = this;
 	while (current) 
 	{
-		if(current->_physical_parent && current->_physical_parent->isFocusScope)
-			return current->_physical_parent;
-		current = current->_physical_parent;
+		if(current->_physicalParent && current->_physicalParent->isFocusScope)
+			return current->_physicalParent;
+		current = current->_physicalParent;
 	}
 	return nullptr;
 }
@@ -945,7 +1033,7 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 bool OGUI::VisualElement::PlayAnimation(const AnimStyle& style)
 {
 	std::vector<StyleSheet*> sheets;
-    for(VisualElement* e = this; e; e=e->_logical_parent)
+    for(VisualElement* e = this; e; e=e->_logicalParent)
         for(auto sheet : e->_styleSheets)
             sheets.push_back(sheet);
 	ComputedAnim anim;
@@ -968,19 +1056,77 @@ void OGUI::VisualElement::SetAnimationTime(std::string_view name, float time)
 			anim.SetTime(time);
 }
 
+
+bool OGUI::VisualElement::ScrollOnRow() const
+{
+	auto& pos = StylePosition::Get(_style);
+	bool row = pos.flexDirection == YGFlexDirectionRow || pos.flexDirection == YGFlexDirectionRowReverse;
+	bool wrap = pos.flexWrap != YGWrapNoWrap;
+	return row != wrap;
+}
+
+bool OGUI::VisualElement::ScrollActive() const
+{
+	auto& pos = StylePosition::Get(_style);
+	if(!CanScroll())
+		return false;
+	bool overflowing = YGNodeLayoutGetHadOverflow(_ygnode);
+	return overflowing && _scrollYGNode;
+}
+
+void OGUI::VisualElement::SwitchScrollLayout()
+{
+	auto& pos = StylePosition::Get(_style);
+	bool scrolling = YGNodeLayoutGetHadOverflow(_ygnode) && CanScroll();
+	if(scrolling && _scrollYGNode == nullptr) //start scroll layout
+	{
+		auto config = YGConfigGetDefault();
+		_scrollYGNode = YGNodeNewWithConfig(config);
+		YGNodeSetContext(_scrollYGNode, this);
+		YGNodeRemoveAllChildren(_ygnode);
+		for(auto& child : _children)
+		{
+			if(!child->_scrollable)
+				YGNodeInsertChild(_ygnode, child->_ygnode, YGNodeGetChildCount(_ygnode));
+			else
+				YGNodeInsertChild(_scrollYGNode, child->_ygnode, YGNodeGetChildCount(_scrollYGNode));
+		}
+		YGNodeInsertChild(_ygnode, _scrollYGNode, 0);
+	}
+	else if(!scrolling && _scrollYGNode != nullptr)
+	{
+		int count = YGNodeGetChildCount(_scrollYGNode);
+		YGNodeRemoveAllChildren(_scrollYGNode);
+		YGNodeFree(_scrollYGNode);
+		_scrollYGNode = nullptr;
+		YGNodeRemoveAllChildren(_ygnode);
+		for(auto& child : _children)
+			YGNodeInsertChild(_ygnode, child->_ygnode, YGNodeGetChildCount(_ygnode));
+	}
+	else 
+		return;
+	SyncYogaStyle();
+	_scrollSizeDirty = true;
+}
+
 void OGUI::VisualElement::UpdateScrollSize()
 {
+	if(!CanScroll())
+		return;
 	if(_scrollSizeDirty)
 	{
-		Rect scrollRect{};
+		Rect rect = {};
+		Vector2f size;
 		Traverse([&](VisualElement* child)
 		{
 			auto& pos = StylePosition::Get(child->_style);
 			if(pos.position != YGPositionTypeRelative)
 				return;
+			if(pos.transform.empty())
+				return;
 			auto baseLayout = child->GetLayout();
-			auto offset = (baseLayout.max + baseLayout.min)/2;
 			auto rect = child->GetRect();
+			auto offset = (baseLayout.max + baseLayout.min)/2;
 			auto styleTransform = child->GetStyleTransform();
 			auto quad = Quad(rect, styleTransform.to_3D());
 			quad.RU += offset;
@@ -988,15 +1134,27 @@ void OGUI::VisualElement::UpdateScrollSize()
     		quad.LU += offset;
     		quad.LB += offset;
 			auto relativeRect = quad.ToBoundingBox();
-			scrollRect.min.x = std::min(scrollRect.min.x, relativeRect.min.x);
-			scrollRect.min.y = std::min(scrollRect.min.y, relativeRect.min.y);
-			scrollRect.max.x = std::max(scrollRect.max.x, relativeRect.max.x);
-			scrollRect.max.y = std::max(scrollRect.max.y, relativeRect.max.y);
+			rect.min.x = std::min(rect.min.x, relativeRect.min.x);
+			rect.min.y = std::min(rect.min.y, relativeRect.min.y);
+			rect.max.x = std::max(rect.max.x, relativeRect.max.x);
+			rect.max.y = std::max(rect.max.y, relativeRect.max.y);
 		});
-		_scrollMax = scrollRect.max - GetSize();
+		if(ScrollActive())
+		{
+			auto scrollRect = GetScrollLayout();
+			_scrollMin += scrollRect.min;
+			auto size = scrollRect.max - scrollRect.min;
+			rect.max.x = std::max(rect.max.x, size.x);
+			rect.max.y = std::max(rect.max.y, size.y);
+			_scrollMax = rect.max + scrollRect.min - GetSize();
+		}
+		else
+		{
+			_scrollMax = rect.max - GetSize();
+			_scrollMin = rect.min;
+		}
 		_scrollMax.x = std::max(0.f, _scrollMax.x);
 		_scrollMax.y = std::max(0.f, _scrollMax.y);
-		_scrollMin = scrollRect.min;
 		if(_scrollMax.y > 0 || _scrollMin.y < 0)
 		{
 			float axisY = GetScrollingAxisY();
@@ -1021,18 +1179,34 @@ void OGUI::VisualElement::UpdateScrollSize()
 }
 bool OGUI::VisualElement::IsScrollingX() const
 {
+	auto& pos = StylePosition::Get(_style);
+	if(!CanScroll())
+		return false;
 	return _scrollMax.x > 0 || _scrollMin.x < 0; 
 }
 
 bool OGUI::VisualElement::IsScrollingY() const
 {
+	auto& pos = StylePosition::Get(_style);
+	if(!CanScroll())
+		return false;
 	return _scrollMax.y > 0 || _scrollMin.y < 0; 
 }
 
 
 bool OGUI::VisualElement::IsScrolling() const
 {
+	if(!CanScroll())
+		return false;
 	return IsScrollingX() || IsScrollingY(); 
+}
+
+bool OGUI::VisualElement::CanScroll() const
+{
+	auto& pos = StylePosition::Get(_style);
+	if(pos.overflow == StyleOverflow::Clip || pos.overflow == StyleOverflow::Visible)
+		return false;
+	return true;
 }
 
 namespace OGUI
