@@ -12,7 +12,7 @@ OGUI::StyleSheet LoadStyleSheet2()
     const char* exampleCSS = 
 R"(#TestElement {
     left:100px;
-    bottom:100px; font-size:24
+    bottom:100px; font-size:24;
 })";
     auto res = ParseCSS(exampleCSS);
 

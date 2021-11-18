@@ -1,4 +1,4 @@
-#include "OpenGUI/XmlParser/XmlParser.h"
+#include "OpenGUI/XmlParser/BaseXmlFactory.h"
 #include "OpenGUI/Core/Types.h"
 #include "catch.hpp"
 #include "OpenGUI/VisualElement.h"
@@ -8,7 +8,7 @@
 TEST_CASE("XmlParser", "[XmlAsset]")
 {
     using namespace OGUI;
-    XmlBase::RegisterOGUIXmlParser();
+    RegisterOGUIXmlParser();
     for (int i = 0; i < 1000; ++i) {
         ParseXmlState xmlState;
         auto asset = LoadXmlFile("XmlParserTest.xml", xmlState);

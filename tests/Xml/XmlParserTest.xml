@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<engine:Root xmlns:engine="OGUI">
-  <engine:Template name="test2" path="XmlParserTest2.xml"/>
-  <engine:VisualElement name="A" focusable="true" nav-mode="Horizontal" focus-scope="true" nav-cycle-mode="Automatic">
-    <engine:Instance template="test2" name="B1">
-      <engine:VisualElement name="B1_1" insert-slot="ss"/>
-      <engine:Instance template="test2" name="B1_2" insert-slot="ss">
-        <engine:AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
-      </engine:Instance>
-      <engine:AttributeOverrides element-name="BB2" class="aaaaaa"/>
-      <engine:AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
-      <engine:AttributeOverrides element-name="BBB" slot="cuowu"/>
-    </engine:Instance>
-    <engine:Instance template="test2" name="B2">
-      <engine:AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
-    </engine:Instance>
-    <engine:VisualElement name="B3"/>
-  </engine:VisualElement>
-  <!-- <engine:Text name="Text">aaaa<engine:VisualElement><engine:Text>ssss</engine:Text></engine:VisualElement>bbbb</engine:Text> -->
-</engine:Root>
+<VisualElement>
+  <Template name="test2" path="XmlParserTest2.xml"/>
+  <VisualElement name="A" focusable="true" nav-mode="horizontal" focus-scope="true" nav-cycle-mode="automatic">
+    <Instance template="test2" name="B1">
+      <VisualElement name="B1_1" insert-slot="ss"/>
+      <Instance template="test2" name="B1_2" insert-slot="ss">
+        <AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
+      </Instance>
+      <AttributeOverrides element-name="BB2" class="aaaaaa"/>
+      <AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
+      <AttributeOverrides element-name="BBB" slot="cuowu"/>
+    </Instance>
+    <Instance template="test2" name="B2">
+      <AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
+    </Instance>
+    <VisualElement name="B3"/>
+  </VisualElement>
+  <!-- <Text name="Text">aaaa<VisualElement><Text>ssss</Text></VisualElement>bbbb</Text> -->
+</VisualElement>

@@ -7,6 +7,7 @@
 #include "OpenGUI/VisualElement.h"
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -24,32 +25,20 @@ namespace OGUI
     struct InstantiateXmlState;
     using namespace ostr::literal;
 
-    // 解析xml元素
-    using OnParseXmlElement = std::function<bool(ParseXmlState&, XmlElement& /*element*/)>;
-    // 解析完同级xml元素的时候
-    using OnParseXmlElementSiblingPost = std::function<bool(ParseXmlState&, XmlElement& /*element*/)>;
-    // 解析完子级xml元素的时候
-    using OnParseXmlElementChildPost = std::function<bool(ParseXmlState&, XmlElement& /*element*/)>;
-
-    // 创建OGUI元素
-    using OnCreateElement = std::function<bool(InstantiateXmlState&, XmlElement& /*xmlElement*/, VisualElement*& /*out*/, VisualElement* /*parent*/)>;
-    // 初始化OGUI对象
-    using OnInitElement = std::function<bool(InstantiateXmlState&, XmlElement& /*xmlElement*/, VisualElement* /*element*/, VisualElement* /*parent*/)>;
-    // 初始化完子级元素的时候
-    using OnInitElementChildPost = std::function<bool(InstantiateXmlState&, XmlElement& /*xmlElement*/, VisualElement* /*element*/, VisualElement* /*parent*/)>;
-
     OGUI_API std::shared_ptr<XmlAsset> LoadXmlFile(const char* filePath, ParseXmlState& state);
     OGUI_API std::shared_ptr<XmlAsset> ParseXml(const char* str, ParseXmlState& state);
-    OGUI_API bool RegisterXmlParser
-    (
-        const Name& fullName,
-        OnParseXmlElement               parseXmlElement,
-        OnParseXmlElementSiblingPost    parseXmlElementSiblingPost,
-        OnParseXmlElementChildPost      parseXmlElementChildPost,
-        OnCreateElement                 createElement,
-        OnInitElement                   initElement,
-        OnInitElementChildPost          initElementChildPost
-    );
+    OGUI_API bool RegisterXmlParser(const Name& fullName, class XmlElementFactory* factory);
+    template<typename Factory, typename = typename std::enable_if<std::is_constructible<XmlElementFactory, Factory>::value>::type>
+    bool RegisterXmlParser()
+    {
+        auto newFactory = new Factory();
+        if(!RegisterXmlParser(Factory::GetFullName(), newFactory))
+        {
+            delete newFactory;
+            return false;
+        }
+        return true;
+    }
 
     struct OGUI_API ParseXmlState
     {
@@ -91,6 +80,7 @@ namespace OGUI
         std::weak_ptr<XmlElement> parent;
         std::vector<std::shared_ptr<XmlElement>> children;
 
+        bool isXmlRoot = false;
         // 只在实例化过程中有用，对应OnCreateElement创建的元素，只应该在initElementChildPost中用
         VisualElement* tempElement = nullptr;
 
@@ -124,8 +114,7 @@ namespace OGUI
 
         OGUI_API bool OnParseXmlElement_Empty(ParseXmlState&, XmlElement&);
         OGUI_API bool OnInstantiateXmlElement_Empty(InstantiateXmlState&, XmlElement&, VisualElement*, VisualElement*);
-
-        
+        OGUI_API bool OnInitElementChildPost_PushChild(InstantiateXmlState&, XmlElement&, VisualElement*, VisualElement*);
 
         template<class T>
         FindResult AddBind(Name name, ostr::string_view bindName, T& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
@@ -140,39 +129,6 @@ namespace OGUI
             }
             return FindResult::OK;
         }
-    }
-
-    namespace XmlBase
-    {
-        extern OGUI_API ostr::string DefaultNamespace;
-        extern OGUI_API Name RootName;
-        extern OGUI_API Name VisualElementName;
-        extern OGUI_API Name StyleName;
-        extern OGUI_API Name TemplateName;
-        extern OGUI_API Name InstanceName;
-        extern OGUI_API Name AttributeOverridesName;
-        extern OGUI_API Name TextName;
-
-        extern OGUI_API Name Attr_Name;
-        extern OGUI_API Name Attr_Path;
-        extern OGUI_API Name Attr_Template;
-        extern OGUI_API Name Attr_ElementName;
-        extern OGUI_API Name Attr_Class;
-        extern OGUI_API Name Attr_Style;
-        extern OGUI_API Name Attr_InsertSlot;
-        extern OGUI_API Name Attr_Slot;
-        extern OGUI_API Name Attr_FocusScope;
-        extern OGUI_API Name Attr_KeepFocused;
-        extern OGUI_API Name Attr_NavCycleMode;
-        extern OGUI_API Name Attr_Focusable;
-        extern OGUI_API Name Attr_NavMode;
-        extern OGUI_API Name Attr_NavUp;
-        extern OGUI_API Name Attr_NavDown;
-        extern OGUI_API Name Attr_NavLeft;
-        extern OGUI_API Name Attr_NavRight;
-
-        OGUI_API void RegisterOGUIXmlParser();
-        OGUI_API bool OnInitElement_VisualElement(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent);
     }
 
     template<typename Enum>

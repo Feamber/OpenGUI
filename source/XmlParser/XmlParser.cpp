@@ -2,8 +2,8 @@
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Bind/AttributeBind.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
+#include "OpenGUI/XmlParser/XmlElementFactory.h"
 #include "OpenGUI/Style2/Parse.h"
-#include "OpenGUI/XmlParser/TemplateContainer.h"
 #include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/ostring/osv.h"
@@ -20,51 +20,10 @@
 namespace OGUI
 {
     using namespace XmlParserHelper;
-
-    namespace XmlBase
-    {
-        OGUI_API ostr::string DefaultNamespace      = u"OGUI"_o;
-        OGUI_API Name RootName                      = u"OGUI:Root"_o;
-        OGUI_API Name VisualElementName             = u"OGUI:VisualElement"_o;
-        OGUI_API Name StyleName                     = u"OGUI:Style"_o;
-        OGUI_API Name TemplateName                  = u"OGUI:Template"_o;
-        OGUI_API Name InstanceName                  = u"OGUI:Instance"_o;
-        OGUI_API Name AttributeOverridesName        = u"OGUI:AttributeOverrides"_o;
-        OGUI_API Name TextName                      = u"OGUI:Text"_o;
-
-        OGUI_API Name Attr_Name                     = u"name"_o;
-        OGUI_API Name Attr_Path                     = u"path"_o;
-        OGUI_API Name Attr_Template                 = u"template"_o;
-        OGUI_API Name Attr_ElementName              = u"element-name"_o;
-        OGUI_API Name Attr_Class                    = u"class"_o;
-        OGUI_API Name Attr_Style                    = u"style"_o;
-        OGUI_API Name Attr_InsertSlot               = u"insert-slot"_o;
-        OGUI_API Name Attr_Slot                     = u"slot"_o;
-        OGUI_API Name Attr_FocusScope               = u"focus-scope"_o;
-        OGUI_API Name Attr_KeepFocused              = u"keep-focused"_o;
-        OGUI_API Name Attr_NavCycleMode             = u"nav-cycle-mode"_o;
-        OGUI_API Name Attr_Focusable                = u"focusable"_o;
-        OGUI_API Name Attr_NavMode                  = u"nav-mode"_o;
-        OGUI_API Name Attr_NavUp                    = u"nav-up"_o;
-        OGUI_API Name Attr_NavDown                  = u"nav-down"_o;
-        OGUI_API Name Attr_NavLeft                  = u"nav-left"_o;
-        OGUI_API Name Attr_NavRight                 = u"nav-right"_o;
-    }
-
     namespace XmlHelper
     {
-        struct XmlParser : public std::enable_shared_from_this<XmlParser>
-        {
-            Name fullName;
-            OnParseXmlElement               parseXmlElement;
-            OnParseXmlElementSiblingPost    parseXmlElementSiblingPost;
-            OnParseXmlElementChildPost      parseXmlElementChildPost;
-            OnCreateElement                 createElement;
-            OnInitElement                   initElement;
-            OnInitElementChildPost          initElementChildPost;
-        };
-
-        static std::unordered_map<Name, std::shared_ptr<XmlParser>> AllXmlParser;
+        ostr::string DefaultNamespace = u"OGUI"_o;
+        static std::unordered_map<Name, XmlElementFactory*> AllXmlParser;
 
         bool ParseNamespace(tinyxml2::XMLElement* xe, ParseXmlState& state)
         {
@@ -100,7 +59,7 @@ namespace OGUI
             outFullName = xe->Name();
             if(!outFullName.split(u":"_o, &outNamespaceName, &outName))
             {
-                outFullName = XmlBase::DefaultNamespace + u":"_o + outFullName;
+                outFullName = DefaultNamespace + u":"_o + outFullName;
                 return true;
             }
 
@@ -150,7 +109,7 @@ namespace OGUI
                     }
                 }
                 else 
-                    fullName = XmlBase::DefaultNamespace + u":"_o + xmlName;
+                    fullName = DefaultNamespace + u":"_o + xmlName;
 
                 auto xmlElement = std::make_shared<XmlElement>(false, fullName);
                 const tinyxml2::XMLAttribute* attr = xml_element->FirstAttribute();
@@ -197,10 +156,10 @@ namespace OGUI
                     olog::Error(u"XML解析错误：没有对应的Xml元素解析：{}  行：{}  解析后的全名：{}"_o, node->Value(), node->GetLineNum(), newXmlElement->fullName);
                     return false;
                 }
-                XmlParser& xmlParser = *search->second.get();
+                XmlElementFactory& xmlParser = *search->second;
                 XmlElement& newXmlElementRef = *newXmlElement.get();
 
-                if(!xmlParser.parseXmlElement(state, newXmlElementRef))
+                if(!xmlParser.OnParseXmlElement(state, newXmlElementRef))
                 {
                     olog::Error(u"XML解析错误：OnParseXmlElement失败 位置：{}  行：{}"_o, node->Value(), node->GetLineNum());
                     return false;
@@ -209,7 +168,7 @@ namespace OGUI
                 // 遍历 XmlNode
                 if(!ParseXmlNode(state, parent, node->NextSibling()))
                     return false;
-                if(!xmlParser.parseXmlElementSiblingPost(state, newXmlElementRef))
+                if(!xmlParser.OnParseXmlElementSiblingPost(state, newXmlElementRef))
                 {
                     olog::Error(u"XML解析错误：OnParseXmlElementSiblingPost失败 位置：{}  行：{}"_o, node->Value(), node->GetLineNum());
                     return false;
@@ -217,7 +176,7 @@ namespace OGUI
 
                 if(!ParseXmlNode(state, newXmlElementRef, node->FirstChild()))
                     return false;
-                if(!xmlParser.parseXmlElementChildPost(state, newXmlElementRef))
+                if(!xmlParser.OnParseXmlElementChildPost(state, newXmlElementRef))
                 {
                     olog::Error(u"XML解析错误：OnParseXmlElementChildPost失败 位置：{}  行：{}"_o, node->Value(), node->GetLineNum());
                     return false;
@@ -238,32 +197,21 @@ namespace OGUI
                 return nullptr;
             }
 
-            // 找到<Root>元素
+            // 找到根元素
             tinyxml2::XMLElement* xml_root = doc.FirstChildElement();
-            while (xml_root) 
-            {
-                if(!ParseNamespace(xml_root, state))
-                    return nullptr;
-
-                ostr::string fullName;
-                ostr::string_view name;
-                ostr::string_view namespaceName;
-                if(!ParseElement(xml_root, state, fullName, name, namespaceName))
-                    return nullptr;
-
-                if (fullName == XmlBase::RootName.ToStringView())
-                    break;
-                xml_root = xml_root->NextSiblingElement();
-            }
             if (!xml_root)
             {
-                olog::Error(u"XML解析错误：没有找到<{}>"_o, XmlBase::RootName.ToStringView());
+                olog::Error(u"XML解析错误：没有找到根元素"_o);
                 return nullptr;
             }
 
             auto root = ParseXmlElement(state, xml_root);
             if(!root)
+            {
+                olog::Error(u"XML解析错误：无法解析第一个元素 <{}>"_o, xml_root->Name());
                 return nullptr;
+            }
+            root->isXmlRoot = true;
 
             auto newAsset = std::make_shared<XmlAsset>();
             newAsset->root = root;
@@ -283,27 +231,33 @@ namespace OGUI
                 olog::Error(u"XML实例化错误，没有对应的Xml元素解析器：<{}>"_o, xmlElement.fullName);
                 return false;
             }
-            XmlParser& xmlParser = *search->second.get();
+            XmlElementFactory& xmlParser = *search->second;
             VisualElement* newElement = nullptr;
             VisualElement* prevElement = state.stack.size() > 0 ? state.stack.front() : nullptr;
-            if(!xmlParser.createElement(state, xmlElement, newElement, prevElement))
+            if(!xmlParser.OnCreateElement(state, xmlElement, newElement, prevElement))
             {
                 olog::Error(u"XML实例化错误，OnCreateElement失败：<{}>"_o, xmlElement.fullName);
                 return false;
             }
             if(newElement)
             {
-                if(VisualElement* parent = prevElement)
-                    parent->PushChild(newElement);
-                else
+                if(!prevElement)
+                {
                     state.root = newElement;
+                }
+                newElement->_isXmlRoot = xmlElement.isXmlRoot;
                 state.stack.push_front(newElement);
                 state.all.push_front(newElement);
             }
-
-            if(!xmlParser.initElement(state, xmlElement, newElement, prevElement))
+            else if(!state.root)
             {
-                 olog::Error(u"XML实例化错误，OnInitElement失败：<{}>"_o, xmlElement.fullName);
+                olog::Error(u"XML实例化错误，根元素 OnCreateElement 没有创建VisualElement"_o, xmlElement.fullName);
+                return false;
+            }
+
+            if(!xmlParser.OnInitElement(state, xmlElement, newElement, prevElement))
+            {
+                olog::Error(u"XML实例化错误，OnInitElement失败：<{}>"_o, xmlElement.fullName);
                 return false;
             }
             xmlElement.tempElement = newElement;
@@ -313,7 +267,7 @@ namespace OGUI
                 if(!InstantiateXml(state, *child.get()))
                     return false;
             }
-            if(!xmlParser.initElementChildPost(state, xmlElement, newElement, prevElement))
+            if(!xmlParser.OnInitElementChildPost(state, xmlElement, newElement, prevElement))
             {
                  olog::Error(u"XML实例化错误，OnInitElementChildPost失败：<{}>"_o, xmlElement.fullName);
                 return false;
@@ -323,33 +277,6 @@ namespace OGUI
                 state.stack.pop_front();
             return true;
         };
-
-        void AttributeOverrides(XmlElement& xe, const ostr::string& target, std::map<Name, ostr::string>& override)
-        {
-            auto find = xe.attributes.find(XmlBase::Attr_Name);
-            if(find != xe.attributes.end() && find->second == target)
-                for(auto newAttr : override)
-                    xe.attributes[newAttr.first] = newAttr.second;
-            for(auto& child : xe.children)
-            {
-                if(child->_fullName == XmlBase::AttributeOverridesName)
-                {
-                    for(auto attr : child->attributes)
-                    {
-                        auto find2 = override.find(attr.first);
-                        if(find2 != override.end())
-                        {
-                            override.erase(find2);
-                            if(override.size() == 0)
-                                return;
-                        }
-                    }
-                }
-            }
-            for(auto& child : xe.children)
-                if(child->_fullName != XmlBase::AttributeOverridesName)
-                    AttributeOverrides(*child.get(), target, override);
-        }
 
         void DebugPrint(XmlElement& xe, int indent = 0)
         {
@@ -405,33 +332,13 @@ namespace OGUI
        return XmlHelper::ParseXml(str, state);
     };
 
-    bool RegisterXmlParser
-    (
-        const Name& fullName,
-        OnParseXmlElement               parseXmlElement,
-        OnParseXmlElementSiblingPost    parseXmlElementSiblingPost,
-        OnParseXmlElementChildPost      parseXmlElementChildPost,
-        OnCreateElement                 createElement,
-        OnInitElement                   initElement,
-        OnInitElementChildPost          initElementChildPost
-    )
+    bool RegisterXmlParser(const Name& fullName, XmlElementFactory* factory)
     {
-        auto find = XmlHelper::AllXmlParser.find(fullName);
-        if(find != XmlHelper::AllXmlParser.end())
+        if(!XmlHelper::AllXmlParser.try_emplace(fullName, factory).second)
         {
             olog::Error(u"重复RegisterXmlParser，fullName：{}"_o, fullName.ToStringView());
             return false;
         }
-        auto newXmlParser = std::make_shared<XmlHelper::XmlParser>();
-        newXmlParser->fullName = fullName;
-        newXmlParser->parseXmlElement = parseXmlElement;
-        newXmlParser->parseXmlElementSiblingPost = parseXmlElementSiblingPost;
-        newXmlParser->parseXmlElementChildPost = parseXmlElementChildPost;
-        newXmlParser->createElement = createElement;
-        newXmlParser->initElement = initElement;
-        newXmlParser->initElementChildPost = initElementChildPost;
-
-        XmlHelper::AllXmlParser[fullName] = newXmlParser;
         return true;
     };
 
@@ -590,401 +497,4 @@ namespace OGUI
     {
         return value.length() > 1 && *value.begin() == u'$';
     }
-
-    void XmlBase::RegisterOGUIXmlParser()
-    {
-        static bool isRegister = false;
-        if(isRegister)
-            return;
-        isRegister = true;
-        
-        RegisterXmlParser(
-            XmlBase::RootName,
-            OnParseXmlElement_Empty,
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty, 
-            [](InstantiateXmlState&, XmlElement&, VisualElement*& out, VisualElement*)
-            {
-                out = new TemplateContainer();
-                return true;
-            },
-            OnInitElement_VisualElement,
-            OnInstantiateXmlElement_Empty
-        );
-
-        RegisterXmlParser(
-            XmlBase::VisualElementName,
-            OnParseXmlElement_Empty,
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty, 
-            [](InstantiateXmlState&, XmlElement&, VisualElement*& out, VisualElement*)
-            {
-                out = new VisualElement();
-                return true;
-            },
-            OnInitElement_VisualElement,
-            OnInstantiateXmlElement_Empty
-        );
-
-        RegisterXmlParser(
-            XmlBase::StyleName,
-            [](ParseXmlState& state, XmlElement& xe)
-            {
-                ostr::string path;
-                if(FindAttribute(xe, XmlBase::Attr_Path, path) == FindResult::OK)
-                {
-                    auto pathSv = path.to_sv();
-                    state.allCssFile.push_back({pathSv.begin(), pathSv.end()});
-                }
-                return true;
-            },
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty, 
-            [](InstantiateXmlState&, XmlElement& xe, VisualElement*, VisualElement* parent)
-            {
-                if(!parent)
-                {
-                    olog::Error(u"<OGUI:Style>必须放在<OGUI:VisualElement>下!"_o);
-                    return false;
-                }
-
-                ostr::string path;
-                if(FindAttribute(xe, XmlBase::Attr_Path, path) == FindResult::OK)
-                {
-                    auto pathSv = path.to_sv();
-
-                    auto value = ParseCSSFile(std::string(pathSv.begin(), pathSv.end()));
-                    if (!value)
-                    {
-                        olog::Error(u"<OGUI:Style path={}> ParseCSSFile失败!"_o, path);
-                        return false;
-                    }
-                    auto sheet = new StyleSheet{value.value()};
-                    sheet->Initialize();
-                    parent->_styleSheets.push_back(sheet);
-                    return true;
-                }
-
-                olog::Error(u"<OGUI:Style> 未定义path属性或path值错误!"_o);
-                return false;
-            },
-            OnInstantiateXmlElement_Empty,
-            OnInstantiateXmlElement_Empty
-        );
-
-        RegisterXmlParser(
-            XmlBase::TemplateName,
-            [](ParseXmlState& state, XmlElement& xe)
-            {
-                ostr::string name;
-                if(FindAttribute(xe, XmlBase::Attr_Name, name) == FindResult::OK)
-                {
-                    ostr::string path;
-                    if(FindAttribute(xe, XmlBase::Attr_Path, path) == FindResult::OK)
-                    {
-                        auto pathSv = path.to_sv();
-                        if(state.allTemplateStack.empty())
-                            state.allTemplateStack.push_front({});
-                        state.allTemplateStack.front()[name] = {pathSv.begin(), pathSv.end()};
-                    }
-                    else 
-                    {
-                        olog::Error(u"<OGUI:Template> 未定义path属性!"_o);
-                        return false;
-                    }
-                }
-                else 
-                {
-                    olog::Error(u"<OGUI:Template> 未定义name属性!"_o);
-                    return false;
-                }
-                return true;
-            },
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty,
-            OnInstantiateXmlElement_Empty,
-            OnInstantiateXmlElement_Empty,
-            OnInstantiateXmlElement_Empty
-        );
-
-        RegisterXmlParser(
-            XmlBase::InstanceName,
-            OnParseXmlElement_Empty,
-            OnParseXmlElement_Empty, 
-            [](ParseXmlState& state, XmlElement& xe)
-            {
-                ostr::string templateName;
-                if(FindAttribute(xe, XmlBase::Attr_Template, templateName) == FindResult::OK)
-                {
-                    if(state.allTemplateStack.empty())
-                        state.allTemplateStack.push_front({});
-                    auto& allTemplate = state.allTemplateStack.front();
-                    auto find = allTemplate.find(templateName);
-                    if(find != allTemplate.end())
-                    {
-                        state.allTemplateStack.push_front({});
-                        auto newXmlAsset = LoadXmlFile(find->second.c_str(), state);
-                        state.allTemplateStack.pop_front();
-                        if(!newXmlAsset)
-                        {
-                             olog::Error(u"<OGUI:Instance template={}> 加载模板失败! filePath:{}"_o, templateName, find->second);
-                            return false;
-                        }
-                        
-                        auto root = newXmlAsset->root;
-                        for(auto attr : xe.attributes)
-                        {
-                            if(attr.first != XmlBase::Attr_Template)
-                                root->attributes[attr.first] = attr.second;
-                        }
-                        //覆盖属性
-                        for(auto& child : xe.children)
-                        {
-                            if(child->_fullName == AttributeOverridesName)
-                            {
-                                std::map<Name, ostr::string> override;
-                                ostr::string elementName;
-                                if(FindAttribute(*child.get(), XmlBase::Attr_ElementName, elementName) == FindResult::OK)
-                                {
-                                    for(auto attr : child->attributes)
-                                        if(attr.first != XmlBase::Attr_ElementName && attr.first != XmlBase::Attr_Name)
-                                            override[attr.first] = attr.second;
-                                    for(auto& child2 : root->children)
-                                        if(child2->_fullName != AttributeOverridesName)
-                                            XmlHelper::AttributeOverrides(*child2.get(), elementName, override);
-                                }
-                                else
-                                {
-                                    olog::Error(u"<OGUI:AttributeOverrides> 未定义element-name属性!"_o);
-                                    return false;
-                                }
-                            }
-                        }
-
-                        root->children.insert(root->children.end(), xe.children.begin(), xe.children.end());
-                        xe.children.clear();
-                        xe.children.push_back(root);
-                        root->parent = xe.weak_from_this();
-                        return true;
-                    }
-                    olog::Error(u"<OGUI:Instance template={}> 没找到对应的<OGUI:Template>!"_o, templateName);
-                    return false;
-                }
-                else
-                {
-                    olog::Error(u"<OGUI:Instance> 未定义template属性!"_o);
-                    return false;
-                }
-            }, 
-            OnInstantiateXmlElement_Empty,
-            OnInstantiateXmlElement_Empty,
-            OnInstantiateXmlElement_Empty
-        );
-
-        // 主要属性覆盖逻辑在 OGUI:Instance 里面
-        RegisterXmlParser(
-            XmlBase::AttributeOverridesName,
-            [](ParseXmlState& state, XmlElement& xe)
-            {
-                if (!xe.parent.expired() && xe.parent.lock()->_fullName == InstanceName) 
-                    return true;
-                olog::Error(u"<OGUI:AttributeOverrides> 必须在 <OGUI:Instance> 下面!"_o);
-                return false;
-            },
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty, 
-            OnInstantiateXmlElement_Empty,
-            OnInstantiateXmlElement_Empty,
-            OnInstantiateXmlElement_Empty
-        );
-
-        RegisterXmlParser(
-            XmlBase::TextName,
-            OnParseXmlElement_Empty,
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty, 
-            [](InstantiateXmlState&, XmlElement&, VisualElement*& out, VisualElement*)
-            {
-                out = new TextElement();
-                return true;
-            },
-            OnInitElement_VisualElement,
-            [](InstantiateXmlState&, XmlElement& xe, VisualElement* e, VisualElement*)
-            {
-                auto textElement = (TextElement*)e;
-                for(auto& child : xe.children)
-                {
-                    if(child->isString)
-                    {
-                        auto sv = child->strValue.to_sv();
-                        ostr::string str;
-                        for(auto i = sv.begin(); i != sv.end(); ++i)
-                        {
-                            // 玩家名：@{名称属性名} 等级：@{等级属性名} 。。。
-                            if(*i == '$')
-                            {
-                                bool isAdd = false;
-                                auto j = i;
-                                if(*(++j) == '{')
-                                {
-                                    ostr::string BindName;
-                                    while (++j != sv.end()) 
-                                    {
-                                        if(*j == '}')
-                                        {
-                                            if(BindName.is_empty())
-                                                break;
-                                            if(!str.is_empty())
-                                            {
-                                                textElement->AddText(str);
-                                                str = "";
-                                            }
-                                            textElement->AddBindText(BindName);
-                                            isAdd = true;
-                                            i = j;
-                                            break;
-                                        }
-                                        BindName += *j;
-                                    }
-                                }
-                                if(isAdd)
-                                    continue;
-                            }
-
-                            str += *i;
-                        }
-                        if(!str.is_empty())
-                            textElement->AddText(str);
-                    }
-                    else if(child->_fullName == TextName && child->tempElement)
-                        textElement->AddInlineText((TextElement*)child->tempElement);
-                    else if(child->tempElement)
-                        textElement->AddInlineElement(child->tempElement);
-                }
-                return true;
-            }
-        );
-    };
-
-    bool XmlParserHelper::OnParseXmlElement_Empty(ParseXmlState&, XmlElement&)
-    {
-        return true;
-    }
-
-    bool XmlParserHelper::OnInstantiateXmlElement_Empty(InstantiateXmlState&, XmlElement&, VisualElement*, VisualElement*)
-    {
-        return true;
-    }
-
-    bool XmlBase::OnInitElement_VisualElement(InstantiateXmlState&, XmlElement& xe, VisualElement* element, VisualElement* parent)
-    {
-        //------------------------------------------------------CSS
-        // !元素名称（原则上唯一，实际可以重复）
-        ostr::string name;
-        FindAttribute(xe, XmlBase::Attr_Name, element->_name);
-        // !元素类别（同类别元素类型不一定一样）
-        FindAttribute(xe, XmlBase::Attr_Class, u","_o, element->_styleClasses);
-        // !内联css样式
-        std::string style;
-        if(FindAttribute(xe, XmlBase::Attr_Style, style) == FindResult::OK)
-            element->InitInlineStyle(style);
-
-        //------------------------------------------------------XML
-        for(auto& attr : xe.attributes)
-        {
-            using namespace ostr::literal;
-            if(attr.first.ToStringView().start_with(u"on:"_o))
-                element->_eventBag.try_emplace(attr.first.ToStringView().substring(3), attr.second);
-        }
-
-        // !插入槽位
-        ostr::string insert_slot;
-        if(FindAttribute(xe, XmlBase::Attr_InsertSlot, insert_slot) == FindResult::OK)
-        {
-            if(!xe.parent.expired() && xe.parent.lock()->_fullName == InstanceName)
-            {
-                auto template_container = (TemplateContainer*)parent;
-                auto find_slots = template_container->slots.find(insert_slot);
-                if(find_slots != template_container->slots.end())
-                {
-                    parent->RemoveChild(element);
-                    find_slots->second->PushChild(element);
-                }
-                else
-                {
-                    olog::Error(u"insert_slot无效，找不到可插入的槽位! XmlElementFullName:{} insert_slot:{}"_o, xe.fullName, insert_slot);
-                    return false;
-                }
-            }
-            else
-            {
-                olog::Error(u"insert_slot只在<OGUI:Instance>下面的元素才有效! XmlElementFullName:{} insert_slot:{}"_o, xe.fullName, insert_slot);
-                return false;
-            }
-        }
-        // !定义一个槽位
-        ostr::string slot;
-        if(FindAttribute(xe, XmlBase::Attr_Slot, slot) == FindResult::OK)
-        {
-            VisualElement* find = parent;
-            TemplateContainer* templateContainer = nullptr;
-            while (find) 
-            {
-                if(find->IsA("TemplateContainer"))
-                {
-                    templateContainer = (TemplateContainer*)find;
-                    break;
-                }
-                find = find->GetHierachyParent();
-            }
-
-            if(templateContainer)
-            {
-                auto find_slots = templateContainer->slots.find(slot);
-                if(find_slots != templateContainer->slots.end())
-                    olog::Warn(u"slot重复，有相同的槽位! XmlElementFullName:{} slot:{}"_o, xe.fullName, slot);
-                else
-                    templateContainer->slots[slot] = element;
-            }
-            else
-                olog::Fatal(u"找不到OGUI::TemplateContainer! XmlElementFullName:{} slot:{}"_o, xe.fullName, slot);
-        }
-
-        //------------------------------------------------------逻辑范围
-        // !是否是FocusScope
-        FindAttribute(xe, XmlBase::Attr_FocusScope, element->isFocusScope);
-        // !焦点空间在失去焦点后保持当前空间内的焦点
-        FindAttribute(xe, XmlBase::Attr_KeepFocused, element->isKeeyScopeFocused);
-        // !导航循环模式
-        static const std::map<ostr::string, ENavCycleMode> NavCycleMode = 
-        {
-            {"None",        ENavCycleMode::None},
-            {"Automatic",   ENavCycleMode::Automatic},
-            {"Horizontal",  ENavCycleMode::Horizontal},
-            {"Vertical",    ENavCycleMode::Vertical},
-        };
-        FindAttributeEnum(xe, XmlBase::Attr_NavCycleMode, NavCycleMode, element->navCycleMode);
-
-        //------------------------------------------------------逻辑焦点
-        // !是否接受焦点（启用了才能被导航到）
-        FindAttribute(xe, XmlBase::Attr_Focusable, element->focusable);
-        // !导航模式
-        static const std::map<ostr::string, ENavMode> NavMode = 
-        {
-            {"None",        ENavMode::None},
-            {"Automatic",   ENavMode::Automatic},
-            {"Horizontal",  ENavMode::Horizontal},
-            {"Vertical",    ENavMode::Vertical},
-        };
-        FindAttributeEnum(xe, XmlBase::Attr_NavMode, NavMode, element->navMode);
-        // !向上导航目标（使用css选择器语法）
-        FindAttribute(xe, Attr_NavUp, element->navExplicitUp);
-        // !向下导航目标（使用css选择器语法）
-        FindAttribute(xe, Attr_NavDown, element->navExplicitDown);
-        // !向左导航目标（使用css选择器语法）
-        FindAttribute(xe, Attr_NavLeft, element->navExplicitLeft);
-        // !向右导航目标（使用css选择器语法）
-        FindAttribute(xe, Attr_NavRight, element->navExplicitRight);
-        return true;
-    };
 }

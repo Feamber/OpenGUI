@@ -1,40 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<engine:Root xmlns:engine="OGUI">
-    <engine:Style path="res/test.css"/>
-    <engine:VisualElement name="Child1" focusable="true" style="height:200px;width:200px;" class="Child">
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/> 
-        <engine:VisualElement name="" class="Test"/>
-    </engine:VisualElement>/> 
-    <engine:VisualElement name="Child2" focusable="true" class="Child"/> 
-    <engine:Text name="Child3" class="Child">asd词组测试非常规测试</engine:Text>
-</engine:Root>
+<VisualElement>
+    <Style path="res/test.css"/>
+    <VisualElement name="Child1" focusable="true" style="height:200px;width:200px;" class="Child">
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/> 
+        <VisualElement name="" class="Test"/>
+    </VisualElement>/> 
+    <VisualElement name="Child2" focusable="true" class="Child"/> 
+    <Text name="Child3" class="Child">asd词组测试非常规测试</Text>
+</VisualElement>

@@ -1,48 +1,8 @@
 #define DLL_IMPLEMENTATION
 #include "Slider.h"
-#include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/Context.h"
 
 static OGUI::Name VALUE = "value";
-void SampleControls::Slider::RegisterXml()
-{
-    using namespace XmlParserHelper;
-    RegisterXmlParser(
-            "SampleControls:Slider",
-            OnParseXmlElement_Empty,
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty, 
-            [](InstantiateXmlState&, XmlElement&, VisualElement*& out, VisualElement*)
-            {
-                out = new Slider();
-                return true;
-            },
-            [](InstantiateXmlState& state, XmlElement& xe, VisualElement* element, VisualElement* parent)
-            {
-                if(!XmlBase::OnInitElement_VisualElement(state, xe, element, parent))
-                    return false;
-                auto ve = (Slider*)element;
-                FindAttribute(xe, "min-value", ve->_minValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
-                ve->_value = ve->_minValue;
-                FindAttribute(xe, "max-value", ve->_maxValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
-                FindAttribute(xe, "value", ve->_value, ve, [ve](bool valid){ve->OnValueChanged();}, true) ;
-                
-                static const std::map<ostr::string, SliderDirection> Directions = 
-                {
-                    {"horizontal",        SliderDirection::Horizontal},
-                    {"vertical",   SliderDirection::Vertical},
-                };
-                FindAttributeEnum(xe, "direction", Directions, ve->_direction);
-                return true;
-            },
-            [](InstantiateXmlState&, XmlElement& xe, VisualElement* e, VisualElement*)
-            {
-                auto ve = (Slider*)e;
-                ve->InitializeChildren();
-                return true;
-            }
-        );
-}
 
 void SampleControls::Slider::InitializeChildren()
 {
@@ -140,5 +100,47 @@ bool SampleControls::Slider::OnMouseUp(struct PointerUpEvent& event)
         return false;
     _dragging = false;
     Context::Get().ReleasePointer(event.pointerId);
+    return true;
+}
+
+const OGUI::Name& SampleControls::SliderXmlFactory::GetFullName()
+{
+    static Name name = "SampleControls:Slider";
+    return name;
+}
+
+bool SampleControls::SliderXmlFactory::OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement*)
+{
+    outNewElement = new Slider();
+    return true;
+}
+
+bool SampleControls::SliderXmlFactory::OnInitElement(InstantiateXmlState& state, XmlElement& xe, VisualElement* element, VisualElement* p)
+{
+    using namespace XmlParserHelper;
+    if(!VisualElementXmlFactory::OnInitElement(state, xe, element, p))
+        return false;
+    auto ve = (Slider*)element;
+    FindAttribute(xe, "min-value", ve->_minValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
+    ve->_value = ve->_minValue;
+    FindAttribute(xe, "max-value", ve->_maxValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
+    FindAttribute(xe, "value", ve->_value, ve, [ve](bool valid){ve->OnValueChanged();}, true) ;
+    
+    static const std::map<ostr::string, SliderDirection> Directions = 
+    {
+        {"horizontal",        SliderDirection::Horizontal},
+        {"vertical",   SliderDirection::Vertical},
+    };
+    FindAttributeEnum(xe, "direction", Directions, ve->_direction);
+    return true;
+}
+
+bool SampleControls::SliderXmlFactory::OnInitElementChildPost(InstantiateXmlState& state, XmlElement& xe, VisualElement* e, VisualElement* p)
+{
+    if(!VisualElementXmlFactory::OnInitElementChildPost(state, xe, e, p))
+        return false;
+    auto ve = (Slider*)e;
+    ve->InitializeChildren();
+    return true;
     return true;
 }

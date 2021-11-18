@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<engine:Root xmlns:engine="OGUI" xmlns:sample="SampleControls">
-    <engine:Style path="res/samplecontrols/sample.css"/>
+<VisualElement xmlns:sample="SampleControls">
+    <Style path="res/samplecontrols/sample.css"/>
     <VisualElement class="column">
         <sample:Slider name="TestSlider" min-value="0" max-value="100" value="$value"> 
             <VisualElement name="SliderBar"/>
@@ -15,4 +15,4 @@
         <VisualElement class="ScrollElement"/>
         <VisualElement class="ScrollElement"/>
     </sample:ScrollView>
-</engine:Root>
+</VisualElement>

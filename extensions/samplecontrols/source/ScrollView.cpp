@@ -1,6 +1,6 @@
+#define DLL_IMPLEMENTATION
 #include "ScrollView.h"
 #include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/Context.h"
 #include "YGValue.h"
 
@@ -9,28 +9,6 @@ namespace SampleControls
     const YGValue YGValueZero = {0, YGUnitPoint};
     const YGValue YGValueUndefined = {YGUndefined, YGUnitUndefined};
     const YGValue YGValueAuto = {YGUndefined, YGUnitAuto};
-}
-
-void SampleControls::ScrollView::RegisterXml()
-{
-    using namespace XmlParserHelper;
-    RegisterXmlParser(
-        "SampleControls:ScrollView",
-        OnParseXmlElement_Empty,
-        OnParseXmlElement_Empty, 
-        OnParseXmlElement_Empty, 
-        [](InstantiateXmlState&, XmlElement&, VisualElement*& out, VisualElement*)
-        {
-            out = new ScrollView();
-            return true;
-        },
-        XmlBase::OnInitElement_VisualElement,
-        [](InstantiateXmlState&, XmlElement& xe, VisualElement* e, VisualElement*)
-        {
-            ((ScrollView*)e)->InitializeChildren();
-            return true;
-        }
-    );
 }
 
 SampleControls::ScrollView::ScrollView()
@@ -173,5 +151,26 @@ bool SampleControls::ScrollView::OnMouseUp(struct PointerUpEvent& event)
         return false;
     _dragging = false;
     Context::Get().ReleasePointer(event.pointerId);
+    return true;
+}
+
+const OGUI::Name& SampleControls::ScrollViewXmlFactory::GetFullName()
+{
+    static Name name = "SampleControls:ScrollView";
+    return name;
+}
+
+bool SampleControls::ScrollViewXmlFactory::OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement*)
+{
+    outNewElement = new ScrollView();
+    return true;
+}
+
+bool SampleControls::ScrollViewXmlFactory::OnInitElementChildPost(InstantiateXmlState& state, XmlElement& xe, VisualElement* e, VisualElement* p)
+{
+    if(!VisualElementXmlFactory::OnInitElementChildPost(state, xe, e, p))
+        return false;
+    ((ScrollView*)e)->InitializeChildren();
+        return true;
     return true;
 }
