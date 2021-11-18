@@ -5,25 +5,6 @@
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
 
-void SampleControls::Button::RegisterXml()
-{
-    using namespace XmlParserHelper;
-    RegisterXmlParser(
-            "SampleControls:Button",
-            OnParseXmlElement_Empty,
-            OnParseXmlElement_Empty, 
-            OnParseXmlElement_Empty, 
-            [](InstantiateXmlState&, XmlElement&, VisualElement*& out, VisualElement*)
-            {
-                out = new Button();
-                return true;
-            },
-            XmlBase::OnInitElement_VisualElement,
-            OnInstantiateXmlElement_Empty
-        );
-}
-
-
 bool SampleControls::Button::OnPointerDown(PointerDownEvent& event)
 {
     if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
@@ -75,4 +56,16 @@ SampleControls::Button::Button()
 bool SampleControls::Button::Active()
 {
     return (_pseudoMask & PseudoStates::Active) == PseudoStates::Active;
+}
+
+const OGUI::Name& SampleControls::ButtonXmlFactory::GetFullName()
+{
+    static Name name = "SampleControls:Button";
+    return name;
+}
+
+bool SampleControls::ButtonXmlFactory::OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement*)
+{
+    outNewElement = new Button();
+    return true;
 }

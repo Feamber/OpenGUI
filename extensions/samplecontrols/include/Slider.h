@@ -3,6 +3,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Bind/AttributeBind.h"
 #include <vector>
+#include "OpenGUI/XmlParser/BaseXmlFactory.h"
 
 namespace SampleControls
 {
@@ -14,6 +15,7 @@ namespace SampleControls
     };
     class OGUI_API Slider : public VisualElement
     {
+        friend class SliderXmlFactory;
     public:
         float _minValue = 0.f;
         float _maxValue = 1.f;
@@ -23,7 +25,6 @@ namespace SampleControls
         std::string_view GetTypeName() override { return "Slider"; }
         std::string_view GetFullTypeName() override { return "SampleControls::Slider"; };
         Slider();
-        static void RegisterXml();
         bool OnMouseDown(struct PointerDownEvent& event);
         bool OnMouseMove(struct PointerMoveEvent& event);
         bool OnMouseUp(struct PointerUpEvent& event);
@@ -36,5 +37,14 @@ namespace SampleControls
     private:
         void Initialize(VisualElement* child, std::vector<StyleSheet*>& sheets);
         void InitializeChildren();
+    };
+
+    class OGUI_API SliderXmlFactory : public VisualElementXmlFactory
+    {
+    public:
+        static const OGUI::Name& GetFullName();
+        virtual bool OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement* parent) override;
+        virtual bool OnInitElement(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent) override;
+        virtual bool OnInitElementChildPost(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent) override;
     };
 }

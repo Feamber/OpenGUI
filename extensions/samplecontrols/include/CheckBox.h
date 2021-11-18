@@ -1,5 +1,6 @@
 #pragma once
 #include "Button.h"
+#include "OpenGUI/XmlParser/BaseXmlFactory.h"
 
 namespace SampleControls
 {
@@ -10,8 +11,14 @@ namespace SampleControls
         std::string_view GetTypeName() override { return "CheckBox"; }
         std::string_view GetFullTypeName() override { return "SampleControls::CheckBox"; };
         CheckBox();
-        static void RegisterXml();
         void OnClicked() override;
         bool _checked;
+    };
+
+    class OGUI_API CheckBoxXmlFactory : public VisualElementXmlFactory
+    {
+    public:
+        static const OGUI::Name& GetFullName();
+        virtual bool OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement* parent) override;
     };
 }

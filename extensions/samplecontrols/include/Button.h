@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGUI/VisualElement.h"
+#include "OpenGUI/XmlParser/BaseXmlFactory.h"
 
 namespace SampleControls
 {
@@ -15,7 +16,13 @@ namespace SampleControls
         bool OnPointerMove(PointerMoveEvent& event);
         bool OnPointerUp(PointerUpEvent& event);
         virtual void OnClicked(){}
-        static void RegisterXml();
         bool _pressed = false;
+    };
+
+    class OGUI_API ButtonXmlFactory : public VisualElementXmlFactory
+    {
+    public:
+        static const OGUI::Name& GetFullName();
+        virtual bool OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement* parent) override;
     };
 }

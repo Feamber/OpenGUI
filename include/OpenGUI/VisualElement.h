@@ -259,6 +259,11 @@ namespace OGUI
 		Vector2f _scrollMin;
 		Vector2f _scrollMax;
 #pragma endregion 
+
+#pragma region Xml
+		std::map<ostr::string, VisualElement*> _slots;
+		bool _isXmlRoot = false;
+#pragma endregion 
 	};
 }
 
