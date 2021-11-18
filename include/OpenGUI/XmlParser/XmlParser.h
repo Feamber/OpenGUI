@@ -7,6 +7,7 @@
 #include "OpenGUI/VisualElement.h"
 #include <functional>
 #include <memory>
+#include <tuple>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
@@ -52,10 +53,17 @@ namespace OGUI
         bool useFileCache = true;
     };
 
+    struct OGUI_API InstantiateXmlStack
+    {
+        XmlElementFactory* factory = nullptr;
+        XmlElement* xmlElement = nullptr;
+        VisualElement* element = nullptr;
+    };
+
     struct OGUI_API InstantiateXmlState
     {
         VisualElement* root;
-        std::list<VisualElement*> stack;
+        std::list<InstantiateXmlStack> validCreateElementStack;
         std::list<VisualElement*> all;
     };
 
@@ -83,6 +91,7 @@ namespace OGUI
         bool isXmlRoot = false;
         // 只在实例化过程中有用，对应OnCreateElement创建的元素，只应该在initElementChildPost中用
         VisualElement* tempElement = nullptr;
+        XmlElementFactory* tempFactory = nullptr;
 
         void DebugPrint();
 

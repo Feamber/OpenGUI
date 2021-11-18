@@ -233,20 +233,35 @@ namespace OGUI
             }
             XmlElementFactory& xmlParser = *search->second;
             VisualElement* newElement = nullptr;
-            VisualElement* prevElement = state.stack.size() > 0 ? state.stack.front() : nullptr;
-            if(!xmlParser.OnCreateElement(state, xmlElement, newElement, prevElement))
+            auto prev = state.validCreateElementStack.size() > 0 ? state.validCreateElementStack.front() : InstantiateXmlStack();
+            if(!xmlParser.OnCreateElement(state, xmlElement, newElement, prev.element))
             {
                 olog::Error(u"XML实例化错误，OnCreateElement失败：<{}>"_o, xmlElement.fullName);
                 return false;
             }
             if(newElement)
             {
-                if(!prevElement)
-                {
+                xmlElement.tempElement = newElement;
+                xmlElement.tempFactory = prev.factory;
+                if(!prev.element)
                     state.root = newElement;
+                else
+                {
+                    bool isAutoPushToParent = true;
+                    if(!xmlParser.OnInitElementHierarchy(state, xmlElement, newElement, prev.element, isAutoPushToParent))
+                    {
+                        olog::Error(u"XML实例化错误，OnInitElementHierarchy失败：<{}>"_o, xmlElement.fullName);
+                        return false;
+                    }
+
+                    if(isAutoPushToParent && !newElement->GetHierachyParent() && prev.element)
+                    {
+                        if(!prev.factory->PushChild(state, *prev.xmlElement, prev.element, xmlElement, newElement))
+                            return false;
+                    }
                 }
                 newElement->_isXmlRoot = xmlElement.isXmlRoot;
-                state.stack.push_front(newElement);
+                state.validCreateElementStack.push_front({&xmlParser, &xmlElement, newElement});
                 state.all.push_front(newElement);
             }
             else if(!state.root)
@@ -255,26 +270,26 @@ namespace OGUI
                 return false;
             }
 
-            if(!xmlParser.OnInitElement(state, xmlElement, newElement, prevElement))
+            if(!xmlParser.OnInitElement(state, xmlElement, newElement, prev.element))
             {
                 olog::Error(u"XML实例化错误，OnInitElement失败：<{}>"_o, xmlElement.fullName);
                 return false;
             }
-            xmlElement.tempElement = newElement;
+            
 
             for(auto child  : xmlElement.children)
             {
                 if(!InstantiateXml(state, *child.get()))
                     return false;
             }
-            if(!xmlParser.OnInitElementChildPost(state, xmlElement, newElement, prevElement))
+            if(!xmlParser.OnInitElementChildPost(state, xmlElement, newElement, prev.element))
             {
                  olog::Error(u"XML实例化错误，OnInitElementChildPost失败：<{}>"_o, xmlElement.fullName);
                 return false;
             }
 
             if(newElement)
-                state.stack.pop_front();
+                state.validCreateElementStack.pop_front();
             return true;
         };
 

@@ -145,5 +145,4 @@ bool SampleControls::SliderXmlFactory::OnInitElementChildPost(InstantiateXmlStat
     auto ve = (Slider*)e;
     ve->InitializeChildren();
     return true;
-    return true;
 }

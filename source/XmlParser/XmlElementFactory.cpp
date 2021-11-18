@@ -23,31 +23,29 @@ namespace OGUI
         return true;
     };
 
+    bool XmlElementFactory::PushChild(InstantiateXmlState&, XmlElement&, VisualElement* element, XmlElement&, VisualElement* child)
+    {
+        if(child->GetHierachyParent())
+        {
+            olog::Error(u"XmlElementFactory::PushChild 失败，child已经有parent！"_o);
+            return false;
+        }
+        element->PushChild(child);
+        return true;
+    };
+
+    bool XmlElementFactory::OnInitElementHierarchy(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent, bool& isAutoPushToParent)
+    {
+        return true;
+    }
+
     bool XmlElementFactory::OnInitElement(InstantiateXmlState&, XmlElement&, VisualElement*, VisualElement*)
     {
         return true;
     };
 
-    namespace XmlElementFactoryHelper 
-    {
-        void PushChild(XmlElement& xe, VisualElement& e)
-        {
-            if(xe.tempElement)
-            {
-                if(!xe.tempElement->GetHierachyParent())
-                    e.PushChild(xe.tempElement);
-                return;
-            }
-            for(auto& childXe : xe.children)
-                PushChild(*childXe, e);
-        }
-    }
-
     bool XmlElementFactory::OnInitElementChildPost(InstantiateXmlState& state, XmlElement& xe, VisualElement* e, VisualElement* p)
     {
-        if(e)
-            for(auto& childXe : xe.children)
-                XmlElementFactoryHelper::PushChild(*childXe, *e);
         return true;
     };
 }

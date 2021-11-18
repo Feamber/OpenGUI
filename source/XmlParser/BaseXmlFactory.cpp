@@ -48,27 +48,9 @@ namespace OGUI
         return true;
     }
 
-    bool VisualElementXmlFactory::OnInitElement(InstantiateXmlState & state, XmlElement& xe, VisualElement *element, VisualElement *parent)
+    bool VisualElementXmlFactory::OnInitElementHierarchy(InstantiateXmlState& state, XmlElement& xe, VisualElement* element, VisualElement* parent, bool& isAutoPushToParent)
     {
         using namespace XmlParserHelper;
-        //------------------------------------------------------CSS
-        // !元素名称（原则上唯一，实际可以重复）
-        ostr::string name;
-        FindAttribute(xe, Attr_Name(), element->_name);
-        // !元素类别（同类别元素类型不一定一样）
-        FindAttribute(xe, Attr_Class(), u","_o, element->_styleClasses);
-        // !内联css样式
-        std::string style;
-        if(FindAttribute(xe, Attr_Style(), style) == FindResult::OK)
-            element->InitInlineStyle(style);
-
-        //------------------------------------------------------XML
-        for(auto& attr : xe.attributes)
-        {
-            using namespace ostr::literal;
-            if(attr.first.ToStringView().start_with(u"on:"_o))
-                element->_eventBag.try_emplace(attr.first.ToStringView().substring(3), attr.second);
-        }
 
         // !插入槽位
         ostr::string insert_slot;
@@ -93,17 +75,42 @@ namespace OGUI
                 return false;
             }
         }
+        return true;
+    }
+
+    bool VisualElementXmlFactory::OnInitElement(InstantiateXmlState & state, XmlElement& xe, VisualElement *element, VisualElement *parent)
+    {
+        using namespace XmlParserHelper;
+        //------------------------------------------------------CSS
+        // !元素名称（原则上唯一，实际可以重复）
+        ostr::string name;
+        FindAttribute(xe, Attr_Name(), element->_name);
+        // !元素类别（同类别元素类型不一定一样）
+        FindAttribute(xe, Attr_Class(), u","_o, element->_styleClasses);
+        // !内联css样式
+        std::string style;
+        if(FindAttribute(xe, Attr_Style(), style) == FindResult::OK)
+            element->InitInlineStyle(style);
+
+        //------------------------------------------------------XML
+        for(auto& attr : xe.attributes)
+        {
+            using namespace ostr::literal;
+            if(attr.first.ToStringView().start_with(u"on:"_o))
+                element->_eventBag.try_emplace(attr.first.ToStringView().substring(3), attr.second);
+        }
+
         // !定义一个槽位
         ostr::string slot;
         if(FindAttribute(xe, Attr_Slot(), slot) == FindResult::OK)
         {
-            auto it = ++(state.stack.begin());
+            auto it = ++(state.validCreateElementStack.begin());
             VisualElement* root = nullptr;
-            while (it != state.stack.end()) 
+            while (it != state.validCreateElementStack.end()) 
             {
-                if((*it)->_isXmlRoot)
+                if((*it).element->_isXmlRoot)
                 {
-                    root = *it;
+                    root = (*it).element;
                     break;
                 }
                 ++it;
@@ -375,15 +382,20 @@ namespace OGUI
         return true;
     }
 
+    bool TextXmlFactory::PushChild(InstantiateXmlState&, XmlElement& , VisualElement* , XmlElement& , VisualElement* )
+    {
+        return true;
+    }
+
     bool TextXmlFactory::OnInitElementChildPost(InstantiateXmlState & state, XmlElement & xe, VisualElement *e, VisualElement *parent)
     {
         auto textElement = (TextElement*)e;
         for(auto& childXe : xe.children)
-            PushChild(*childXe, *textElement);
+            TextPushChild(*childXe, *textElement);
         return true;
     }
 
-    void TextXmlFactory::PushChild(XmlElement& child, TextElement& textElement)
+    void TextXmlFactory::TextPushChild(XmlElement& child, TextElement& textElement)
     {
         if(child.isString)
         {
@@ -440,6 +452,6 @@ namespace OGUI
         }
 
         for(auto& childXe : child.children)
-            PushChild(*childXe, textElement);
+            TextPushChild(*childXe, textElement);
     }
 }

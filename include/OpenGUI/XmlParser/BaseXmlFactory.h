@@ -29,6 +29,7 @@ namespace OGUI
         static const Name& Attr_NavRight();
 
         virtual bool OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement* parent) override;
+        virtual bool OnInitElementHierarchy(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent, bool& isAutoPushToParent) override;
         virtual bool OnInitElement(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent) override;
     };
 
@@ -84,9 +85,10 @@ namespace OGUI
         static const Name& GetFullName();
 
         virtual bool OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement* parent) override;
+        bool PushChild(InstantiateXmlState&, XmlElement& elementXml, VisualElement* element, XmlElement& childXml, VisualElement* child) override;
         virtual bool OnInitElementChildPost(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent) override;
     
     private:
-        void PushChild(XmlElement& xe, class TextElement& e);
+        void TextPushChild(XmlElement& xe, class TextElement& e);
     };
 }

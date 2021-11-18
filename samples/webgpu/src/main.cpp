@@ -651,6 +651,9 @@ int main(int , char* []) {
 	SampleControls::Install();
 	ExternalControlSample sample;
 	windows.push_back(sample.MakeWindow());
+	// DataBindSample sample2;
+	// windows.push_back(sample2.MakeWindow());
+	// windows.push_back(CreateNavigationTestWindow());
 	// main loop
 	while(!windows.empty())
 	{
@@ -661,6 +664,7 @@ int main(int , char* []) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
+			//sample2.Update();
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](SampleWindow* win)
