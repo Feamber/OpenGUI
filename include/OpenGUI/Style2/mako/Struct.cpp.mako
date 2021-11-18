@@ -1,5 +1,5 @@
 //DO NOT MODIFY THIS FILE
-//generated from Style2/mako/Struct.mako.cpp
+//generated from Style2/mako/Struct.cpp.mako
 <%! 
     from tool.style_codegen import to_small_camel_case, to_camel_case
 %>

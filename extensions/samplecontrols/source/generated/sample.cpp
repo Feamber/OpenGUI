@@ -1,5 +1,5 @@
 //DO NOT MODIFY THIS FILE
-//generated from Style2/mako/Struct.mako.cpp
+//generated from Style2/mako/Struct.cpp.mako
 
 #define DLL_IMPLEMENTATION
 #include <memory>
@@ -196,6 +196,8 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
         {
             case Ids::someValue:{
                 auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
                 if(prop.alpha == 0.f)
                     v->someValue = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)

@@ -1,5 +1,5 @@
 //DO NOT MODIFY THIS FILE
-//generated from Style2/mako/Struct.mako.cpp
+//generated from Style2/mako/Struct.cpp.mako
 
 #define DLL_IMPLEMENTATION
 #include <memory>

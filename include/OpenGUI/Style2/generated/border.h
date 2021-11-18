@@ -1,5 +1,5 @@
 //DO NOT MODIFY THIS FILE
-//generated from Style2/mako/Struct.mako.h
+//generated from Style2/mako/Struct.h.mako
 
 #pragma once
 #include "OpenGUI/Configure.h"

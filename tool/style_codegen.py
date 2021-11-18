@@ -218,8 +218,8 @@ class StyleStruct(object):
         
 BASE = os.path.dirname(os.path.realpath(__file__).replace(os.path.sep, "/"))
 ROOT = os.path.join(BASE, "../")
-DEFAULT_HEADER_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.mako.h")
-DEFAULT_SOURCE_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.mako.cpp")
+DEFAULT_HEADER_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.h.mako")
+DEFAULT_SOURCE_TEMPLATE_PATH = os.path.join(ROOT, "include/OpenGUI/Style2/mako/Struct.cpp.mako")
 class renderer(object):
     def __init__(self, base):
         self.base = base

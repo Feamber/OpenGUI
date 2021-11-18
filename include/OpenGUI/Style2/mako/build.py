@@ -69,7 +69,7 @@ def gen_position():
     struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
-    render_struct(struct, "shorthands/position.mako.h")
+    render_struct(struct, "shorthands/position.h.mako")
 
 def gen_border():
     struct = make_struct("border", False)
@@ -84,7 +84,7 @@ def gen_border():
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
     struct.headers.append("yoga/Yoga.h")
-    render_struct(struct, "shorthands/border.mako.h")
+    render_struct(struct, "shorthands/border.h.mako")
     
 def gen_text():
     struct = make_struct("text", True)
@@ -125,9 +125,9 @@ def gen_animation():
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
     struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
     struct.headers.append("OpenGUI/Style2/AnimTypes.h")
-    header_template = os.path.join(BASE, "AnimStruct.mako.h")
+    header_template = os.path.join(BASE, "AnimStruct.h.mako")
     header_file = render(header_template, struct = struct)
-    source_template = os.path.join(BASE, "AnimStruct.mako.cpp")
+    source_template = os.path.join(BASE, "AnimStruct.cpp.mako")
     source_file = render(source_template, struct = struct)
     write(struct.header_path, header_file)
     write(struct.source_path, source_file)
