@@ -618,8 +618,8 @@ struct ExternalControlSample : public AttrBag
 	{
 		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", "res/samplecontrols/sample.xml", [&](OGUI::VisualElement* ve)
 		{
-			//VisualElement* test = QueryFirst(ve, "#TestSlider");
-			//Bind(*test);
+			VisualElement* test = QueryFirst(ve, "#TestSlider");
+			Bind(*test);
 			std::vector<VisualElement*> allElement;
 			QueryAll(ve, "*",  allElement);
 			for(auto element : allElement)

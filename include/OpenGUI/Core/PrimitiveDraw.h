@@ -26,13 +26,6 @@ namespace OGUI
 
     using VertexList = std::vector<Vertex>;
     using IndexList = std::vector<uint16_t>;
-
-	struct ClipRect
-	{
-		Rect rect;
-		Matrix4x4 invTransform;
-	};
-
 	OGUI_API const Vector2f Transform(Vector2f p, const float4x4& transform);
 
     struct OGUI_API PrimDrawList
@@ -65,7 +58,7 @@ namespace OGUI
         VertexList vertices;
         IndexList  indices;
         std::vector<PrimDraw> command_list;
-		std::vector<ClipRect> clipStack;
+		std::vector<Matrix4x4> clipStack;
 		
 		int beginCount;
 		uint32_t __last_index = 0;

@@ -13,6 +13,8 @@ OGUI::StyleSheet LoadStyleSheet2()
 R"(#TestElement {
     left:100px;
     bottom:100px; font-size:24
+
+        
 })";
     auto res = ParseCSS(exampleCSS);
 

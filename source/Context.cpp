@@ -60,7 +60,7 @@ namespace OGUI
 			return;
 		auto clippingChild = element->IsClipping();
 		if(clippingChild)
-			ctx.prims.clipStack.push_back(element->ApplyClipping(ctx));
+			ctx.prims.clipStack.push_back(element->ApplyClipping());
 		element->DrawPrimitive(ctx);
 		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
 		if(clippingChild)
@@ -76,6 +76,8 @@ namespace OGUI
 
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
+		if(!element->Visible())
+			return nullptr;
 		std::vector<VisualElement*> children;
 		element->GetChildren(children);
 		bool clipping = element->IsClipping();
@@ -136,6 +138,25 @@ namespace OGUI
 			UpdateScrollSize(next); 
 		});
 	}
+	void UpdateVisibilityRec(VisualElement* element, std::vector<Matrix4x4>& clipStack)
+	{
+		if(!clipStack.empty())
+			element->_clipped = element->CheckClip(clipStack.back());
+		bool clippingChild = element->IsClipping();
+		if(clippingChild)
+			clipStack.push_back(element->ApplyClipping());
+		element->Traverse([&](VisualElement* next)
+		{
+			UpdateVisibilityRec(next, clipStack);
+		});
+		if(clippingChild)
+			clipStack.pop_back();
+	}
+	void UpdateVisibility(VisualElement* element)
+	{
+		std::vector<Matrix4x4> clipStack;
+		UpdateVisibilityRec(element, clipStack);
+	}
 }
 
 OGUI::WindowContext& OGUI::Context::Create(const OGUI::WindowHandle window)
@@ -172,6 +193,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	UpdateLayout(root);
 	UpdateScrollSize(root);
 	TransformRec(root);
+	UpdateVisibility(root);
 }
 
 void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)

@@ -935,7 +935,7 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawList& list
 				}
 			}
 			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph_outline(glyphs[i].font_rid, list, glyphs[i].font_size, p_outline_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
+				font_draw_glyph_outline(glyphs[i].font_rid, list, glyphs[i].font_size, p_outline_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color * glyphs[i].color);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;

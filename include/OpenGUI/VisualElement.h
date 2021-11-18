@@ -65,12 +65,12 @@ namespace OGUI
 
 	public:
 		bool Visible() const;
-		void UpdateVisiblity(const ClipRect& rect);
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		virtual void DrawDebugPrimitive(PrimitiveDraw::DrawContext& Ctx);
-		ClipRect ApplyClipping(PrimitiveDraw::DrawContext& Ctx);
+		Matrix4x4 ApplyClipping();
+		bool CheckClip(const Matrix4x4& rect);
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
 		std::string _name;
@@ -78,6 +78,7 @@ namespace OGUI
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 		void SetVisibility(bool visible);
 		bool IsClipping();
+		bool _clipped = false;
 #pragma region Hierachy
 		void UpdateRoot(VisualElement* child);
 		void PushChild(VisualElement* child);

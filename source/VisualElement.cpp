@@ -22,6 +22,131 @@
 #include "OpenGUI/Context.h"
 #include <gsl/span>
 
+
+namespace OGUI
+{
+	struct Quad
+	{
+		Vector2f RU;
+		Vector2f RB;
+		Vector2f LU;
+		Vector2f LB;
+
+		const Vector2f Transform(Vector2f p, const float4x4& transform)
+    	{
+        	const Vector4f dummy = Vector4f(p.X, p.Y, 0.f, 1.f);
+        	const Vector4f result = math::multiply(dummy, transform);
+        	p.X = result.X;
+        	p.Y = result.Y;
+        	return p;
+    	}
+
+		Quad(Vector2f RU, Vector2f RB, Vector2f LU, Vector2f LB) : RU(RU), RB(RB), LU(LU), LB(LB) {}
+
+		Quad(VisualElement* element)
+		{
+			Rect rect = element->GetRect();
+			RU = Transform(rect.max, element->_worldTransform);
+			RB = Transform({rect.max.X, rect.min.Y}, element->_worldTransform);
+			LU = Transform({rect.min.X, rect.max.Y}, element->_worldTransform);
+			LB = Transform(rect.min, element->_worldTransform);
+		}
+
+		Quad(Rect rect, float4x4 worldTransform)
+		{
+			RU = Transform(rect.max, worldTransform);
+			RB = Transform({rect.max.X, rect.min.Y}, worldTransform);
+			LU = Transform({rect.min.X, rect.max.Y}, worldTransform);
+			LB = Transform(rect.min, worldTransform);
+		}
+
+		Quad(Rect rect)
+		{
+			RU = {rect.max.X, rect.max.Y};
+    		RB = {rect.max.X, rect.max.X};
+    		LU = {rect.min.X, rect.max.Y};
+    		LB = {rect.min.X, rect.min.Y};
+		}
+
+		Rect ToBoundingBox()
+		{
+			float minX = RU.X < RB.X && RU.X < LU.X && RU.X < LB.X ? RU.X : RB.X < LU.X && RB.X < LB.X ? RB.X : LU.X < LB.X ? LU.X : LB.X;
+			float minY = RU.Y < RB.Y && RU.Y < LU.Y && RU.Y < LB.Y ? RU.Y : RB.Y < LU.Y && RB.Y < LB.Y ? RB.Y : LU.Y < LB.Y ? LU.Y : LB.Y;
+			float maxX = RU.X > RB.X && RU.X > LU.X && RU.X > LB.X ? RU.X : RB.X > LU.X && RB.X > LB.X ? RB.X : LU.X > LB.X ? LU.X : LB.X;
+			float maxY = RU.Y > RB.Y && RU.Y > LU.Y && RU.Y > LB.Y ? RU.Y : RB.Y > LU.Y && RB.Y > LB.Y ? RB.Y : LU.Y > LB.Y ? LU.Y : LB.Y;
+			return Rect({Vector2f(minX, minY), Vector2f(maxX, maxY)});
+		}
+
+		Quad ToNavCollisionBox(ENavDirection direction, float width, float height)
+		{
+			Quad aabb = ToBoundingBox();
+			float aabbWidth = aabb.Width()+0.01;
+			float aabbHeight = aabb.Height()+0.01;
+			
+			if(direction == ENavDirection::Up)
+			{
+				aabb.LU.Y = FLT_MAX;
+				aabb.RU.Y = FLT_MAX;
+				aabb.LB.Y += height / 2.f + aabbHeight / 2.f;
+				aabb.RB.Y += height / 2.f + aabbHeight / 2.f;
+			}
+			else if(direction == ENavDirection::Down)
+			{
+				aabb.LU.Y -= height / 2.f + aabbHeight / 2.f;
+				aabb.RU.Y -= height / 2.f + aabbHeight / 2.f;
+				aabb.LB.Y = -FLT_MAX;
+				aabb.RB.Y = -FLT_MAX;
+			}
+			else if(direction == ENavDirection::Left)
+			{
+				aabb.LU.X = -FLT_MAX;
+				aabb.LB.X = -FLT_MAX;
+				aabb.RU.X -= width / 2.f + aabbWidth / 2.f;
+				aabb.RB.X -= width / 2.f + aabbWidth / 2.f;
+			}
+			else if(direction == ENavDirection::Right)
+			{
+				aabb.LU.X += width / 2.f + aabbWidth / 2.f;
+				aabb.LB.X += width / 2.f + aabbWidth / 2.f;
+				aabb.RU.X = FLT_MAX;
+				aabb.RB.X = FLT_MAX;
+			}
+
+			return aabb;
+		}
+
+		bool Intersect(const Quad& other)
+		{
+			if ((LB.X > other.RU.X) || (other.LB.X > RU.X))
+			{
+				return false;
+			}
+
+			if ((LB.Y > other.RU.Y) || (other.LB.Y > RU.Y))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		Rect ToRect()
+		{
+			return {Vector2f(LB.X, LB.Y), Vector2f(RU.X, RU.Y)};
+		}
+
+		float Width()
+		{
+			return RU.X - LU.X;
+		}
+
+		float Height()
+		{
+			return LU.Y - LB.Y;
+		}
+	};
+}
+
 OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f resolution)
 {
 	OGUI::Rect result = rect;
@@ -92,9 +217,32 @@ void OGUI::VisualElement::DrawDebugPrimitive(OGUI::PrimitiveDraw::DrawContext & 
 	}
 }
 
-OGUI::ClipRect OGUI::VisualElement::ApplyClipping(OGUI::PrimitiveDraw::DrawContext & Ctx)
+OGUI::Matrix4x4 OGUI::VisualElement::ApplyClipping()
 {
-	return {GetRect(), _invTransform};
+	auto rect = GetRect();
+	auto offset = (rect.min + rect.max) / 2;
+	auto size = (rect.max - rect.min) / 2;
+	size.x = 1 / size.x;
+	size.y = 1 / size.y;
+	return math::multiply(_invTransform, math::make_transform_2d(-offset, 0.f, size));
+}
+
+bool OGUI::VisualElement::CheckClip(const Matrix4x4& rect)
+{
+	auto transform = math::multiply(_worldTransform, rect);
+	auto quad = Quad(GetRect(), transform);
+	if(
+		(quad.LB.x == std::clamp(quad.LB.x, -1.f, 1.f)&&
+		quad.LB.y == std::clamp(quad.LB.y, -1.f, 1.f))||
+		(quad.RB.x == std::clamp(quad.RB.x, -1.f, 1.f)&&
+		quad.RB.y == std::clamp(quad.RB.y, -1.f, 1.f))||
+		(quad.LU.x == std::clamp(quad.LU.x, -1.f, 1.f)&&
+		quad.LU.y == std::clamp(quad.LU.y, -1.f, 1.f))||
+		(quad.RU.x == std::clamp(quad.RU.x, -1.f, 1.f)&&
+		quad.RU.y == std::clamp(quad.RU.y, -1.f, 1.f))
+	)
+		return false;
+	return true;
 }
 
 bool OGUI::VisualElement::IsClipping()
@@ -496,13 +644,11 @@ void OGUI::VisualElement::Notify(Name prop, bool force)
 
 bool OGUI::VisualElement::Visible() const
 {
-	return !(StylePosition::Get(_style).flexDisplay == YGDisplayNone);
+	return !(StylePosition::Get(_style).flexDisplay == YGDisplayNone) && !_clipped;
 }
 
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
-	if(!Visible())
-		return false;
 	auto invTransform = math::inverse(_worldTransform);
 	Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
 	const Vector4f result = math::multiply(dummy, invTransform);
@@ -688,129 +834,6 @@ void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, s
 	}
 }
 
-namespace OGUI
-{
-	struct Quad
-	{
-		Vector2f RU;
-		Vector2f RB;
-		Vector2f LU;
-		Vector2f LB;
-
-		const Vector2f Transform(Vector2f p, const float4x4& transform)
-    	{
-        	const Vector4f dummy = Vector4f(p.X, p.Y, 0.f, 1.f);
-        	const Vector4f result = math::multiply(dummy, transform);
-        	p.X = result.X;
-        	p.Y = result.Y;
-        	return p;
-    	}
-
-		Quad(Vector2f RU, Vector2f RB, Vector2f LU, Vector2f LB) : RU(RU), RB(RB), LU(LU), LB(LB) {}
-
-		Quad(VisualElement* element)
-		{
-			Rect rect = element->GetRect();
-			RU = Transform(rect.max, element->_worldTransform);
-			RB = Transform({rect.max.X, rect.min.Y}, element->_worldTransform);
-			LU = Transform({rect.min.X, rect.max.Y}, element->_worldTransform);
-			LB = Transform(rect.min, element->_worldTransform);
-		}
-
-		Quad(Rect rect, float4x4 worldTransform)
-		{
-			RU = Transform(rect.max, worldTransform);
-			RB = Transform({rect.max.X, rect.min.Y}, worldTransform);
-			LU = Transform({rect.min.X, rect.max.Y}, worldTransform);
-			LB = Transform(rect.min, worldTransform);
-		}
-
-		Quad(Rect rect)
-		{
-			RU = {rect.max.X, rect.max.Y};
-    		RB = {rect.max.X, rect.max.X};
-    		LU = {rect.min.X, rect.max.Y};
-    		LB = {rect.min.X, rect.min.Y};
-		}
-
-		Rect ToBoundingBox()
-		{
-			float minX = RU.X < RB.X && RU.X < LU.X && RU.X < LB.X ? RU.X : RB.X < LU.X && RB.X < LB.X ? RB.X : LU.X < LB.X ? LU.X : LB.X;
-			float minY = RU.Y < RB.Y && RU.Y < LU.Y && RU.Y < LB.Y ? RU.Y : RB.Y < LU.Y && RB.Y < LB.Y ? RB.Y : LU.Y < LB.Y ? LU.Y : LB.Y;
-			float maxX = RU.X > RB.X && RU.X > LU.X && RU.X > LB.X ? RU.X : RB.X > LU.X && RB.X > LB.X ? RB.X : LU.X > LB.X ? LU.X : LB.X;
-			float maxY = RU.Y > RB.Y && RU.Y > LU.Y && RU.Y > LB.Y ? RU.Y : RB.Y > LU.Y && RB.Y > LB.Y ? RB.Y : LU.Y > LB.Y ? LU.Y : LB.Y;
-			return Rect({Vector2f(minX, minY), Vector2f(maxX, maxY)});
-		}
-
-		Quad ToNavCollisionBox(ENavDirection direction, float width, float height)
-		{
-			Quad aabb = ToBoundingBox();
-			float aabbWidth = aabb.Width()+0.01;
-			float aabbHeight = aabb.Height()+0.01;
-			
-			if(direction == ENavDirection::Up)
-			{
-				aabb.LU.Y = FLT_MAX;
-				aabb.RU.Y = FLT_MAX;
-				aabb.LB.Y += height / 2.f + aabbHeight / 2.f;
-				aabb.RB.Y += height / 2.f + aabbHeight / 2.f;
-			}
-			else if(direction == ENavDirection::Down)
-			{
-				aabb.LU.Y -= height / 2.f + aabbHeight / 2.f;
-				aabb.RU.Y -= height / 2.f + aabbHeight / 2.f;
-				aabb.LB.Y = -FLT_MAX;
-				aabb.RB.Y = -FLT_MAX;
-			}
-			else if(direction == ENavDirection::Left)
-			{
-				aabb.LU.X = -FLT_MAX;
-				aabb.LB.X = -FLT_MAX;
-				aabb.RU.X -= width / 2.f + aabbWidth / 2.f;
-				aabb.RB.X -= width / 2.f + aabbWidth / 2.f;
-			}
-			else if(direction == ENavDirection::Right)
-			{
-				aabb.LU.X += width / 2.f + aabbWidth / 2.f;
-				aabb.LB.X += width / 2.f + aabbWidth / 2.f;
-				aabb.RU.X = FLT_MAX;
-				aabb.RB.X = FLT_MAX;
-			}
-
-			return aabb;
-		}
-
-		bool Intersect(const Quad& other)
-		{
-			if ((LB.X > other.RU.X) || (other.LB.X > RU.X))
-			{
-				return false;
-			}
-
-			if ((LB.Y > other.RU.Y) || (other.LB.Y > RU.Y))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		Rect ToRect()
-		{
-			return {Vector2f(LB.X, LB.Y), Vector2f(RU.X, RU.Y)};
-		}
-
-		float Width()
-		{
-			return RU.X - LU.X;
-		}
-
-		float Height()
-		{
-			return LU.Y - LB.Y;
-		}
-	};
-}
 
 OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direction)
 {
@@ -1026,6 +1049,8 @@ void OGUI::VisualElement::UpdateScrollSize()
 		}
 		Traverse([&](VisualElement* child)
 		{
+			if(!child->_scrollable)
+				return;
 			auto& pos = StylePosition::Get(child->_style);
 			if(pos.position != YGPositionTypeRelative)
 				return;
