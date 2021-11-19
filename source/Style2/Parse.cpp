@@ -11,6 +11,7 @@
 #include "OpenGUI/Style2/Selector.h"
 #include <functional>
 #include <fstream>
+#include "OpenGUI/Context.h"
 
 
 namespace OGUI
@@ -360,10 +361,19 @@ namespace OGUI
 
 	std::optional<StyleSheet> ParseCSSFile(std::string path)
 	{
-		std::ifstream ifs(path);
-		std::string content((std::istreambuf_iterator<char>(ifs)),
-			(std::istreambuf_iterator<char>()));
-		auto styleSheet = ParseCSS(content);
+		auto& ctx = Context::Get().fileImpl;
+        auto f = ctx->Open(path.c_str());
+        if(!f)
+        {
+            olog::Warn(u"加载文件失败，filePath：{}"_o, path);
+            return std::optional<StyleSheet>();
+        }
+        auto length = ctx->Length(f);
+        std::string data;
+        data.resize(length);
+        ctx->Read(data.data(), length, f);
+        ctx->Close(f);
+		auto styleSheet = ParseCSS(data);
 		if(styleSheet) styleSheet->path = path;
 		return styleSheet;
 	}

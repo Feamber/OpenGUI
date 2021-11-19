@@ -333,9 +333,19 @@ namespace OGUI
         auto find = cache.find(filePath);
         if(find == cache.end() || !state.useFileCache)
         {
-            std::ifstream ifs(filePath);
-		    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-            cache[filePath] = std::move(content);
+            auto& ctx = Context::Get().fileImpl;
+            auto f = ctx->Open(filePath);
+            if(!f)
+            {
+                olog::Warn(u"加载文件失败，filePath：{}"_o, filePath);
+                return nullptr;
+            }
+            auto length = ctx->Length(f);
+            std::string data;
+            data.resize(length);
+            ctx->Read(data.data(), length, f);
+            ctx->Close(f);
+            cache[filePath] = std::move(data);
         }
         
         state.allXmlFile.push_back(filePath);
