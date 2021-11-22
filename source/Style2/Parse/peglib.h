@@ -1740,7 +1740,7 @@ struct Ope::Visitor {
 struct IsReference : public Ope::Visitor {
   void visit(Reference &) override { is_reference_ = true; }
 
-  static bool check(Ope &ope) {
+  static bool Check(Ope &ope) {
     IsReference vis;
     ope.accept(vis);
     return vis.is_reference_;
@@ -1816,7 +1816,7 @@ struct AssignIDToDefinition : public Ope::Visitor {
 struct IsLiteralToken : public Ope::Visitor {
   void visit(PrioritizedChoice &ope) override {
     for (auto op : ope.opes_) {
-      if (!IsLiteralToken::check(*op)) { return; }
+      if (!IsLiteralToken::Check(*op)) { return; }
     }
     result_ = true;
   }
@@ -1824,7 +1824,7 @@ struct IsLiteralToken : public Ope::Visitor {
   void visit(Dictionary &) override { result_ = true; }
   void visit(LiteralString &) override { result_ = true; }
 
-  static bool check(Ope &ope) {
+  static bool Check(Ope &ope) {
     IsLiteralToken vis;
     ope.accept(vis);
     return vis.result_;
@@ -1858,7 +1858,7 @@ struct TokenChecker : public Ope::Visitor {
   void visit(Recovery &ope) override { ope.ope_->accept(*this); }
 
   static bool is_token(Ope &ope) {
-    if (IsLiteralToken::check(ope)) { return true; }
+    if (IsLiteralToken::Check(ope)) { return true; }
 
     TokenChecker vis;
     ope.accept(vis);
@@ -2218,7 +2218,7 @@ private:
 struct IsPrioritizedChoice : public Ope::Visitor {
   void visit(PrioritizedChoice &) override { result_ = true; }
 
-  static bool check(Ope &ope) {
+  static bool Check(Ope &ope) {
     IsPrioritizedChoice vis;
     ope.accept(vis);
     return vis.result_;
@@ -2509,7 +2509,7 @@ inline void Context::trace_leave(const Ope &ope, const char *a_s, size_t n,
 
 inline bool Context::is_traceable(const Ope &ope) const {
   if (tracer_enter && tracer_leave) {
-    return !IsReference::check(const_cast<Ope &>(ope));
+    return !IsReference::Check(const_cast<Ope &>(ope));
   }
   return false;
 }
@@ -2601,7 +2601,7 @@ inline size_t Holder::parse_core(const char *s, size_t n, SemanticValues &vs,
       chldsv.sv_ = std::string_view(s, len);
       chldsv.name_ = outer_->name;
 
-      if (!IsPrioritizedChoice::check(*ope_)) {
+      if (!IsPrioritizedChoice::Check(*ope_)) {
         chldsv.choice_count_ = 0;
         chldsv.choice_ = 0;
       }
@@ -3750,7 +3750,7 @@ private:
       for (auto &x : grammar) {
         auto &rule = x.second;
         auto ope = rule.get_core_operator();
-        if (IsLiteralToken::check(*ope)) { rule <= tok(ope); }
+        if (IsLiteralToken::Check(*ope)) { rule <= tok(ope); }
       }
 
       start_rule.whitespaceOpe =
