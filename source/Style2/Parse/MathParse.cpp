@@ -1,5 +1,6 @@
 
 #define DLL_IMPLEMENTATION
+#include "peglib.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Parse/Math.h"
 #include "OpenGUI/Style2/Parse.h"
@@ -9,7 +10,6 @@
 #include "OpenGUI/Core/open_string.h"
 #include "OpenGUI/Core/ColorSpace.h"
 #include "OpenGUI/Style2/generated/position.h"
-#include "peglib.h"
 #include <regex>
 using namespace ostr::literal;
 

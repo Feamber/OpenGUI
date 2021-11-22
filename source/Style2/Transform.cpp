@@ -2,7 +2,7 @@
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Core/Math.h"
-
+#pragma warning( push )
 OGUI::ComputedTransform OGUI::ComputedTransform::ident()
 {
     ComputedTransform result;
@@ -85,7 +85,7 @@ OGUI::ComputedTransform OGUI::ComputedTransform::compose(Vector2f trans, float r
 {
     return multiply(ComputedTransform::scale(sc), multiply(ComputedTransform::skew(sk), multiply(ComputedTransform::rotate(rot), ComputedTransform::translate(trans))));
 }
-
+#pragma warning(disable : 4582)
 OGUI::TransformFunction::TransformFunction()
     :type(Type::translate), _translate(Vector2f::vector_zero())
 {}
@@ -192,3 +192,4 @@ OGUI::ComputedTransform OGUI::evaluate(gsl::span<const TransformFunction> transf
         result = multiply(result, transformList[i].to_transform());
     return result;
 }
+#pragma warning( pop )

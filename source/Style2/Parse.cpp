@@ -1,10 +1,8 @@
-
-
 #define DLL_IMPLEMENTATION
+#include "Parse/peglib.h"
 #include <cstddef>
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Core/Utilities/any_move.hpp"
-#include "Parse/peglib.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
 #include "OpenGUI/Style2/generated/animation.h"

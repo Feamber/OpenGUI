@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+#include "OpenGUI/Core/Containers/span.hpp"
 
 namespace OGUI
 {
@@ -9,4 +11,10 @@ namespace OGUI
 	struct StyleSheet;
 	struct StyleKeyframes;
     struct ComputedStyle;
+
+	template<class T>
+	std::vector<T> ToOwned(gsl::span<T> s)
+	{
+		return {s.begin(), s.end()};
+	}
 }

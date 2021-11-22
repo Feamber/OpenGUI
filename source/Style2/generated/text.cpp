@@ -73,12 +73,6 @@ void OGUI::StyleText::Initialize()
     color = Color4f(0,0,0,1);
 }
 
-template<class T>
-std::vector<T> ToOwned(gsl::span<T> s)
-{
-    return {s.begin(), s.end()};
-}
-
 void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;

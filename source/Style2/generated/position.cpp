@@ -103,12 +103,6 @@ void OGUI::StylePosition::Initialize()
     flexDisplay = YGDisplayFlex;
 }
 
-template<class T>
-std::vector<T> ToOwned(gsl::span<T> s)
-{
-    return {s.begin(), s.end()};
-}
-
 void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;

@@ -95,8 +95,8 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
 		if (test(style.animationFillMode, EAnimFillMode::Backwards) || style.animationPlayState == EAnimPlayState::Paused)
 		{
 			//apply first frame
-			bool reversed = style.animationDirection == EAnimDirection::Reverse || style.animationDirection == EAnimDirection::AlternateReverse;
-			if (reversed)
+			bool reversed2 = style.animationDirection == EAnimDirection::Reverse || style.animationDirection == EAnimDirection::AlternateReverse;
+			if (reversed2)
 				percent = 1.f;
 			else
 				percent = 0.f;

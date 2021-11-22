@@ -653,7 +653,7 @@ int main(int , char* []) {
 	windows.push_back(sample.MakeWindow());
 	// DataBindSample sample2;
 	// windows.push_back(sample2.MakeWindow());
-	// windows.push_back(CreateNavigationTestWindow());
+	windows.push_back(CreateNavigationTestWindow());
 	// main loop
 	while(!windows.empty())
 	{
