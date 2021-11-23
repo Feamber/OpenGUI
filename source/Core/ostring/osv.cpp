@@ -1,4 +1,4 @@
-#include "OpenGui/Core/ostring/osv.h"
+#include "OpenGUI/Core/ostring/osv.h"
 #include "OpenGUI/Core/ostring/helpers.h"
 #include <string_view>
 

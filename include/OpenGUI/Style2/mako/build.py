@@ -101,7 +101,7 @@ def gen_background():
     struct = make_struct("background", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("background-color",	"Color4f",	    "Color4f(0.f,0.f,0.f,0.f)")	
+    add_longhand("background-color",	"Color4f",	    "Color4f(1.f,1.f,1.f,1.f)")	
     add_longhand("background-image",	"std::string",	"{}", parser = "ParseUrl")
     struct.headers.append("OpenGUI/Core/Math.h")
     struct.headers.append("OpenGUI/Style2/Parse/Math.h")
