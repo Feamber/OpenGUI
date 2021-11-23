@@ -278,7 +278,7 @@ void OGUI::Context::ReleasePointer(int id)
 	}
 }
 
-bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
 {
 	olog::Info(u"OnMouseDown PosX:{0}, PosY:{1}"_o, x, y);
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
@@ -289,7 +289,7 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 	if(!picked)
 		return false;
 		
-	bool overflow = YGNodeLayoutGetHadOverflow(picked->_ygnode); 
+	YGNodeLayoutGetHadOverflow(picked->_ygnode); 
 	PointerDownEvent event;
 	pointerDownCount++;
 	event.pointerType = "mouse";
@@ -301,7 +301,7 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 	return true;
 }
 
-bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
 {
 	olog::Info(u"OnMouseUp PosX:{0}, PosY:{1}"_o, x, y);
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
@@ -319,7 +319,7 @@ bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button,
 	return true;
 }
 
-bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKey button, int32 x, int32 y)
+bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
 {
 	_windowUnderCursor = window;
 	//auto root = GetWindowContext(window).GetWindowUI();
@@ -327,7 +327,7 @@ bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKe
 	return false;
 }
 
-bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, int32 x, int32 y, int32 relativeMotionX, int32 relativeMotionY)
+bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, float x, float y, float relativeMotionX, float relativeMotionY)
 {
 	_windowUnderCursor = window;
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();

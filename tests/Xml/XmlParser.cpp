@@ -9,6 +9,7 @@ TEST_CASE("XmlParser", "[XmlAsset]")
 {
     using namespace OGUI;
     RegisterOGUIXmlParser();
+    Context::Get().fileImpl = std::make_unique<OGUI::FileInterface>();
     for (int i = 0; i < 1000; ++i) {
         ParseXmlState xmlState;
         auto asset = LoadXmlFile("XmlParserTest.xml", xmlState);

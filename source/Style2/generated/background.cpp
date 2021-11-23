@@ -73,11 +73,6 @@ void OGUI::StyleBackground::Initialize()
     backgroundImage = {};
 }
 
-template<class T>
-std::vector<T> ToOwned(gsl::span<T> s)
-{
-    return {s.begin(), s.end()};
-}
 
 void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
 {

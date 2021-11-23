@@ -655,6 +655,7 @@ int main(int , char* []) {
 	// windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
 	windows.push_back(CreateCssTestWindow());
+	windows.push_back(CreateNavigationTestWindow());
 	// main loop
 	while(!windows.empty())
 	{

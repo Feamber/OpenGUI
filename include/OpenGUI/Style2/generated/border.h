@@ -16,6 +16,7 @@
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
+    
     struct OGUI_API StyleBorder
     {
         constexpr static std::string_view name = "border"sv;

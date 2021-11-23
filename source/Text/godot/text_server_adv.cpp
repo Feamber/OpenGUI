@@ -3119,7 +3119,7 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 
 		for (int i = 0; i < sd_size; i++) {
 			Glyph gl = sd->glyphs[i];
-			Variant key;
+			Variant key = nullptr;
 			if (gl.count == 1) {
 				for (auto& pair : sd->objects) {
 					if (pair.second.pos == gl.start) {

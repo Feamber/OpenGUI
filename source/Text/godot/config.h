@@ -81,9 +81,9 @@ public:
 	{
 		return std::find(this->begin(), this->end(), key) != this->end();
 	}
-    void remove(size_t pos)
+    void remove(size_t inPos)
     {
-        this->erase(this->begin() + pos);
+        this->erase(this->begin() + inPos);
     }
 	void remove(const T& key)
 	{
