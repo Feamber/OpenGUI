@@ -281,8 +281,11 @@ OGUI::VisualElement::~VisualElement()
 		YGNodeFree(_ygnode);
 	}
 
-	auto& allElementHandle = Context::Get()._allElementHandle;
+	auto& Ctx = Context::Get();
+	auto& allElementHandle = Ctx._allElementHandle;
 	allElementHandle.erase(this);
+	if(Ctx._keyboardFocused == this)
+		Ctx._keyboardFocused = nullptr;
 }
 
 void OGUI::VisualElement::DrawPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
@@ -830,7 +833,7 @@ void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, s
 	while (current) 
 	{
 		out.push_back(current);
-		current = current->currentFocused;
+		current = Context::Get().IsElementValid(current->currentFocused) ? current->currentFocused : nullptr;
 	}
 }
 

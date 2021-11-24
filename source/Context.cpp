@@ -549,7 +549,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 	}
 	return false;
 }
-
+__pragma(optimize("", off))
 bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause cause, std::string describe)
 {
 	if(!element->focusable) return false;
@@ -574,6 +574,9 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause caus
 	{
 		VisualElement* oldFocused = oldFocusedPath[i];
 		VisualElement* newFocused = i < newFocusedPath.size() ? newFocusedPath[i] : nullptr;
+
+		if(!IsElementValid(oldFocused))
+			continue;
 
 		if(oldFocused && oldFocused != newFocused)
 		{
@@ -743,7 +746,7 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause caus
 
 	return true;
 }
-
+__pragma(optimize("",on))
 bool OGUI::Context::IsElementValid(OGUI::VisualElement* e) const
 {
 	return _allElementHandle.find(e) != _allElementHandle.end();
