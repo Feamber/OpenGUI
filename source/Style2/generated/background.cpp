@@ -69,7 +69,7 @@ void OGUI::StyleBackground::Dispose(ComputedStyle& style)
 
 void OGUI::StyleBackground::Initialize()
 {
-    backgroundColor = Color4f(0.f,0.f,0.f,0.f);
+    backgroundColor = Color4f(1.f,1.f,1.f,1.f);
     backgroundImage = {};
 }
 
@@ -118,7 +118,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                 {
                 case Ids::backgroundColor:{
                     auto v = fget();
-                    v->backgroundColor = Color4f(0.f,0.f,0.f,0.f);
+                    v->backgroundColor = Color4f(1.f,1.f,1.f,1.f);
                     break;
                     }
                 case Ids::backgroundImage:{
