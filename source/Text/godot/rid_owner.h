@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #pragma once
-
+#include "error_macros.h"
 #include "config.h"
 #include "rid.h"
 

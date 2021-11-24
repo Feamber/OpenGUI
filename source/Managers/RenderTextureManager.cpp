@@ -14,7 +14,7 @@ shared_ptr<AsyncRenderTexture> RenderTextureManager::RequireFromFileSystem(
     const std::string& url, bool sync, shared_ptr<AsyncBitmap>* bmOut)
 {
     auto iter = render_textures.find(url);
-    const bool needUpload = iter == render_textures.end();
+    const bool needUpload = iter == render_textures.end()  || iter->second.expired();
     auto& ctx = Context::Get();
     std::shared_ptr<AsyncRenderTexture> tex_locked;
     if(needUpload)

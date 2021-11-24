@@ -650,7 +650,7 @@ int main(int , char* []) {
 	std::vector<SampleWindow*> windows;
 	SampleControls::Install();
 	ExternalControlSample sample;
-	//windows.push_back(sample.MakeWindow());
+	windows.push_back(sample.MakeWindow());
 	// DataBindSample sample2;
 	// windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
