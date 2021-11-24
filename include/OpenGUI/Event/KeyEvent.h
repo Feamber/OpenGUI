@@ -2,13 +2,16 @@
 #include <string_view>
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Reflection/reflection.h"
 
-namespace OGUI
+namespace OGUI reflect
 {
-
-    struct KeyData : public EventBase
+    struct reflect attr("event":true) 
+    KeyData : public EventBase
     {
+        attr("name":"gesture-type")
         EGestureEvent gestureType = EGestureEvent::None;
+        attr("hide":true)
         EKeyCode key;
     };
 
