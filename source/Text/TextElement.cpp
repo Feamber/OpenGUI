@@ -1,3 +1,4 @@
+#include "OpenGUI/Core/ostring/ostr.h"
 #define DLL_IMPLEMENTATION
 #include "YGValue.h"
 #include "Yoga.h"
@@ -165,6 +166,8 @@ namespace OGUI
     void TextElement::AddBindText(Name attrName)
     {
         std::shared_ptr<BindText> newBind(new BindText());
+        newBind->text = ostr::string("${") + attrName.ToStringView();
+        newBind->text += '}';
         AddBind({attrName, &newBind->text, [this](bool isApply)
         {
             if(isApply)

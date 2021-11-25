@@ -205,6 +205,8 @@ namespace OGUI
 
 		bool _OnGotFocus(struct GotFocusEvent& event);
 		bool _OnLostFocus(struct LostFocusEvent& event);
+
+		bool _OnPointerDown(struct PointerDownEvent& event);
 #pragma endregion
 
 #pragma region Hover

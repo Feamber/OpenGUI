@@ -448,21 +448,7 @@ SampleWindow* CreateNavigationTestWindow()
 {
 	return  new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml", [](OGUI::VisualElement* ve)
 	{
-		std::vector<VisualElement*> tests;
-		QueryAll(ve, ".Element", tests);
-		for (auto [i, test] : ipair(tests))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-				{
-					Context::Get().SetFocus(&element);
-					return true;
-				}
-				return false;
-			};
-			test->_eventHandler.Register<PointerDownEvent, handler>(*test);
-		}
+		
 	});
 }
 
@@ -470,64 +456,6 @@ SampleWindow* CreateCssTestWindow()
 {
 	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml", [](OGUI::VisualElement* ve)
 	{
-		if (auto child2 = QueryFirst(ve, "#Child2"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit! Child2"_o);
-				return true;
-			};
-
-			child2->_eventHandler.Register<PointerDownEvent, handler>(*child2);
-		}
-
-		if (auto child1 = QueryFirst(ve, "#Child1"))
-		{
-			constexpr auto handler = +[](PointerDownEvent& event, VisualElement& element)
-			{
-				if(event.currentPhase == EventRoutePhase::Reach)
-					Context::Get().SetFocus(&element);
-
-				using namespace ostr::literal;
-				olog::Info(u"Oh ♂ shit!"_o);
-				return true;
-			};
-			constexpr auto handlerDown = +[](KeyDownEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Down!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerUp = +[](KeyUpEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is up!"_o);
-				}
-				return false;
-			};
-			constexpr auto handlerHold = +[](KeyHoldEvent& event)
-			{
-				using namespace ostr::literal;
-				if (event.key == EKeyCode::W)
-				{
-					olog::Info(u"W is Holding!"_o);
-				}
-				return false;
-			};
-			child1->_eventHandler.Register<PointerDownEvent, handler>(*child1);
-			child1->_eventHandler.Register<KeyDownEvent, handlerDown>();
-			child1->_eventHandler.Register<KeyUpEvent, handlerUp>();
-			child1->_eventHandler.Register<KeyHoldEvent, handlerHold>();
-		}
 		{
 			std::vector<VisualElement*> tests;
 			QueryAll(ve, ".Test", tests);
