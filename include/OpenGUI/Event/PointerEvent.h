@@ -3,10 +3,10 @@
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Event/EventBase.h"
 
-namespace OGUI
+namespace OGUI full_reflect
 {
-
-    struct PointerData : public EventBase
+    struct push_attr("event":true) 
+    PointerData : public EventBase
     {
         int pointerId = 0;
         std::string_view pointerType = "unknown";

@@ -4,11 +4,12 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/EventBase.h"
 
-namespace OGUI
+namespace OGUI full_reflect
 {
     class VisualElement;
 
-    struct FocusDataBase : public EventBase
+    struct push_attr("event":true) 
+    FocusDataBase : public EventBase
     {
         FocusChangeCause cause;
         std::string_view causeDescribe;

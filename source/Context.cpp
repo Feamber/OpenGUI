@@ -58,7 +58,7 @@ namespace OGUI
 	{
 		if(!element->Visible())
 			return;
-		auto clippingChild = element->IsClipping();
+		auto clippingChild = element->IsClippingChildren();
 		if(clippingChild)
 			ctx.prims.clipStack.push_back(element->ApplyClipping());
 		element->DrawPrimitive(ctx);
@@ -80,7 +80,7 @@ namespace OGUI
 			return nullptr;
 		std::vector<VisualElement*> children;
 		element->GetChildren(children);
-		bool clipping = element->IsClipping();
+		bool clipping = element->IsClippingChildren();
 		bool intersection = false;
 		if(clipping)
 		{
@@ -142,7 +142,7 @@ namespace OGUI
 	{
 		if(!clipStack.empty())
 			element->_clipped = element->CheckClip(clipStack.back());
-		bool clippingChild = element->IsClipping();
+		bool clippingChild = element->IsClippingChildren();
 		if(clippingChild)
 			clipStack.push_back(element->ApplyClipping());
 		element->Traverse([&](VisualElement* next)

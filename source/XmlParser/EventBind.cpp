@@ -12,6 +12,17 @@ namespace OGUI
             return _AllEventHandler;
         }
 
+        std::shared_ptr<Handler> AddHandler(Name eventName, EventHandlerType fun)
+        {
+            auto result = GetAllEventHandler().try_emplace(eventName);
+            auto& list = result.first->second;
+            std::shared_ptr<Handler> newHandler(new Handler());
+            newHandler->eventName = eventName;
+            newHandler->fun = std::move(fun);
+            list.push_back(newHandler.get());
+            return newHandler;
+        }
+
         Handler::~Handler()
         {
             if(!eventName.IsNone())

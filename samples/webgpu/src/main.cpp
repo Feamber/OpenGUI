@@ -1,3 +1,4 @@
+#include "OpenGUI/Bind/EventArg.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/PointerEvent.h"
@@ -556,15 +557,20 @@ struct DataBindSample : public AttrBag
 		AddSource({minute_, &minute});
 		AddSource({second_, &second});
 		AddSource({count_, &count});
-		AddEvent = EventBind::AddHandler<const Name&, EventBase&, VisualElement&>("Add", 
-		{[&](const Name& eventName, EventBase& event, VisualElement& element)
+		AddEvent = EventBind::AddHandler("Add", 
+		[&](EventArgs& arg)
 		{
-			if(event.currentPhase == EventRoutePhase::Reach || event.currentPhase == EventRoutePhase::BubbleUp)
+			auto phase = arg.TryGet<EventRoutePhase>("currentPhase");
+			if(!phase.has_value())
+				return false;
+			if(*phase == EventRoutePhase::Reach || *phase == EventRoutePhase::BubbleUp)
 			{
 				++count;
 				Notify(count_);
+				return true;
 			}
-		}});
+			return false;
+		});
 	}
 
 	SampleWindow* MakeWindow()
@@ -651,11 +657,11 @@ int main(int , char* []) {
 	SampleControls::Install();
 	ExternalControlSample sample;
 	windows.push_back(sample.MakeWindow());
-	// DataBindSample sample2;
-	// windows.push_back(sample2.MakeWindow());
-	// windows.push_back(CreateNavigationTestWindow());
-	windows.push_back(CreateCssTestWindow());
-	windows.push_back(CreateNavigationTestWindow());
+	DataBindSample sample2;
+	windows.push_back(sample2.MakeWindow());
+	//windows.push_back(CreateNavigationTestWindow());
+	//windows.push_back(CreateCssTestWindow());
+	//windows.push_back(CreateNavigationTestWindow());
 	// main loop
 	while(!windows.empty())
 	{
@@ -666,7 +672,7 @@ int main(int , char* []) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
-			//sample2.Update();
+			sample2.Update();
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](SampleWindow* win)
