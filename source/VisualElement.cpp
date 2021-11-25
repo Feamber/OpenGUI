@@ -744,6 +744,7 @@ void OGUI::VisualElement::RegisterFocusedEvent()
 	_eventHandler.Register<LostKeyboardFocusEvent, &VisualElement::_OnLostKeyboardFocus>(this);
 	_eventHandler.Register<GotFocusEvent, &VisualElement::_OnGotFocus>(this);
 	_eventHandler.Register<LostFocusEvent, &VisualElement::_OnLostFocus>(this);
+	_eventHandler.Register<PointerDownEvent, &VisualElement::_OnPointerDown>(this);
 }
 
 std::vector<OGUI::VisualElement*> OGUI::VisualElement::GetFocusScopeChildren()
@@ -816,6 +817,16 @@ bool OGUI::VisualElement::_OnMouseLeave(struct PointerLeaveEvent &event)
 		hovered--;
 	if(hovered == 0)
 		SetPseudoClass(PseudoStates::Hover, false);
+	return false;
+}
+
+bool OGUI::VisualElement::_OnPointerDown(struct PointerDownEvent& event)
+{
+	if(event.currentPhase == EventRoutePhase::Reach && focusable)
+	{
+		Context::Get().SetFocus(this);
+		return true;
+	}
 	return false;
 }
 

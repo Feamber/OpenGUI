@@ -149,7 +149,7 @@ namespace OGUI
 			{
 				const auto vc = (uint32_t)list.vertices.size();
 				const auto ic = (uint32_t)list.indices.size();
-				if(vc != 0 && ic != 0)
+				if(vc != 0 && ic != 0 && ic != list.__last_index)
 				{
 					list.command_list.emplace_back(
 						PrimDraw{
