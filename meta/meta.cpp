@@ -23,30 +23,32 @@ namespace meta {
 
     void serialize(llvm::json::OStream& J, const Field& P)
     {
-        J.objectBegin();
-        J.attribute("name", P.name);
-        J.attribute("type", P.type);
-        serializeAttr(J, P.attrs);
-        J.attribute("line", P.line);
-        J.objectEnd();
+        J.attributeObject(P.name, [&]
+        {
+            J.attribute("type", P.type);
+            serializeAttr(J, P.attrs);
+            J.attribute("line", P.line);
+        });
     }
 
-    void serialize(llvm::json::OStream& J, const Function& P)
+    void serialize(llvm::json::OStream& J, const Function& P, bool method)
     {
-        J.objectBegin();
-        J.attribute("isStatic", P.isStatic);
-        J.attribute("name", P.name);
-        serializeAttr(J, P.attrs);
-        J.attributeBegin("parameters");
-        J.arrayBegin();
-        for(auto param : P.parameters)
-            serialize(J, param);
-        J.arrayEnd();
-        J.attributeEnd();
-        J.attribute("retType", P.retType);
-        J.attribute("fileName", P.fileName);
-        J.attribute("line", P.line);
-        J.objectEnd();
+        
+        J.object([&]
+        {
+            J.attribute("name", P.name);
+            J.attribute("isStatic", P.isStatic);
+            serializeAttr(J, P.attrs);
+            J.attributeObject("parameters", [&]
+            {
+                for(auto param : P.parameters)
+                    serialize(J, param);
+            });
+            J.attribute("retType", P.retType);
+            if(!method)
+                J.attribute("fileName", P.fileName);
+            J.attribute("line", P.line);
+        });
     }
 }
 
@@ -56,66 +58,66 @@ std::string meta::serialize(const Database& P)
     llvm::raw_string_ostream output(str);
     llvm::json::OStream J(output);
     J.objectBegin();
-    J.attributeBegin("record");
-    J.arrayBegin();
-    for(auto& record : P.records)
-    {
-        J.objectBegin();
-        J.attribute("name", record.name);
-        serializeAttr(J, record.attrs);
-        J.attributeBegin("fields");
-        J.arrayBegin();
-        for(auto field : record.fields)
-            serialize(J, field);
-        J.arrayEnd();
-        J.attributeEnd();
-        J.attributeBegin("functions");
-        J.arrayBegin();
-        for(auto f : record.functions)
-            serialize(J, f);
-        J.arrayEnd();
-        J.attributeEnd();
-        J.attribute("fileName", record.fileName);
-        J.attribute("line", record.line);
-        J.objectEnd();
-    }
-    J.arrayEnd();
-    J.attributeEnd();
     
-    J.attributeBegin("functions");
-    J.arrayBegin();
-    for(auto& f : P.functions)
-        serialize(J, f);
-    J.arrayEnd();
-    J.attributeEnd();
-
-    
-    J.attributeBegin("enums");
-    J.arrayBegin();
-    for(auto& e : P.enums)
+    J.attributeObject("records", [&]
     {
-        J.objectBegin();
-        J.attribute("name", e.name);
-        serializeAttr(J, e.attrs);
-        J.attributeBegin("values");
-        J.arrayBegin();
-        for(auto v : e.values)
+        for(auto& record : P.records)
         {
-            J.objectBegin();
-            J.attribute("name", v.name);
-            serializeAttr(J, v.attrs);
-            J.attribute("value", v.value);
-            J.attribute("line", v.line);
-            J.objectEnd();
+            J.attributeObject(record.name, [&]
+            {
+                J.attributeArray("bases", [&]
+                {
+                    for(auto& base : record.bases)
+                        J.value(base);
+                });
+                serializeAttr(J, record.attrs);
+                J.attributeObject("fields", [&]
+                {
+                    for(auto field : record.fields)
+                        serialize(J, field);
+                });
+                J.attributeArray("methods", [&]
+                {
+                    for(auto f : record.methods)
+                        serialize(J, f, true);
+                });
+                J.attribute("fileName", record.fileName);
+                J.attribute("line", record.line);
+            });
         }
-        J.arrayEnd();
-        J.attributeEnd();
-        J.attribute("fileName", e.fileName);
-        J.attribute("line", e.line);
-        J.objectEnd();
-    }
-    J.arrayEnd();
-    J.attributeEnd();
+    });
+    
+    
+    J.attributeArray("functions", [&]
+    {
+        for(auto& f : P.functions)
+            serialize(J, f, false);
+    });
+
+    J.attributeObject("enums", [&]
+    {
+        for(auto& e : P.enums)
+        {
+            J.attributeObject(e.name, [&]
+            {
+                serializeAttr(J, e.attrs);
+                J.attributeObject("values", [&]
+                {
+                    for(auto v : e.values)
+                    {
+                        J.attributeObject(v.name, [&]
+                        {
+                            serializeAttr(J, v.attrs);
+                            J.attribute("value", v.value);
+                            J.attribute("line", v.line);
+                        });
+                    }
+                });
+                J.attribute("fileName", e.fileName);
+                J.attribute("line", e.line);
+            });
+        }
+    });
 
     
     serializeAttr(J, P.attrs);

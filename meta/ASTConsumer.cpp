@@ -123,7 +123,7 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
             behavior = childBehavior = PAR_Reflect;
         else if(text.startswith("__push__"))
         {
-            auto pushText = text.substr(sizeof("__push__"));
+            auto pushText = text.substr(sizeof("__push__")-1);
             attrStack.push_back(pushText.str());
         }
         else if(text.equals("__pop__"))
@@ -266,7 +266,7 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
                 newFunction.parameters.push_back(std::move(newField));
             }
             if(record)
-                record->functions.push_back(std::move(newFunction));
+                record->methods.push_back(std::move(newFunction));
             else
                 db.functions.push_back(std::move(newFunction));
         }
@@ -289,6 +289,17 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
     case (clang::Decl::Var):
         {
             clang::VarDecl* varDecl = llvm::dyn_cast<clang::VarDecl>(decl);
+            if(!varDecl || !varDecl->isStaticDataMember())
+                return;
+            Field newField;
+            newField.attrs = attr;
+            newField.name = varDecl->getNameAsString();
+            newField.type = GetTypeName(varDecl->getType(), _ASTContext);
+            newField.line = _ASTContext->getSourceManager().getPresumedLineNumber(varDecl->getLocation());
+            if(record)
+                record->statics.push_back(std::move(newField));
+            else
+                LOG("field without record founded.");
         }
         break;
     case (clang::Decl::ClassTemplate):

@@ -36,7 +36,8 @@ namespace meta
         std::string name;
         std::string attrs;
         std::vector<Field> fields;
-        std::vector<Function> functions;
+        std::vector<Field> statics;
+        std::vector<Function> methods;
         std::string fileName;
         int line;
     };
