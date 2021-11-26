@@ -907,7 +907,7 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 				currentOrigin->navDebugRect = navCollisionBox.ToRect();
 				currentOrigin->FocusNavDebugState = CollisionBox;
 			}
-			if(element == currentOrigin || !navCollisionBox.Intersect(elementQuad)) continue;
+			if(element == currentOrigin || !element->Visible() || !navCollisionBox.Intersect(elementQuad)) continue;
 
 			float distance = (element->_worldPosition - currentWorldPosition).length();
 			const float near = 10.f;
