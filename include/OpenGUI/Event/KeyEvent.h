@@ -3,10 +3,10 @@
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Event/EventBase.h"
 
-namespace OGUI
+namespace OGUI full_reflect
 {
-
-    struct KeyData : public EventBase
+    struct push_attr("event":true) 
+    KeyData : public EventBase
     {
         EGestureEvent gestureType = EGestureEvent::None;
         EKeyCode key;

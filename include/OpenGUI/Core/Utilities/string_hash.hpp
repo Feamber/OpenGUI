@@ -11,8 +11,8 @@
 
 namespace OGUI
 {
-    inline constexpr size_t FNV_offset_basis = 14695981039346656037ULL;
-    inline constexpr size_t FNV_prime        = 1099511628211ULL;
+    inline constexpr size_t FNV_offset_basis = (size_t)14695981039346656037UL;
+    inline constexpr size_t FNV_prime        = (size_t)1099511628211UL;
 
 
     inline constexpr size_t hash(const std::string& v)

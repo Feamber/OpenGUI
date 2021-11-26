@@ -245,7 +245,7 @@ bool OGUI::VisualElement::CheckClip(const Matrix4x4& rect)
 	return true;
 }
 
-bool OGUI::VisualElement::IsClipping()
+bool OGUI::VisualElement::IsClippingChildren()
 {
 	auto& pos = StylePosition::Get(_style);
 	return pos.overflow != StyleOverflow::Visible;
@@ -593,7 +593,7 @@ void OGUI::VisualElement::SyncYogaStyle()
 	SetYGValue(_ygnode, YGNodeStyleSetMaxHeight, pos.maxHeight);
 	SetYGValue(_ygnode, YGNodeStyleSetMinWidth, pos.minWidth);
 	SetYGValue(_ygnode, YGNodeStyleSetMinHeight, pos.minHeight);
-	YGNodeStyleSetDisplay(_ygnode, pos.flexDisplay);
+	YGNodeStyleSetDisplay(_ygnode, _visible ? pos.flexDisplay : YGDisplayNone);
 }
 
 OGUI::RestyleDamage OGUI::VisualElement::ApplyProcedureStyle()
@@ -647,7 +647,12 @@ void OGUI::VisualElement::Notify(Name prop, bool force)
 
 bool OGUI::VisualElement::Visible() const
 {
-	return !(StylePosition::Get(_style).flexDisplay == YGDisplayNone) && !_clipped;
+	return !(StylePosition::Get(_style).flexDisplay == YGDisplayNone) && !_clipped && _visible;
+}
+
+void OGUI::VisualElement::SetVisibility(bool visible)
+{
+	_visible = visible;
 }
 
 bool OGUI::VisualElement::Intersect(Vector2f point)

@@ -1,7 +1,8 @@
 #pragma once
 #include "OpenGUI/Core/Name.h"
 #include "OpenGUI/Configure.h"
-namespace OGUI
+#include "OpenGUI/Reflection/reflection.h"
+namespace OGUI full_reflect
 {
     enum class EventRoutePhase : int
     {
@@ -14,7 +15,7 @@ namespace OGUI
         NoBroadcast = TrickleDown | Reach | BubbleUp,
     };
 
-    struct EventBase
+    struct attr("event":true) EventBase
     {
         static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
         EventRoutePhase currentPhase = EventRoutePhase::None;

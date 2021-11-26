@@ -21,8 +21,9 @@
 #include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Bind/AttributeBind.h"
 #include "OpenGUI/Bind/EventBind.h"
+#include "OpenGUI/Reflection/reflection.h"
 
-namespace OGUI
+namespace OGUI reflect
 {
 	using namespace ostr::literal;
 	namespace PrimitiveDraw
@@ -49,7 +50,7 @@ namespace OGUI
 		Inline
 	};
 
-	class OGUI_API VisualElement : public AttrBag
+	class OGUI_API reflect VisualElement : public AttrBag
 	{
 	public:
 		VisualElement();
@@ -64,6 +65,7 @@ namespace OGUI
 		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
 
 	public:
+		attr("script":true)
 		bool Visible() const;
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
@@ -76,15 +78,23 @@ namespace OGUI
 		std::string _name;
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
+		attr("script":true)
 		void SetVisibility(bool visible);
-		bool IsClipping();
+		attr("script":true)
+		bool IsClippingChildren();
 		bool _clipped = false;
+		bool _visible = true;
 #pragma region Hierachy
 		void UpdateRoot(VisualElement* child);
+		attr("script":true)
 		void PushChild(VisualElement* child);
+		attr("script":true)
 		void InsertChild(VisualElement* child, int index);
+		attr("script":true)
 		void RemoveChild(VisualElement* child);
+		attr("script":true)
 		VisualElement* GetRoot();
+		attr("script":true)
 		VisualElement* GetLayoutRoot();
 
 		std::vector<VisualElement*> _children;

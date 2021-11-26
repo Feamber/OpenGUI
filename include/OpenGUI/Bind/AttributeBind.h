@@ -54,6 +54,7 @@ namespace OGUI
         AttrSource* bdBind = nullptr;
     };
 
+    //TODO: Separate bind descriptor and bind instance, optimize for array
     struct OGUI_API AttrBag
     {
         std::vector<AttrBind> binds;

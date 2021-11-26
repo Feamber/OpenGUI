@@ -90,6 +90,7 @@ elseif (APPLE)
 	)
 endif()
 
+
 add_executable(WebgpuSample ${sources} ${platform_sources} ${headers})
 
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
@@ -103,4 +104,4 @@ target_link_libraries(WebgpuSample
 
 add_subdirectory(extern)
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/extern")
-target_link_libraries(WebgpuSample spdlog SampleControls)
+target_link_libraries(WebgpuSample spdlog SampleControls sol)
