@@ -60,7 +60,7 @@ namespace OGUI
 		std::vector<EKeyCode> keyNavigation_Left {EKeyCode::A, EKeyCode::Left};
 		std::vector<EKeyCode> keyNavigation_Right {EKeyCode::D, EKeyCode::Right};
 
-		void OnKeyNavigation(VisualElement* element, ENavDirection direction);
+		bool OnKeyNavigation(VisualElement* element, ENavDirection direction);
 #pragma endregion
 
 #pragma region FocusController
