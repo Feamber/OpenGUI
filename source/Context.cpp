@@ -408,19 +408,19 @@ bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 		{
 			if(std::find(keyNavigation_Up.begin(), keyNavigation_Up.end(), keyCode) != keyNavigation_Up.end())
 			{
-				OnKeyNavigation(_keyboardFocused, ENavDirection::Up);
+				return OnKeyNavigation(_keyboardFocused, ENavDirection::Up);
 			}
 			else if(std::find(keyNavigation_Down.begin(), keyNavigation_Down.end(), keyCode) != keyNavigation_Down.end())
 			{
-				OnKeyNavigation(_keyboardFocused, ENavDirection::Down);
+				return OnKeyNavigation(_keyboardFocused, ENavDirection::Down);
 			}
 			else if(std::find(keyNavigation_Left.begin(), keyNavigation_Left.end(), keyCode) != keyNavigation_Left.end())
 			{
-				OnKeyNavigation(_keyboardFocused, ENavDirection::Left);
+				return OnKeyNavigation(_keyboardFocused, ENavDirection::Left);
 			}
 			else if(std::find(keyNavigation_Right.begin(), keyNavigation_Right.end(), keyCode) != keyNavigation_Right.end())
 			{
-				OnKeyNavigation(_keyboardFocused, ENavDirection::Right);
+				return OnKeyNavigation(_keyboardFocused, ENavDirection::Right);
 			}
 		}
 	}
@@ -491,13 +491,15 @@ OGUI::WindowContext& OGUI::Context::GetWindowContext(const OGUI::WindowHandle wi
 	return NULL_WINDOW_CONTEXT;
 }
 
-void OGUI::Context::OnKeyNavigation(OGUI::VisualElement* element, ENavDirection direction)
+bool OGUI::Context::OnKeyNavigation(OGUI::VisualElement* element, ENavDirection direction)
 {
 	auto nextNavTarget = element->FindNextNavTarget(direction);
 	if(nextNavTarget)
 	{
 		SetFocus(nextNavTarget, FocusChangeCause::FocusNavigation);
+		return true;
 	}
+	return false;
 }
 
 bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
