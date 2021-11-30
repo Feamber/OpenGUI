@@ -1,6 +1,7 @@
 #include <limits>
 #define DLL_IMPLEMENTATION
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "nanovg.h"
 
 namespace OGUI
 {

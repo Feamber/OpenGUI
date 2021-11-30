@@ -1,5 +1,6 @@
 #pragma once
 #include "assert.h"
+#include "meta.h"
 
 #ifdef __cplusplus 
 #define BEGIN_EXTERN_C extern "C" {

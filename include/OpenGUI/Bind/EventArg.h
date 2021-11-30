@@ -5,7 +5,7 @@
 #include <optional>
 #include "OpenGUI/Configure.h"
 
-namespace OGUI
+namespace OGUI reflect
 {
     template<class T>
     struct NamedEventArg    
@@ -24,13 +24,9 @@ namespace OGUI
         }
         return false;
     }
-
-    /*
-    int a, b;
-    EventArgs args(EARG(a), EARG_REF(b))
-    g = args.get<int>("a");
-    */
-    struct OGUI_API EventArgs
+    
+    struct OGUI_API reflect attr("script":true) 
+    EventArgs
     {
         std::function<std::any(std::string_view)> impl;
         template<class... Ts>

@@ -54,9 +54,12 @@ void RenderTextureManager::Update()
         if(file != nullptr && file->valid())
         {
             auto tex_locked = render_textures[url].lock();
-            // comple/upload texture to render device.
-            tex_locked->device_image->_handle = ctx.renderImpl->RegisterTexture(file->GetBitmap());
-            tex_locked->device_image->is_ready = true;
+            if(tex_locked)
+            {
+                // comple/upload texture to render device.
+                tex_locked->device_image->_handle = ctx.renderImpl->RegisterTexture(file->GetBitmap());
+                tex_locked->device_image->is_ready = true;
+            }
             file.reset();
             uploadeds.push_back(url);
         }

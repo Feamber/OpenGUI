@@ -17,12 +17,14 @@ class FunctionDesc(object):
     def __init__(self, retType, fields):
         self.retType = retType
         self.fields = fields
+        self.signature = retType +"(*)("+ str.join(", ",  [x.type for x in fields]) + ")"
 
 class Function(object):
     def __init__(self, name):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.descs = []
+        self.overloaded = False
 
 class Record(object):
     def __init__(self, name, fields, methods):
@@ -30,12 +32,37 @@ class Record(object):
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.fields = fields
         self.methods = methods
+        self.bases = []
+
+class Enumerator(object):
+    def __init__(self, name, value):
+        self.name = name
+        self.short_name = str.rsplit(name, "::", 1)[-1]
+        self.value = value
+
+class Enum(object):
+    def __init__(self, name, enumerators):
+        self.name = name
+        self.short_name = str.rsplit(name, "::", 1)[-1]
+        self.enumerators = enumerators
 
 class Binding(object):
     def __init__(self):
         self.records = []
+        self.name_to_record = {}
         self.functions = []
+        self.enums = []
         self.headers = set()
+    def add_record(self, record, bases):
+        self.records.append(record)
+        self.name_to_record[record.name] = record
+        for base in bases:
+            if base in self.name_to_record:
+                record.bases.append(self.name_to_record[base])
+            else:
+                print("base class {} of reflected class {} is not reflected!".format(record.name, base))
+
+
 
 def GetInclude(path):
     return path.replace("\\", "/").rsplit("include/", 1)[-1]
@@ -58,7 +85,21 @@ def main():
                 print("unable to gen lua bind for records in cpp, name:%s" % key, file=sys.stderr)
                 continue
             db.headers.add(GetInclude(file))
-            db.records.append(Record(key, fields, functions))
+            db.add_record(Record(key, fields, functions), value["bases"])
+    for key, value in meta["enums"].items():
+        attr = value["attrs"]
+        if not "script" in attr:
+            continue
+        file = value["fileName"]
+        if str.endswith(file, ".cpp"):
+            print("unable to gen lua bind for records in cpp, name:%s" % value["name"], file=sys.stderr)
+            continue
+        db.headers.add(GetInclude(file))
+        enumerators = []
+        for key2, value2 in value["values"].items():
+            enumerators.append(Enumerator(key2, value2["value"]))
+        db.enums.append(Enum(key, enumerators))
+        
     db.functions = parseFunctions(meta["functions"], headers=db.headers)
     
     template = os.path.join(BASE, "luaBind.cpp.mako")
@@ -97,22 +138,29 @@ def abort(message):
 
 def parseFunctions(dict, headers = None):
     functionsDict = {}
+    overloadDict = {}
     for value in dict:
         attr = value["attrs"]
+        name = value["name"]
+        overloadDict.setdefault(name, 0)
+        overloadDict[name] = overloadDict[name]+1
         if not "script" in attr:
             continue
         if not (headers is None):
             file = value["fileName"]
             if str.endswith(file, ".cpp"):
-                print("unable to gen lua bind for records in cpp, name:%s" % value["name"], file=sys.stderr)
+                print("unable to gen lua bind for records in cpp, name:%s" % name, file=sys.stderr)
                 continue
             headers.add(GetInclude(file))
-        function = functionsDict.setdefault(value["name"], Function(value["name"]))
+        function = functionsDict.setdefault(name, Function(name))
         fields = []
         for key2, value2 in value["parameters"].items():
             field = Field(key2, value2["type"])
             fields.append(field)
         function.descs.append(FunctionDesc(value["retType"], fields))
+    for k,v in overloadDict.items():
+        if v > 1 and k in functionsDict:
+            functionsDict[k].overloaded = True
     return [v for v in functionsDict.values()]
     
 

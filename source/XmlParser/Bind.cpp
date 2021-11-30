@@ -3,7 +3,7 @@
 #include <typeindex>
 #include <vector>
 #include "OpenGUI/Core/olog.h"
-#include "OpenGUI/Bind/AttributeBind.h"
+#include "OpenGUI/Bind/Bind.h"
 
 namespace OGUI
 {
@@ -13,8 +13,14 @@ namespace OGUI
     }
     using namespace AttributeBind;
 
-    AttrSource::AttrSource(Name inName, std::type_index type, void* data)
+    AttrSource::AttrSource(Name inName, std::type_index type, const void* data)
         : name(inName), type(type), data(data)
+    {
+    }
+
+    
+    AttrSource::AttrSource(Name inName, AccessFunc accessor)
+        : name(inName), type(typeid(nullptr_t)), accessFun(accessor), data(nullptr)
     {
     }
 
@@ -24,21 +30,52 @@ namespace OGUI
 
     void AttrSource::DataChange(bool force) const
     {
-        if(_guard)
+        if(_guard && !force)
             return;
         _guard = true;
-        for(auto bind : binds)
-                bind->Sync(*this, force);
+        if(data)
+        {
+            for(auto bind : binds)
+                bind->Sync(type, data, force);
+        }
+        else 
+        {
+            accessFun([&](std::type_index type, void* d)
+            {
+                for(auto bind : binds)
+                    bind->Sync(type, d, force);
+            });
+        }
         _guard = false;
     }
 
-    AttrBind::AttrBind(Name inName, OnChange changeFun)
-        : name(inName), changeFun(changeFun), changePostFun(), type(typeid(nullptr)), data(nullptr)
+    
+    void AttrSource::PushData(struct AttrBind* bind) const
+    {
+        if(_guard)
+            return;
+        _guard = true;
+        if(data)
+        {
+            bind->Sync(type, data, false);
+        }
+        else 
+        {
+            accessFun([&](std::type_index type, void* d)
+            {
+                bind->Sync(type, d, false);
+            });
+        }
+        _guard = false;
+    }
+
+    AttrBind::AttrBind(Name inName, std::type_index type, size_t size, OnChange changeFun)
+        : name(inName), changeFun(changeFun), changePostFun(), type(type), size(size), data(nullptr)
     {
     }
 
-    AttrBind::AttrBind(Name inName, std::type_index type, void* data, OnChangePost changePostFun, AssignFunc assignFunc)
-        : name(inName), changeFun(), changePostFun(changePostFun), assignFunc(assignFunc), type(type), data(data)
+    AttrBind::AttrBind(Name inName, std::type_index type, size_t size, void* data, OnChangePost changePostFun, AssignFunc assignFunc)
+        : name(inName), changeFun(), changePostFun(changePostFun), assignFunc(assignFunc), type(type), size(size), data(data)
     {
     }
 
@@ -46,31 +83,46 @@ namespace OGUI
     {
     }
 
-    void AttrBind::Sync(const AttrSource& inSource, bool force)
+    void AttrBind::Sync(std::type_index inType, const void* inData, bool force)
     {
         if(bdBind && bdBind->_guard && !force)
             return;
         if(data)
         {
-            if(inSource.type == type)
+            if(inType == type)
             {
-                assignFunc(data, inSource.data);
+                assignFunc(data, inData);
                 changePostFun(true);
             }
             else
-                changePostFun(AttrConverter(inSource.type, inSource.data, type, data));
+                changePostFun(AttrConverter(inType, inData, type, data));
         }
         else
-            changeFun(inSource);
+        {
+            if(inType == type)
+            {
+                changeFun(inData);
+            }
+            else 
+            {
+                char* buffer;
+                char staticBuffer[128];
+                if(size > sizeof(staticBuffer))
+                    buffer = new char[size];
+                else
+                    buffer = staticBuffer;
+                bool succeed = AttrConverter(inType, inData, type, buffer);
+                if(succeed)
+                    changeFun(buffer);
+                if(size > sizeof(staticBuffer))
+                    delete buffer;
+            }
+        }
+        if(bdBind)
+            bdBind->DataChange(false);
     }
 
-    void AttrBind::Sync()
-    {
-        if(source)
-            Sync(*source);
-    }
-
-    void AttrBag::AddBind(AttrBind bind)
+    void Bindable::AddBind(AttrBind bind)
     {
         if(_builded)
         {
@@ -80,7 +132,16 @@ namespace OGUI
         binds.emplace_back(std::move(bind));
     }
 
-    void AttrBag::AddSource(AttrSource src)
+    
+    AttrSource* Bindable::GetSource(Name name)
+    {
+        auto iter = sources.find(name);
+        if(iter!=sources.end())
+            return &iter->second;
+        return nullptr;
+    }
+
+    void Bindable::AddSource(AttrSource src)
     {
         if(_builded)
         {
@@ -91,10 +152,13 @@ namespace OGUI
         if(iter!=sources.end())
             olog::Warn(u"忽略重复注册的AttrSource name:{}"_o, src.name.ToStringView());
         else
-            sources.try_emplace(src.name, std::move(src));
+        {
+            sources.emplace(src.name, std::move(src));
+        }
+        return;
     }
 
-    void AttrBag::Build()
+    void Bindable::Build()
     {
         if(_builded)
             return;
@@ -107,14 +171,14 @@ namespace OGUI
         _builded = true;
     }
 
-    void AttrBag::Notify(Name name, bool force)
+    void Bindable::Notify(Name name, bool force)
     {
         auto iter = sources.find(name);
         if(iter!=sources.end())
             iter->second.DataChange(force);
     }
 
-    void AttrBag::Bind(AttrBag& other)
+    void Bindable::Bind(Bindable& other)
     {
         if(!_builded)
             Build();
@@ -122,20 +186,22 @@ namespace OGUI
             other.Build();
         for(auto& bind : binds)
         {
-            auto iter = other.sources.find(bind.name);
-            if(iter != other.sources.end())
+            auto ptr = other.GetSource(bind.name);
+            if(ptr != nullptr)
             {
-                iter->second.binds.emplace_back(&bind);
-                bind.source = &iter->second;
-                bind.Sync(iter->second);
+                ptr->binds.emplace_back(&bind);
+                bind.source = ptr;
+                ptr->PushData(&bind);
             }
         }
         bindingTo.emplace_back(&other);
         other.bindingBy.emplace_back(this);
     }
 
-    void AttrBag::Unbind(AttrBag& other)
+    void Bindable::Unbind(Bindable& other)
     {
+        if(!_builded)
+            return;
         auto iter = std::find(bindingTo.begin(), bindingTo.end(), &other);
         if(iter == bindingTo.end())
             return;
@@ -153,7 +219,12 @@ namespace OGUI
         other.bindingBy.erase(std::remove(other.bindingBy.begin(), other.bindingBy.end(), this), other.bindingBy.end());
     }
 
-    AttrBag::~AttrBag()
+    void Bindable::AddEventBind(Name eventName, EventHandlerType fun)
+    {
+        eventHandlers.emplace(eventName, fun);
+    }
+
+    Bindable::~Bindable()
     {
         for(auto to : bindingTo)
         {
@@ -184,7 +255,7 @@ namespace OGUI
         return result2.second;
     }
 
-    bool AttrConverter(std::type_index sourceType, void* source, std::type_index targetType, void* target)
+    bool AttrConverter(std::type_index sourceType, const void* source, std::type_index targetType, void* target)
     {
         auto findSource = AllConverter.find(sourceType);
         if(findSource == AllConverter.end())
@@ -206,57 +277,73 @@ namespace OGUI
 
     void RegisterBaseAttrConverter()
     {
-        RegisterAttrConverter<int, int32>([](int& source, int32 out)
+        RegisterAttrConverter<int, int32>([](const int& source, int32 out)
             {
                 out =source;
                 return true;
             });
-        RegisterAttrConverter<int, float>([](int& source, float& out)
+        RegisterAttrConverter<int, float>([](const int& source, float& out)
             {
                 out =source;
                 return true;
             });
-        RegisterAttrConverter<int, ostr::string>([](int& source, ostr::string& out)
+        RegisterAttrConverter<int, ostr::string>([](const int& source, ostr::string& out)
             {
                 out = std::to_string(source);
                 return true;
             });
         
-        RegisterAttrConverter<int32, int>([](int32& source, int& out)
+        RegisterAttrConverter<int32, int>([](const int32& source, int& out)
             {
                 out = source;
                 return true;
             });
-        RegisterAttrConverter<int32, float>([](int32& source, float& out)
+        RegisterAttrConverter<int32, float>([](const int32& source, float& out)
             {
                 out = source;
                 return true;
             });
 
-        RegisterAttrConverter<float, int32>([](float& source, int32& out)
+        RegisterAttrConverter<float, int32>([](const float& source, int32& out)
             {
                 out = source;
                 return true;
             });
-        RegisterAttrConverter<float, int>([](float& source, int& out)
+        RegisterAttrConverter<float, int>([](const float& source, int& out)
             {
                 out = source;
                 return true;
             });
-        RegisterAttrConverter<float, ostr::string>([](float& source, ostr::string& out)
+        RegisterAttrConverter<double, float>([](const double& source, float& out)
+            {
+                out = source;
+                return true;
+            });
+        RegisterAttrConverter<float, double>([](const float& source, double& out)
+            {
+                out = source;
+                return true;
+            });
+        RegisterAttrConverter<double, ostr::string>([](const double& source, ostr::string& out)
+            {
+                out = std::to_string(source);
+                return true;
+            });
+
+        RegisterAttrConverter<float, ostr::string>([](const float& source, ostr::string& out)
             {
                 out = std::to_string(source);
                 return true;
             });
         
-        RegisterAttrConverter<ostr::string, std::string>([](ostr::string& source, std::string& out)
+        RegisterAttrConverter<ostr::string, std::string>([](const ostr::string& source, std::string& out)
             {
                 auto strv = source.to_sv();
                 out = {strv.begin(), strv.end()};
                 return true;
             });
 
-        RegisterAttrConverter<std::string, ostr::string>([](std::string& source, ostr::string& out)
+        RegisterAttrConverter<std::string, ostr::string>([](const std::string& source, ostr::string& out)
             {
                 out = source;
                 return true;

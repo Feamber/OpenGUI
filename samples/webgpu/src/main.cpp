@@ -7,13 +7,15 @@
 #include "OpenGUI/Text/TextElement.h"
 #include "appbase.h"
 #include "webgpu.h"
-#include "OpenGUI/Bind/EventBind.h"
-#include "OpenGUI/Bind/AttributeBind.h"
+#include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/Core/ostring/ostr.h"
+#include <cctype>
 #include <ctime>
 #include <functional>
-#include<assert.h>
+#include <assert.h>
+#include <memory>
 #include "SampleControls.h"
+#include "sol/sol.hpp"
 
 std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 extern void InstallInput();
@@ -21,11 +23,9 @@ extern void InstallInput();
 class SampleWindow : public CSSWindow
 {
 public:
-	SampleWindow(int width, int height, const char *title, const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
-		:CSSWindow(width, height, title, xmlFile, onReloadedEvent)
+	SampleWindow(int width, int height, const char *title, ReloadManager* watcher, const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
+		:CSSWindow(width, height, title, watcher, xmlFile, onReloadedEvent)
 	{
-		auto&& ctx = Context::Get();
-		ctx.renderImpl->RegisterWindow(*cWnd);
 	};
 };
 
@@ -445,18 +445,20 @@ protected:
 	}
 };
 
+ReloadManager reloader;
 SampleWindow* CreateNavigationTestWindow()
 {
-	return  new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", "res/test_nav.xml", [](OGUI::VisualElement* ve)
+	return  new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "FocusNavigationTest", &reloader, "res/test_nav.xml", [](OGUI::VisualElement* ve)
 	{
-		
+		ve->_pseudoMask |= PseudoStates::Root;
 	});
 }
 
 SampleWindow* CreateCssTestWindow()
 {
-	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", "res/test.xml", [](OGUI::VisualElement* ve)
+	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", &reloader, "res/test.xml", [](OGUI::VisualElement* ve)
 	{
+		ve->_pseudoMask |= PseudoStates::Root;
 		{
 			std::vector<VisualElement*> tests;
 			QueryAll(ve, ".Test", tests);
@@ -472,20 +474,19 @@ SampleWindow* CreateCssTestWindow()
 	static Name second_ = "second";
 	static Name count_ = "count";
 
-struct DataBindSample : public AttrBag
+struct DataBindSample : public Bindable
 {
 	ostr::string hour = "00";
 	ostr::string minute = "00";
 	ostr::string second = "00";
 	int count = 0;
-	std::shared_ptr<EventBind::Handler> AddEvent;
 	DataBindSample()
 	{
 		AddSource({hour_, &hour});
 		AddSource({minute_, &minute});
 		AddSource({second_, &second});
 		AddSource({count_, &count});
-		AddEvent = EventBind::AddHandler("Add", 
+		AddEventBind("Add", 
 		[&](EventArgs& arg)
 		{
 			auto phase = arg.TryGet<EventRoutePhase>("currentPhase");
@@ -503,8 +504,9 @@ struct DataBindSample : public AttrBag
 
 	SampleWindow* MakeWindow()
 	{
-		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", "res/DataBind.xml", [&](OGUI::VisualElement* ve)
+		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", &reloader, "res/DataBind.xml", [&](OGUI::VisualElement* ve)
 		{
+			ve->_pseudoMask |= PseudoStates::Root;
 			VisualElement* test = QueryFirst(ve, "#AddButton");
 			
 			//所有文字绑定到数据源上
@@ -535,7 +537,7 @@ struct DataBindSample : public AttrBag
 };
 	static Name value_ = "value";
 
-struct ExternalControlSample : public AttrBag
+struct ExternalControlSample : public Bindable
 {
 	float value = 0.f;
 	ExternalControlSample()
@@ -544,14 +546,14 @@ struct ExternalControlSample : public AttrBag
 		AddBind({value_, &value, [&](bool valid)
 		{
 			olog::Info(u"value updated: {}"_o.format(value));
-			Notify(value_);
 		}});
 	}
 
 	SampleWindow* MakeWindow()
 	{
-		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", "res/samplecontrols/sample.xml", [&](OGUI::VisualElement* ve)
+		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", &reloader, "res/samplecontrols/sample.xml", [&](OGUI::VisualElement* ve)
 		{
+			ve->_pseudoMask |= PseudoStates::Root;
 			VisualElement* test = QueryFirst(ve, "#TestSlider");
 			Bind(*test);
 			std::vector<VisualElement*> allElement;
@@ -562,12 +564,187 @@ struct ExternalControlSample : public AttrBag
 	}
 };
 
+void BindLua(lua_State* L);
+
+std::type_index GetCppType(sol::type type, size_t& size)
+{
+	switch(type)
+	{
+		case sol::type::boolean:
+			size = sizeof(bool);
+			return typeid(bool);
+		case sol::type::string:
+			size = sizeof(std::string);
+			return typeid(std::string);
+		case sol::type::number:
+			size = sizeof(double);
+			return typeid(double);
+		default:
+			return typeid(nullptr_t);
+	}
+}
+
+struct LuaBindable : Bindable
+{
+	sol::table table;
+
+	static void RegisterLua(sol::state_view lua)
+	{
+		auto type = lua.new_usertype<LuaBindable>("LuaBindable");
+		type[sol::meta_function::index] = &LuaBindable::index;
+		type[sol::meta_function::new_index] = &LuaBindable::new_index;
+		lua["MakeDataModel"] = +[](sol::table table)
+		{
+			std::shared_ptr<Bindable> dm = std::make_shared<LuaBindable>(table);
+			return dm;
+		};
+	}
+
+	sol::object index(sol::string_view key)
+	{
+		return table[key];
+	}
+
+	void new_index(sol::string_view key, sol::object value)
+	{
+		table[key] = value;
+		Notify(key);
+	}
+
+	LuaBindable(sol::table inTable)
+		:table(std::move(inTable))
+	{
+		for(auto& kv : table)
+		{
+			auto name = kv.first.as<sol::optional<sol::string_view>>();
+			if(!name)
+			{
+				olog::Warn(u"invalid binding path founded, must be string!"_o);
+				continue;
+			}
+			auto value = kv.second;
+			
+			if(value.is<sol::function>())
+			{
+				AddEventBind(*name, [this, path = *name](EventArgs& args)
+				{
+					sol::optional<bool> result = table[path](this);
+					return result.value_or(false);
+				});
+				continue;
+			}
+			size_t size;
+			auto luaType = value.get_type();
+			auto type = GetCppType(luaType, size);
+			
+			if(type == typeid(nullptr_t))
+			{
+				olog::Warn(u"unsupported binding type, binding path:{}"_o.format(*name));
+				continue;
+			}
+			AddBind({
+				*name, type, size, [this, luaType, path = *name](const void* data)
+				{
+					switch(luaType)
+					{
+						case sol::type::boolean:
+						{
+							table[path] = *(const bool*)data;
+							break;
+						}
+						case sol::type::string:
+						{
+							table[path] = *(const std::string*)data;
+							break;
+						}
+						case sol::type::number:
+						{
+							table[path] = *(const double*)data;
+							break;
+						}
+						default:
+							return;
+					}
+					auto cbPath = "on" + std::string(path) + "Changed";
+					cbPath[2] = std::toupper(cbPath[2]); 
+					sol::optional<sol::function> onChange = table[cbPath];
+					if(onChange)
+						(*onChange)(table);
+				}
+			});
+			
+			AddSource({*name, [this, path = *name](const AttrSync& sync)
+			{
+				sol::object obj = table[path];
+				sol::userdata ud;
+				if(obj != sol::nil)
+				{
+					switch(obj.get_type())
+					{
+						case sol::type::boolean:
+						{
+							auto value = obj.as<bool>();
+							sync(typeid(bool), &value);
+							return;
+						}
+						case sol::type::string:
+						{
+							auto value = obj.as<std::string>();
+							sync(typeid(std::string), &value);
+							return;
+						}
+						case sol::type::number:
+						{
+							auto value = obj.as<double>();
+							sync(typeid(double), &value);
+							return;
+						}
+						default:
+							break;
+					}
+				}
+				olog::Warn(u"binding path {} is not valid anymore!"_o.format(path));
+			}});
+		}
+	}
+};
+
+struct LuaSample
+{
+	sol::state lua;
+	sol::table object;
+	AppWindow* win;
+	std::vector<std::shared_ptr<ReloadableXml>> xmls;
+	LuaSample()
+	{
+		lua.open_libraries(sol::lib::base, sol::lib::package);
+		BindLua(lua.lua_state());
+		LuaBindable::RegisterLua(lua);
+		lua.set_function("LoadXml", [this](const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
+		{
+			LoadXml(xmlFile, onReloadedEvent);
+		});
+	}
+
+	void LoadXml(const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
+	{
+		xmls.push_back(std::make_shared<ReloadableXml>(&reloader, win->cWnd->GetWindowUI(), xmlFile, onReloadedEvent));
+	}
+
+	AppWindow* MakeWindow()
+	{
+		win = new AppWindow(WINDOW_WIN_W, WINDOW_WIN_H, "LuaBind");
+		lua.script_file("res/LuaBind/main.lua");
+		lua["main"]();
+		return win;
+	}
+};
+
 int main(int , char* []) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
 		return -1;
 	}
-
     RegisterBuiltinStructs();
 	using namespace OGUI;
 	using namespace ostr::literal;
@@ -581,16 +758,19 @@ int main(int , char* []) {
 		ctx.fileImpl = std::make_unique<OGUI::FileInterface>();
 	}
 
-	std::vector<SampleWindow*> windows;
+	std::vector<AppWindow*> windows;
 	SampleControls::Install();
-	ExternalControlSample sample;
-	windows.push_back(sample.MakeWindow());
-	DataBindSample sample2;
-	windows.push_back(sample2.MakeWindow());
+	//ExternalControlSample sample;
+	//windows.push_back(sample.MakeWindow());
+	LuaSample lsample;
+	windows.push_back(lsample.MakeWindow());
+	//DataBindSample sample2;
+	//windows.push_back(sample2.MakeWindow());
 	//windows.push_back(CreateNavigationTestWindow());
 	//windows.push_back(CreateCssTestWindow());
 	//windows.push_back(CreateNavigationTestWindow());
 	// main loop
+	reloader.Watch();
 	while(!windows.empty())
 	{
 		using namespace ostr::literal;
@@ -600,10 +780,10 @@ int main(int , char* []) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
-			sample2.Update();
+			//sample2.Update();
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			
-			auto iter = std::remove_if(windows.begin(), windows.end(), [&](SampleWindow* win)
+			auto iter = std::remove_if(windows.begin(), windows.end(), [&](AppWindow* win)
 			{
 					if(SDL_GetWindowID(win->window) == event.window.windowID)
 					{
@@ -620,6 +800,7 @@ int main(int , char* []) {
 		}
 		for(auto win : windows)
 			win->Update();
+		reloader.Tick();
 	}
 	SDL_Quit();
 	return 0;

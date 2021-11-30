@@ -12,7 +12,7 @@ namespace OGUI
             if (next->_isPseudoElement)
                 return;
             if(auto eventBind = next->GetEventBind(event.GetEventName()))
-				EventBind::Broadcast(*eventBind, event, MakeEventArg("element", next));
+				Broadcast(*next, *eventBind, event, MakeEventArg("element", next));
             next->_eventHandler.Handle(event);
             BroadcastEvent<T>(next, event); 
         });
@@ -48,7 +48,7 @@ namespace OGUI
             {
                 auto& element = routePath[i];
                 if(auto eventBind = element->GetEventBind(event.GetEventName()))
-					EventBind::Broadcast(*eventBind, event, MakeEventArg("element", element));
+					Broadcast(*element, *eventBind, event, MakeEventArg("element", element));
                 if(element->_eventHandler.Handle(event))
                     return true;
             }
@@ -57,14 +57,14 @@ namespace OGUI
         if (currentPhase == EventRoutePhase::Reach)
         {
             if(auto eventBind = target->GetEventBind(event.GetEventName()))
-				EventBind::Broadcast(*eventBind, event, MakeEventArg("element", target));
+				Broadcast(*target, *eventBind, event, MakeEventArg("element", target));
             if(target->_eventHandler.Handle(event))
                 return true;
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
                 {
                     if(auto eventBind = parent->GetEventBind(event.GetEventName()))
-					    EventBind::Broadcast(*eventBind, event, MakeEventArg("element", parent));
+					    Broadcast(*parent, *eventBind, event, MakeEventArg("element", parent));
                     if(parent->_eventHandler.Handle(event))
                         return true;
                 }
@@ -81,7 +81,7 @@ namespace OGUI
             for(auto parent : routePath)
             {
                 if(auto eventBind = parent->GetEventBind(event.GetEventName()))
-					EventBind::Broadcast(*eventBind, event, MakeEventArg("element", parent));
+					Broadcast(*parent, *eventBind, event, MakeEventArg("element", parent));
                 if(parent->_eventHandler.Handle(event))
                     return true;
             }

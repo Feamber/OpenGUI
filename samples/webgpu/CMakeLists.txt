@@ -104,4 +104,4 @@ target_link_libraries(WebgpuSample
 
 add_subdirectory(extern)
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/extern")
-target_link_libraries(WebgpuSample spdlog SampleControls sol)
+target_link_libraries(WebgpuSample spdlog SampleControls sol lua_static)

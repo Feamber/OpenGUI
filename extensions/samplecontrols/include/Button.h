@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
+#include "OpenGUI/Event/PointerEvent.h"
 
 namespace SampleControls
 {

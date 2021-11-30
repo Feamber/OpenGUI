@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualElement xmlns:sample="SampleControls">
+    <Style path="res/LuaBind.css"/>
+    
+    <VisualElement class="column">
+        <sample:Slider name="TestSlider" min-value="0" max-value="100" value="$value"> 
+            <VisualElement name="SliderBar"/>
+        </sample:Slider>
+        <Text name="ValueText"> ${value} </Text>
+    </VisualElement>
+    <sample:Button name="AddButton" class="Button" on:pointer-click="Add">
+        <Text class="Text">Add</Text>
+    </sample:Button>
+    <Text name="CountText" class="Text,InfoText">点击次数：${value} 次</Text>
+</VisualElement>

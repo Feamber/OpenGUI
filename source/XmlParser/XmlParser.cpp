@@ -1,6 +1,6 @@
 
 #define DLL_IMPLEMENTATION
-#include "OpenGUI/Bind/AttributeBind.h"
+#include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/XmlParser/XmlElementFactory.h"
 #include "OpenGUI/Style2/Parse.h"

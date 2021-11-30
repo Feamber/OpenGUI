@@ -5,9 +5,10 @@
 #include <cinttypes>
 #include <optional>
 
-namespace OGUI
+namespace OGUI reflect
 {
-	enum class PseudoStates : uint32_t
+	enum class reflect attr("script":true) 
+	PseudoStates : uint32_t
 	{
 		None = 0,
 		Active = 1 << 0,
@@ -75,8 +76,10 @@ namespace OGUI
 
 	OGUI_API std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
 	OGUI_API bool Match(VisualElement* current, StyleComplexSelector& complexSel);
+	attr("script":true)
 	OGUI_API VisualElement* QueryFirst(VisualElement* root, std::string_view str);
 	OGUI_API VisualElement* QueryFirst(VisualElement* root, StyleComplexSelector& complexSel);
+	attr("script":true)
 	OGUI_API void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result);
 	OGUI_API void QueryAll(VisualElement* root, StyleComplexSelector& complexSel, std::vector<VisualElement*>& result);
 }

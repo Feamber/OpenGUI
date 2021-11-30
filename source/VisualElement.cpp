@@ -276,16 +276,23 @@ OGUI::VisualElement::VisualElement()
 
 OGUI::VisualElement::~VisualElement()
 {
+	if(_physicalParent)
+		_physicalParent->RemoveChild(this);
+	if(_logicalParent)
+		_logicalParent->RemoveChild(this);
 	if (_ygnode)
 	{
 		YGNodeFree(_ygnode);
 	}
-
 	auto& Ctx = Context::Get();
+	if(!_styleSheets.empty())
+		Ctx.styleSystem.InvalidateCache();
 	auto& allElementHandle = Ctx._allElementHandle;
 	allElementHandle.erase(this);
 	if(Ctx._keyboardFocused == this)
 		Ctx._keyboardFocused = nullptr;
+	for(auto sheet : _styleSheets)
+		delete sheet;
 }
 
 void OGUI::VisualElement::DrawPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
@@ -328,7 +335,10 @@ void OGUI::VisualElement::DestoryTree(VisualElement* element)
 	{
 		auto back = toDestroy.back(); toDestroy.pop_back();
 		for (auto child : back->_children)
+		{
+			child->_logicalParent = child->_physicalParent = nullptr;
 			toDestroy.push_back(child);
+		}
 		delete back;
 	}
 }
@@ -346,9 +356,7 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 {
 	_scrollSizeDirty = true;
 	child->_physicalParent = this;
-	InsertChild(child, _children.size());
-	child->_layoutType = LayoutType::Flex;
-	UpdateRoot(child);
+	InsertChild(child, _children.size());\
 }
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
@@ -358,7 +366,10 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 	YGNodeInsertChild(_ygnode, child->_ygnode, index);
 	_children.insert(_children.begin() + index, child);
 	child->_layoutType = LayoutType::Flex;
+	child->_selectorDirty = true;
 	UpdateRoot(child);
+	auto& Ctx = Context::Get();
+	Ctx._layoutDirty = true;
 }
 
 void OGUI::VisualElement::RemoveChild(VisualElement* child)
@@ -642,7 +653,7 @@ void OGUI::VisualElement::Notify(Name prop, bool force)
 {
 	auto iter =_bindBag.find(prop);
 	if(iter != _bindBag.end())
-		AttrBag::Notify(iter->second, force);
+		Bindable::Notify(iter->second, force);
 }
 
 bool OGUI::VisualElement::Visible() const
@@ -1252,4 +1263,13 @@ OGUI::Vector2f OGUI::VisualElement::GetScrollPos()
 	//Vector2f axis = {GetScrollingAxisX(), GetScrollingAxisY()};
 	//Vector2f pivot = Vector2f{-axis.x/2 + 0.5f, -axis.y/2 + 0.5f} * _scrollSize;
 	return _scrollOffset;
+}
+
+void OGUI::BindTree(VisualElement* element, Bindable& bindable)
+{
+	element->Bind(bindable);
+	element->Traverse([&](VisualElement* next)
+	{
+		BindTree(next, bindable);
+	});
 }

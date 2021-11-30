@@ -18,7 +18,7 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Core/StdLog.h"
-#include "OpenGUI/Bind/AttributeBind.h"
+#include "OpenGUI/Bind/Bind.h"
 #include "Text/godot/text_server_adv.h"
 
 OGUI::WindowContext::WindowContext(WindowHandle window)

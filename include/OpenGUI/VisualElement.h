@@ -6,7 +6,6 @@
 #include <string>
 #include "OpenGUI/Core/Math.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
-#include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
@@ -19,9 +18,7 @@
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Bind/AttributeBind.h"
-#include "OpenGUI/Bind/EventBind.h"
-#include "OpenGUI/Reflection/reflection.h"
+#include "OpenGUI/Bind/Bind.h"
 
 namespace OGUI reflect
 {
@@ -50,7 +47,7 @@ namespace OGUI reflect
 		Inline
 	};
 
-	class OGUI_API reflect VisualElement : public AttrBag
+	class OGUI_API reflect VisualElement : public Bindable
 	{
 	public:
 		VisualElement();
@@ -154,6 +151,7 @@ namespace OGUI reflect
 		void MarkTransformDirty();
 		void MarkStyleTransformDirty();
 		virtual void MarkLayoutDirty();
+		attr("script":true)
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout();
@@ -189,7 +187,7 @@ namespace OGUI reflect
 #pragma region Bind
 	public:
 		std::unordered_map<Name, Name> _bindBag;
-		EventBind::EventBag _eventBag;
+		EventBag _eventBag;
 		EventHandler _eventHandler;
 		Name* GetEventBind(Name event);
 		void Notify(Name prop, bool force = false);
@@ -277,6 +275,9 @@ namespace OGUI reflect
 		bool _isXmlRoot = false;
 #pragma endregion 
 	};
+
+	attr("script":true)
+	OGUI_API void BindTree(VisualElement* element, Bindable& bindable);
 }
 
 

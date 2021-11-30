@@ -3,6 +3,7 @@
 #include <functional>
 #include <filesystem>
 #include <memory>
+#include <mutex>
 #include <string_view>
 #include <string.h>
 #include <unordered_map>
@@ -104,6 +105,7 @@ public:
         cWnd = &ctx.Create(this);
 #endif
 		UpdateTimer.Reset();
+		ctx.renderImpl->RegisterWindow(*cWnd);
     }
 	void * GetNativeHandle() override
 	{
@@ -141,146 +143,201 @@ public:
     }
 };
 
+class ReloadManager : public efsw::FileWatchListener
+{
+	public:
+	efsw::FileWatcher watcher;
+	std::mutex m;
+	struct Event
+	{
+		std::string dir;
+		std::string filename;
+		efsw::Action action;
+		std::string oldFilename = "";
+	};
+
+	struct PendingEvents
+	{
+		std::vector<Event> events;
+		efsw::FileWatchListener* callback;
+	};
+
+	std::unordered_map<efsw::WatchID, PendingEvents> allPendingEvents;
+
+	efsw::WatchID AddWatch(const std::string& directory, efsw::FileWatchListener* callback, bool recursive)
+	{
+		auto id = watcher.addWatch(directory, this, true);
+		PendingEvents watch;
+		watch.callback = callback;
+		allPendingEvents.emplace(id, watch);
+		return id;
+	}
+
+	void RemoveWatch(efsw::WatchID id)
+	{
+		watcher.removeWatch(id);
+		allPendingEvents.erase(id);
+	}
+
+	void handleFileAction(efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
+	{
+		std::scoped_lock<std::mutex> lock(m);
+		Event event{dir, filename, action, oldFilename};
+		allPendingEvents[watchid].events.push_back(std::move(event));
+	}
+
+	void Watch()
+	{
+		watcher.watch();
+	}
+
+	void Tick()
+	{
+		std::scoped_lock<std::mutex> lock(m);
+		for(auto& pair : allPendingEvents)
+		{
+			for(auto& e : pair.second.events)
+				pair.second.callback->handleFileAction(pair.first, e.dir, e.filename, e.action, e.oldFilename);
+			pair.second.events.clear();
+		}
+	}
+};
+
+class ReloadableXml : public efsw::FileWatchListener
+{
+public:
+	ReloadManager* watcher;
+	VisualElement* parent;
+	VisualElement* element;
+	std::string mainXmlFile;
+	std::vector<std::string> allCssFile;
+	std::vector<std::string> allXmlFile;
+	std::set<std::string> allPaths;
+	std::vector<efsw::WatchID> watchIds;
+	std::function<void(OGUI::VisualElement*)> onReloadedEvent;
+	
+	ReloadableXml(ReloadManager* watcher, VisualElement* parent, const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
+		:watcher(watcher), parent(parent), onReloadedEvent(std::move(onReloadedEvent))
+    {
+        auto& ctx = Context::Get();
+		ParseXmlState xmlState;
+		auto asset = LoadXmlFile(xmlFile, xmlState);
+		InstantiateXmlState InstantState;
+		auto ve = asset->Instantiate(InstantState);
+		element = ve;
+		mainXmlFile = xmlFile;
+		allCssFile = xmlState.allCssFile;
+		allXmlFile = xmlState.allXmlFile;
+		for(auto filePath : allCssFile)
+			allPaths.insert(std::filesystem::path(filePath).remove_filename().string());
+		for(auto filePath : allXmlFile)
+			allPaths.insert(std::filesystem::path(filePath).remove_filename().string());
+		for(auto path : allPaths)
+			watchIds.push_back(watcher->AddWatch(path, this, true));
+		parent->PushChild(ve);
+		OnReloaded();
+    }
+
+	virtual ~ReloadableXml()
+	{
+		for(auto id : watchIds)
+			watcher->RemoveWatch(id);
+	}
+
+	void handleFileAction(efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
+	{
+		auto& ctx = Context::Get();
+		switch (action)
+		{
+			case efsw::Actions::Add:
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added" << std::endl;
+				break;
+			case efsw::Actions::Delete:
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
+				break;
+			case efsw::Actions::Modified:
+			{
+				auto path = std::filesystem::path(dir.substr(0, dir.length() - 1) + filename);
+				if (find(allXmlFile.begin(), allXmlFile.end(), path) != allXmlFile.end())
+				{
+					std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
+					ParseXmlState xmlState;
+					xmlState.useFileCache = false;
+					auto asset = LoadXmlFile(mainXmlFile.c_str(), xmlState);
+
+					if(asset)
+					{
+						InstantiateXmlState InstantState;
+						auto newVe = asset->Instantiate(InstantState);
+						if (newVe)
+						{
+							VisualElement::DestoryTree(element);
+							element = newVe;
+							parent->PushChild(newVe);
+							OnReloaded();
+							ctx._layoutDirty = true;
+						}
+					}
+					olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+				}
+				else if (find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
+				{
+					std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
+					auto asset = ParseCSSFile(path.string());
+					if (asset)
+					{
+						std::vector<VisualElement*> stack {};
+						stack.push_back(element);
+						while (!stack.empty()) 
+						{
+							auto top = stack.back();
+							stack.pop_back();
+							for(auto& styleSheet : element->_styleSheets)
+							{
+								if(styleSheet->path == path)
+								{
+									*styleSheet = asset.value();
+									styleSheet->Initialize();
+									element->_selectorDirty = true;
+								}
+							}
+							element->GetChildren(stack);
+						}
+						ctx._layoutDirty = true;
+						ctx.styleSystem.InvalidateCache();
+					}
+					olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
+				}
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified" << std::endl;
+				break;
+			}
+			case efsw::Actions::Moved:
+				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from (" << oldFilename << ")" << std::endl;
+				break;
+			default:
+				std::cout << "Should never happen!" << std::endl;
+		}
+	}
+
+    void OnReloaded()
+	{
+		onReloadedEvent(element);
+	}
+};
+
 class CSSWindow : public AppWindow
 {
 public:
-	efsw::FileWatcher fileWatcher;
-	UpdateListener listener;
-	std::string mainXmlFile;
-	std::vector<std::string> allCssFile;
-    std::vector<std::string> allXmlFile;
-	std::function<void(OGUI::VisualElement*)> onReloadedEvent;
+	ReloadableXml xml;
 
-	FORCEINLINE CSSWindow(int width, int height, const char *title, const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
-        :AppWindow(width, height, title)
+	FORCEINLINE CSSWindow(int width, int height, const char *title, ReloadManager* watcher, const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
+        :AppWindow(width, height, title), xml(watcher, cWnd->GetWindowUI(), xmlFile, onReloadedEvent)
     {
-		this->onReloadedEvent = std::move(onReloadedEvent);
-        LoadResource(xmlFile);
     }
 
     virtual ~CSSWindow()
     {
 
     }
-private:
-	FORCEINLINE void LoadResource(const char *xmlFile)
-	{
-		using namespace OGUI;
-		auto& ctx = Context::Get();
-		ParseXmlState xmlState;
-		auto asset = LoadXmlFile(xmlFile, xmlState);
-		InstantiateXmlState InstantState;
-		auto ve = asset->Instantiate(InstantState);
-
-		mainXmlFile = xmlFile;
-		allCssFile = xmlState.allCssFile;
-		allXmlFile = xmlState.allXmlFile;
-
-		for(auto child : cWnd->GetWindowUI()->_children)
-		{
-			cWnd->GetWindowUI()->RemoveChild(child);
-			VisualElement::DestoryTree(child);
-		}
-		cWnd->GetWindowUI()->PushChild(ve);
-		OnReloaded();
-
-		listener.handle = [this](efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
-		{
-			auto& ctx = Context::Get();
-			switch (action)
-			{
-				case efsw::Actions::Add:
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added" << std::endl;
-					break;
-				case efsw::Actions::Delete:
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete" << std::endl;
-					break;
-				case efsw::Actions::Modified:
-				{
-					auto path = std::filesystem::path(dir.substr(0, dir.length() - 1) + filename);
-					if (find(allXmlFile.begin(), allXmlFile.end(), path) != allXmlFile.end())
-					{
-						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-						ParseXmlState xmlState;
-						xmlState.useFileCache = false;
-						auto asset = LoadXmlFile(mainXmlFile.c_str(), xmlState);
-
-						if(asset)
-						{
-							InstantiateXmlState InstantState;
-							auto newVe = asset->Instantiate(InstantState);
-							if (newVe)
-							{
-								for(auto child : cWnd->GetWindowUI()->_children)
-								{
-									cWnd->GetWindowUI()->RemoveChild(child);
-									VisualElement::DestoryTree(child);
-								}
-								cWnd->GetWindowUI()->PushChild(newVe);
-								OnReloaded();
-								ctx._layoutDirty = true;
-							}
-						}
-						olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-					}
-					else if (find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
-					{
-						std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-						auto asset = ParseCSSFile(path.string());
-						if (asset)
-						{
-							std::vector<VisualElement*> current {cWnd->GetWindowUI()->_children};
-							std::vector<VisualElement*> next;
-							while (current.size() > 0) 
-							{
-								for (auto element : current)
-								{
-									for(auto& styleSheet : element->_styleSheets)
-									{
-										if(styleSheet->path == path)
-										{
-											*styleSheet = asset.value();
-											styleSheet->Initialize();
-											element->_selectorDirty = true;
-										}
-									}
-
-									next.insert(next.end(), element->_children.begin(), element->_children.end());
-								}
-								current.clear();
-								std::swap(current, next);
-							}
-							ctx._layoutDirty = true;
-							ctx.styleSystem.InvalidateCache();
-						}
-						olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
-					}
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified" << std::endl;
-					break;
-				}
-				case efsw::Actions::Moved:
-					std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from (" << oldFilename << ")" << std::endl;
-					break;
-				default:
-					std::cout << "Should never happen!" << std::endl;
-			}
-		};
-
-		for(auto dir : fileWatcher.directories())
-			fileWatcher.removeWatch(dir);
-		for(auto filePath : allCssFile)
-			fileWatcher.addWatch(std::filesystem::path(filePath).remove_filename().string(), &listener, true);
-		for(auto filePath : allXmlFile)
-			fileWatcher.addWatch(std::filesystem::path(filePath).remove_filename().string(), &listener, true);
-
-		fileWatcher.watch();
-	}
-
-    void OnReloaded()
-	{
-		auto ve = cWnd->GetWindowUI()->_children[0];
-		onReloadedEvent(ve);
-		ve->_pseudoMask |= PseudoStates::Root;
-	}
 };
 

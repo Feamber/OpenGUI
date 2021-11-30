@@ -1,7 +1,7 @@
 #pragma once
 #include "OpenGUI/Core/Name.h"
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Reflection/reflection.h"
+
 namespace OGUI full_reflect
 {
     enum class EventRoutePhase : int

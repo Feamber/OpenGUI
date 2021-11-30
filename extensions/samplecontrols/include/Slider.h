@@ -1,9 +1,10 @@
 #pragma once
 #include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Bind/AttributeBind.h"
+#include "OpenGUI/Bind/Bind.h"
 #include <vector>
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
+#include "OpenGUI/Event/PointerEvent.h"
 
 namespace SampleControls
 {
