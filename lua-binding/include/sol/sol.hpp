@@ -21699,6 +21699,8 @@ namespace sol {
 			lua_CFunction is_func = &detail::is_check<T>;
 			lua_pushcclosure(L, is_func, 0);
 			lua_setfield(L, -2, "is");
+			lua_pushlightuserdata(L, (void*)&typeid(std::add_pointer_t<T>));
+			lua_setfield(L, -2, "typeid");
 			lua_setfield(L, t.stack_index(), to_string(meta_function::type).c_str());
 
 			t.pop();
@@ -22639,6 +22641,8 @@ namespace sol { namespace u_detail {
 		stack_reference stacked_type_table(L, -storage.type_table.push());
 		stack::set_field(L, "name", detail::demangle<T>(), stacked_type_table.stack_index());
 		stack::set_field(L, "is", &detail::is_check<T>, stacked_type_table.stack_index());
+		lua_pushlightuserdata(L, (void*)&typeid(std::add_pointer_t<T>));
+		lua_setfield(L, stacked_type_table.stack_index(), "typeid");
 		stacked_type_table.pop();
 
 		// STEP 5: create and hook up metatable,
@@ -24897,9 +24901,9 @@ namespace sol {
 			msg.assign(traceback.data(), traceback.size());
 		}
 #if SOL_IS_ON(SOL_PRINT_ERRORS_I_)
-		// std::cerr << "[sol3] An error occurred and was caught in traceback: ";
-		// std::cerr << msg;
-		// std::cerr << std::endl;
+		std::cerr << "[sol3] An error occurred and was caught in traceback: ";
+		std::cerr << msg;
+		std::cerr << std::endl;
 #endif // Printing
 		return stack::push(L, msg);
 	}

@@ -8,6 +8,14 @@ namespace OGUI full_reflect
 {
     class VisualElement;
 
+	enum class attr("script":true) 
+    FocusChangeCause
+    {
+        UserActions,
+        FocusNavigation,
+        ActivateWindow,
+    };
+
     struct push_attr("event":true) 
     FocusDataBase : public EventBase
     {

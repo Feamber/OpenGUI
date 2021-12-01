@@ -4,6 +4,7 @@
 #include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Event/FocusEvent.h"
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -69,7 +70,7 @@ namespace OGUI
 		
 		//可能激活失败，比如：在弹出的消息窗口没关闭时没法操作其他窗口
 		bool ActivateWindow(VisualWindow* newWindow);
-		bool SetFocus(VisualElement* element, FocusChangeCause cause = UserActions, std::string describe = "");
+		bool SetFocus(VisualElement* element, FocusChangeCause cause = FocusChangeCause::UserActions, std::string describe = "");
 #pragma endregion
 
 		//Systems

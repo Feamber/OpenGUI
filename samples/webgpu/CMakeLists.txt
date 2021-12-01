@@ -42,7 +42,7 @@ download_and_extract(
     ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Vera.zip
     ${CMAKE_CURRENT_SOURCE_DIR}/res/
 )
-file(GLOB resources res/*.*)
+file(GLOB_RECURSE resources res/*.*)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)
 
@@ -91,7 +91,7 @@ elseif (APPLE)
 endif()
 
 
-add_executable(WebgpuSample ${sources} ${platform_sources} ${headers})
+add_executable(WebgpuSample ${sources} ${platform_sources} ${headers} ${lua_sources})
 
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
 set_property(TARGET WebgpuSample PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/samples/webgpu")
@@ -104,4 +104,4 @@ target_link_libraries(WebgpuSample
 
 add_subdirectory(extern)
 target_include_directories(WebgpuSample PRIVATE "${CMAKE_CURRENT_LIST_DIR}/extern")
-target_link_libraries(WebgpuSample spdlog SampleControls sol lua_static)
+target_link_libraries(WebgpuSample spdlog SampleControls lua_binding)

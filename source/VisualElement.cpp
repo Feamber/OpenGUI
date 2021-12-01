@@ -1034,7 +1034,6 @@ bool OGUI::VisualElement::PlayAnimation(const AnimStyle& style)
 
 void OGUI::VisualElement::SetAnimationTime(std::string_view name, float time)
 {
-	olog::Info(u"{}"_o.format(time));
 	for(auto& anim : _procedureAnims)
 		if(anim.style.animationName == name)
 			anim.SetTime(time);

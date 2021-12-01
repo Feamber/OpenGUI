@@ -12,27 +12,42 @@ class Field(object):
     def __init__(self, name, type):
         self.name = name
         self.type = type
+        self.getter = None
+        self.setter = None
 
 class FunctionDesc(object):
     def __init__(self, retType, fields):
         self.retType = retType
         self.fields = fields
-        self.signature = retType +"(*)("+ str.join(", ",  [x.type for x in fields]) + ")"
+    def getSignature(self, record):
+        return self.retType +"("+ (record.name + "::" if record else "") + "*)("+ str.join(", ",  [x.type for x in self.fields]) + ")"
 
 class Function(object):
     def __init__(self, name):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.descs = []
-        self.overloaded = False
 
 class Record(object):
-    def __init__(self, name, fields, methods):
+    def __init__(self, name, fields, methods, bases):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.fields = fields
         self.methods = methods
-        self.bases = []
+        self.bases = bases
+    def allFields(self):
+        result = []
+        result.extend(self.fields)
+        for base in self.bases:
+            result.extend(base.allFields())
+        return result
+    def allMethods(self):
+        result = dict(self.methods)
+        for base in self.bases:
+            for k, v in base.allMethods().items():
+                function = result.setdefault(k, Function(k))
+                function.descs.extend(v.descs)
+        return result
 
 class Enumerator(object):
     def __init__(self, name, value):
@@ -53,14 +68,10 @@ class Binding(object):
         self.functions = []
         self.enums = []
         self.headers = set()
-    def add_record(self, record, bases):
+        self.event_arg_types = {}
+    def add_record(self, record):
         self.records.append(record)
         self.name_to_record[record.name] = record
-        for base in bases:
-            if base in self.name_to_record:
-                record.bases.append(self.name_to_record[base])
-            else:
-                print("base class {} of reflected class {} is not reflected!".format(record.name, base))
 
 
 
@@ -68,24 +79,38 @@ def GetInclude(path):
     return path.replace("\\", "/").rsplit("include/", 1)[-1]
 
 def main():
-    meta = json.load(open(os.path.join(BASE, "../build/meta.json")))
+    meta = json.load(open(os.path.join(BASE, "../../build/meta.json")))
     db = Binding()
+    for v in [  
+                "float", "double", 
+                "bool", "int", "int32_t", "uint32_t", "size_t", "int64_t", "uint64_t",
+                "char", "OGUI::Name", "std::basic_string_view<char>", "std::basic_string<char>", "ostr::string"
+            ]:
+        db.event_arg_types[v] = True
     for key, value in meta["records"].items():
         file = value["fileName"]
+        isEvent = "event" in value["attrs"]
         fields = []
         for key2, value2 in value["fields"].items():
+            if isEvent:
+                db.event_arg_types[value2["type"]] = True
             attr = value2["attrs"]
             if not "script" in attr:
                 continue
             field = Field(key2, value2["type"])
             fields.append(field)
         functions = parseFunctions(value["methods"])
-        if fields or functions:
+        bases = []
+        for value3 in value["bases"]:
+            if value3 in db.name_to_record:
+                bases.append(db.name_to_record[value3])
+        if fields or functions or bases:
             if str.endswith(file, ".cpp"):
                 print("unable to gen lua bind for records in cpp, name:%s" % key, file=sys.stderr)
                 continue
+            db.event_arg_types[key+"*"]=True
             db.headers.add(GetInclude(file))
-            db.add_record(Record(key, fields, functions), value["bases"])
+            db.add_record(Record(key, fields, functions, bases))
     for key, value in meta["enums"].items():
         attr = value["attrs"]
         if not "script" in attr:
@@ -98,13 +123,14 @@ def main():
         enumerators = []
         for key2, value2 in value["values"].items():
             enumerators.append(Enumerator(key2, value2["value"]))
+        db.event_arg_types[key]=True
         db.enums.append(Enum(key, enumerators))
         
     db.functions = parseFunctions(meta["functions"], headers=db.headers)
     
     template = os.path.join(BASE, "luaBind.cpp.mako")
     content = render(template, db = db)
-    output = os.path.join(BASE, "luaBind.cpp")
+    output = os.path.join(BASE, "../source/luaBind.generated.cpp")
     write(output, content)
 
 def render(filename, **context):
@@ -138,12 +164,9 @@ def abort(message):
 
 def parseFunctions(dict, headers = None):
     functionsDict = {}
-    overloadDict = {}
     for value in dict:
         attr = value["attrs"]
         name = value["name"]
-        overloadDict.setdefault(name, 0)
-        overloadDict[name] = overloadDict[name]+1
         if not "script" in attr:
             continue
         if not (headers is None):
@@ -158,11 +181,7 @@ def parseFunctions(dict, headers = None):
             field = Field(key2, value2["type"])
             fields.append(field)
         function.descs.append(FunctionDesc(value["retType"], fields))
-    for k,v in overloadDict.items():
-        if v > 1 and k in functionsDict:
-            functionsDict[k].overloaded = True
-    return [v for v in functionsDict.values()]
-    
+    return functionsDict
 
 if __name__ == "__main__":
     main()

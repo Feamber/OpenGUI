@@ -17,6 +17,7 @@ class Record(object):
     def __init__(self, name, fields, bases):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
+        self.event_name = re.sub("([A-Z]+)", lambda m: "-" + m.group(1).lower(), self.short_name).replace("_", "-").strip("-")
         self.fields = fields
         self.bases = bases
 

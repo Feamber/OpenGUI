@@ -3,7 +3,7 @@
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include <algorithm>
 
-namespace OGUI 
+namespace OGUI reflect
 {
     struct Scissor
     {
@@ -30,14 +30,8 @@ namespace OGUI
         PF_Count
     };
 
-	enum FocusChangeCause
-    {
-        UserActions,
-        FocusNavigation,
-        ActivateWindow,
-    };
-
-	enum class ENavMode : uint32
+	enum class attr("script":true) 
+	ENavMode : uint32
 	{
 		None,
 		Horizontal,
@@ -45,7 +39,8 @@ namespace OGUI
 		Automatic,
 	};
 
-	enum class ENavCycleMode : uint32
+	enum class attr("script":true) 
+	ENavCycleMode : uint32
 	{
 		None,
 		Horizontal,
@@ -53,7 +48,8 @@ namespace OGUI
 		Automatic,
 	};
 
-	enum class ENavDirection : uint32
+	enum class attr("script":true) 
+	ENavDirection : uint32
 	{
 		Up,
 		Down,
@@ -61,7 +57,8 @@ namespace OGUI
 		Right,
 	};
 
-    enum class EKeyCode : uint32
+    enum class attr("script":true) 
+	EKeyCode : uint32
 	{
 		/// means not supported keycode
 		Invalid = 0x00,
@@ -192,7 +189,8 @@ namespace OGUI
 		Quote = 0xDE,		// '" key on US standard keyboard
 	};
 
-	enum class EMouseKey : uint32
+	enum class attr("script":true) 
+	EMouseKey : uint32
 	{
 		None = 0x00,
 		LB = 0x01,
@@ -203,7 +201,8 @@ namespace OGUI
 	};
 
 
-	enum class EControllerAxis : uint32
+	enum class attr("script":true) 
+	EControllerAxis : uint32
 	{
 		LX = 0,	// Left thumb pad X axis.
 		LY = 1,	// Left thumb pad Y axis.
@@ -213,7 +212,8 @@ namespace OGUI
 		RT = 5,	// Right trigger.
 	};
 
-	enum class EControllerButton : uint32
+	enum class attr("script":true) 
+	EControllerButton : uint32
 	{
 		LThumb = 0,	// Left thumb button.
 		RThumb = 1,	// Right thumb button.
@@ -234,13 +234,15 @@ namespace OGUI
 	};
 
 	//! Identify the vibration motor to set in `set_vibration`.
-	enum class EControllerVibrationMotor : uint32
+	enum class attr("script":true) 
+	EControllerVibrationMotor : uint32
 	{
 		Left = 1,
 		Right = 2,
 	};
 
-	enum class EMouseCursor
+	enum class attr("script":true) 
+	EMouseCursor
 	{
 		Hide,
 		Arrow,
@@ -254,7 +256,8 @@ namespace OGUI
 		NotAllowed
 	};
 
-	enum class EGestureEvent : uint8
+	enum class attr("script":true) 
+	EGestureEvent : uint8
 	{
 		None,
 		Scroll,
@@ -277,6 +280,7 @@ namespace OGUI
         PixelFormat    format;
     };
 
+	//TODO
 	enum class DirtyReason : int
 	{
 		// Some data was bound
