@@ -36,8 +36,8 @@ def gen_sample():
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
     add_longhand("some-value", "float", "0.5f")
-    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
+    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)
 
 def main():

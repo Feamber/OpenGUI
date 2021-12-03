@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "text_server.h"

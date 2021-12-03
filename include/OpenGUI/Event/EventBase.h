@@ -1,5 +1,5 @@
 #pragma once
-#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Core/OName.h"
 #include "OpenGUI/Configure.h"
 
 namespace OGUI full_reflect

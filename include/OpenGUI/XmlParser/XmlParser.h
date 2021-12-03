@@ -2,7 +2,7 @@
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/ostring/osv.h"
 #include "OpenGUI/Core/ostring/ostr.h"
-#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/VisualElement.h"
 #include <functional>

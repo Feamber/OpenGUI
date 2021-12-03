@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#define DLL_IMPLEMENTATION
+
 #include "ustring.h"
 #include "ucaps.h"
 #include <stdio.h>
@@ -1545,7 +1545,7 @@ String String::num_real(double p_num, bool p_trailing) {
 
 		int digit = 0;
 
-#if REAL_T_IS_DOUBLE
+#ifdef REAL_T_IS_DOUBLE
 		int decimals = 14;
 #else
 		int decimals = 6;

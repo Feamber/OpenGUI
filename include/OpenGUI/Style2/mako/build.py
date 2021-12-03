@@ -63,12 +63,12 @@ def gen_position():
     add_longhand("flex-display",	"YGDisplay",		"YGDisplayFlex"   ,restyle_damage="Yoga")	
 
     struct.headers.append("yoga/Yoga.h")
-    struct.headers.append("OpenGUI/Core/Math.h")
+    struct.headers.append("OpenGUI/Core/OMath.h")
     struct.headers.append("OpenGUI/Style2/Transform.h")
-    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
-    struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
+    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    struct.headers.append("OpenGUI/Style2/Parse/YogaParse.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/YogaLerp.h")
     render_struct(struct, "shorthands/position.h.mako")
 
 def gen_border():
@@ -79,10 +79,10 @@ def gen_border():
         add_longhand("border-{0}-width".format(side), "float", "0.f"   ,restyle_damage="Yoga")
     for corner in PHYSICAL_CORNERS:
         add_longhand("border-{0}-radius".format(corner), "YGValue", "YGValueZero")
-    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
-    struct.headers.append("OpenGUI/Style2/Parse/Yoga.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Yoga.h")
+    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    struct.headers.append("OpenGUI/Style2/Parse/YogaParse.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/YogaLerp.h")
     struct.headers.append("yoga/Yoga.h")
     render_struct(struct, "shorthands/border.h.mako")
     
@@ -92,8 +92,8 @@ def gen_text():
         struct.add_longhand(*args, **kwargs)
     add_longhand("font-size", "float", "20.f")
     add_longhand("color", "Color4f", "Color4f(0,0,0,1)")
-    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
+    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)
 
 
@@ -103,9 +103,9 @@ def gen_background():
         struct.add_longhand(*args, **kwargs)
     add_longhand("background-color",	"Color4f",	    "Color4f(1.f,1.f,1.f,1.f)")	
     add_longhand("background-image",	"std::string",	"{}", parser = "ParseUrl")
-    struct.headers.append("OpenGUI/Core/Math.h")
-    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
+    struct.headers.append("OpenGUI/Core/OMath.h")
+    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)
 
 def gen_animation():
@@ -122,8 +122,8 @@ def gen_animation():
     add_longhand("animation-fill-mode", "EAnimFillMode", "EAnimFillMode::Forwards")
     add_longhand("animation-yield-mode", "EAnimYieldMode", "EAnimYieldMode::GoBack")
     add_longhand("animation-resume-mode", "EAnimResumeMode", "EAnimResumeMode::Resume")
-    struct.headers.append("OpenGUI/Style2/Parse/Math.h")
-    struct.headers.append("OpenGUI/Style2/Lerp/Math.h")
+    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     struct.headers.append("OpenGUI/Style2/AnimTypes.h")
     header_template = os.path.join(BASE, "AnimStruct.h.mako")
     header_file = render(header_template, struct = struct)

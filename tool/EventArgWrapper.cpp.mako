@@ -1,6 +1,6 @@
 //DO NOT MODIFY THIS FILE
 //generated from EventArgWrapper.cpp.mako
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Bind/EventArgWrapper.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 

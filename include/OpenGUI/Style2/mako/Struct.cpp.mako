@@ -3,7 +3,7 @@
 <%! 
     from tool.style_codegen import to_small_camel_case, to_camel_case
 %>
-#define DLL_IMPLEMENTATION
+
 #include <memory>
 #include "${struct.include_path}"
 #include "OpenGUI/Style2/Rule.h"
@@ -77,12 +77,6 @@ void OGUI::Style${struct.ident}::Initialize()
 %for prop in struct.longhands:
     ${prop.ident} = ${prop.initial_value};
 %endfor
-}
-
-template<class T>
-std::vector<T> ToOwned(gsl::span<T> s)
-{
-    return {s.begin(), s.end()};
 }
 
 void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)

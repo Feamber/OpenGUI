@@ -553,7 +553,7 @@ struct ExternalControlSample : public Bindable
 
 	SampleWindow* MakeWindow()
 	{
-		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", &reloader, "res/samplecontrols/sample.xml", [&](OGUI::VisualElement* ve)
+		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", &reloader, "res/sample.xml", [&](OGUI::VisualElement* ve)
 		{
 			ve->_pseudoMask |= PseudoStates::Root;
 			VisualElement* test = QueryFirst(ve, "#TestSlider");
@@ -583,7 +583,7 @@ struct LuaSample
 		});
 		cppDataModel.AddEventBind("Test", [](IEventArg& arg)
 		{
-			auto element = arg.TryGet("element");
+			OGUI::any element = arg.TryGet("element");
 			if(element.type() == typeid(VisualElement*))
 				olog::Info(u"cpp event:{}"_o.format(OGUI::any_cast<VisualElement*>(element)->GetTypeName()));
 			else

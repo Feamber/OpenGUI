@@ -1,4 +1,5 @@
 #pragma once
+#include "Configure.h"
 #include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Bind/Bind.h"
@@ -14,7 +15,7 @@ namespace SampleControls
         Horizontal,
         Vertical
     };
-    class OGUI_API Slider : public VisualElement
+    class SAMPLECONTROLS_API Slider : public VisualElement
     {
         friend class SliderXmlFactory;
     public:
@@ -40,7 +41,7 @@ namespace SampleControls
         void InitializeChildren();
     };
 
-    class OGUI_API SliderXmlFactory : public VisualElementXmlFactory
+    class SAMPLECONTROLS_API SliderXmlFactory : public VisualElementXmlFactory
     {
     public:
         static const OGUI::Name& GetFullName();

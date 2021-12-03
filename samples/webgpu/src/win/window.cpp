@@ -6,7 +6,7 @@
 #include "../utils.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Context.h"
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "../appbase.h"
 

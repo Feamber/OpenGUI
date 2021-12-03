@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Core/OName.h"
+#include "OpenGUI/Core/OName.h"
 #include "OpenGUI/Bind/EventArg.h"
 #include <functional>
 #include <memory>

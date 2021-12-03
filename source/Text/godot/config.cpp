@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Context.h"
 #include "config.h"
 #include "rid_owner.h"

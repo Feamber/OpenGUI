@@ -1,5 +1,5 @@
 #include "OpenGUI/Core/ostring/ostr.h"
-#define DLL_IMPLEMENTATION
+
 #include "YGValue.h"
 #include "Yoga.h"
 #include "OpenGUI/VisualElement.h"

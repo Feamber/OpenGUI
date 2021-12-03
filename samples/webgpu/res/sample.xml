@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualElement xmlns:sample="SampleControls">
+    <Style path="res/sample.css"/>
+    <VisualElement class="column">
+        <sample:Slider name="TestSlider" min-value="0" max-value="100" value="$value"> 
+            <VisualElement name="SliderBar"/>
+        </sample:Slider>
+        <Text name="ValueText"> ${value} </Text>
+    </VisualElement>
+    <sample:ScrollView name="ScrollView">
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+        <VisualElement class="ScrollElement"/>
+    </sample:ScrollView>
+</VisualElement>

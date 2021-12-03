@@ -1,12 +1,12 @@
 
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 #include <type_traits>
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"

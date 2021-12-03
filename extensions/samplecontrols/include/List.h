@@ -1,4 +1,5 @@
 #pragma once
+#include "Configure.h"
 #include "OpenGUI/VisualElement.h"
 
 namespace SampleControls

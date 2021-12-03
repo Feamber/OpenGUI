@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "ScrollView.h"
 #include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Context.h"

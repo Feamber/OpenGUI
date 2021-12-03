@@ -1,5 +1,5 @@
 
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/XmlParser/XmlElementFactory.h"

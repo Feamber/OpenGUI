@@ -174,7 +174,7 @@
     #elif defined(OGUI_COMPILER_MSVC)
     #define OGUI_DLLEXPORT __declspec(dllexport)
     #define OGUI_DLL_EXPORT __declspec(dllexport)
-        #ifdef DLL_IMPLEMENTATION
+        #ifdef OGUI_BUILD_DLL
         #define OGUI_DLLVISIBLE __declspec(dllexport)
         #else
         #define OGUI_DLLVISIBLE __declspec(dllimport)

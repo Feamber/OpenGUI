@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/olog.h"
 

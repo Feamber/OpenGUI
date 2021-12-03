@@ -1,5 +1,5 @@
 
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Style2/Properties.h"

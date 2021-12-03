@@ -1,6 +1,6 @@
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Style2/Transform.h"
-#include "OpenGUI/Style2/Lerp/Math.h"
+#include "OpenGUI/Style2/Lerp/MathLerp.h"
 
 namespace OGUI
 {

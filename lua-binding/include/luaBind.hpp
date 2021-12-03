@@ -3,7 +3,7 @@
 #include <any>
 #include <functional>
 #include <typeindex>
-#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Bind/Bind.h"
 namespace sol::stack
 {

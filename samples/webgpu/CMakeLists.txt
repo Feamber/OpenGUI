@@ -42,6 +42,11 @@ download_and_extract(
     ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Vera.zip
     ${CMAKE_CURRENT_SOURCE_DIR}/res/
 )
+download_and_extract(
+    ${FILE_SERVER_DIR}/fonts/fireflysung.zip
+    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/fireflysung.zip
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/
+)
 file(GLOB_RECURSE resources res/*.*)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)

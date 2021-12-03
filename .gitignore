@@ -372,11 +372,8 @@ FodyWeavers.xsd
 CMakeSettings.json
 cpp.hint
 /cmake-build-debug-visual-studio
-/.vscode
+.vscode/*
+!.vscode/launch.json
 
 *.exe
-!thirdparty/xerces-c/bin/xerces-c_4_0D.dll
-!thirdparty/xerces-c/bin
-/OGUI_Xsd/压缩.bat
-/OGUI_Xsd/OGUI_Xsd.zip
 .VSCodeCounter

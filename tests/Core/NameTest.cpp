@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Core/OName.h"
 
 using namespace ostr::literal;
 TEST_CASE("Name", "NameTest")

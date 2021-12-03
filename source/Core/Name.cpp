@@ -1,5 +1,5 @@
-#define DLL_IMPLEMENTATION
-#include "OpenGUI/Core/Name.h"
+
+#include "OpenGUI/Core/OName.h"
 #include "OpenGUI/Core/open_string.h"
 
 namespace OGUI

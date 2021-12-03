@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "Yoga.h"
 #include <algorithm>
 #include <cstdio>

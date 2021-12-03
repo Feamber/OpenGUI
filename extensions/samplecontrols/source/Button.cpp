@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "Button.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Event/EventRouter.h"

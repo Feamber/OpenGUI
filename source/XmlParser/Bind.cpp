@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include <algorithm>
 #include <typeindex>
 #include <vector>

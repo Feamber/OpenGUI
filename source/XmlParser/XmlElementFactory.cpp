@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/XmlParser/XmlElementFactory.h"
 
 namespace OGUI

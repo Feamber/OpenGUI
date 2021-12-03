@@ -73,6 +73,7 @@ if(OPENGUI_LIB)
 else()
     add_library(OpenGUI SHARED ${sources} ${headers})
     message(STATUS "LibraryType: Shared Lib")
+    target_compile_definitions(OpenGUI PRIVATE -DOGUI_BUILD_DLL)
 endif(OPENGUI_LIB)
 
 if(OPENGUI_USE_TRACY)

@@ -1,4 +1,5 @@
 #pragma once
+#include "Configure.h"
 #include "Slider.h"
 #include "Button.h"
 #include "CheckBox.h"
@@ -6,5 +7,5 @@
 
 namespace SampleControls
 {
-    OGUI_API void Install();
+    SAMPLECONTROLS_API void Install();
 }
