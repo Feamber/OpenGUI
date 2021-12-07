@@ -473,7 +473,7 @@ SampleWindow* CreateCssTestWindow()
 
 SampleWindow* CreateBug1Window()
 {
-	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", &reloader, "res/Bug/Bug1.xml", [](OGUI::VisualElement* ve)
+	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "Bug1", &reloader, "res/Bug/Bug1.xml", [](OGUI::VisualElement* ve)
 	{
 		ve->_pseudoMask |= PseudoStates::Root;
 	});
