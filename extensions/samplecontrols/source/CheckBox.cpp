@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "CheckBox.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Event/EventRouter.h"

@@ -3,7 +3,7 @@
 #include <optional>
 #include "OpenGUI/Style2/Rule.h"
 #include "AnimTypes.h"
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 
 namespace OGUI
 {

@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Core/OName.h"
+#include "OpenGUI/Core/OName.h"
 #include "OpenGUI/Bind/EventArg.h"
 #include <functional>
 #include <memory>
@@ -62,7 +63,7 @@ namespace OGUI reflect
         AttrSource* source = nullptr;
         AttrSource* bdBind = nullptr;
     };
-    using EventHandlerType = std::function<bool(EventArgs&)>;
+    using EventHandlerType = std::function<bool(IEventArg&)>;
     using EventBag = std::unordered_map<Name, Name>;
     //TODO: Separate bind descriptor and bind instance, optimize for array
     struct OGUI_API reflect Bindable
@@ -82,28 +83,27 @@ namespace OGUI reflect
         attr("script":true)
         void Unbind(Bindable& other);
         void AddEventBind(Name eventName, EventHandlerType fun);
+        virtual bool HandleEvent(Name eventName, IEventArg& args);
         ~Bindable();
     protected:
         void Build();
     };
 
+    
     template <typename ... Args>
-    bool Broadcast(Bindable& bindable, Name eventName, Args&&... args)
+    bool SendEventTo(Bindable& bindable, Name eventName, Args&&... args)
+    {
+        EventArgs eargs(args...);
+        return bindable.HandleEvent(eventName, eargs);
+    };
+
+    template <typename ... Args>
+    bool SendEvent(Bindable& bindable, Name eventName, Args&&... args)
     {
         bool handled = false;
-        bool binded = false;
         for(auto binding : bindable.bindingBy)
-        {
-            auto find = binding->eventHandlers.equal_range(eventName);
-            EventArgs eargs(args...);
-            if(find.first == find.second)
-                continue;
-            binded = true;
-            for(auto i = find.first; i!=find.second; ++i)
-                handled |= i->second(eargs);
-            return handled;
-        }
-        return !binded || handled;
+            handled |= SendEventTo(*binding, eventName, std::forward<Args>(args)...);
+        return handled;
     };
 
     using AttrConverterFun = std::function<bool(const void* source, void* target)>;

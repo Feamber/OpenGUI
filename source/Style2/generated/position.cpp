@@ -1,7 +1,7 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.cpp.mako
 
-#define DLL_IMPLEMENTATION
+
 #include <memory>
 #include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Style2/Rule.h"

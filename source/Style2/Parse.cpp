@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "Parse/peglib.h"
 #include <cstddef>
 #include "OpenGUI/Style2/Parse.h"

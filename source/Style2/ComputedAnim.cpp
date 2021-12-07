@@ -1,5 +1,5 @@
 #include "OpenGUI/Style2/AnimTypes.h"
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Rule.h"

@@ -5,19 +5,18 @@
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
-#include "OpenGUI/Style2/Lerp/Common.h"
-#include "OpenGUI/Style2/Parse/Common.h"
+#include "OpenGUI/Style2/Lerp/CommonLerp.h"
+#include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "yoga/Yoga.h"
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Style2/Transform.h"
-#include "OpenGUI/Style2/Parse/Math.h"
-#include "OpenGUI/Style2/Parse/Yoga.h"
-#include "OpenGUI/Style2/Lerp/Math.h"
-#include "OpenGUI/Style2/Lerp/Yoga.h"
+#include "OpenGUI/Style2/Parse/MathParse.h"
+#include "OpenGUI/Style2/Parse/YogaParse.h"
+#include "OpenGUI/Style2/Lerp/MathLerp.h"
+#include "OpenGUI/Style2/Lerp/YogaLerp.h"
 namespace OGUI
 {
-    
     using namespace std::literals::string_view_literals;
     struct OGUI_API StylePosition
     {

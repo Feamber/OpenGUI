@@ -1,8 +1,8 @@
 
-#define DLL_IMPLEMENTATION
+
 #include "peglib.h"
 #include "OpenGUI/Style2/Transform.h"
-#include "OpenGUI/Style2/Parse/Math.h"
+#include "OpenGUI/Style2/Parse/MathParse.h"
 #include "OpenGUI/Style2/Parse.h"
 #include <string>
 #include "OpenGUI/Core/Utilities/string_hash.hpp"

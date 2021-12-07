@@ -1,4 +1,5 @@
 #pragma once
+#include "Configure.h"
 #include "Button.h"
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
 
@@ -15,7 +16,7 @@ namespace SampleControls
         bool _checked;
     };
 
-    class OGUI_API CheckBoxXmlFactory : public VisualElementXmlFactory
+    class SAMPLECONTROLS_API CheckBoxXmlFactory : public VisualElementXmlFactory
     {
     public:
         static const OGUI::Name& GetFullName();

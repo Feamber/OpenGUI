@@ -1,5 +1,5 @@
 #pragma once
-#include "OpenGUI/Configure.h"
+#include "Configure.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
 #include "OpenGUI/Event/PointerEvent.h"
@@ -9,7 +9,7 @@ namespace SampleControls
     using namespace OGUI;
 
     //提供滑条
-    class ScrollView : public VisualElement
+    class SAMPLECONTROLS_API ScrollView : public VisualElement
     {
     public:
         std::string_view GetTypeName() override { return "ScrollView"; }
@@ -34,7 +34,7 @@ namespace SampleControls
         bool _dragging = false;
     };
 
-    class OGUI_API ScrollViewXmlFactory : public VisualElementXmlFactory
+    class SAMPLECONTROLS_API ScrollViewXmlFactory : public VisualElementXmlFactory
     {
     public:
         static const OGUI::Name& GetFullName();

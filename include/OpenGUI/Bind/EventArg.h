@@ -4,6 +4,7 @@
 #include <functional>
 #include <optional>
 #include "OpenGUI/Configure.h"
+#include "OpenGUI/Bind/any.h"
 
 namespace OGUI reflect
 {
@@ -15,7 +16,7 @@ namespace OGUI reflect
     };
 
     template<class T>
-    bool TryGet(NamedEventArg<T>& v, std::string_view name, std::any& a)
+    bool TryGet(NamedEventArg<T>& v, std::string_view name, OGUI::any& a)
     {
         if(v.name == name)
         {
@@ -24,22 +25,39 @@ namespace OGUI reflect
         }
         return false;
     }
-    
+
     struct OGUI_API reflect attr("script":true) 
-    EventArgs
+    IEventArg
     {
-        std::function<std::any(std::string_view)> impl;
+        virtual ~IEventArg() {}
+        attr("script":true) 
+        virtual OGUI::any TryGet(std::string_view name) = 0;
+        
+        template<class T>
+        std::optional<T> TryGet(std::string_view name)
+        {
+            auto r = TryGet(name);
+            if(r.type() == typeid(T))
+                return OGUI::any_cast<T>(r);
+            else
+                return {};
+        }
+    };
+    
+    struct OGUI_API EventArgs : public IEventArg
+    {
+        std::function<OGUI::any(std::string_view)> impl;
         template<class... Ts>
         EventArgs(Ts&&... args)
         {
             impl = [&](std::string_view name) mutable
             {
-                std::any r;
+                OGUI::any r;
                 (OGUI::TryGet(args, name, r)||...);
                 return r;
             };
         }
-        std::any TryGet(std::string_view name)
+        OGUI::any TryGet(std::string_view name) override
         {
             return impl(name);
         }
@@ -48,7 +66,7 @@ namespace OGUI reflect
         {
             auto r = TryGet(name);
             if(r.type() == typeid(T))
-                return std::any_cast<T>(r);
+                return OGUI::any_cast<T>(r);
             else
                 return {};
         }

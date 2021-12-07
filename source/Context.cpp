@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "Yoga.h"
 #include <algorithm>
 #include <cstdio>
@@ -280,7 +280,7 @@ void OGUI::Context::ReleasePointer(int id)
 
 bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
 {
-	olog::Info(u"OnMouseDown PosX:{0}, PosY:{1}"_o, x, y);
+	//olog::Info(u"OnMouseDown PosX:{0}, PosY:{1}"_o, x, y);
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
 	_windowUnderCursor = window;
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
@@ -303,7 +303,7 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 
 bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
 {
-	olog::Info(u"OnMouseUp PosX:{0}, PosY:{1}"_o, x, y);
+	//olog::Info(u"OnMouseUp PosX:{0}, PosY:{1}"_o, x, y);
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
 	_windowUnderCursor = window;
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window

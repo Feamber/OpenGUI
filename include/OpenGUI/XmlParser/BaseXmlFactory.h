@@ -1,6 +1,6 @@
 #pragma once
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Core/Name.h"
+#include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/XmlParser/XmlElementFactory.h"
 

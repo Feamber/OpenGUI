@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "Slider.h"
 #include "OpenGUI/Context.h"
 

@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Event/KeyEvent.h"

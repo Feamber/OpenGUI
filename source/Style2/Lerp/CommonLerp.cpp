@@ -1,5 +1,5 @@
-#define DLL_IMPLEMENTATION
-#include "OpenGUI/Style2/Lerp/Common.h"
+
+#include "OpenGUI/Style2/Lerp/CommonLerp.h"
 
 
 std::string OGUI::Lerp(std::string a, std::string b, float alpha)

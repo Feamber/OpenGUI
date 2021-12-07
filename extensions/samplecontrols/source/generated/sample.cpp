@@ -1,7 +1,7 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.cpp.mako
 
-#define DLL_IMPLEMENTATION
+
 #include <memory>
 #include "generated/sample.h"
 #include "OpenGUI/Style2/Rule.h"
@@ -70,12 +70,6 @@ void OGUI::StyleSample::Dispose(ComputedStyle& style)
 void OGUI::StyleSample::Initialize()
 {
     someValue = 0.5f;
-}
-
-template<class T>
-std::vector<T> ToOwned(gsl::span<T> s)
-{
-    return {s.begin(), s.end()};
 }
 
 void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)

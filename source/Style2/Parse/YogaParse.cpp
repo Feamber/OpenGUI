@@ -1,6 +1,6 @@
-#define DLL_IMPLEMENTATION
-#include "OpenGUI/Style2/Parse/Yoga.h"
-#include "OpenGUI/Style2/Parse/Math.h"
+
+#include "OpenGUI/Style2/Parse/YogaParse.h"
+#include "OpenGUI/Style2/Parse/MathParse.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "OpenGUI/Core/open_string.h"

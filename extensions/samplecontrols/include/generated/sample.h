@@ -2,18 +2,18 @@
 //generated from Style2/mako/Struct.h.mako
 
 #pragma once
-#include "OpenGUI/Configure.h"
+#include "Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
-#include "OpenGUI/Style2/Lerp/Common.h"
-#include "OpenGUI/Style2/Parse/Common.h"
+#include "OpenGUI/Style2/Lerp/CommonLerp.h"
+#include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
-#include "OpenGUI/Style2/Parse/Math.h"
-#include "OpenGUI/Style2/Lerp/Math.h"
+#include "OpenGUI/Style2/Parse/MathParse.h"
+#include "OpenGUI/Style2/Lerp/MathLerp.h"
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
-    struct OGUI_API StyleSample
+    struct SAMPLECONTROLS_API StyleSample
     {
         constexpr static std::string_view name = "sample"sv;
         constexpr static size_t hash = OGUI::hash(name);

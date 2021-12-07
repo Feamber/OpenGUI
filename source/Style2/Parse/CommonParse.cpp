@@ -1,5 +1,5 @@
-#define DLL_IMPLEMENTATION
-#include "OpenGUI/Style2/Parse/Common.h"
+
+#include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "OpenGUI/Core/open_string.h"

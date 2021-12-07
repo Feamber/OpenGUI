@@ -1,10 +1,12 @@
 #include "OpenGUI/Bind/EventArg.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Event/EventRouter.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Text/TextElement.h"
+#include "OpenGUI/VisualSystem.h"
 #include "appbase.h"
 #include "webgpu.h"
 #include "OpenGUI/Bind/Bind.h"
@@ -15,7 +17,7 @@
 #include <assert.h>
 #include <memory>
 #include "SampleControls.h"
-#include "sol/sol.hpp"
+#include "luaBind.hpp"
 
 std::unordered_map<uint32_t, OGUI::EKeyCode> gEKeyCodeLut;
 extern void InstallInput();
@@ -495,7 +497,7 @@ struct DataBindSample : public Bindable
 		AddSource({second_, &second});
 		AddSource({count_, &count});
 		AddEventBind("Add", 
-		[&](EventArgs& arg)
+		[&](IEventArg& arg)
 		{
 			auto phase = arg.TryGet<EventRoutePhase>("currentPhase");
 			if(!phase.has_value())
@@ -517,7 +519,6 @@ struct DataBindSample : public Bindable
 			ve->_pseudoMask |= PseudoStates::Root;
 			VisualElement* test = QueryFirst(ve, "#AddButton");
 			Bind(*test);
-			
 			//所有文字绑定到数据源上
 			std::vector<VisualElement*> Texts;
 			QueryAll(ve, "TextElement", Texts);
@@ -560,7 +561,7 @@ struct ExternalControlSample : public Bindable
 
 	SampleWindow* MakeWindow()
 	{
-		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", &reloader, "res/samplecontrols/sample.xml", [&](OGUI::VisualElement* ve)
+		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", &reloader, "res/sample.xml", [&](OGUI::VisualElement* ve)
 		{
 			ve->_pseudoMask |= PseudoStates::Root;
 			VisualElement* test = QueryFirst(ve, "#TestSlider");
@@ -573,165 +574,29 @@ struct ExternalControlSample : public Bindable
 	}
 };
 
-void BindLua(lua_State* L);
-
-std::type_index GetCppType(sol::type type, size_t& size)
-{
-	switch(type)
-	{
-		case sol::type::boolean:
-			size = sizeof(bool);
-			return typeid(bool);
-		case sol::type::string:
-			size = sizeof(std::string);
-			return typeid(std::string);
-		case sol::type::number:
-			size = sizeof(double);
-			return typeid(double);
-		default:
-			return typeid(nullptr_t);
-	}
-}
-
-struct LuaBindable : Bindable
-{
-	sol::table table;
-
-	static void RegisterLua(sol::state_view lua)
-	{
-		auto type = lua.new_usertype<LuaBindable>("LuaBindable");
-		type[sol::meta_function::index] = &LuaBindable::index;
-		type[sol::meta_function::new_index] = &LuaBindable::new_index;
-		lua["MakeDataModel"] = +[](sol::table table)
-		{
-			std::shared_ptr<Bindable> dm = std::make_shared<LuaBindable>(table);
-			return dm;
-		};
-	}
-
-	sol::object index(sol::string_view key)
-	{
-		return table[key];
-	}
-
-	void new_index(sol::string_view key, sol::object value)
-	{
-		table[key] = value;
-		Notify(key);
-	}
-
-	LuaBindable(sol::table inTable)
-		:table(std::move(inTable))
-	{
-		for(auto& kv : table)
-		{
-			auto name = kv.first.as<sol::optional<sol::string_view>>();
-			if(!name)
-			{
-				olog::Warn(u"invalid binding path founded, must be string!"_o);
-				continue;
-			}
-			auto value = kv.second;
-			
-			if(value.is<sol::function>())
-			{
-				AddEventBind(*name, [this, path = *name](EventArgs& args)
-				{
-					sol::optional<bool> result = table[path](this);
-					return result.value_or(false);
-				});
-				continue;
-			}
-			size_t size;
-			auto luaType = value.get_type();
-			auto type = GetCppType(luaType, size);
-			
-			if(type == typeid(nullptr_t))
-			{
-				olog::Warn(u"unsupported binding type, binding path:{}"_o.format(*name));
-				continue;
-			}
-			AddBind({
-				*name, type, size, [this, luaType, path = *name](const void* data)
-				{
-					switch(luaType)
-					{
-						case sol::type::boolean:
-						{
-							table[path] = *(const bool*)data;
-							break;
-						}
-						case sol::type::string:
-						{
-							table[path] = *(const std::string*)data;
-							break;
-						}
-						case sol::type::number:
-						{
-							table[path] = *(const double*)data;
-							break;
-						}
-						default:
-							return;
-					}
-					auto cbPath = "on" + std::string(path) + "Changed";
-					cbPath[2] = std::toupper(cbPath[2]); 
-					sol::optional<sol::function> onChange = table[cbPath];
-					if(onChange)
-						(*onChange)(table);
-				}
-			});
-			
-			AddSource({*name, [this, path = *name](const AttrSync& sync)
-			{
-				sol::object obj = table[path];
-				sol::userdata ud;
-				if(obj != sol::nil)
-				{
-					switch(obj.get_type())
-					{
-						case sol::type::boolean:
-						{
-							auto value = obj.as<bool>();
-							sync(typeid(bool), &value);
-							return;
-						}
-						case sol::type::string:
-						{
-							auto value = obj.as<std::string>();
-							sync(typeid(std::string), &value);
-							return;
-						}
-						case sol::type::number:
-						{
-							auto value = obj.as<double>();
-							sync(typeid(double), &value);
-							return;
-						}
-						default:
-							break;
-					}
-				}
-				olog::Warn(u"binding path {} is not valid anymore!"_o.format(path));
-			}});
-		}
-	}
-};
-
 struct LuaSample
 {
 	sol::state lua;
 	sol::table object;
 	AppWindow* win;
 	std::vector<std::shared_ptr<ReloadableXml>> xmls;
+	Bindable cppDataModel;
 	LuaSample()
 	{
 		lua.open_libraries(sol::lib::base, sol::lib::package);
 		BindLua(lua.lua_state());
-		LuaBindable::RegisterLua(lua);
 		lua.set_function("LoadXml", [this](const char *xmlFile, std::function<void(OGUI::VisualElement*)> onReloadedEvent)
 		{
 			LoadXml(xmlFile, onReloadedEvent);
+		});
+		cppDataModel.AddEventBind("Test", [](IEventArg& arg)
+		{
+			OGUI::any element = arg.TryGet("element");
+			if(element.type() == typeid(VisualElement*))
+				olog::Info(u"cpp event:{}"_o.format(OGUI::any_cast<VisualElement*>(element)->GetTypeName()));
+			else
+			 	olog::Info(u"cpp event: invalid argument(\"element\") type{}"_o.format(element.type().name()));
+			return false;
 		});
 	}
 
@@ -744,7 +609,7 @@ struct LuaSample
 	{
 		win = new AppWindow(WINDOW_WIN_W, WINDOW_WIN_H, "LuaBind");
 		lua.script_file("res/LuaBind/main.lua");
-		lua["main"]();
+		lua["main"](&cppDataModel);
 		return win;
 	}
 };

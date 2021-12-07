@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "error_macros.h"
 
 namespace godot

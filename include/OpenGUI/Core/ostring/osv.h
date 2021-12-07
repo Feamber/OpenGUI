@@ -239,9 +239,9 @@ public:
 		return _str;
 	}
 
-	[[nodiscard]] bool encode_to_utf8(std::string& u8) const noexcept
+	void encode_to_utf8(std::string& u8) const noexcept
 	{
-		return coder::convert_append(_str, u8);
+		coder::convert_append(_str, u8);
 	}
 
 private:

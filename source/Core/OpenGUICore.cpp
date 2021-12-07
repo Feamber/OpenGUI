@@ -1,4 +1,4 @@
-﻿#define DLL_IMPLEMENTATION
+﻿
 #include <stdlib.h>
 #include <iostream>
 #include <chrono>

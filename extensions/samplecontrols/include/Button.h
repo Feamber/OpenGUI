@@ -1,4 +1,5 @@
 #pragma once
+#include "Configure.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
 #include "OpenGUI/Event/PointerEvent.h"
@@ -20,7 +21,7 @@ namespace SampleControls
         bool _pressed = false;
     };
 
-    class OGUI_API ButtonXmlFactory : public VisualElementXmlFactory
+    class SAMPLECONTROLS_API ButtonXmlFactory : public VisualElementXmlFactory
     {
     public:
         static const OGUI::Name& GetFullName();

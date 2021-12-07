@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/VisualWindow.h"
 
 OGUI::VisualWindow::VisualWindow()

@@ -3,7 +3,7 @@
 <%! 
     from tool.style_codegen import to_small_camel_case, to_camel_case
 %>
-#define DLL_IMPLEMENTATION
+
 #include <memory>
 #include "${struct.include_path}"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"

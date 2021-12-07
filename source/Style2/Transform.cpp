@@ -1,7 +1,7 @@
 
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Style2/Transform.h"
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 #pragma warning( push )
 OGUI::ComputedTransform OGUI::ComputedTransform::ident()
 {

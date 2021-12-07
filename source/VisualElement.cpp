@@ -1,12 +1,12 @@
 
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 #include <type_traits>
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
@@ -1034,7 +1034,6 @@ bool OGUI::VisualElement::PlayAnimation(const AnimStyle& style)
 
 void OGUI::VisualElement::SetAnimationTime(std::string_view name, float time)
 {
-	olog::Info(u"{}"_o.format(time));
 	for(auto& anim : _procedureAnims)
 		if(anim.style.animationName == name)
 			anim.SetTime(time);
@@ -1268,6 +1267,7 @@ OGUI::Vector2f OGUI::VisualElement::GetScrollPos()
 void OGUI::BindTree(VisualElement* element, Bindable& bindable)
 {
 	element->Bind(bindable);
+	bindable.Bind(*element);
 	element->Traverse([&](VisualElement* next)
 	{
 		BindTree(next, bindable);

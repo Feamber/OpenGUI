@@ -1,5 +1,5 @@
 #pragma once
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/Math/Matrix.h"
 #include "OpenGUI/Core/Math/Vector.h"
 #include <vector>

@@ -1,4 +1,4 @@
-#define DLL_IMPLEMENTATION
+
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style2/Parse.h"

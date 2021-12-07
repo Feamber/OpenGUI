@@ -5,8 +5,8 @@
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
-#include "OpenGUI/Style2/Lerp/Common.h"
-#include "OpenGUI/Style2/Parse/Common.h"
+#include "OpenGUI/Style2/Lerp/CommonLerp.h"
+#include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 %for header in struct.headers:
 #include "${header}"

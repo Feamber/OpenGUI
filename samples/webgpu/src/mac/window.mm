@@ -3,7 +3,7 @@
 #include "glue.h"
 
 #include "OpenGUI/Context.h"
-#include "OpenGUI/Core/Math.h"
+#include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include <memory>
 

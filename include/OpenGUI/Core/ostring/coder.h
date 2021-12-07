@@ -7,9 +7,9 @@ _NS_OSTR_BEGIN
 
 namespace coder {
 
-	OPEN_STRING_EXPORT bool convert_append(std::string_view sv8, std::u16string& out_u16);
+	OPEN_STRING_EXPORT void convert_append(std::string_view sv8, std::u16string& out_u16);
 
-	OPEN_STRING_EXPORT bool convert_append(std::u16string_view sv16, std::string& out_u8);
+	OPEN_STRING_EXPORT void convert_append(std::u16string_view sv16, std::string& out_u8);
 
 	// not used temporarily
 	/*bool convert_append(std::string_view sv8, std::u32string& out_u32)

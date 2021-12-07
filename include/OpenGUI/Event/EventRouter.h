@@ -12,7 +12,7 @@ namespace OGUI
             if (next->_isPseudoElement)
                 return;
             if(auto eventBind = next->GetEventBind(event.GetEventName()))
-				Broadcast(*next, *eventBind, event, MakeEventArg("element", next));
+				SendEvent(*next, *eventBind, event, MakeEventArg("element", next));
             next->_eventHandler.Handle(event);
             BroadcastEvent<T>(next, event); 
         });
@@ -32,6 +32,7 @@ namespace OGUI
         return (EventRoutePhase)mask;
     }
 
+    //TODO: 换成非模板版本，让脚本也能发送Native Event？
     template<class T>
     bool RouteEvent(VisualElement* target, T& event)
     {
@@ -48,7 +49,7 @@ namespace OGUI
             {
                 auto& element = routePath[i];
                 if(auto eventBind = element->GetEventBind(event.GetEventName()))
-					Broadcast(*element, *eventBind, event, MakeEventArg("element", element));
+					SendEvent(*element, *eventBind, event, MakeEventArg("element", element));
                 if(element->_eventHandler.Handle(event))
                     return true;
             }
@@ -57,14 +58,14 @@ namespace OGUI
         if (currentPhase == EventRoutePhase::Reach)
         {
             if(auto eventBind = target->GetEventBind(event.GetEventName()))
-				Broadcast(*target, *eventBind, event, MakeEventArg("element", target));
+				SendEvent(*target, *eventBind, event, MakeEventArg("element", target));
             if(target->_eventHandler.Handle(event))
                 return true;
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
                 {
                     if(auto eventBind = parent->GetEventBind(event.GetEventName()))
-					    Broadcast(*parent, *eventBind, event, MakeEventArg("element", parent));
+					    SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
                     if(parent->_eventHandler.Handle(event))
                         return true;
                 }
@@ -81,7 +82,7 @@ namespace OGUI
             for(auto parent : routePath)
             {
                 if(auto eventBind = parent->GetEventBind(event.GetEventName()))
-					Broadcast(*parent, *eventBind, event, MakeEventArg("element", parent));
+					SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
                 if(parent->_eventHandler.Handle(event))
                     return true;
             }
