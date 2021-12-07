@@ -83,6 +83,7 @@ namespace OGUI reflect
         attr("script":true)
         void Unbind(Bindable& other);
         void AddEventBind(Name eventName, EventHandlerType fun);
+        virtual bool HandleEvent(Name eventName, IEventArg& args);
         ~Bindable();
     protected:
         void Build();
@@ -92,14 +93,8 @@ namespace OGUI reflect
     template <typename ... Args>
     bool SendEventTo(Bindable& bindable, Name eventName, Args&&... args)
     {
-        bool handled = false;
-        auto find = bindable.eventHandlers.equal_range(eventName);
         EventArgs eargs(args...);
-        if(find.first == find.second)
-            return false;
-        for(auto i = find.first; i!=find.second; ++i)
-            handled |= i->second(eargs);
-        return handled;
+        return bindable.HandleEvent(eventName, eargs);
     };
 
     template <typename ... Args>

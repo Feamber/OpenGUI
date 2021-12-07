@@ -98,6 +98,7 @@ namespace OGUI
 	    sol::table table;
 	    sol::object index(sol::string_view key);
 	    void new_index(sol::string_view key, sol::object value);
+        bool HandleEvent(Name eventName, IEventArg &args) override;
 	    LuaBindable(sol::table inTable);
     };
 }

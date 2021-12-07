@@ -88,6 +88,19 @@ void OGUI::LuaBindable::new_index(sol::string_view key, sol::object value)
     Notify(key);
 }
 
+bool OGUI::LuaBindable::HandleEvent(Name eventName, IEventArg &args)
+{
+    bool handled = Bindable::HandleEvent(eventName, args);
+    sol::optional<sol::function> function = table[eventName];
+    if(function)
+    {
+        sol::optional<bool> result = (*function)(this, args);
+        if(result)
+            handled |= *result;
+    }
+    return handled;
+}
+
 OGUI::LuaBindable::LuaBindable(sol::table inTable)
     :table(std::move(inTable))
 {
@@ -100,16 +113,6 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable)
             continue;
         }
         auto value = kv.second;
-        
-        if(value.is<sol::function>())
-        {
-            AddEventBind(*name, [this, path = *name](IEventArg& args)
-            {
-                sol::optional<bool> result = table[path](this, args);
-                return result.value_or(false);
-            });
-            continue;
-        }
         size_t size;
         auto luaType = value.get_type();
         auto type = GetCppType(luaType, size);

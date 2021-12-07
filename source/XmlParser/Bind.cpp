@@ -224,6 +224,17 @@ namespace OGUI
         eventHandlers.emplace(eventName, fun);
     }
 
+    bool Bindable::HandleEvent(Name eventName, IEventArg& args)
+    {
+        bool handled = false;
+        auto find = eventHandlers.equal_range(eventName);
+        if(find.first == find.second)
+            return false;
+        for(auto i = find.first; i!=find.second; ++i)
+            handled |= i->second(args);
+        return handled;
+    }
+
     Bindable::~Bindable()
     {
         for(auto to : bindingTo)

@@ -5,7 +5,7 @@
 
 _NS_OSTR_BEGIN
 
-bool coder::convert_append(std::string_view sv8, std::u16string& out_u16)
+void coder::convert_append(std::string_view sv8, std::u16string& out_u16)
 {
 	out_u16.reserve(out_u16.size() + sv8.size());
 	small_size_t utf8_length;
@@ -18,10 +18,9 @@ bool coder::convert_append(std::string_view sv8, std::u16string& out_u16)
 		it += utf8_length;
 	}
 	out_u16.shrink_to_fit();
-	return true;
 }
 
-bool coder::convert_append(std::u16string_view sv16, std::string& out_u8)
+void coder::convert_append(std::u16string_view sv16, std::string& out_u8)
 {
 	constexpr size_t CHAR_IN_SURROGATE_PAIR = 2;
 	out_u8.reserve(out_u8.size() + sv16.size() * CHAR_IN_SURROGATE_PAIR);
@@ -35,7 +34,6 @@ bool coder::convert_append(std::u16string_view sv16, std::string& out_u8)
 		it += utf16_length;
 	}
 	out_u8.shrink_to_fit();
-	return true;
 }
 
 _NS_OSTR_END

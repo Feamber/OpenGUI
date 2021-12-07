@@ -249,9 +249,9 @@ public:
 		return std::u16string_view( _str );
 	}
 
-	bool decode_from_utf8(std::string_view u8) noexcept
+	void decode_from_utf8(std::string_view u8) noexcept
 	{
-		return coder::convert_append(u8, _str);
+		coder::convert_append(u8, _str);
 	}
 
 	[[nodiscard]] uint32_t get_hash() const noexcept

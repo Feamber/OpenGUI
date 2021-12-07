@@ -1,6 +1,5 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "sol/sol.hpp"
 %for header in db.headers:
 #include "${header}"
 %endfor

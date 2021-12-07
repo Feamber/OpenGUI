@@ -1267,6 +1267,7 @@ OGUI::Vector2f OGUI::VisualElement::GetScrollPos()
 void OGUI::BindTree(VisualElement* element, Bindable& bindable)
 {
 	element->Bind(bindable);
+	bindable.Bind(*element);
 	element->Traverse([&](VisualElement* next)
 	{
 		BindTree(next, bindable);
