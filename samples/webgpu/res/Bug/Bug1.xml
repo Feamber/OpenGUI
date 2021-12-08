@@ -1,7 +1,0 @@
-<VisualElement>
-    <Style path="res/Bug/Bug1.css"/>
-    <VisualElement name="StartBox">
-        <VisualElement name="HandleButtonIcon"/>
-        <Text name="StartText">START GAME</Text>
-    </VisualElement>
-</VisualElement>

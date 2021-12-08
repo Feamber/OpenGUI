@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <algorithm>
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Style2/Rule.h"

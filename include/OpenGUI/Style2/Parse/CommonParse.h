@@ -2,7 +2,6 @@
 #include "OpenGUI/Configure.h"
 #include <string_view>
 #include "OpenGUI/Style2/Properties.h"
-#include <span>
 
 namespace OGUI
 {
