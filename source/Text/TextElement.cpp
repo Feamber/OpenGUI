@@ -245,7 +245,7 @@ namespace OGUI
         VisualElement::DrawPrimitive(Ctx);
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
-        _paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
+        //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1), godot::Color(1, 0, 0));
         PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
     }

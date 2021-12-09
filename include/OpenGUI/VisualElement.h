@@ -13,6 +13,7 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/Transform.h"
+#include "YGValue.h"
 #include "event/event.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -146,7 +147,7 @@ namespace OGUI reflect
 		attr("script":true)
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
-		void CalculateLayout();
+		void CalculateLayout(float width = YGUndefined, float height = YGUndefined);
 		void SyncYogaStyle();
 		virtual void UpdateStyle(RestyleDamage damage);
 		RestyleDamage ApplyProcedureStyle();

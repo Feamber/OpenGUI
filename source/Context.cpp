@@ -117,7 +117,7 @@ namespace OGUI
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
 	}
-	void UpdateLayout(VisualElement* element)
+	void UpdateLayout(VisualElement* element, float width, float height)
 	{
 		auto& ctx = Context::Get();
 		if(!ctx._layoutDirty)
@@ -125,7 +125,7 @@ namespace OGUI
 		CacheLayoutRec(element);
 		while (ctx._layoutDirty)
 		{
-			element->CalculateLayout();
+			element->CalculateLayout(width, height);
 			ctx._layoutDirty = false;
 		}
 		CheckLayoutRec(element);
@@ -190,7 +190,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	textureManager->Update();
 	_deltaTime = dt;
 	styleSystem.Update(root);
-	UpdateLayout(root);
+	UpdateLayout(root, wctx.GetWidth(), wctx.GetHeight());
 	UpdateScrollSize(root);
 	TransformRec(root);
 	UpdateVisibility(root);

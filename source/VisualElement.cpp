@@ -393,9 +393,9 @@ OGUI::VisualElement* OGUI::VisualElement::GetLayoutRoot()
 	return _layoutRoot ? _layoutRoot : this;
 }
 
-void OGUI::VisualElement::CalculateLayout()
+void OGUI::VisualElement::CalculateLayout(float width, float height)
 {
-	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
+	YGNodeCalculateLayout(_ygnode, width, height, YGNodeStyleGetDirection(_ygnode));
 }
 
 OGUI::ComputedTransform OGUI::VisualElement::GetStyleTransform() const
