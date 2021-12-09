@@ -464,9 +464,17 @@ namespace OGUI
 		}
 	};
 
+#ifndef KINDA_SMALL_NUMBER
 #define KINDA_SMALL_NUMBER	(1.e-4)
+#endif
+
+#ifndef SMALL_NUMBER
 #define SMALL_NUMBER		(1.e-8)
+#endif
+
+#ifndef THRESH_VECTOR_NORMALIZED
 #define THRESH_VECTOR_NORMALIZED 0.01
+#endif
 }
 
 template<typename To, typename From>
