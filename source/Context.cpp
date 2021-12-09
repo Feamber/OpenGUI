@@ -749,6 +749,42 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause caus
 	return true;
 }
 
+void OGUI::Context::AddXmlFilter(const char* filterTag)
+{
+	auto result = _xmlFilters.emplace(filterTag);
+	if(result.second)
+	{
+		for(auto& winContext : windowContexts)
+			UpdataFilter(winContext->ui);
+	}
+}
+
+void OGUI::Context::RemoveXmlFilter(const char* filterTag)
+{
+	if(_xmlFilters.erase(filterTag))
+	{
+		for(auto& winContext : windowContexts)
+			UpdataFilter(winContext->ui);
+	}
+}
+
+void OGUI::Context::UpdataFilter(VisualElement* element)
+{
+	element->Traverse([this](VisualElement* next)
+	{
+		for(const auto& filterTag : next->_xmlFilters)
+		{
+			if(!_xmlFilters.count(filterTag))
+			{
+				next->SetVisibility(false);
+				return;
+			}
+		}
+		next->SetVisibility(true);
+		UpdataFilter(next);
+	});
+}
+
 bool OGUI::Context::IsElementValid(OGUI::VisualElement* e) const
 {
 	return _allElementHandle.find(e) != _allElementHandle.end();
