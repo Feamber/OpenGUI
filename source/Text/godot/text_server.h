@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #pragma once
+#include "OpenGUI/Style2/Transform.h"
 #include "config.h"
 #include "rid.h"
 #include "ustring.h"
@@ -38,7 +39,9 @@
 #include "rid_owner.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include <stdint.h>
+#include <optional>
 namespace godot{
+
 
 class TextServer {
 
@@ -137,7 +140,6 @@ public:
 		RID font_rid; // Font resource.
 		int font_size = 0; // Font size;
 		int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs).
-		Color color;
 
 		bool operator==(const Glyph &p_a) const;
 		bool operator!=(const Glyph &p_a) const;
@@ -169,6 +171,11 @@ public:
 		Vector<TextServer::Glyph> ellipsis_glyph_buf;
 	};
 
+	struct GlyphDrawPolicy {
+		virtual Color get_color(const TextServer::Glyph& glyph) = 0;
+		virtual std::optional<OGUI::ComputedTransform> get_transform(const TextServer::Glyph& glyph) = 0;
+	};
+
 	struct ShapedTextData {
 		Mutex mutex;
 
@@ -188,8 +195,8 @@ public:
 
 			Vector<RID> fonts;
 			int font_size = 0;
-			Color color = Color(1, 1, 1);
 			Variant embedded_key = nullptr;
+			std::shared_ptr<GlyphDrawPolicy> draw_policy;
 
 			String language;
 			Map<uint32_t, double> features;
@@ -356,8 +363,8 @@ public:
 	virtual void font_render_range(RID p_font, const Vector2i &p_size, char32_t p_start, char32_t p_end) = 0;
 	virtual void font_render_glyph(RID p_font_rid, const Vector2i &p_size, int32_t p_index) = 0;
 
-	virtual void font_draw_glyph(RID p_font, OGUI::PrimDrawList& list, int p_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
-	virtual void font_draw_glyph_outline(RID p_font, OGUI::PrimDrawList& list, int p_size, int p_outline_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const = 0;
 
 	virtual bool font_is_language_supported(RID p_font_rid, const String &p_language) const = 0;
 	virtual void font_set_language_support_override(RID p_font_rid, const String &p_language, bool p_supported) = 0;
@@ -400,7 +407,7 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) = 0;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const = 0;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Color &p_color = Color(1, 1, 1), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") = 0;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") = 0;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) = 0;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
 	virtual bool shaped_text_resize_object_raw(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
@@ -461,11 +468,10 @@ public:
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
 
 	void canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const;
-	void canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false) const;
+	void canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), const std::optional<OGUI::ComputedTransform> transform = {}) const;
 
 	TextServer();
 	virtual ~TextServer();
 };
-
 //#define TS TextServerManager::get_primary_interface()
 }

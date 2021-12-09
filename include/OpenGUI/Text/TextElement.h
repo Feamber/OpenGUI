@@ -27,6 +27,7 @@ namespace OGUI
 
         using InlineType = std::variant<ostr::string, VisualElement*, TextElement*, std::shared_ptr<BindText>>;
         std::vector<InlineType> _inlines;
+        std::shared_ptr<class TextElementGlyphDraw> _drawPolicy;
 
         godot::TextParagraph* _paragraph = nullptr;
         bool _paragraphDirty = false;
@@ -38,9 +39,9 @@ namespace OGUI
         void BuildParagraph();
 
         void MarkLayoutDirty() override;
+        void UpdateStyle(RestyleDamage damage) override;
         void GetChildren(std::vector<VisualElement *>& Children) override;
         void DrawPrimitive(PrimitiveDraw::DrawContext &Ctx) override;
-        void SyncYogaStyle() override;
 
         void BuildParagraphRec(godot::TextParagraph* p, const struct StyleText& txt);
     };

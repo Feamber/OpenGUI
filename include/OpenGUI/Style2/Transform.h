@@ -55,4 +55,8 @@ namespace OGUI
     {
         return {math::multiply(a.m, b.m), math::multiply(b.m, a.trans) + b.trans};
     }
+    FORCEINLINE Vector2f multiply(ComputedTransform a, Vector2f point)
+    {
+        return math::multiply(a.m, point) + a.trans;
+    }
 }

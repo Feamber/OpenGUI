@@ -32,6 +32,7 @@
 #include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Context.h"
+#include "OpenGUI/Style2/Transform.h"
 
 using namespace godot;
 #ifdef ICU_STATIC_DATA
@@ -2590,18 +2591,34 @@ void TextServerAdvanced::font_render_glyph(RID p_font_rid, const Vector2i &p_siz
 	ERR_FAIL_COND(!_ensure_glyph(fd, size, p_index));
 }
 
-void TextServerAdvanced::font_draw_glyph(RID p_font_rid, OGUI::PrimDrawList& list, int p_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color) const {
-	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+std::shared_ptr<TextServer::GlyphDrawPolicy> get_policy(TextServerAdvanced::ShapedTextDataAdvanced *sd, const TextServerAdvanced::Glyph& glyph)
+{
+	auto iter = std::find_if(sd->spans.begin(), sd->spans.end(), [&](const TextServerAdvanced::ShapedTextDataAdvanced::Span& s)
+	{
+		if(s.start <= glyph.start && s.end >= glyph.end)
+			return true;
+		return false;
+	});
+	if(iter == sd->spans.end())
+		return {};
+	return iter->draw_policy;
+}
+
+void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
+	while(sd->parent != RID())
+		sd = shaped_owner.getornull(sd->parent);
+	FontDataAdvanced *fd = font_owner.getornull(glyph.font_rid);
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	Vector2i size = _get_size(fd, p_size);
+	Vector2i size = _get_size(fd, glyph.font_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
-	if (!_ensure_glyph(fd, size, p_index)) {
+	if (!_ensure_glyph(fd, size, glyph.index)) {
 		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
 	}
 
-	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
+	const FontGlyph &gl = fd->cache[size]->glyph_map[glyph.index];
 	if (gl.found) {
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->font_textures.size());
 
@@ -2622,30 +2639,37 @@ void TextServerAdvanced::font_draw_glyph(RID p_font_rid, OGUI::PrimDrawList& lis
             } else 
 #endif
             {
-					Point2i cpos = p_pos;
-					cpos += gl.rect.position;
-					Size2i csize = gl.rect.size;
-					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate, false, false);
+				auto policy = get_policy(sd, glyph);
+				Point2i cpos = p_pos;
+				cpos += gl.rect.position;
+				Size2i csize = gl.rect.size;
+				if(policy)
+					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate * policy->get_color(glyph), policy->get_transform(glyph));
+				else
+					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate);
             }
 		}
 	}
 }
 
-void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, OGUI::PrimDrawList& list, int p_size, int p_outline_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color) const {
-	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+void TextServerAdvanced::font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
+	while(sd->parent != RID())
+		sd = shaped_owner.getornull(sd->parent);
+	FontDataAdvanced *fd = font_owner.getornull(glyph.font_rid);
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	Vector2i size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
+	Vector2i size = _get_size_outline(fd, Vector2i(glyph.font_size, p_outline_size));
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
-	if (!_ensure_glyph(fd, size, p_index)) {
+	if (!_ensure_glyph(fd, size, glyph.index)) {
 		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
 	}
 
-	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
+	const FontGlyph &gl = fd->cache[size]->glyph_map[glyph.index];
 	if (gl.found) {
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->font_textures.size());
-
+		
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
@@ -2664,11 +2688,14 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, OGUI::PrimDrawL
             } else 
 #endif
             {
-				
+				auto policy = get_policy(sd, glyph);
 				Point2i cpos = p_pos;
 				cpos += gl.rect.position;
 				Size2i csize = gl.rect.size;
-				canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate, false, false);
+				if(policy)
+					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate * policy->get_color(glyph), policy->get_transform(glyph));
+				else
+					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate);
             }
 		}
 	}
@@ -3018,7 +3045,7 @@ TextServer::Orientation TextServerAdvanced::shaped_text_get_orientation(RID p_sh
 	return sd->orientation;
 }
 
-bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Color &p_color, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
+bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const std::shared_ptr<GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
@@ -3037,7 +3064,7 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	}
 
 	ShapedTextDataAdvanced::Span span;
-	span.color = p_color;
+	span.draw_policy = draw_policy;
 	span.start = sd->text.length();
 	span.end = span.start + p_text.length();
 	span.fonts = p_fonts; // Do not pre-sort, spans will be divided to subruns later.
@@ -4094,7 +4121,6 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index) {
 	int fs = p_sd->spans[p_span].font_size;
-	Color color = p_sd->spans[p_span].color;
 	if (p_fb_index >= p_fonts.size()) {
 		// Add fallback glyphs.
 		for (int i = p_start; i < p_end; i++) {
@@ -4106,7 +4132,6 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				gl.index = p_sd->text[i];
 				gl.font_size = fs;
 				gl.font_rid = RID();
-				gl.color = color;
 				if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
 					gl.flags |= TextServer::GRAPHEME_IS_RTL;
 				}
@@ -4205,7 +4230,6 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 
 			gl.font_rid = p_fonts[p_fb_index];
 			gl.font_size = fs;
-			gl.color = color;
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {

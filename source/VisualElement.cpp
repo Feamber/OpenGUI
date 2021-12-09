@@ -607,6 +607,14 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetDisplay(_ygnode, _visible ? pos.flexDisplay : YGDisplayNone);
 }
 
+void OGUI::VisualElement::UpdateStyle(RestyleDamage damage)
+{
+	if(HasFlag(damage, RestyleDamage::Yoga) || _selectorDirty)
+		SyncYogaStyle();
+	if(HasFlag(damage, RestyleDamage::Transform) || _selectorDirty)
+		MarkStyleTransformDirty();
+}
+
 OGUI::RestyleDamage OGUI::VisualElement::ApplyProcedureStyle()
 {
 	RestyleDamage damage = RestyleDamage::None;

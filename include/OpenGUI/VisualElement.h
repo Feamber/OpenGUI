@@ -6,6 +6,7 @@
 #include <string>
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
@@ -29,16 +30,6 @@ namespace OGUI reflect
 	}
 
 	struct Matrix4x4f{};
-
-	struct OGUI_API Interpolation
-	{
-		float duration;
-		float time = 0;
-		void reset() { time = 0; }
-		void forward(float deltaTime) { time = std::clamp(time + deltaTime, 0.f, duration); }
-		void reverse() { time = duration - time; }
-		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
-	};
 
 	enum class LayoutType
 	{
@@ -155,7 +146,8 @@ namespace OGUI reflect
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout();
-		virtual void SyncYogaStyle();
+		void SyncYogaStyle();
+		virtual void UpdateStyle(RestyleDamage damage);
 		RestyleDamage ApplyProcedureStyle();
 		using StyleOverridingFunc = std::function<RestyleDamage()>;
 		std::vector<StyleOverridingFunc> _styleOverriding;

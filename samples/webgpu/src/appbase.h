@@ -292,16 +292,16 @@ public:
 						{
 							auto top = stack.back();
 							stack.pop_back();
-							for(auto& styleSheet : element->_styleSheets)
+							for(auto& styleSheet : top->_styleSheets)
 							{
 								if(styleSheet->path == path)
 								{
 									*styleSheet = asset.value();
 									styleSheet->Initialize();
-									element->_selectorDirty = true;
+									top->_selectorDirty = true;
 								}
 							}
-							element->GetChildren(stack);
+							top->GetChildren(stack);
 						}
 						ctx._layoutDirty = true;
 						ctx.styleSystem.InvalidateCache();

@@ -5,7 +5,7 @@
     align-items:flex-start;
     align-content: flex-start;
     flex-direction: row;
-    overflow: scroll;
+    overflow: visible;
     flex-wrap: wrap;
     background-color:rgb(255, 255, 255, 0.8);
     background-image:url(res/test4.jpg);
@@ -54,7 +54,14 @@ TextElement{
 }
 
 #Child3 { 
+    font-size:36;
     height:300px; width:300px; 
+    color:white;
+}
+
+#Child4 {
+    font-size:20;
+    color:aqua;
 }
 
 #Child2 {

@@ -471,14 +471,6 @@ SampleWindow* CreateCssTestWindow()
 	});
 }
 
-SampleWindow* CreateBug1Window()
-{
-	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "Bug1", &reloader, "res/Bug/Bug1.xml", [](OGUI::VisualElement* ve)
-	{
-		ve->_pseudoMask |= PseudoStates::Root;
-	});
-}
-
 	static Name hour_ = "hour";
 	static Name minute_ = "minute";
 	static Name second_ = "second";
@@ -641,8 +633,7 @@ int main(int , char* []) {
 	DataBindSample sample2;
 	// windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
-	// windows.push_back(CreateCssTestWindow());
-	windows.push_back(CreateBug1Window());
+	windows.push_back(CreateCssTestWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())
