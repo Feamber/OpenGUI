@@ -36,5 +36,5 @@
         <VisualElement name="" class="Test"/>
     </VisualElement>/> 
     <VisualElement name="Child2" focusable="true" class="Child"/> 
-    <Text name="Child3" class="Child">asd词组测试非常规测试</Text>
+    <Text name="Child3" class="Child">asd词组测试非常规测试123</Text>
 </VisualElement>

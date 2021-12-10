@@ -118,7 +118,8 @@ namespace OGUI
         OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
         OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
         OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::set<Name>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        
         OGUI_API bool IsDataBind(ostr::string_view value);
 
         OGUI_API bool OnParseXmlElement_Empty(ParseXmlState&, XmlElement&);

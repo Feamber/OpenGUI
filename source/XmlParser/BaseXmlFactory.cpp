@@ -1,5 +1,6 @@
 
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
+#include "OpenGUI/Context.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Text/TextElement.h"
@@ -41,6 +42,7 @@ namespace OGUI
     const Name& VisualElementXmlFactory::Attr_NavDown()     { static Name name = "nav-down"; return name;}
     const Name& VisualElementXmlFactory::Attr_NavLeft()     { static Name name = "nav-left"; return name;}
     const Name& VisualElementXmlFactory::Attr_NavRight()    { static Name name = "nav-right"; return name;}
+    const Name& VisualElementXmlFactory::Attr_Filters()    { static Name name = "filters"; return name;}
 
     bool VisualElementXmlFactory::OnCreateElement(InstantiateXmlState &, XmlElement &, VisualElement *&outNewElement, VisualElement *parent)
     {
@@ -162,6 +164,11 @@ namespace OGUI
         FindAttribute(xe, Attr_NavLeft(), element->navExplicitLeft);
         // !向右导航目标（使用css选择器语法）
         FindAttribute(xe, Attr_NavRight(), element->navExplicitRight);
+
+        // !Xml筛选，只有符合所有FilterTag才显示，否则隐藏
+        FindAttribute(xe, Attr_Filters(), u","_o, element->_xmlFilters);
+        if(element->_xmlFilters.size())
+            Context::Get().UpdataFilter(element);
         return true;
     }
 
