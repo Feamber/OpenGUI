@@ -393,9 +393,9 @@ OGUI::VisualElement* OGUI::VisualElement::GetLayoutRoot()
 	return _layoutRoot ? _layoutRoot : this;
 }
 
-void OGUI::VisualElement::CalculateLayout()
+void OGUI::VisualElement::CalculateLayout(float width, float height)
 {
-	YGNodeCalculateLayout(_ygnode, YGUndefined, YGUndefined, YGNodeStyleGetDirection(_ygnode));
+	YGNodeCalculateLayout(_ygnode, width, height, YGNodeStyleGetDirection(_ygnode));
 }
 
 OGUI::ComputedTransform OGUI::VisualElement::GetStyleTransform() const
@@ -605,6 +605,14 @@ void OGUI::VisualElement::SyncYogaStyle()
 	SetYGValue(_ygnode, YGNodeStyleSetMinWidth, pos.minWidth);
 	SetYGValue(_ygnode, YGNodeStyleSetMinHeight, pos.minHeight);
 	YGNodeStyleSetDisplay(_ygnode, _visible ? pos.flexDisplay : YGDisplayNone);
+}
+
+void OGUI::VisualElement::UpdateStyle(RestyleDamage damage)
+{
+	if(HasFlag(damage, RestyleDamage::Yoga) || _selectorDirty)
+		SyncYogaStyle();
+	if(HasFlag(damage, RestyleDamage::Transform) || _selectorDirty)
+		MarkStyleTransformDirty();
 }
 
 OGUI::RestyleDamage OGUI::VisualElement::ApplyProcedureStyle()

@@ -499,8 +499,5 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
 	RestyleDamage damage = RestyleDamage::None;
 	damage |= UpdateAnim(element);
 	damage |= element->ApplyProcedureStyle();
-	if((damage & RestyleDamage::Yoga) == RestyleDamage::Yoga || element->_selectorDirty)
-		element->SyncYogaStyle();
-	if((damage & RestyleDamage::Transform) == RestyleDamage::Transform || element->_selectorDirty)
-		element->MarkStyleTransformDirty();
+	element->UpdateStyle(damage);
 }

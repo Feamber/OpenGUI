@@ -416,8 +416,8 @@ public:
 	virtual void font_render_range(RID p_font, const Vector2i &p_size, char32_t p_start, char32_t p_end) override;
 	virtual void font_render_glyph(RID p_font_rid, const Vector2i &p_size, int32_t p_index) override;
 
-	virtual void font_draw_glyph(RID p_font, OGUI::PrimDrawList& list, int p_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
-	virtual void font_draw_glyph_outline(RID p_font, OGUI::PrimDrawList& list, int p_size, int p_outline_size, const Vector2 &p_pos, int32_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
+	virtual void font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const override;
+	virtual void font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const override;
 
 	virtual bool font_is_language_supported(RID p_font_rid, const String &p_language) const override;
 	virtual void font_set_language_support_override(RID p_font_rid, const String &p_language, bool p_supported) override;
@@ -457,7 +457,7 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) override;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const override;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Color &p_color = Color(1, 1, 1), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") override;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") override;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
 	virtual bool shaped_text_resize_object_raw(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;

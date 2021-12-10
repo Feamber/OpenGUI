@@ -498,3 +498,9 @@ inline constexpr bool  operator! (Enum  E)             { return !(__underlying_t
 inline constexpr Enum  operator~ (Enum  E)             { return (Enum)~(__underlying_type(Enum))E; }
 
 #endif
+
+template<class T>
+bool HasFlag(const T& a, const T& b)
+{
+    return (a&b) == b;
+}

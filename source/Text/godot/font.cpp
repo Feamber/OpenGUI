@@ -788,29 +788,6 @@ Size2 Font::get_char_size(char32_t p_char, char32_t p_next, int p_size) const {
 	return Size2();
 }
 
-real_t Font::draw_char(OGUI::PrimDrawList& list, const Point2 &p_pos, char32_t p_char, char32_t p_next, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate) const {
-	int size = (p_size <= 0) ? base_size : p_size;
-
-	for (int i = 0; i < data.size(); i++) {
-		_ensure_rid(i);
-		if (data[i]->has_char(p_char)) {
-			int32_t glyph_a = TS->font_get_glyph_index(rids[i], size, p_char, 0);
-			real_t ret = TS->font_get_glyph_advance(rids[i], size, glyph_a).x;
-			if ((p_next != 0) && data[i]->has_char(p_next)) {
-				int32_t glyph_b = TS->font_get_glyph_index(rids[i], size, p_next, 0);
-				ret -= TS->font_get_kerning(rids[i], size, Vector2i(glyph_a, glyph_b)).x;
-			}
-
-			if (p_outline_size > 0 && p_outline_modulate.a != 0.0f) {
-				TS->font_draw_glyph_outline(rids[i], list, size, p_outline_size, p_pos, glyph_a, p_outline_modulate);
-			}
-			TS->font_draw_glyph(rids[i], list, size, p_pos, glyph_a, p_modulate);
-			return ret;
-		}
-	}
-	return 0;
-}
-
 bool Font::has_char(char32_t p_char) const {
 	for (int i = 0; i < data.size(); i++) {
 		if (data[i]->has_char(p_char))

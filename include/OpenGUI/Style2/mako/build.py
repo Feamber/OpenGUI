@@ -90,8 +90,8 @@ def gen_text():
     struct = make_struct("text", True)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("font-size", "float", "20.f")
-    add_longhand("color", "Color4f", "Color4f(0,0,0,1)")
+    add_longhand("font-size", "float", "20.f", restyle_damage="TextLayout")
+    add_longhand("color", "Color4f", "Color4f(0,0,0,1)", restyle_damage="Text")
     struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)

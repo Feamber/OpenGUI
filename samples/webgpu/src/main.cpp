@@ -631,8 +631,8 @@ int main(int , char* []) {
 	LuaSample lsample;
 	windows.push_back(lsample.MakeWindow());
 	DataBindSample sample2;
-	windows.push_back(sample2.MakeWindow());
-	windows.push_back(CreateNavigationTestWindow());
+	// windows.push_back(sample2.MakeWindow());
+	// windows.push_back(CreateNavigationTestWindow());
 	windows.push_back(CreateCssTestWindow());
 	// main loop
 	reloader.Watch();

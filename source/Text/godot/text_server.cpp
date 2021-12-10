@@ -30,6 +30,7 @@
 
 #include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Style2/Transform.h"
 #include "text_server.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/Types.h"
@@ -181,31 +182,31 @@ void TextServer::draw_hex_code_box(OGUI::PrimDrawList& list, int p_size, const V
 	pos += Point2(2, 2);
 	if (p_index <= 0xFF) {
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 0);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 	} else if (p_index <= 0xFFFF) {
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 0);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(d * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(d * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 0);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(c * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(c * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 	} else {
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 0);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(f * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(f * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 0);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(e * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(e * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(2, 0);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(d * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(d * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(c * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(c * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(2, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		canvas_item_add_texture_rect_region(list, dest, hex_code_box_font_tex[fnt], Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color);
 	}
 }
 
@@ -794,7 +795,7 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const 
 	if (rtl && trim_data.ellipsis_pos >= 0) {
 		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
 			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, list, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				font_draw_glyph(p_shaped, list, trim_data.ellipsis_glyph_buf[i], ofs, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
 				} else {
@@ -845,9 +846,9 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const 
 			}
 
 			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph(glyphs[i].font_rid, list, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color * glyphs[i].color);
+				font_draw_glyph(p_shaped, list, glyphs[i], ofs, p_color);
 			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
-				TextServer::draw_hex_code_box(list, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color * glyphs[i].color);
+				TextServer::draw_hex_code_box(list, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;
@@ -860,7 +861,7 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const 
 	if (!rtl && trim_data.ellipsis_pos >= 0) {
 		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
 			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, list, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				font_draw_glyph(p_shaped, list, trim_data.ellipsis_glyph_buf[i], ofs, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
 				} else {
@@ -885,7 +886,7 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawList& list
 	if (rtl && trim_data.ellipsis_pos >= 0) {
 		for (int i = trim_data.ellipsis_glyph_buf.size() - 1; i >= 0; i--) {
 			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, list, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				font_draw_glyph(p_shaped, list, trim_data.ellipsis_glyph_buf[i], ofs, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
 				} else {
@@ -935,7 +936,7 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawList& list
 				}
 			}
 			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph_outline(glyphs[i].font_rid, list, glyphs[i].font_size, p_outline_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color * glyphs[i].color);
+				font_draw_glyph_outline(p_shaped, list, glyphs[i], p_outline_size, ofs, p_color);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;
@@ -948,7 +949,7 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawList& list
 	if (!rtl && trim_data.ellipsis_pos >= 0) {
 		for (int i = 0; i < trim_data.ellipsis_glyph_buf.size(); i++) {
 			for (int j = 0; j < trim_data.ellipsis_glyph_buf[i].repeat; j++) {
-				font_draw_glyph(trim_data.ellipsis_glyph_buf[i].font_rid, list, trim_data.ellipsis_glyph_buf[i].font_size, ofs + Vector2(trim_data.ellipsis_glyph_buf[i].x_off, trim_data.ellipsis_glyph_buf[i].y_off), trim_data.ellipsis_glyph_buf[i].index, p_color);
+				font_draw_glyph(p_shaped, list, trim_data.ellipsis_glyph_buf[i], ofs , p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += trim_data.ellipsis_glyph_buf[i].advance;
 				} else {
@@ -983,7 +984,7 @@ OGUI::Color4f math_cast(const Color& p_color)
 	return {p_color.r, p_color.g, p_color.b, p_color.a};
 }
 
-void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const
+void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, const std::optional<OGUI::ComputedTransform> transform) const
 {
 	using namespace OGUI::PrimitiveDraw;
 	BoxParams params;
@@ -996,7 +997,12 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 	srcRect.size.y = - p_src_rect.size.y;
 	params.uv = math_cast(srcRect);
 	params.color = math_cast(p_modulate);
+	auto begin = list.vertices.size();
 	PrimitiveDraw<BoxShape>(p_texture, list, params);
+	auto end = list.vertices.size();
+	if(transform)
+		for(auto i=begin; i<end; ++i)
+			list.vertices[i].position = OGUI::multiply(*transform, list.vertices[i].position);
 }
 
 void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const

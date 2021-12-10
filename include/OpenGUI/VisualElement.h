@@ -7,11 +7,13 @@
 #include <algorithm>
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/Transform.h"
+#include "YGValue.h"
 #include "event/event.h"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
@@ -30,16 +32,6 @@ namespace OGUI reflect
 	}
 
 	struct Matrix4x4f{};
-
-	struct OGUI_API Interpolation
-	{
-		float duration;
-		float time = 0;
-		void reset() { time = 0; }
-		void forward(float deltaTime) { time = std::clamp(time + deltaTime, 0.f, duration); }
-		void reverse() { time = duration - time; }
-		float alpha() { return std::clamp(time / duration, 0.f, 1.f); }
-	};
 
 	enum class LayoutType
 	{
@@ -155,8 +147,9 @@ namespace OGUI reflect
 		attr("script":true)
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
-		void CalculateLayout();
-		virtual void SyncYogaStyle();
+		void CalculateLayout(float width = YGUndefined, float height = YGUndefined);
+		void SyncYogaStyle();
+		virtual void UpdateStyle(RestyleDamage damage);
 		RestyleDamage ApplyProcedureStyle();
 		using StyleOverridingFunc = std::function<RestyleDamage()>;
 		std::vector<StyleOverridingFunc> _styleOverriding;

@@ -1,5 +1,7 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 
+#include "OpenGUI/Style2/Properties.h"
+#include "OpenGUI/Style2/Transform.h"
 #include "YGValue.h"
 #include "Yoga.h"
 #include "OpenGUI/VisualElement.h"
@@ -16,12 +18,26 @@
 #include "OpenGUI/Style2/generated/text.h"
 
 
-    // helper type for the visitor #4
-    template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-    // explicit deduction guide (not needed as of C++20)
-    template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+// helper type for the visitor #4
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+// explicit deduction guide (not needed as of C++20)
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 namespace OGUI
 {
+
+    class TextElementGlyphDraw : public godot::TextServer::GlyphDrawPolicy
+    {
+        public:
+        godot::Color color = godot::Color(1,1,1);
+        godot::Color get_color(const godot::TextServer::Glyph &glyph) override
+        {
+            return color;
+        }
+        std::optional<ComputedTransform> get_transform(const godot::TextServer::Glyph &glyph) override
+        {
+            return {};
+        }
+    };
 
     std::shared_ptr<godot::FontData> GetTestFontData()
     {
@@ -200,7 +216,7 @@ namespace OGUI
                 [&](ostr::string& text) 
                 { 
                     godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
-                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), txt.fontSize, color); 
+                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), txt.fontSize, _drawPolicy); 
                 },
                 [&](VisualElement*& child) 
                 { 
@@ -209,12 +225,13 @@ namespace OGUI
                 },
                 [&](TextElement*& child) 
                 { 
-                    child->BuildParagraphRec(p, txt); 
+                    auto& ctxt = StyleText::Get(child->_style);
+                    child->BuildParagraphRec(p, ctxt);
                 },
                 [&](std::shared_ptr<BindText>& Bind) 
                 { 
                     godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
-                    p->add_string((wchar_t*)Bind->text.raw().data(), GetTestFont(), txt.fontSize, color); 
+                    p->add_string((wchar_t*)Bind->text.raw().data(), GetTestFont(), txt.fontSize, _drawPolicy); 
                 }
             }, inl);
         }
@@ -222,10 +239,13 @@ namespace OGUI
     
     void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
     {
+        if(_layoutType == LayoutType::Inline)
+            return;
         BuildParagraph();
         VisualElement::DrawPrimitive(Ctx);
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
+        //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1), godot::Color(1, 0, 0));
         PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
     }
@@ -236,10 +256,18 @@ namespace OGUI
         YGNodeMarkDirty(_ygnode);
     }
 
-    void TextElement::SyncYogaStyle()
+    void TextElement::UpdateStyle(RestyleDamage damage)
     {
-        VisualElement::SyncYogaStyle();
-    };
+        VisualElement::UpdateStyle(damage);
+        if(HasFlag(damage, RestyleDamage::TextLayout) || _selectorDirty)
+            _paragraphDirty = true;
+        if(HasFlag(damage, RestyleDamage::Text) || _selectorDirty)
+        {
+            auto style = &StyleText::Get(_style);
+            auto color = style->color;
+            _drawPolicy->color = godot::Color{color.x, color.y, color.z, color.w};
+        }
+    }
 
     void TextElement::GetChildren(std::vector<VisualElement *>& children)
     {
@@ -269,6 +297,7 @@ namespace OGUI
         _paragraph->set_align(godot::HALIGN_FILL);
         YGNodeSetMeasureFunc(_ygnode, MeasureText);
         YGNodeSetBaselineFunc(_ygnode, BaselineText);
+        _drawPolicy = std::make_shared<TextElementGlyphDraw>();
     }
 
     TextElement::~TextElement()

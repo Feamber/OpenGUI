@@ -8,7 +8,7 @@ namespace OGUI
     OGUI_FORCEINLINE YGValue Lerp(YGValue a, YGValue b, float alpha)
     {
         //TODO: 是否需要支持不同单位之间的插值
-        if(a.unit == YGUnitPercent || b.unit == YGUnitPercent)
+        if(a.unit != b.unit)
         {
             return a;
         }

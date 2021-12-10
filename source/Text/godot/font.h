@@ -247,7 +247,6 @@ public:
 
 	// Drawing char.
 	virtual Size2 get_char_size(char32_t p_char, char32_t p_next = 0, int p_size = -1) const;
-	virtual real_t draw_char(OGUI::PrimDrawList& list, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
 
 	Vector<RID> get_rids() const;
 
