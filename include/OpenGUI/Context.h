@@ -77,10 +77,18 @@ namespace OGUI
 
 #pragma region XmlFilter
 		std::set<Name> _xmlFilters;
+		std::map<Name, Name> _xmlFiltersMap;
+		std::set<Name> _xmlFiltersCache;
 
+		void SetXmlFilter(const char* key, const char* filterTag);
 		void AddXmlFilter(const char* filterTag);
 		void RemoveXmlFilter(const char* filterTag);
-		void UpdataFilter(VisualElement* element);
+		void UpdataXmlFilterCache();
+		bool HasFilterTag(const char* filterTag) const;
+		bool HasFilterTag(Name filterTag) const;
+
+		bool UpdataFilter(VisualElement* element);
+		void RecursionUpdataFilter(VisualElement* element);
 #pragma endregion
 
 		//Systems

@@ -1,0 +1,38 @@
+:root {
+    width: 700px;
+    height:600px;
+    justify-content:flex-start;
+    align-items:flex-start;
+    align-content: flex-start;
+    flex-direction: row;
+    overflow: visible;
+    flex-wrap: wrap;
+    background-color:rgb(255, 255, 255, 0.8);
+    background-image:url(res/test4.jpg);
+}
+
+TextElement {
+    background-color: transparent;
+}
+
+#pc-icon {
+    width: 20px;
+    height:20px;
+    background-image:url(res/test1.png);
+    background-color: initial;
+}
+
+#xbox-icon {
+    width: 20px;
+    height:20px;
+    background-image:url(res/UELogo.png);
+    background-color: initial;
+}
+
+#pcText {
+    color:tomato;
+}
+
+#xboxText {
+    color:yellowgreen;
+}
