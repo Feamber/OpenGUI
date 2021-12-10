@@ -47,23 +47,12 @@ namespace OGUI
     
     };
 
-    class OGUI_API TemplateXmlFactory : public XmlElementFactory
-    {
-    public:
-        static const Name& GetFullName();
-
-        static const Name& Attr_Name();
-        static const Name& Attr_Path();
-
-        virtual bool OnParseXmlElement(ParseXmlState&, XmlElement&) override;
-    };
-
     class OGUI_API InstanceXmlFactory : public XmlElementFactory
     {
     public:
         static const Name& GetFullName();
 
-        static const Name& Attr_Template();
+         static const Name& Attr_XmlPath();
 
         virtual bool OnParseXmlElementChildPost(ParseXmlState&, XmlElement&) override;
     private:

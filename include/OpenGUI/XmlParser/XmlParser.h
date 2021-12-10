@@ -45,7 +45,6 @@ namespace OGUI
     {
         std::map<ostr::string, ostr::string> namespaceSet;
         std::vector<std::shared_ptr<tinyxml2::XMLDocument>> xmlDocumentStack;
-        std::list<std::map<ostr::string, std::string>> allTemplateStack;
 
         std::vector<std::string> allCssFile;
         std::vector<std::string> allXmlFile;
