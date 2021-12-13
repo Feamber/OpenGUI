@@ -490,7 +490,7 @@ namespace OGUI
             if(search->second.split(splitter, array))
                 for(const auto& str : array)
                     out.push_back(str);
-            else
+            else if(search->second.length())
                 out.push_back(search->second);
             return FindResult::OK;
         }
@@ -508,7 +508,7 @@ namespace OGUI
             if(search->second.split(splitter, array))
                 for(const auto& str : array)
                     out.push_back({str.begin(), str.end()});
-            else
+            else if(search->second.length())
             {
                 auto sv = search->second.to_sv();
                 out.push_back({sv.begin(), sv.end()});
@@ -529,7 +529,7 @@ namespace OGUI
             if(search->second.split(splitter, array))
                 for(const auto& str : array)
                     out.insert(str);
-            else
+            else if(search->second.length())
             {
                 auto sv = search->second.to_sv();
                 out.insert(sv);

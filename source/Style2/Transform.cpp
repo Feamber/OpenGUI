@@ -216,5 +216,6 @@ bool OGUI::operator==(const OGUI::TransformFunction& a, const OGUI::TransformFun
     default:
         break;
     }
+    return false;
 }
 #pragma warning( pop )
