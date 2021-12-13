@@ -176,6 +176,7 @@ void OGUI::Context::Remove(const OGUI::WindowHandle window)
 				_currentActivateWindow = nullptr;
 				_keyboardFocused = nullptr;
 			}
+			auto temp = std::move(ctx);
 			windowContexts.erase(windowContexts.begin() + i);
 			return;
 		}
