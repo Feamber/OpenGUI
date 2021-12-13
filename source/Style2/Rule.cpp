@@ -46,5 +46,9 @@ void OGUI::StyleSheet::Initialize()
 	}
     i=0;
 	for (auto& keyframes : styleKeyframes)
-		namedKeyframes.insert({keyframes.name, i++});
+		namedKeyframes.emplace(keyframes.name, i++);
+
+	i=0;	
+	for (auto& font : styleFonts)
+		namedStyleFamilies.emplace(font.fontFamily, i++);
 }

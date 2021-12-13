@@ -286,7 +286,7 @@ OGUI::VisualElement::~VisualElement()
 	}
 	auto& Ctx = Context::Get();
 	if(!_styleSheets.empty())
-		Ctx.styleSystem.InvalidateCache();
+		Ctx.InvalidateCssCache();
 	auto& allElementHandle = Ctx._allElementHandle;
 	allElementHandle.erase(this);
 	if(Ctx._keyboardFocused == this)
@@ -607,11 +607,11 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetDisplay(_ygnode, _visible ? pos.flexDisplay : YGDisplayNone);
 }
 
-void OGUI::VisualElement::UpdateStyle(RestyleDamage damage)
+void OGUI::VisualElement::UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss)
 {
-	if(HasFlag(damage, RestyleDamage::Yoga) || _selectorDirty)
+	if(HasFlag(damage, RestyleDamage::Yoga))
 		SyncYogaStyle();
-	if(HasFlag(damage, RestyleDamage::Transform) || _selectorDirty)
+	if(HasFlag(damage, RestyleDamage::Transform))
 		MarkStyleTransformDirty();
 }
 

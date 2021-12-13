@@ -9,6 +9,7 @@
 namespace godot
 {
     class TextParagraph; 
+    class Font;
 }
 namespace OGUI
 {
@@ -30,6 +31,7 @@ namespace OGUI
         std::shared_ptr<class TextElementGlyphDraw> _drawPolicy;
 
         godot::TextParagraph* _paragraph = nullptr;
+        std::shared_ptr<godot::Font> _font;
         bool _paragraphDirty = false;
 
         void AddInlineElement(VisualElement* element);
@@ -39,7 +41,8 @@ namespace OGUI
         void BuildParagraph();
 
         void MarkLayoutDirty() override;
-        void UpdateStyle(RestyleDamage damage) override;
+        void UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss) override;
+        void SyncParagraphStyle();
         void GetChildren(std::vector<VisualElement *>& Children) override;
         void DrawPrimitive(PrimitiveDraw::DrawContext &Ctx) override;
 

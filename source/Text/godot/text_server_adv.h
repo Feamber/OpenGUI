@@ -61,6 +61,7 @@
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
+#include FT_BITMAP_H
 
 #include <hb-ft.h>
 #include <hb-ot.h>
@@ -78,6 +79,9 @@ public:
 
 struct TextureRef
 {
+	TextureRef() = default;
+	TextureRef(TextureRef&& other);
+	TextureRef& operator=(const TextureRef& other) = default;
 	OGUI::TextureHandle handle = nullptr;
 	~TextureRef();
 };

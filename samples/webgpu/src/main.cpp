@@ -6,7 +6,6 @@
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Text/TextElement.h"
-#include "OpenGUI/VisualSystem.h"
 #include "appbase.h"
 #include "webgpu.h"
 #include "OpenGUI/Bind/Bind.h"
@@ -320,7 +319,10 @@ public:
 
 	void UpdateTexture(TextureHandle t, const Bitmap& bitmap) override
 	{
-		updateTexture(device, queue, &ogui_textures[t], bitmap);
+		auto iter = ogui_textures.find(t);
+		if(iter == ogui_textures.end())
+			return;
+		updateTexture(device, queue, &iter->second, bitmap);
 	}
 
 	void ReleaseTexture(TextureHandle h) override
@@ -626,11 +628,11 @@ int main(int , char* []) {
 
 	std::vector<AppWindow*> windows;
 	SampleControls::Install();
-	ExternalControlSample sample;
-	windows.push_back(sample.MakeWindow());
-	LuaSample lsample;
-	windows.push_back(lsample.MakeWindow());
-	DataBindSample sample2;
+	//ExternalControlSample sample;
+	//windows.push_back(sample.MakeWindow());
+	//LuaSample lsample;
+	//windows.push_back(lsample.MakeWindow());
+	//DataBindSample sample2;
 	// windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
 	windows.push_back(CreateCssTestWindow());
@@ -645,7 +647,7 @@ int main(int , char* []) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
-			sample2.Update();
+			//sample2.Update();
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](AppWindow* win)

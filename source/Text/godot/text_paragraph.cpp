@@ -86,8 +86,7 @@ void TextParagraph::_shape_lines() {
 			Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, max_width - h_offset, 0, flags);
 			for (int i = 0; i < line_breaks.size(); i++) {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
-				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
-				
+				float h = ((TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x) * line_height_scale + spacing_top + spacing_bottom;
 				if (!tab_stops.is_empty()) {
 					TS->shaped_text_tab_align(line, tab_stops);
 				}
@@ -108,7 +107,7 @@ void TextParagraph::_shape_lines() {
 			if (!tab_stops.is_empty()) {
 				TS->shaped_text_tab_align(line, tab_stops);
 			}
-			float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
+			float h = ((TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x) * line_height_scale + spacing_top + spacing_bottom;
 			h_total += h;
 			if(h_total > max_height && lines_rid.size() > 0)
 			{
@@ -225,6 +224,19 @@ void TextParagraph::set_preserve_control(bool p_enabled) {
 
 bool TextParagraph::get_preserve_control() const {
 	return TS->shaped_text_get_preserve_control(rid);
+}
+
+void TextParagraph::set_line_height(float p_line_height)
+{
+	if(line_height_scale != p_line_height)
+	{
+		line_height_scale = p_line_height;
+		mark_dirty();
+	}
+}
+float TextParagraph::get_line_height()
+{
+	return line_height_scale;
 }
 
 void TextParagraph::set_direction(TextServer::Direction p_direction) {
@@ -518,7 +530,7 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 		float l_width = max_width;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
-			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
+			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) * line_height_scale + spacing_top;
 			if (i < dropcap_lines) {
 				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR || TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_AUTO) {
 					ofs.x += h_offset;
@@ -527,7 +539,7 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 			}
 		} else {
 			ofs.y = p_pos.y;
-			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]) + spacing_top;
+			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]) * line_height_scale + spacing_top;
 			if (i < dropcap_lines) {
 				if (TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_LTR || TS->shaped_text_get_direction(dropcap_rid) == TextServer::DIRECTION_AUTO) {
 					ofs.x += h_offset;
@@ -574,10 +586,10 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 		TS->shaped_text_draw(lines_rid[i], list, ofs, clip_l, clip_l + l_width, p_color);
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
-			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + spacing_bottom;
+			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) * line_height_scale + spacing_bottom;
 		} else {
 			ofs.y = p_pos.y;
-			ofs.x += TS->shaped_text_get_descent(lines_rid[i]) + spacing_bottom;
+			ofs.x += TS->shaped_text_get_descent(lines_rid[i]) * line_height_scale + spacing_bottom;
 		}
 	}
 }

@@ -2,6 +2,7 @@
 
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Transform.h"
+#include "OpenGUI/Text/TextTypes.h"
 #include "YGValue.h"
 #include "Yoga.h"
 #include "OpenGUI/VisualElement.h"
@@ -16,6 +17,7 @@
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "godot/text_server_adv.h"
 #include "OpenGUI/Style2/generated/text.h"
+#include "OpenGUI/Style2/ParseUtils.hpp"
 
 
 // helper type for the visitor #4
@@ -38,38 +40,6 @@ namespace OGUI
             return {};
         }
     };
-
-    std::shared_ptr<godot::FontData> GetTestFontData()
-    {
-        static std::shared_ptr<godot::FontData> data;
-        if(!data)
-        {
-            data.reset(new godot::FontData);
-            auto& ctx = Context::Get().fileImpl;
-            auto f = ctx->Open("res/fireflysung.ttf");
-            if(!f)
-                return nullptr;
-            auto length = ctx->Length(f);
-            godot::PackedByteArray buffer;
-            buffer.resize(length);
-            ctx->Read(buffer.data(), length, f);
-            ctx->Close(f);
-            data->set_data(buffer);
-        }
-        return data;
-    }
-
-    std::shared_ptr<godot::Font> GetTestFont()
-    {
-        static std::shared_ptr<godot::Font> instance;
-        if(!instance)
-        {
-           
-            instance.reset(new godot::Font);
-            instance->add_data(GetTestFontData());
-        }
-        return instance;
-    }
 
     YGSize MeasureText(
     YGNodeRef node,
@@ -200,11 +170,37 @@ namespace OGUI
         if(_paragraphDirty)
         {
             _paragraph->clear();
+            
             auto& txt = StyleText::Get(_style);
             BuildParagraphRec(_paragraph, txt);
             MarkLayoutDirty();
             _paragraphDirty = false;
         }
+    }
+
+    void TextElement::SyncParagraphStyle()
+    {
+        _paragraphDirty = true;
+        auto& txt = StyleText::Get(_style);
+        auto GetHAlign = [&]() //resolve
+        {
+            switch(txt.textAlign)
+            {
+                case TextAlign::Left: return godot::HALIGN_LEFT;
+                case TextAlign::Right: return godot::HALIGN_RIGHT;
+                case TextAlign::Center: return godot::HALIGN_CENTER;
+                //TODO: handle direction
+                case TextAlign::Start: return godot::HALIGN_LEFT;
+                case TextAlign::End: return godot::HALIGN_RIGHT;
+                case TextAlign::Justify: return godot::HALIGN_FILL;
+                default:
+                    break;
+            }
+            return godot::HALIGN_LEFT;
+        };
+        _paragraph->set_align(GetHAlign());
+        _paragraph->set_line_height(txt.lineHeight);
+    
     }
 
     void TextElement::BuildParagraphRec(godot::TextParagraph* p, const StyleText& txt)
@@ -216,7 +212,7 @@ namespace OGUI
                 [&](ostr::string& text) 
                 { 
                     godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
-                    p->add_string((wchar_t*)text.raw().data(), GetTestFont(), txt.fontSize, _drawPolicy); 
+                    p->add_string((wchar_t*)text.raw().data(), _font, txt.fontSize, _drawPolicy); 
                 },
                 [&](VisualElement*& child) 
                 { 
@@ -231,7 +227,7 @@ namespace OGUI
                 [&](std::shared_ptr<BindText>& Bind) 
                 { 
                     godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
-                    p->add_string((wchar_t*)Bind->text.raw().data(), GetTestFont(), txt.fontSize, _drawPolicy); 
+                    p->add_string((wchar_t*)Bind->text.raw().data(), _font, txt.fontSize, _drawPolicy); 
                 }
             }, inl);
         }
@@ -256,16 +252,49 @@ namespace OGUI
         YGNodeMarkDirty(_ygnode);
     }
 
-    void TextElement::UpdateStyle(RestyleDamage damage)
+    void TextElement::UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss)
     {
-        VisualElement::UpdateStyle(damage);
-        if(HasFlag(damage, RestyleDamage::TextLayout) || _selectorDirty)
-            _paragraphDirty = true;
-        if(HasFlag(damage, RestyleDamage::Text) || _selectorDirty)
+        VisualElement::UpdateStyle(damage, ss);
+        if(HasFlag(damage, RestyleDamage::TextLayout))
+            SyncParagraphStyle();
+        auto text = &StyleText::Get(_style);
+        if(HasFlag(damage, RestyleDamage::Text))
         {
-            auto style = &StyleText::Get(_style);
-            auto color = style->color;
+            auto color = text->color;
             _drawPolicy->color = godot::Color{color.x, color.y, color.z, color.w};
+        }
+        if(HasFlag(damage, RestyleDamage::Font) || !_font)
+        {
+            std::vector<std::string_view> families;
+            std::split(text->fontFamily, families, ",");
+            if(!families.empty())
+            {
+                if(!_font)
+                    _font.reset(new godot::Font);
+                _font->clear_data();
+                for(auto family : families)
+                {
+                    if(std::starts_with(family, "\"") && std::ends_with(family, "\""))
+                        family = family.substr(1, family.size() - 2);
+                    bool found = false;
+                    for(auto sheet : ss)
+                    {
+                        auto iter = sheet->namedStyleFamilies.find(family);
+                        if(iter == sheet->namedStyleFamilies.end())
+                            continue;
+                        auto& font = sheet->styleFonts[iter->second];
+                        for(auto& data : font.datas)
+                            _font->add_data(data);
+                        found = true;
+                        break;
+                    }
+                    if(!found)
+                        olog::Warn(u"unknown font family name:{}"_o.format(family));
+                }
+                godot::Map<uint32_t, double> map;
+                map[godot::TS->name_to_tag("weight")] = text->fontWeight;
+                _font->set_variation_coordinates(map);
+            }
         }
     }
 
@@ -294,7 +323,6 @@ namespace OGUI
     {
         _paragraph = new godot::TextParagraph;
         _paragraph->set_on_dirty([this]() {MarkLayoutDirty();});
-        _paragraph->set_align(godot::HALIGN_FILL);
         YGNodeSetMeasureFunc(_ygnode, MeasureText);
         YGNodeSetBaselineFunc(_ygnode, BaselineText);
         _drawPolicy = std::make_shared<TextElementGlyphDraw>();

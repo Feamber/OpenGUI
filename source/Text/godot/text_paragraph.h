@@ -58,7 +58,7 @@ private:
 	int spacing_bottom = 0;
 
 	bool lines_dirty = true;
-
+	float line_height_scale = 1.0;
 	float max_width = -1.0;
 	float max_height = -1.0;
 	int max_lines_visible = -1;
@@ -95,6 +95,9 @@ public:
 
 	void set_preserve_control(bool p_enabled);
 	bool get_preserve_control() const;
+
+	void set_line_height(float p_line_height);
+	float get_line_height();
 
 	void set_bidi_override(const Vector<Vector2i> &p_override);
 

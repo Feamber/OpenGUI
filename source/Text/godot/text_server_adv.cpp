@@ -33,6 +33,8 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Style2/Transform.h"
+#include "freetype/ftbitmap.h"
+#include "unicode/ubrk.h"
 
 using namespace godot;
 #ifdef ICU_STATIC_DATA
@@ -821,7 +823,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 			tex.offsets.data()[i] = 0;
 		}
 
-		p_data->font_textures.push_back(tex);
+		p_data->font_textures.push_back(std::move(tex));
 		ret.index = p_data->font_textures.size() - 1;
 	}
 
@@ -1177,7 +1179,6 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontDataAdvanced *p_font_d
 			fd->glyph_map[p_glyph] = FontGlyph();
 			ERR_FAIL_V_MSG(false, "FreeType: Failed to load glyph.");
 		}
-
 		if (!outline) {
 			if (!p_font_data->msdf) {
 				error = FT_Render_Glyph(fd->face->glyph, p_font_data->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO);
@@ -3986,7 +3987,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 
 	// Use ICU word iterator and custom kashida detection.
 	UErrorCode err = U_ZERO_ERROR;
-	UBreakIterator *bi = ubrk_open(UBRK_WORD, "", data, data_size, &err);
+	UBreakIterator *bi = ubrk_open(UBRK_CHARACTER, "", data, data_size, &err);
 	if (U_FAILURE(err)) {
 		// No data - use fallback.
 		int limit = 0;
@@ -4006,7 +4007,8 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 	} else {
 		int limit = 0;
 		while (ubrk_next(bi) != UBRK_DONE) {
-			if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
+			//if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) 
+			{
 				int i = _convert_pos(sd, ubrk_current(bi)) - 1;
 				jstops[i + sd->start] = false;
 				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
@@ -4794,6 +4796,12 @@ TextServerAdvanced::~TextServerAdvanced() {
 		icu_data = nullptr;
 	}
 #endif
+}
+
+TextureRef::TextureRef(TextureRef&& other)
+{
+	handle= other.handle;
+	other.handle = nullptr;
 }
 
 TextureRef::~TextureRef()

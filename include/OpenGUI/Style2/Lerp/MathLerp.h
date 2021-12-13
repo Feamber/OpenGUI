@@ -11,6 +11,10 @@ namespace OGUI
     {
         return a * (1-alpha) + b * alpha;
     }
+    OGUI_FORCEINLINE int Lerp(int a, int b, float alpha)
+    {
+        return a * (1-alpha) + b * alpha;
+    }
     OGUI_FORCEINLINE double Lerp(double a, double b, float alpha)
     {
         return a * (1-alpha) + b * alpha;

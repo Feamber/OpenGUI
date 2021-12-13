@@ -7,6 +7,12 @@
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Core/olog.h"
 
+namespace godot
+{
+    class Font;
+    class FontData;
+}
+
 namespace OGUI
 {
     template<class T>
@@ -98,6 +104,12 @@ namespace OGUI
 		std::vector<Key> keys;
     };
 
+    struct StyleFont
+    {
+        std::string fontFamily;
+        std::vector<std::shared_ptr<godot::FontData>> datas;
+    };
+
     struct StyleSheet
     {
         std::string path;
@@ -105,6 +117,10 @@ namespace OGUI
 		std::vector<StyleRule> styleRules;
 		std::vector<StyleComplexSelector> styleSelectors;
 		std::vector<StyleKeyframes> styleKeyframes;
+        std::vector<StyleFont> styleFonts;
+
+        using FontMap = std::unordered_map<std::string_view, int>;
+        FontMap namedStyleFamilies;
 
 		using SelectorMap = std::multimap<std::string_view, int>;
 		SelectorMap classSelectors;

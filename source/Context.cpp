@@ -181,6 +181,12 @@ void OGUI::Context::Remove(const OGUI::WindowHandle window)
 		}
 	}
 }
+
+void OGUI::Context::InvalidateCssCache()
+{
+	for(auto& window : windowContexts)
+		window->_cssCacheInvalidated = true;
+}
  
 void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 {
@@ -189,7 +195,8 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	// Texture Streaming
 	textureManager->Update();
 	_deltaTime = dt;
-	styleSystem.Update(root);
+	styleSystem.Update(root, wctx._cssCacheInvalidated);
+	wctx._cssCacheInvalidated = false;
 	UpdateLayout(root, wctx.GetWidth(), wctx.GetHeight());
 	UpdateScrollSize(root);
 	TransformRec(root);

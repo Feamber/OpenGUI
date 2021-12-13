@@ -36,5 +36,5 @@
         <VisualElement name="" class="Test"/>
     </VisualElement>/> 
     <VisualElement name="Child2" focusable="true" class="Child"/> 
-    <Text name="Child3" class="Child">asd词组测试<Text name="Child4" class="Child">换颜色</Text>非常规测试</Text>
+    <Text name="Child3" class="Child">asd词组测试<Text name="Child4" class="Child">换颜色</Text>对齐测试 William Shakespeare was an English playwright, poet and actor, widely regarded as the greatest writer in the English language and the world's greatest dramatist. He is often called England's national poet and the "Bard of Avon".</Text>
 </VisualElement>

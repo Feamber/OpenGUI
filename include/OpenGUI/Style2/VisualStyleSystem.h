@@ -1,6 +1,5 @@
 #pragma once
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/VisualSystem.h"
 #include <unordered_set>
 #include <function_ref/function_ref.hpp>
 #include "OpenGUI/Style2/Selector.h"
@@ -21,20 +20,18 @@ namespace OGUI
 		VisualElement* currentElement = nullptr;
 	};
 
-	class VisualStyleSystem : public VisualSystemBase
+	class VisualStyleSystem
 	{
 		StyleMatchingContext matchingContext;
-		bool _cacheInvalidated = false;
 
-		void Traverse(VisualElement* element, bool forceUpdate);
+		void Traverse(VisualElement* element, bool forceUpdate, bool refresh);
 
 		static void FindMatches(StyleMatchingContext& context, std::vector<SelectorMatchRecord>& matchedSelectors);
-		void ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors);
+		void ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors, bool refresh);
 		RestyleDamage UpdateAnim(VisualElement* element);
-		void UpdateStyle(VisualElement* element);
+		void UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss);
 
 	public:
-		OGUI_API void InvalidateCache();
-		OGUI_API virtual void Update(VisualElement* Tree);
+		OGUI_API void Update(VisualElement* Tree, bool refresh);
 	};
 }

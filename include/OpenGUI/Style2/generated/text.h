@@ -9,6 +9,7 @@
 #include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "OpenGUI/Style2/Parse/MathParse.h"
+#include "OpenGUI/Style2/Parse/TextParse.h"
 #include "OpenGUI/Style2/Lerp/MathLerp.h"
 namespace OGUI
 {
@@ -22,9 +23,19 @@ namespace OGUI
         {
             static constexpr size_t fontSize = OGUI::hash("font-size"sv);
             static constexpr size_t color = OGUI::hash("color"sv);
+            static constexpr size_t fontFamily = OGUI::hash("font-family"sv);
+            static constexpr size_t fontStyle = OGUI::hash("font-style"sv);
+            static constexpr size_t fontWeight = OGUI::hash("font-weight"sv);
+            static constexpr size_t lineHeight = OGUI::hash("line-height"sv);
+            static constexpr size_t textAlign = OGUI::hash("text-align"sv);
         };
         float fontSize;
         Color4f color;
+        std::string fontFamily;
+        TextStyle fontStyle;
+        int fontWeight;
+        float lineHeight;
+        TextAlign textAlign;
         void Initialize();
         static const StyleText& GetDefault();
         static const StyleText& Get(const ComputedStyle& style);

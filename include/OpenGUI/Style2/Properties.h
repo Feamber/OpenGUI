@@ -34,6 +34,8 @@ namespace OGUI
 		Transform = 0x2,
 		Text = 0x4,
 		TextLayout = 0x8,
+		Font = 0x10,
+		All = 0x20 - 1,
 	};
 	ENUM_CLASS_FLAGS(RestyleDamage)
 

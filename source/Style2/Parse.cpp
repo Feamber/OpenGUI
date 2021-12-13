@@ -14,18 +14,21 @@
 
 namespace OGUI
 {
+
+
 	std::optional<StyleSheet> ParseCSS(std::string_view str)
 	{
 		static auto grammar = R"(
-			Stylesheet			<- _ (StyleRule / Keyframes)*
+			Stylesheet			<- _ (StyleRule / Keyframes / Fontface)*
 			StyleRule			<- SelectorList _ '{' _ PropertyList _ '}' _
+			Fontface			<- '@font-face' _ '{' _ PropertyList _ '}' _
 			Keyframes			<- '@keyframes' w <IDENT> _ '{' _ KeyframeBlock* _ '}' _
 			KeyframeBlock		<- <KeyframeSelector> (w ',' w <KeyframeSelector> w)* _ '{' _ PropertyList _ '}' _
 			SelectorList		<- ComplexSelector (',' w ComplexSelector)* _
 			ComplexSelector		<- Selector ComplexPart* ('::' <pseudoElement>)?
 			ComplexPart			<- ([ ]+ Selector) / (w '>' w Selector)
 			Selector			<- SelectorPart+
-			SelectorPart		<- "*" / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT>  / (':' <IDENT>)
+			SelectorPart		<- '*' / ('.' <IDENT>) / ('#' <IDENT>) / <IDENT>  / (':' <IDENT>)
 			PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
 			Property			<- <IDENT> w ':' w <(!(';'/'}') .)*>
 			~pseudoElement		<- 'before'/'after'
@@ -46,7 +49,7 @@ namespace OGUI
 			{
 				parser.log = [](size_t line, size_t col, const string& msg)
 				{
-					cerr << line << ":" << col << ": " << msg << "\n";
+            		olog::Error(u"CSS解析失败，{} : {} [{}]"_o.format((int)line, (int)col, msg));
 				};
 				ok = parser.load_grammar(grammar);
 			}
@@ -64,7 +67,6 @@ namespace OGUI
 			auto value = vs.token(1);
 			return make_pair(name, value);
 		};
-        using PropertyList = std::vector<std::pair<std::string_view, std::string_view>>;
 		parser["PropertyList"] = [&](SemanticValues& vs)
 		{
 			PropertyList pairs;
@@ -204,6 +206,14 @@ namespace OGUI
 			}
 			sheet.styleKeyframes.push_back(std::move(keyframes));
 		};
+		parser["Fontface"] = [&](SemanticValues& vs)
+		{
+			auto list = any_move<PropertyList>(vs[0]);
+			auto font = ParseFontFace(list);
+			if(sheet.namedStyleFamilies.find(font.fontFamily) != sheet.namedStyleFamilies.end())
+				throw parse_error("重复的font-face名字");
+			sheet.styleFonts.push_back(std::move(font));
+		};
 		parser.enable_packrat_parsing();
 		if (parser.parse(str))
 			return sheet;
@@ -231,7 +241,7 @@ namespace OGUI
 			{
 				parser.log = [](size_t line, size_t col, const string& msg)
 				{
-					cerr << line << ":" << col << ": " << msg << "\n";
+            		olog::Error(u"选择器解析失败，{} : {} [{}]"_o.format((int)line, (int)col, msg));
 				};
 				ok = parser.load_grammar(grammar);
 				if (ok)
@@ -326,7 +336,7 @@ namespace OGUI
 			return make_pair(name, value);
 		};
         using PropertyList = std::vector<std::pair<std::string_view, std::string_view>>;
-		parser["PropertyList"] = [&](SemanticValues& vs)
+		parser["PropertyList"] = [&](SemanticValues& vs, any& dt)
 		{
 			PropertyList list;
 			for (auto& p : vs)

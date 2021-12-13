@@ -14,6 +14,11 @@
     animation-iteration-count: infinite;*/
 }
 
+@font-face {
+    font-family: TestFont;
+    src: url(res/arial.ttf);
+}
+
 .Test{
     width: 20px;
     height:20px;
@@ -54,12 +59,17 @@ TextElement{
 }
 
 #Child3 { 
-    font-size:36;
+    font-family: TestFont;
+    font-size:25;
     height:300px; width:300px; 
-    color:white;
+    color:black;
+    text-align: justify;
+    line-height: 1;
+    background-color: transparent;
 }
 
 #Child4 {
+    font-family: TestFont;
     font-size:20;
     color:aqua;
 }

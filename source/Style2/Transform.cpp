@@ -192,4 +192,29 @@ OGUI::ComputedTransform OGUI::evaluate(gsl::span<const TransformFunction> transf
         result = multiply(result, transformList[i].to_transform());
     return result;
 }
+
+bool OGUI::operator==(const OGUI::ComputedTransform& a, const OGUI::ComputedTransform& b)
+{
+    return memcmp(a.m.M, b.m.M, sizeof(a.m))==0 && a.trans == b.trans;
+}
+
+bool OGUI::operator==(const OGUI::TransformFunction& a, const OGUI::TransformFunction& b)
+{
+    if(a.type != b.type)
+        return false;
+    switch (a.type) {
+    case OGUI::TransformFunction::Type::translate:
+        return a._translate == b._translate;
+    case OGUI::TransformFunction::Type::rotate:
+        return a._rotate == b._rotate;
+    case OGUI::TransformFunction::Type::skew:
+        return a._skew == b._skew;
+    case OGUI::TransformFunction::Type::scale:
+        return a._scale == b._scale;
+    case OGUI::TransformFunction::Type::matrix:
+        return a._matrix == b._matrix;
+    default:
+        break;
+    }
+}
 #pragma warning( pop )

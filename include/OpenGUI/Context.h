@@ -41,6 +41,7 @@ namespace OGUI
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
 		std::shared_ptr<PrimitiveDraw::DrawContext> currentDrawCtx;
+		bool _cssCacheInvalidated = true;
 	protected:
 		WindowHandle window;
 		VisualWindow* ui;
@@ -87,6 +88,7 @@ namespace OGUI
 		void PreparePrimitives(const WindowHandle window);
 		void Render(const WindowHandle window);
 		void MarkDirty(VisualElement* element, DirtyReason reason);
+		void InvalidateCssCache();
 
 		//Message Handling
 		//reference : UE4 Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h

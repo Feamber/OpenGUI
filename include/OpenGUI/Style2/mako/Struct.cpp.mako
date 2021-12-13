@@ -210,9 +210,9 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
         %for prop in struct.longhands:
             case Ids::${prop.ident}:{
                 auto v = fget();
-                %if prop.restyle_damage:
-                    damage |= ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
-                %endif
+            %if prop.restyle_damage and not prop.is_vector:
+                auto prevValue = v->${prop.ident};
+            %endif
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
@@ -231,6 +231,13 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
                     v->${prop.ident} = OGUI::Lerp(v->${prop.ident}, sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
                 else
                     v->${prop.ident} = OGUI::Lerp(sheet.Get<${prop.view_type}>(prop.from), sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
+                
+            %if prop.restyle_damage:
+            %if not prop.is_vector:
+                if(prevValue != v->${prop.ident})
+            %endif
+                    damage |= ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
+            %endif
                 break;
                 }
         %endfor

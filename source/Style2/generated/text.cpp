@@ -71,6 +71,11 @@ void OGUI::StyleText::Initialize()
 {
     fontSize = 20.f;
     color = Color4f(0,0,0,1);
+    fontFamily = {};
+    fontStyle = TextStyle::Normal;
+    fontWeight = 400;
+    lineHeight = 1.f;
+    textAlign = TextAlign::Start;
 }
 
 void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -124,6 +129,31 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v->color = Color4f(0,0,0,1);
                     break;
                     }
+                case Ids::fontFamily:{
+                    auto v = fget();
+                    v->fontFamily = {};
+                    break;
+                    }
+                case Ids::fontStyle:{
+                    auto v = fget();
+                    v->fontStyle = TextStyle::Normal;
+                    break;
+                    }
+                case Ids::fontWeight:{
+                    auto v = fget();
+                    v->fontWeight = 400;
+                    break;
+                    }
+                case Ids::lineHeight:{
+                    auto v = fget();
+                    v->lineHeight = 1.f;
+                    break;
+                    }
+                case Ids::textAlign:{
+                    auto v = fget();
+                    v->textAlign = TextAlign::Start;
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -139,6 +169,31 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Ids::color:{
                     auto v = fget();
                     v->color = pst->color;
+                    break;
+                    }
+                case Ids::fontFamily:{
+                    auto v = fget();
+                    v->fontFamily = pst->fontFamily;
+                    break;
+                    }
+                case Ids::fontStyle:{
+                    auto v = fget();
+                    v->fontStyle = pst->fontStyle;
+                    break;
+                    }
+                case Ids::fontWeight:{
+                    auto v = fget();
+                    v->fontWeight = pst->fontWeight;
+                    break;
+                    }
+                case Ids::lineHeight:{
+                    auto v = fget();
+                    v->lineHeight = pst->lineHeight;
+                    break;
+                    }
+                case Ids::textAlign:{
+                    auto v = fget();
+                    v->textAlign = pst->textAlign;
                     break;
                     }
                 default: break;
@@ -157,6 +212,31 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Ids::color:{
                     auto v = fget();
                     v->color = sheet.Get<Color4f>(prop.value);
+                    break;
+                    }
+                case Ids::fontFamily:{
+                    auto v = fget();
+                    v->fontFamily = sheet.Get<std::string>(prop.value);
+                    break;
+                    }
+                case Ids::fontStyle:{
+                    auto v = fget();
+                    v->fontStyle = sheet.Get<TextStyle>(prop.value);
+                    break;
+                    }
+                case Ids::fontWeight:{
+                    auto v = fget();
+                    v->fontWeight = sheet.Get<int>(prop.value);
+                    break;
+                    }
+                case Ids::lineHeight:{
+                    auto v = fget();
+                    v->lineHeight = sheet.Get<float>(prop.value);
+                    break;
+                    }
+                case Ids::textAlign:{
+                    auto v = fget();
+                    v->textAlign = sheet.Get<TextAlign>(prop.value);
                     break;
                     }
                 default: break;
@@ -205,6 +285,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
         {
             case Ids::fontSize:{
                 auto v = fget();
+                auto prevValue = v->fontSize;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
@@ -215,10 +296,14 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                     v->fontSize = OGUI::Lerp(v->fontSize, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v->fontSize = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                
+                if(prevValue != v->fontSize)
+                    damage |= RestyleDamage::TextLayout;
                 break;
                 }
             case Ids::color:{
                 auto v = fget();
+                auto prevValue = v->color;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
@@ -229,6 +314,99 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                     v->color = OGUI::Lerp(v->color, sheet.Get<Color4f>(prop.to), prop.alpha);
                 else
                     v->color = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
+                
+                if(prevValue != v->color)
+                    damage |= RestyleDamage::Text;
+                break;
+                }
+            case Ids::fontFamily:{
+                auto v = fget();
+                auto prevValue = v->fontFamily;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->fontFamily = sheet.Get<std::string>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->fontFamily = sheet.Get<std::string>(prop.to);
+                else if(prop.from == prop.to)
+                    v->fontFamily = OGUI::Lerp(v->fontFamily, sheet.Get<std::string>(prop.to), prop.alpha);
+                else
+                    v->fontFamily = OGUI::Lerp(sheet.Get<std::string>(prop.from), sheet.Get<std::string>(prop.to), prop.alpha);
+                
+                if(prevValue != v->fontFamily)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::fontStyle:{
+                auto v = fget();
+                auto prevValue = v->fontStyle;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->fontStyle = sheet.Get<TextStyle>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->fontStyle = sheet.Get<TextStyle>(prop.to);
+                else if(prop.from == prop.to)
+                    v->fontStyle = OGUI::Lerp(v->fontStyle, sheet.Get<TextStyle>(prop.to), prop.alpha);
+                else
+                    v->fontStyle = OGUI::Lerp(sheet.Get<TextStyle>(prop.from), sheet.Get<TextStyle>(prop.to), prop.alpha);
+                
+                if(prevValue != v->fontStyle)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::fontWeight:{
+                auto v = fget();
+                auto prevValue = v->fontWeight;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->fontWeight = sheet.Get<int>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->fontWeight = sheet.Get<int>(prop.to);
+                else if(prop.from == prop.to)
+                    v->fontWeight = OGUI::Lerp(v->fontWeight, sheet.Get<int>(prop.to), prop.alpha);
+                else
+                    v->fontWeight = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
+                
+                if(prevValue != v->fontWeight)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::lineHeight:{
+                auto v = fget();
+                auto prevValue = v->lineHeight;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->lineHeight = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->lineHeight = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->lineHeight = OGUI::Lerp(v->lineHeight, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->lineHeight = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                
+                if(prevValue != v->lineHeight)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textAlign:{
+                auto v = fget();
+                auto prevValue = v->textAlign;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->textAlign = sheet.Get<TextAlign>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->textAlign = sheet.Get<TextAlign>(prop.to);
+                else if(prop.from == prop.to)
+                    v->textAlign = OGUI::Lerp(v->textAlign, sheet.Get<TextAlign>(prop.to), prop.alpha);
+                else
+                    v->textAlign = OGUI::Lerp(sheet.Get<TextAlign>(prop.from), sheet.Get<TextAlign>(prop.to), prop.alpha);
+                
+                if(prevValue != v->textAlign)
+                    damage |= RestyleDamage::TextLayout;
                 break;
                 }
             default: break;
@@ -251,6 +429,21 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             case Ids::color:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::fontFamily:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::fontStyle:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::fontWeight:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::lineHeight:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::textAlign:
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             default: break;
@@ -278,6 +471,61 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
             else
             {
                 errorMsg = "failed to parse color value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::fontFamily:{
+            std::string v;
+            if(ParseValue(value, v))
+                rule.properties.push_back({phash, sheet.Push<std::string>(v)});
+            else
+            {
+                errorMsg = "failed to parse font-family value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::fontStyle:{
+            TextStyle v;
+            if(ParseValue(value, v))
+                rule.properties.push_back({phash, sheet.Push<TextStyle>(v)});
+            else
+            {
+                errorMsg = "failed to parse font-style value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::fontWeight:{
+            int v;
+            if(ParseTextWeight(value, v))
+                rule.properties.push_back({phash, sheet.Push<int>(v)});
+            else
+            {
+                errorMsg = "failed to parse font-weight value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::lineHeight:{
+            float v;
+            if(ParseLineHeight(value, v))
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
+            else
+            {
+                errorMsg = "failed to parse line-height value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::textAlign:{
+            TextAlign v;
+            if(ParseValue(value, v))
+                rule.properties.push_back({phash, sheet.Push<TextAlign>(v)});
+            else
+            {
+                errorMsg = "failed to parse text-align value!";
                 return false;
             }
             return true;

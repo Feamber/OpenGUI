@@ -20,6 +20,7 @@ namespace OGUI
         Matrix4x4 to_3D() const;
         void decompose(Vector2f& trans, float& rot, Vector2f& sk, Vector2f& sc) const;
         static ComputedTransform compose(Vector2f trans, float rot, Vector2f sk, Vector2f sc);
+        friend bool operator==(const ComputedTransform& a, const ComputedTransform& b);
     };
 
     struct TransformFunction
@@ -49,6 +50,7 @@ namespace OGUI
         static TransformFunction ident(Type type);
         ComputedTransform to_transform() const;
         TransformFunction();
+        friend bool operator==(const TransformFunction& a, const TransformFunction& b);
     };
     ComputedTransform evaluate(gsl::span<const TransformFunction> transformList);
     FORCEINLINE ComputedTransform multiply(ComputedTransform a, ComputedTransform b)

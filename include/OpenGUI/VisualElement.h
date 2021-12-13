@@ -149,7 +149,7 @@ namespace OGUI reflect
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout(float width = YGUndefined, float height = YGUndefined);
 		void SyncYogaStyle();
-		virtual void UpdateStyle(RestyleDamage damage);
+		virtual void UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss);
 		RestyleDamage ApplyProcedureStyle();
 		using StyleOverridingFunc = std::function<RestyleDamage()>;
 		std::vector<StyleOverridingFunc> _styleOverriding;

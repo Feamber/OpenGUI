@@ -14,19 +14,12 @@
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Context.h"
 
-void OGUI::VisualStyleSystem::InvalidateCache()
+void OGUI::VisualStyleSystem::Update(VisualElement* Tree, bool refresh)
 {
-	_cacheInvalidated = true;
-}
-
-void OGUI::VisualStyleSystem::Update(VisualElement* Tree)
-{
-	Traverse(Tree, false);
-	_cacheInvalidated = false;
+	Traverse(Tree, false, refresh);
 	OASSERT(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
 }
-
 namespace OGUI
 {
 	bool Match(VisualElement* element, StyleSelector& selector)
@@ -259,7 +252,7 @@ namespace OGUI
 	}
 }
 
-void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force)
+void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool refresh)
 {
 	const std::vector<StyleSheet*>& ess = element->GetStyleSheets();
 	auto& sstack = matchingContext.styleSheetStack;
@@ -269,7 +262,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force)
 		if (std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
 			sstack.push_back(ss);
 	}
-	if (_cacheInvalidated)
+	if (refresh)
 		element->ResetStyles();
 	element->_selectorDirty |= force;
 	if(element->_selectorDirty)
@@ -288,31 +281,31 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force)
 			auto begin = result.begin();
 			auto end = std::find_if(result.begin(), result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElem != PseudoElements::None; });
 			if (begin != result.end())
-				ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>(&*begin, end - begin));
+				ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>(&*begin, end - begin), refresh);
 			begin = end;
 			end = std::find_if(end, result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElem != PseudoElements::Before; });
 			if (begin != result.end())
-				ApplyMatchedRules(element->GetBeforePseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
+				ApplyMatchedRules(element->GetBeforePseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin), refresh);
 			else
 				element->ReleaseBeforePseudoElement();
 			begin = end;
 			end = std::find_if(end, result.end(), [](const SelectorMatchRecord& a) { return a.complexSelector->pseudoElem != PseudoElements::After; });
 			if (begin != result.end())
-				ApplyMatchedRules(element->GetAfterPseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin));
+				ApplyMatchedRules(element->GetAfterPseudoElement(), gsl::span<SelectorMatchRecord>(&*begin, end - begin), refresh);
 			else
 				element->ReleaseAfterPseudoElement();
 		}
 		matchingContext.currentElement = nullptr;
 	}
-	UpdateStyle(element);
+	UpdateStyle(element, sstack);
 	if(element->_beforeElement)
-		UpdateStyle(element->_beforeElement);
+		UpdateStyle(element->_beforeElement, sstack);
 	if(element->_afterElement)
-		UpdateStyle(element->_afterElement);
+		UpdateStyle(element->_afterElement, sstack);
 	element->Traverse([&](VisualElement* element)
 		{
 			if(!element->_isPseudoElement)
-				Traverse(element, force);
+				Traverse(element, force, refresh);
 		});
 	element->_selectorDirty = false;
 	element->_styleDirty = false;
@@ -324,7 +317,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force)
 
 
 
-void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors)
+void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors, bool refresh)
 {
 	element->_styleDirty = true;
 	auto parent = element->_logicalParent ? &element->_logicalParent->_style : nullptr;
@@ -393,7 +386,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 					break;
 				}
 			}
-			if(_cacheInvalidated)
+			if(refresh)
 				if(!anim.Init(matchingContext.styleSheetStack))
 					return true;
 			if(!founded)
@@ -494,10 +487,11 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	return damage;
 }
 
-void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element)
+void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss)
 {
-	RestyleDamage damage = RestyleDamage::None;
+	auto _style = element->_style;
+	RestyleDamage damage = element->_selectorDirty ? RestyleDamage::All : RestyleDamage::None;
 	damage |= UpdateAnim(element);
 	damage |= element->ApplyProcedureStyle();
-	element->UpdateStyle(damage);
+	element->UpdateStyle(damage, ss);
 }

@@ -158,32 +158,40 @@ class ReloadManager : public efsw::FileWatchListener
 
 	struct PendingEvents
 	{
+		size_t count = 0;
+		efsw::WatchID id;
 		std::vector<Event> events;
-		efsw::FileWatchListener* callback;
+		std::vector<efsw::FileWatchListener*> callback;
 	};
 
-	std::unordered_map<efsw::WatchID, PendingEvents> allPendingEvents;
+	std::unordered_map<std::string, PendingEvents> allPendingEvents;
 
-	efsw::WatchID AddWatch(const std::string& directory, efsw::FileWatchListener* callback, bool recursive)
+	void AddWatch(const std::string& directory, efsw::FileWatchListener* callback, bool recursive)
 	{
-		auto id = watcher.addWatch(directory, this, true);
-		PendingEvents watch;
-		watch.callback = callback;
-		allPendingEvents.emplace(id, watch);
-		return id;
+		auto& events = allPendingEvents[directory];
+		if(events.count == 0)
+			events.id = watcher.addWatch(directory, this, true);
+		events.count++;
+		events.callback.push_back(callback);
 	}
 
-	void RemoveWatch(efsw::WatchID id)
+	void RemoveWatch(const std::string& directory)
 	{
-		watcher.removeWatch(id);
-		allPendingEvents.erase(id);
+		auto& events = allPendingEvents[directory];
+		events.count--;
+		if(events.count == 0)
+		{
+			watcher.removeWatch(directory);
+			allPendingEvents.erase(directory);
+		}
 	}
 
 	void handleFileAction(efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
 	{
 		std::scoped_lock<std::mutex> lock(m);
 		Event event{dir, filename, action, oldFilename};
-		allPendingEvents[watchid].events.push_back(std::move(event));
+		
+		allPendingEvents[dir.substr(0, dir.length() - 1)].events.push_back(std::move(event));
 	}
 
 	void Watch()
@@ -197,7 +205,8 @@ class ReloadManager : public efsw::FileWatchListener
 		for(auto& pair : allPendingEvents)
 		{
 			for(auto& e : pair.second.events)
-				pair.second.callback->handleFileAction(pair.first, e.dir, e.filename, e.action, e.oldFilename);
+				for(auto& c : pair.second.callback)
+					c->handleFileAction(pair.second.id, pair.first, e.filename, e.action, e.oldFilename);
 			pair.second.events.clear();
 		}
 	}
@@ -233,15 +242,15 @@ public:
 		for(auto filePath : allXmlFile)
 			allPaths.insert(std::filesystem::path(filePath).remove_filename().string());
 		for(auto path : allPaths)
-			watchIds.push_back(watcher->AddWatch(path, this, true));
+			watcher->AddWatch(path, this, true);
 		parent->PushChild(ve);
 		OnReloaded();
     }
 
 	virtual ~ReloadableXml()
 	{
-		for(auto id : watchIds)
-			watcher->RemoveWatch(id);
+		for(auto path : allPaths)
+			watcher->RemoveWatch(path);
 	}
 
 	void handleFileAction(efsw::WatchID watchid, const std::string& dir, const std::string& filename, efsw::Action action, std::string oldFilename = "")
@@ -257,8 +266,8 @@ public:
 				break;
 			case efsw::Actions::Modified:
 			{
-				auto path = std::filesystem::path(dir.substr(0, dir.length() - 1) + filename);
-				if (find(allXmlFile.begin(), allXmlFile.end(), path) != allXmlFile.end())
+				auto path = dir + filename;
+				if (std::find(allXmlFile.begin(), allXmlFile.end(), path) != allXmlFile.end())
 				{
 					std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
 					ParseXmlState xmlState;
@@ -280,10 +289,10 @@ public:
 					}
 					olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 				}
-				else if (find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
+				else if (std::find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
 				{
 					std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-					auto asset = ParseCSSFile(path.string());
+					auto asset = ParseCSSFile(path);
 					if (asset)
 					{
 						std::vector<VisualElement*> stack {};
@@ -304,7 +313,7 @@ public:
 							top->GetChildren(stack);
 						}
 						ctx._layoutDirty = true;
-						ctx.styleSystem.InvalidateCache();
+						ctx.InvalidateCssCache();
 					}
 					olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
 				}
