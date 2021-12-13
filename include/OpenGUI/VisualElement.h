@@ -143,7 +143,8 @@ namespace OGUI reflect
 
 		void MarkTransformDirty();
 		void MarkStyleTransformDirty();
-		virtual void MarkLayoutDirty();
+		virtual void MarkLayoutDirty(bool visibility);
+		void NotifyLayoutDirty(bool visiblity);
 		attr("script":true)
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);

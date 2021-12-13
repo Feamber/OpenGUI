@@ -40,7 +40,7 @@ namespace OGUI
         void AddBindText(Name attrName);
         void BuildParagraph();
 
-        void MarkLayoutDirty() override;
+        void MarkLayoutDirty(bool visibility) override;
         void UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss) override;
         void SyncParagraphStyle();
         void GetChildren(std::vector<VisualElement *>& Children) override;

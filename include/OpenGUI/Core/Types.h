@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include <algorithm>
@@ -187,6 +188,14 @@ namespace OGUI reflect
 		Backslash = 0xDC,	// \| key on US standard keyboard
 		RBranket = 0xDD,	// ]} key on US standard keyboard
 		Quote = 0xDE,		// '" key on US standard keyboard
+	};
+
+	enum class attr("script":true)
+	EInlineAlign : uint32
+	{
+		Baseline,
+		Top,
+		Middle
 	};
 
 	enum class attr("script":true) 

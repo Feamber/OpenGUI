@@ -303,7 +303,6 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 }
             case Ids::color:{
                 auto v = fget();
-                auto prevValue = v->color;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
@@ -315,8 +314,6 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 else
                     v->color = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
                 
-                if(prevValue != v->color)
-                    damage |= RestyleDamage::Text;
                 break;
                 }
             case Ids::fontFamily:{
@@ -334,7 +331,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                     v->fontFamily = OGUI::Lerp(sheet.Get<std::string>(prop.from), sheet.Get<std::string>(prop.to), prop.alpha);
                 
                 if(prevValue != v->fontFamily)
-                    damage |= RestyleDamage::TextLayout;
+                    damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
                 }
             case Ids::fontStyle:{
@@ -352,7 +349,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                     v->fontStyle = OGUI::Lerp(sheet.Get<TextStyle>(prop.from), sheet.Get<TextStyle>(prop.to), prop.alpha);
                 
                 if(prevValue != v->fontStyle)
-                    damage |= RestyleDamage::TextLayout;
+                    damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
                 }
             case Ids::fontWeight:{
@@ -370,7 +367,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                     v->fontWeight = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
                 
                 if(prevValue != v->fontWeight)
-                    damage |= RestyleDamage::TextLayout;
+                    damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
                 }
             case Ids::lineHeight:{

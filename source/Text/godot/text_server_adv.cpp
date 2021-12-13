@@ -3564,6 +3564,7 @@ real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width
 	}
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
 		real_t delta_width_per_space = (p_width - justification_width) / space_count;
+		real_t old_width = justification_width;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.data()[i];
 			if (gl.count > 0) {
@@ -3578,6 +3579,9 @@ real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width
 					gl.advance = new_advance;
 					justification_width += (gl.advance - old_adv);
 				}
+				for (auto& pair : sd->objects)
+					if (pair.second.pos == gl.start)
+						pair.second.rect.position.x += justification_width - old_width;
 			}
 		}
 	}

@@ -435,25 +435,17 @@ Vector<Variant> TextParagraph::get_line_objects(int p_line) const {
 Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= lines_rid.size(), Rect2());
-	Rect2 xrect = TS->shaped_text_get_object_rect(lines_rid[p_line], p_key);
-	for (int i = 0; i < p_line; i++) {
-		Size2 lsize = TS->shaped_text_get_size(lines_rid[i]);
-		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-			xrect.position.y += lsize.y + spacing_top + spacing_bottom;
-		} else {
-			xrect.position.x += lsize.x + spacing_top + spacing_bottom;
-		}
-	}
-	return xrect;
+	return TS->shaped_text_get_object_rect(lines_rid[p_line], p_key);
 }
 
 Size2 TextParagraph::get_line_size(int p_line) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= lines_rid.size(), Size2());
+	auto Size = TS->shaped_text_get_size(lines_rid[p_line]);
 	if (TS->shaped_text_get_orientation(lines_rid[p_line]) == TextServer::ORIENTATION_HORIZONTAL) {
-		return Size2(TS->shaped_text_get_size(lines_rid[p_line]).x, TS->shaped_text_get_size(lines_rid[p_line]).y + spacing_top + spacing_bottom);
+		return Size2(Size.x, Size.y * line_height_scale + spacing_top + spacing_bottom);
 	} else {
-		return Size2(TS->shaped_text_get_size(lines_rid[p_line]).x + spacing_top + spacing_bottom, TS->shaped_text_get_size(lines_rid[p_line]).y);
+		return Size2(Size.x * line_height_scale + spacing_top + spacing_bottom, Size.y);
 	}
 }
 
@@ -466,13 +458,13 @@ Vector2i TextParagraph::get_line_range(int p_line) const {
 float TextParagraph::get_line_ascent(int p_line) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= lines_rid.size(), 0.f);
-	return TS->shaped_text_get_ascent(lines_rid[p_line]) + spacing_top;
+	return TS->shaped_text_get_ascent(lines_rid[p_line]) * line_height_scale + spacing_top;
 }
 
 float TextParagraph::get_line_descent(int p_line) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= lines_rid.size(), 0.f);
-	return TS->shaped_text_get_descent(lines_rid[p_line]) + spacing_bottom;
+	return TS->shaped_text_get_descent(lines_rid[p_line]) * line_height_scale + spacing_bottom;
 }
 
 float TextParagraph::get_line_width(int p_line) const {

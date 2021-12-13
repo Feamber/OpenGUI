@@ -1,7 +1,9 @@
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Transform.h"
+#include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Text/TextTypes.h"
 #include "YGValue.h"
 #include "Yoga.h"
@@ -26,6 +28,20 @@ template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 namespace OGUI
 {
+
+    godot::InlineAlign GetInlineAlign(EInlineAlign o)
+    {
+        switch(o)
+        {
+            case EInlineAlign::Baseline:
+                return godot::INLINE_ALIGN_BOTTOM;
+            case EInlineAlign::Top:
+                return godot::INLINE_ALIGN_TOP;
+            case EInlineAlign::Middle:
+                return godot::INLINE_ALIGN_CENTER;
+        }
+        return godot::INLINE_ALIGN_BOTTOM;
+    }
 
     class TextElementGlyphDraw : public godot::TextServer::GlyphDrawPolicy
     {
@@ -67,7 +83,7 @@ namespace OGUI
         default:
             te->_paragraph->set_max_height(-1);
         }
-
+        
         auto inlineElements = te->_paragraph->get_objects();
         for(auto i : inlineElements)
         {
@@ -75,7 +91,8 @@ namespace OGUI
             ie->CalculateLayout(); //TODO: dir
             //YGNodeCalculateLayout(ie->_ygnode, YGUndefined, YGUndefined, dir);
             auto esize = ie->GetSize();
-            te->_paragraph->resize_object(i, {esize.X, esize.Y});
+            auto& pos = StylePosition::Get(ie->_style);
+            te->_paragraph->resize_object(i, {esize.X, esize.Y}, GetInlineAlign(pos.verticalAlign));
         }
         auto size = te->_paragraph->get_size();
         YGSize result;
@@ -100,21 +117,21 @@ namespace OGUI
 
         auto lineCount = te->_paragraph->get_line_count();
         Vector2f off{0, 0};
-        Vector2f start{0, result.height};
+        Vector2f start{0, 0};
         for(int i=0; i<lineCount; ++i)
         {
-            off.y -= te->_paragraph->get_line_ascent(i) + te->_paragraph->get_spacing_top();
+            off.y += te->_paragraph->get_line_ascent(i);
             auto lineElements = te->_paragraph->get_line_objects(i);
             for(auto j : lineElements)
             {
                 auto je = (VisualElement*)j;
                 auto rect = te->_paragraph->get_line_object_rect(i, j);
                 je->_inlineLayout = {
-                    Vector2f{rect.position.x, -rect.position.y - rect.size.y } + off + start,
-                    Vector2f{rect.position.x+rect.size.x, -rect.position.y } + off + start
+                    Vector2f{rect.position.x, rect.position.y } + off + start,
+                    Vector2f{rect.position.x+rect.size.x, rect.position.y + rect.size.y } + off + start
                 };
             }
-            off.y -= te->_paragraph->get_line_descent(i) + te->_paragraph->get_spacing_bottom();
+            off.y += te->_paragraph->get_line_descent(i);
         }
         return result;
     }
@@ -173,7 +190,7 @@ namespace OGUI
             
             auto& txt = StyleText::Get(_style);
             BuildParagraphRec(_paragraph, txt);
-            MarkLayoutDirty();
+            MarkLayoutDirty(false);
             _paragraphDirty = false;
         }
     }
@@ -216,11 +233,16 @@ namespace OGUI
                 },
                 [&](VisualElement*& child) 
                 { 
+                    if(!child->Visible())
+                        return;
+                    auto& pos = StylePosition::Get(child->_style);
                     auto esize = child->GetSize();
-                    p->add_object(child, {esize.X, esize.Y}); 
+                    p->add_object(child, {esize.X, esize.Y}, GetInlineAlign(pos.verticalAlign)); 
                 },
                 [&](TextElement*& child) 
                 { 
+                    if(!child->Visible())
+                        return;
                     auto& ctxt = StyleText::Get(child->_style);
                     child->BuildParagraphRec(p, ctxt);
                 },
@@ -246,8 +268,11 @@ namespace OGUI
         PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
     }
 
-    void TextElement::MarkLayoutDirty()
+    void TextElement::MarkLayoutDirty(bool visibility)
     {
+        if(visibility)
+            _paragraphDirty = true;
+            
         Context::Get()._layoutDirty = true;
         YGNodeMarkDirty(_ygnode);
     }
@@ -258,11 +283,8 @@ namespace OGUI
         if(HasFlag(damage, RestyleDamage::TextLayout))
             SyncParagraphStyle();
         auto text = &StyleText::Get(_style);
-        if(HasFlag(damage, RestyleDamage::Text))
-        {
-            auto color = text->color;
-            _drawPolicy->color = godot::Color{color.x, color.y, color.z, color.w};
-        }
+        auto color = text->color;
+        _drawPolicy->color = godot::Color{color.x, color.y, color.z, color.w};
         if(HasFlag(damage, RestyleDamage::Font) || !_font)
         {
             std::vector<std::string_view> families;
@@ -322,7 +344,7 @@ namespace OGUI
     TextElement::TextElement()
     {
         _paragraph = new godot::TextParagraph;
-        _paragraph->set_on_dirty([this]() {MarkLayoutDirty();});
+        _paragraph->set_on_dirty([this]() {MarkLayoutDirty(false);});
         YGNodeSetMeasureFunc(_ygnode, MeasureText);
         YGNodeSetBaselineFunc(_ygnode, BaselineText);
         _drawPolicy = std::make_shared<TextElementGlyphDraw>();
