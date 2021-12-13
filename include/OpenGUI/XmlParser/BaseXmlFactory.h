@@ -27,6 +27,7 @@ namespace OGUI
         static const Name& Attr_NavDown();
         static const Name& Attr_NavLeft();
         static const Name& Attr_NavRight();
+        static const Name& Attr_Filters();
 
         virtual bool OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement* parent) override;
         virtual bool OnInitElementHierarchy(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent, bool& isAutoPushToParent) override;
@@ -46,23 +47,12 @@ namespace OGUI
     
     };
 
-    class OGUI_API TemplateXmlFactory : public XmlElementFactory
-    {
-    public:
-        static const Name& GetFullName();
-
-        static const Name& Attr_Name();
-        static const Name& Attr_Path();
-
-        virtual bool OnParseXmlElement(ParseXmlState&, XmlElement&) override;
-    };
-
     class OGUI_API InstanceXmlFactory : public XmlElementFactory
     {
     public:
         static const Name& GetFullName();
 
-        static const Name& Attr_Template();
+         static const Name& Attr_XmlPath();
 
         virtual bool OnParseXmlElementChildPost(ParseXmlState&, XmlElement&) override;
     private:

@@ -756,6 +756,99 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause caus
 	return true;
 }
 
+void OGUI::Context::SetXmlFilter(const char* key, const char* filterTag)
+{
+	auto result = _xmlFiltersMap.try_emplace(key, filterTag);
+	if(result.second)
+	{
+		UpdataXmlFilterCache();
+		for(auto& winContext : windowContexts)
+			RecursionUpdataFilter(winContext->ui);
+	}
+	else if(result.first->second != filterTag)
+	{
+		result.first->second = filterTag;
+		UpdataXmlFilterCache();
+		for(auto& winContext : windowContexts)
+			RecursionUpdataFilter(winContext->ui);
+	}
+}
+
+void OGUI::Context::AddXmlFilter(const char* filterTag)
+{
+	auto result = _xmlFilters.emplace(filterTag);
+	if(result.second)
+	{
+		UpdataXmlFilterCache();
+		for(auto& winContext : windowContexts)
+			RecursionUpdataFilter(winContext->ui);
+	}
+}
+
+void OGUI::Context::RemoveXmlFilter(const char* filterTag)
+{
+	if(_xmlFilters.erase(filterTag))
+	{
+		UpdataXmlFilterCache();
+		for(auto& winContext : windowContexts)
+			RecursionUpdataFilter(winContext->ui);
+	}
+}
+
+void OGUI::Context::UpdataXmlFilterCache()
+{
+	_xmlFiltersCache.clear();
+	_xmlFiltersCache.insert(_xmlFilters.begin(), _xmlFilters.end());
+	for(auto pair : _xmlFiltersMap)
+		_xmlFiltersCache.insert(pair.second);
+}
+
+bool OGUI::Context::HasFilterTag(const char* filterTag) const
+{
+	return HasFilterTag(Name(filterTag));
+}
+
+bool OGUI::Context::HasFilterTag(Name filterTag) const
+{
+	return _xmlFiltersCache.count(filterTag);
+}
+
+bool OGUI::Context::UpdataFilter(VisualElement* element)
+{
+	for(const auto& filterTag : element->_xmlFilters)
+	{
+		if(!HasFilterTag(filterTag))
+		{
+			if(element->Visible())
+			{
+				_layoutDirty = true;
+				styleSystem.InvalidateCache();
+				element->SetVisibility(false);
+			}
+			return false;
+		}
+	}
+	if(!element->Visible())
+	{
+		_layoutDirty = true;
+		styleSystem.InvalidateCache();
+		element->SetVisibility(true);
+	}
+	return true;
+}
+
+void OGUI::Context::RecursionUpdataFilter(VisualElement* element)
+{
+	if(!UpdataFilter(element))
+			return;
+	element->Traverse([this](VisualElement* next)
+	{
+		if(!UpdataFilter(next))
+			return;
+		RecursionUpdataFilter(next);
+	});
+}
+
 bool OGUI::Context::IsElementValid(OGUI::VisualElement* e) const
 {
 	return _allElementHandle.find(e) != _allElementHandle.end();

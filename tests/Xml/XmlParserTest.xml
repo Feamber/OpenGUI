@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <VisualElement>
-  <Template name="test2" path="XmlParserTest2.xml"/>
+  <!-- 465465 -->
   <VisualElement name="A" focusable="true" nav-mode="horizontal" focus-scope="true" nav-cycle-mode="automatic">
-    <Instance template="test2" name="B1">
+    <Instance xml-path="XmlParserTest2.xml" name="B1">
       <VisualElement name="B1_1" insert-slot="ss"/>
-      <Instance template="test2" name="B1_2" insert-slot="ss">
+      <Instance xml-path="XmlParserTest2.xml" name="B1_2" insert-slot="ss">
         <AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
       </Instance>
       <AttributeOverrides element-name="BB2" class="aaaaaa"/>
       <AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
       <AttributeOverrides element-name="BBB" slot="cuowu"/>
     </Instance>
-    <Instance template="test2" name="B2">
+    <Instance xml-path="XmlParserTest2.xml" name="B2">
       <AttributeOverrides element-name="BB2_1" insert-slot="ssss"/>
     </Instance>
     <VisualElement name="B3"/>

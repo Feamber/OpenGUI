@@ -518,6 +518,27 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::set<Name>& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    {
+        auto search = e.attributes.find(name);
+        if(search != e.attributes.end())
+        {
+            if(IsDataBind(search->second))
+                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
+            std::vector<ostr::string_view> array;
+            if(search->second.split(splitter, array))
+                for(const auto& str : array)
+                    out.insert(str);
+            else
+            {
+                auto sv = search->second.to_sv();
+                out.insert(sv);
+            }
+            return FindResult::OK;
+        }
+        return FindResult::NotExist;
+    };
+
     bool XmlParserHelper::IsDataBind(ostr::string_view value)
     {
         return value.length() > 1 && *value.begin() == u'$';

@@ -1,6 +1,8 @@
 #pragma once
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include "OpenGUI/Core/AsyncFile.h"
+#include "OpenGUI/Core/OName.h"
+#include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Core/Types.h"
@@ -72,6 +74,22 @@ namespace OGUI
 		//可能激活失败，比如：在弹出的消息窗口没关闭时没法操作其他窗口
 		bool ActivateWindow(VisualWindow* newWindow);
 		bool SetFocus(VisualElement* element, FocusChangeCause cause = FocusChangeCause::UserActions, std::string describe = "");
+#pragma endregion
+
+#pragma region XmlFilter
+		std::set<Name> _xmlFilters;
+		std::map<Name, Name> _xmlFiltersMap;
+		std::set<Name> _xmlFiltersCache;
+
+		void SetXmlFilter(const char* key, const char* filterTag);
+		void AddXmlFilter(const char* filterTag);
+		void RemoveXmlFilter(const char* filterTag);
+		void UpdataXmlFilterCache();
+		bool HasFilterTag(const char* filterTag) const;
+		bool HasFilterTag(Name filterTag) const;
+
+		bool UpdataFilter(VisualElement* element);
+		void RecursionUpdataFilter(VisualElement* element);
 #pragma endregion
 
 		//Systems

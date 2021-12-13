@@ -266,6 +266,7 @@ namespace OGUI reflect
 
 #pragma region Xml
 		std::map<ostr::string, VisualElement*> _slots;
+		std::set<Name> _xmlFilters;
 		bool _isXmlRoot = false;
 #pragma endregion 
 	};

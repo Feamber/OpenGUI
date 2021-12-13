@@ -1,4 +1,5 @@
 #include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Context.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/EventRouter.h"
@@ -608,6 +609,48 @@ struct LuaSample
 	}
 };
 
+struct XmlFiltersSample : public Bindable
+{
+	std::time_t a;
+	std::time_t b;
+	XmlFiltersSample()
+	{
+		
+	}
+
+	SampleWindow* MakeWindow()
+	{
+		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "xmlFiltersSample", &reloader, "res/xmlFilters.xml", [&](OGUI::VisualElement* ve)
+		{
+			ve->_pseudoMask |= PseudoStates::Root;
+		});
+	}
+
+	void Update()
+	{
+		std::time_t now = std::time(0);
+
+		auto& context = Context::Get();
+		if(now != a && now % 5 == 0)
+		{
+			a = now;
+			if(context.HasFilterTag("zh"))
+				context.SetXmlFilter("language", "en");
+			else
+				context.SetXmlFilter("language", "zh");
+		}
+
+		if(now != b && now % 2 == 0)
+		{
+			b = now;
+			if(context.HasFilterTag("pc"))
+				context.SetXmlFilter("platform", "xbox");
+			else
+				context.SetXmlFilter("platform", "pc");
+		}
+	}
+};
+
 int main(int , char* []) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "Failed to init SDL: " << SDL_GetError() << "\n";
@@ -640,6 +683,7 @@ int main(int , char* []) {
 	reloader.Watch();
 	while(!windows.empty())
 	{
+		//sample3.Update();
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");

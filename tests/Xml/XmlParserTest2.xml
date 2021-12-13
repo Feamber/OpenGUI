@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <VisualElement>
-    <Template name="test3" path="XmlParserTest3.xml"/>
     <VisualElement name="AA1" slot="ss">
         <VisualElement name="BB1"/>
-        <Instance template="test3" name="BB2" class="bbbb">
+        <Instance xml-path="XmlParserTest3.xml" name="BB2" class="bbbb">
             <VisualElement name="BB2_1" insert-slot="cuo"/>
             <AttributeOverrides element-name="BBB" slot="ssss"/>
         </Instance>
     </VisualElement>
-    <Instance template="test3" name="AA2"/>
+    <Instance xml-path="XmlParserTest3.xml" name="AA2"/>
 </VisualElement>

@@ -1,5 +1,6 @@
 
 #include "OpenGUI/XmlParser/BaseXmlFactory.h"
+#include "OpenGUI/Context.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Text/TextElement.h"
@@ -15,7 +16,6 @@ namespace OGUI
 
         RegisterXmlParser<VisualElementXmlFactory>();
         RegisterXmlParser<StyleXmlFactory>();
-        RegisterXmlParser<TemplateXmlFactory>();
         RegisterXmlParser<InstanceXmlFactory>();
         RegisterXmlParser<AttributeOverridesXmlFactory>();
         RegisterXmlParser<TextXmlFactory>();
@@ -41,6 +41,7 @@ namespace OGUI
     const Name& VisualElementXmlFactory::Attr_NavDown()     { static Name name = "nav-down"; return name;}
     const Name& VisualElementXmlFactory::Attr_NavLeft()     { static Name name = "nav-left"; return name;}
     const Name& VisualElementXmlFactory::Attr_NavRight()    { static Name name = "nav-right"; return name;}
+    const Name& VisualElementXmlFactory::Attr_Filters()    { static Name name = "filters"; return name;}
 
     bool VisualElementXmlFactory::OnCreateElement(InstantiateXmlState &, XmlElement &, VisualElement *&outNewElement, VisualElement *parent)
     {
@@ -162,6 +163,11 @@ namespace OGUI
         FindAttribute(xe, Attr_NavLeft(), element->navExplicitLeft);
         // !向右导航目标（使用css选择器语法）
         FindAttribute(xe, Attr_NavRight(), element->navExplicitRight);
+
+        // !Xml筛选，只有符合所有FilterTag才显示，否则隐藏
+        FindAttribute(xe, Attr_Filters(), u","_o, element->_xmlFilters);
+        if(element->_xmlFilters.size())
+            Context::Get().UpdataFilter(element);
         return true;
     }
 
@@ -215,114 +221,67 @@ namespace OGUI
         return false;
     }
 
-    const Name& TemplateXmlFactory::GetFullName()
-    {
-        static Name name = "OGUI:Template";
-        return name;
-    }
-
-    const Name& TemplateXmlFactory::Attr_Name() { static Name name = "name"; return name;}
-    const Name& TemplateXmlFactory::Attr_Path() { static Name name = "path"; return name;}
-    
-    bool TemplateXmlFactory::OnParseXmlElement(ParseXmlState & state, XmlElement & xe)
-    {
-        using namespace XmlParserHelper;
-        ostr::string name;
-        if(FindAttribute(xe, Attr_Name(), name) == FindResult::OK)
-        {
-            ostr::string path;
-            if(FindAttribute(xe, Attr_Path(), path) == FindResult::OK)
-            {
-                auto pathSv = path.to_sv();
-                if(state.allTemplateStack.empty())
-                    state.allTemplateStack.push_front({});
-                state.allTemplateStack.front()[name] = {pathSv.begin(), pathSv.end()};
-            }
-            else 
-            {
-                olog::Error(u"<OGUI:Template> 未定义path属性!"_o);
-                return false;
-            }
-        }
-        else 
-        {
-            olog::Error(u"<OGUI:Template> 未定义name属性!"_o);
-            return false;
-        }
-        return true;
-    }
-
     const Name& InstanceXmlFactory::GetFullName()
     {
         static Name name = "OGUI:Instance";
         return name;
     }
 
-    const Name& InstanceXmlFactory::Attr_Template() { static Name name = "template"; return name;}
+    const Name& InstanceXmlFactory::Attr_XmlPath() { static Name name = "xml-path"; return name;}
 
     bool InstanceXmlFactory::OnParseXmlElementChildPost(ParseXmlState & state, XmlElement & xe)
     {
         using namespace XmlParserHelper;
-        ostr::string templateName;
-        if(FindAttribute(xe, Attr_Template(), templateName) == FindResult::OK)
+        ostr::string path;
+        if(FindAttribute(xe, Attr_XmlPath(), path) == FindResult::OK)
         {
-            if(state.allTemplateStack.empty())
-                state.allTemplateStack.push_front({});
-            auto& allTemplate = state.allTemplateStack.front();
-            auto find = allTemplate.find(templateName);
-            if(find != allTemplate.end())
+            auto pathSv = path.to_sv();
+            std::string stdStr = {pathSv.begin(), pathSv.end()};
+            auto newXmlAsset = LoadXmlFile(stdStr.c_str(), state);
+            if(!newXmlAsset)
             {
-                state.allTemplateStack.push_front({});
-                auto newXmlAsset = LoadXmlFile(find->second.c_str(), state);
-                state.allTemplateStack.pop_front();
-                if(!newXmlAsset)
+                 olog::Error(u"<OGUI:Instance path={}> 加载Xml失败!"_o, path);
+                return false;
+            }
+            
+            auto root = newXmlAsset->root;
+            for(auto attr : xe.attributes)
+            {
+                if(attr.first != Attr_XmlPath())
+                    root->attributes[attr.first] = attr.second;
+            }
+            //覆盖属性
+            for(auto& child : xe.children)
+            {
+                if(child->_fullName == AttributeOverridesXmlFactory::GetFullName())
                 {
-                     olog::Error(u"<OGUI:Instance template={}> 加载模板失败! filePath:{}"_o, templateName, find->second);
-                    return false;
-                }
-                
-                auto root = newXmlAsset->root;
-                for(auto attr : xe.attributes)
-                {
-                    if(attr.first != Attr_Template())
-                        root->attributes[attr.first] = attr.second;
-                }
-                //覆盖属性
-                for(auto& child : xe.children)
-                {
-                    if(child->_fullName == AttributeOverridesXmlFactory::GetFullName())
+                    std::map<Name, ostr::string> override;
+                    ostr::string elementName;
+                    if(FindAttribute(*child.get(), AttributeOverridesXmlFactory::Attr_ElementName(), elementName) == FindResult::OK)
                     {
-                        std::map<Name, ostr::string> override;
-                        ostr::string elementName;
-                        if(FindAttribute(*child.get(), AttributeOverridesXmlFactory::Attr_ElementName(), elementName) == FindResult::OK)
-                        {
-                            for(auto attr : child->attributes)
-                                if(attr.first != AttributeOverridesXmlFactory::Attr_ElementName() && attr.first != VisualElementXmlFactory::Attr_Name())
-                                    override[attr.first] = attr.second;
-                            for(auto& child2 : root->children)
-                                if(child2->_fullName != AttributeOverridesXmlFactory::Attr_ElementName())
-                                    AttributeOverrides(*child2.get(), elementName, override);
-                        }
-                        else
-                        {
-                            olog::Error(u"<OGUI:AttributeOverrides> 未定义element-name属性!"_o);
-                            return false;
-                        }
+                        for(auto attr : child->attributes)
+                            if(attr.first != AttributeOverridesXmlFactory::Attr_ElementName() && attr.first != VisualElementXmlFactory::Attr_Name())
+                                override[attr.first] = attr.second;
+                        for(auto& child2 : root->children)
+                            if(child2->_fullName != AttributeOverridesXmlFactory::Attr_ElementName())
+                                AttributeOverrides(*child2.get(), elementName, override);
+                    }
+                    else
+                    {
+                        olog::Error(u"<OGUI:AttributeOverrides> 未定义element-name属性!"_o);
+                        return false;
                     }
                 }
-
-                root->children.insert(root->children.end(), xe.children.begin(), xe.children.end());
-                xe.children.clear();
-                xe.children.push_back(root);
-                root->parent = xe.weak_from_this();
-                return true;
             }
-            olog::Error(u"<OGUI:Instance template={}> 没找到对应的<OGUI:Template>!"_o, templateName);
-            return false;
+            root->children.insert(root->children.end(), xe.children.begin(), xe.children.end());
+            xe.children.clear();
+            xe.children.push_back(root);
+            root->parent = xe.weak_from_this();
+            return true;
         }
-        else
+        else 
         {
-            olog::Error(u"<OGUI:Instance> 未定义template属性!"_o);
+            olog::Error(u"<OGUI:Instance> 未定义xml-path属性!"_o);
             return false;
         }
     }
