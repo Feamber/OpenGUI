@@ -822,7 +822,7 @@ bool OGUI::Context::UpdataFilter(VisualElement* element)
 			if(element->Visible())
 			{
 				_layoutDirty = true;
-				styleSystem.InvalidateCache();
+				InvalidateCssCache();
 				element->SetVisibility(false);
 			}
 			return false;
@@ -831,7 +831,7 @@ bool OGUI::Context::UpdataFilter(VisualElement* element)
 	if(!element->Visible())
 	{
 		_layoutDirty = true;
-		styleSystem.InvalidateCache();
+		InvalidateCssCache();
 		element->SetVisibility(true);
 	}
 	return true;
