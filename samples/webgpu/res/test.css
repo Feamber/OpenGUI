@@ -48,9 +48,11 @@ TextElement{
     justify-content:center;
     align-items:center;
     background-color: initial;
-    background-image:url(res/test.jpg); 
+    background-image:url(res/van.jpg); 
 }
 #Child1 {
+    width:100px;
+    height:90px;
     justify-content:flex-start;
     align-content: flex-start;
     flex-direction: row;
@@ -61,16 +63,16 @@ TextElement{
 #Child3 { 
     font-family: TestFont;
     font-size:25;
-    height:300px; width:300px; 
+    height:100%; width:100%; 
     color:black;
     text-align: justify;
-    line-height: 1;
+    line-height: 1.5;
     background-color: transparent;
 }
 
 #Child4 {
     font-family: TestFont;
-    font-size:20;
+    font-size:35;
     color:aqua;
 }
 

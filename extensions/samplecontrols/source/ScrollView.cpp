@@ -52,7 +52,7 @@ void SampleControls::ScrollView::InitializeChildren()
         if(_sliderPosDirty)
         {
             _sliderPosDirty = false;
-            return RestyleDamage::Yoga;
+            return RestyleDamage::Layout;
         }
         return RestyleDamage::None;
     });

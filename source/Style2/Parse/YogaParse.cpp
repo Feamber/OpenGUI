@@ -136,6 +136,18 @@ bool OGUI::ParseValue(std::string_view str, YGDisplay& value)
 	}
 	return false;
 }
+bool OGUI::ParseValue(std::string_view str, EInlineAlign& value)
+{
+    switchstr(str)
+	{
+		casestr("baseline") value = EInlineAlign::Baseline; return true;
+		casestr("top") value = EInlineAlign::Top; return true;
+		casestr("middle") value = EInlineAlign::Middle; return true;
+		default:
+			break;
+	}
+	return false;
+}
 bool OGUI::ParseFourSides(std::string_view str, YGValue& left, YGValue& top, YGValue& right, YGValue& bottom)
 {
     std::vector<std::string_view> tokens;

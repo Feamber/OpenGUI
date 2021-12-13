@@ -101,6 +101,7 @@ void OGUI::StylePosition::Initialize()
     justifyContent = YGJustifyFlexStart;
     flexWrap = YGWrapNoWrap;
     flexDisplay = YGDisplayFlex;
+    verticalAlign = EInlineAlign::Middle;
 }
 
 void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -300,6 +301,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->flexDisplay = YGDisplayFlex;
                     break;
                     }
+                case Ids::verticalAlign:{
+                    auto v = fget();
+                    v->verticalAlign = EInlineAlign::Middle;
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -460,6 +466,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 case Ids::flexDisplay:{
                     auto v = fget();
                     v->flexDisplay = pst->flexDisplay;
+                    break;
+                    }
+                case Ids::verticalAlign:{
+                    auto v = fget();
+                    v->verticalAlign = pst->verticalAlign;
                     break;
                     }
                 default: break;
@@ -625,6 +636,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->flexDisplay = sheet.Get<YGDisplay>(prop.value);
                     break;
                     }
+                case Ids::verticalAlign:{
+                    auto v = fget();
+                    v->verticalAlign = sheet.Get<EInlineAlign>(prop.value);
+                    break;
+                    }
                 default: break;
             }
         }
@@ -700,7 +716,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexGrow = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 if(prevValue != v->flexGrow)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexShrink:{
@@ -718,7 +734,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexShrink = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 if(prevValue != v->flexShrink)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexBasis:{
@@ -736,7 +752,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexBasis = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->flexBasis)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::left:{
@@ -754,7 +770,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->left)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::top:{
@@ -772,7 +788,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->top = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->top)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::right:{
@@ -790,7 +806,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->right = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->right)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::bottom:{
@@ -808,7 +824,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->bottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->bottom)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginLeft:{
@@ -826,7 +842,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->marginLeft)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginTop:{
@@ -844,7 +860,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->marginTop)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginRight:{
@@ -862,7 +878,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->marginRight)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginBottom:{
@@ -880,7 +896,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->marginBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->marginBottom)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingLeft:{
@@ -898,7 +914,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->paddingLeft)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingTop:{
@@ -916,7 +932,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->paddingTop)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingRight:{
@@ -934,7 +950,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->paddingRight)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingBottom:{
@@ -952,7 +968,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->paddingBottom)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::width:{
@@ -970,7 +986,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->width = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->width)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::height:{
@@ -988,7 +1004,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->height = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->height)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::position:{
@@ -1006,7 +1022,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->position = OGUI::Lerp(sheet.Get<YGPositionType>(prop.from), sheet.Get<YGPositionType>(prop.to), prop.alpha);
                 
                 if(prevValue != v->position)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::overflow:{
@@ -1024,7 +1040,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->overflow = OGUI::Lerp(sheet.Get<StyleOverflow>(prop.from), sheet.Get<StyleOverflow>(prop.to), prop.alpha);
                 
                 if(prevValue != v->overflow)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::alignSelf:{
@@ -1042,7 +1058,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->alignSelf = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
                 if(prevValue != v->alignSelf)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::maxWidth:{
@@ -1060,7 +1076,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->maxWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->maxWidth)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::maxHeight:{
@@ -1078,7 +1094,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->maxHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->maxHeight)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::minWidth:{
@@ -1096,7 +1112,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->minWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->minWidth)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::minHeight:{
@@ -1114,7 +1130,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->minHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->minHeight)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexDirection:{
@@ -1132,7 +1148,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexDirection = OGUI::Lerp(sheet.Get<YGFlexDirection>(prop.from), sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
                 
                 if(prevValue != v->flexDirection)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::alignContent:{
@@ -1150,7 +1166,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->alignContent = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
                 if(prevValue != v->alignContent)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::alignItems:{
@@ -1168,7 +1184,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->alignItems = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
                 if(prevValue != v->alignItems)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::justifyContent:{
@@ -1186,7 +1202,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->justifyContent = OGUI::Lerp(sheet.Get<YGJustify>(prop.from), sheet.Get<YGJustify>(prop.to), prop.alpha);
                 
                 if(prevValue != v->justifyContent)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexWrap:{
@@ -1204,7 +1220,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexWrap = OGUI::Lerp(sheet.Get<YGWrap>(prop.from), sheet.Get<YGWrap>(prop.to), prop.alpha);
                 
                 if(prevValue != v->flexWrap)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexDisplay:{
@@ -1222,7 +1238,25 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->flexDisplay = OGUI::Lerp(sheet.Get<YGDisplay>(prop.from), sheet.Get<YGDisplay>(prop.to), prop.alpha);
                 
                 if(prevValue != v->flexDisplay)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::verticalAlign:{
+                auto v = fget();
+                auto prevValue = v->verticalAlign;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->verticalAlign = sheet.Get<EInlineAlign>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->verticalAlign = sheet.Get<EInlineAlign>(prop.to);
+                else if(prop.from == prop.to)
+                    v->verticalAlign = OGUI::Lerp(v->verticalAlign, sheet.Get<EInlineAlign>(prop.to), prop.alpha);
+                else
+                    v->verticalAlign = OGUI::Lerp(sheet.Get<EInlineAlign>(prop.from), sheet.Get<EInlineAlign>(prop.to), prop.alpha);
+                
+                if(prevValue != v->verticalAlign)
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             default: break;
@@ -1332,6 +1366,9 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             case Ids::flexDisplay:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::verticalAlign:
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             case Ids::margin:
@@ -1697,6 +1734,17 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             else
             {
                 errorMsg = "failed to parse flex-display value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::verticalAlign:{
+            EInlineAlign v;
+            if(ParseValue(value, v))
+                rule.properties.push_back({phash, sheet.Push<EInlineAlign>(v)});
+            else
+            {
+                errorMsg = "failed to parse vertical-align value!";
                 return false;
             }
             return true;

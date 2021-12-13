@@ -316,7 +316,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderLeftWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 if(prevValue != v->borderLeftWidth)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::borderTopWidth:{
@@ -334,7 +334,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderTopWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 if(prevValue != v->borderTopWidth)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::borderRightWidth:{
@@ -352,7 +352,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderRightWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 if(prevValue != v->borderRightWidth)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::borderBottomWidth:{
@@ -370,7 +370,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderBottomWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 if(prevValue != v->borderBottomWidth)
-                    damage |= RestyleDamage::Yoga;
+                    damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::borderTopLeftRadius:{

@@ -200,6 +200,7 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
                     v->someValue = OGUI::Lerp(v->someValue, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v->someValue = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                
                 break;
                 }
             default: break;

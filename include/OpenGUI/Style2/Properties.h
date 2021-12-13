@@ -30,12 +30,11 @@ namespace OGUI
 	enum class RestyleDamage
 	{
 		None = 0,
-		Yoga = 0x1,
+		Layout = 0x1,
 		Transform = 0x2,
-		Text = 0x4,
-		TextLayout = 0x8,
-		Font = 0x10,
-		All = 0x20 - 1,
+		TextLayout = 0x4,
+		Font = 0x8,
+		All = 0x10 - 1,
 	};
 	ENUM_CLASS_FLAGS(RestyleDamage)
 

@@ -363,7 +363,8 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 {
 	_scrollSizeDirty = true;
 	child->_physicalParent = this;
-	YGNodeInsertChild(_ygnode, child->_ygnode, index);
+	if(_ygnode)
+		YGNodeInsertChild(_ygnode, child->_ygnode, index);
 	_children.insert(_children.begin() + index, child);
 	child->_layoutType = LayoutType::Flex;
 	child->_selectorDirty = true;
@@ -376,7 +377,8 @@ void OGUI::VisualElement::RemoveChild(VisualElement* child)
 {
 	_scrollSizeDirty = true;
     child->_physicalParent = nullptr;
-    YGNodeRemoveChild(_ygnode, child->_ygnode);
+	if(_ygnode)
+    	YGNodeRemoveChild(_ygnode, child->_ygnode);
 	auto end = std::remove(_children.begin(), _children.end(), child);
 	_children.erase(end, _children.end());
 	child->_root = child->_layoutRoot = nullptr;
@@ -483,13 +485,7 @@ OGUI::Rect OGUI::VisualElement::GetRect() const
 
 OGUI::Vector2f OGUI::VisualElement::GetSize() const
 {
-	
-	if(_layoutType == LayoutType::Flex)
-		return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
-	else if(_layoutType == LayoutType::Inline)
-		return _inlineLayout.max - _inlineLayout.min;
-	else
-		return Vector2f();
+	return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
 }
 
 void OGUI::VisualElement::MarkTransformDirty()
@@ -505,8 +501,20 @@ void OGUI::VisualElement::MarkStyleTransformDirty()
 	MarkTransformDirty();
 }
 
-void OGUI::VisualElement::MarkLayoutDirty()
+void OGUI::VisualElement::MarkLayoutDirty(bool visiblity)
 {
+}
+
+void OGUI::VisualElement::NotifyLayoutDirty(bool visiblity)
+{
+	auto p = this;
+	while(p!=nullptr)
+	{
+		p = p->GetLayoutRoot();
+		p->MarkLayoutDirty(visiblity);
+		p = p->GetHierachyParent();
+		visiblity = false;
+	}
 }
 
 namespace OGUI
@@ -535,14 +543,6 @@ void OGUI::VisualElement::SyncYogaStyle()
 {
 	if (!_ygnode)
 		return;
-	Context::Get()._layoutDirty = true;
-	auto p = this;
-	while(p!=nullptr)
-	{
-		p = p->GetLayoutRoot();
-		p->MarkLayoutDirty();
-		p = p->GetHierachyParent();
-	}
 	auto& pos = StylePosition::Get(_style);
 	auto& bd = StyleBorder::Get(_style);
 #define SetYGEdge(node, function, edge, v) \
@@ -604,12 +604,15 @@ void OGUI::VisualElement::SyncYogaStyle()
 	SetYGValue(_ygnode, YGNodeStyleSetMaxHeight, pos.maxHeight);
 	SetYGValue(_ygnode, YGNodeStyleSetMinWidth, pos.minWidth);
 	SetYGValue(_ygnode, YGNodeStyleSetMinHeight, pos.minHeight);
+	
+	bool visChanged = YGNodeStyleGetDisplay(_ygnode) != (_visible ? pos.flexDisplay : YGDisplayNone);
 	YGNodeStyleSetDisplay(_ygnode, _visible ? pos.flexDisplay : YGDisplayNone);
+	NotifyLayoutDirty(visChanged);
 }
 
 void OGUI::VisualElement::UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss)
 {
-	if(HasFlag(damage, RestyleDamage::Yoga))
+	if(HasFlag(damage, RestyleDamage::Layout))
 		SyncYogaStyle();
 	if(HasFlag(damage, RestyleDamage::Transform))
 		MarkStyleTransformDirty();
@@ -672,6 +675,7 @@ bool OGUI::VisualElement::Visible() const
 void OGUI::VisualElement::SetVisibility(bool visible)
 {
 	_visible = visible;
+	NotifyLayoutDirty(true);
 }
 
 bool OGUI::VisualElement::Intersect(Vector2f point)
