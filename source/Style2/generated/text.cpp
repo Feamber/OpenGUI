@@ -390,7 +390,6 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 }
             case Ids::textAlign:{
                 auto v = fget();
-                auto prevValue = v->textAlign;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
@@ -402,8 +401,6 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 else
                     v->textAlign = OGUI::Lerp(sheet.Get<TextAlign>(prop.from), sheet.Get<TextAlign>(prop.to), prop.alpha);
                 
-                if(prevValue != v->textAlign)
-                    damage |= RestyleDamage::TextLayout;
                 break;
                 }
             default: break;
