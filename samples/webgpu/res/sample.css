@@ -77,7 +77,8 @@
     width : 20px;
     height : 40px;
     transform: translate(-10px, 10px);
-    background-color: royalblue;
+    left : 0%;
+    background-color: yellow;
 }
 
 TextElement {
@@ -86,6 +87,6 @@ TextElement {
 
 @keyframes SliderBar-slide {
     to {
-        transform: translate(190px, 10px);
+        left : 100%;
     }
 }

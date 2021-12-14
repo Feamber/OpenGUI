@@ -507,6 +507,7 @@ void OGUI::VisualElement::MarkLayoutDirty(bool visiblity)
 
 void OGUI::VisualElement::NotifyLayoutDirty(bool visiblity)
 {
+	Context::Get()._layoutDirty = true;
 	auto p = this;
 	while(p!=nullptr)
 	{

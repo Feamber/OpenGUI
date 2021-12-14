@@ -39,6 +39,7 @@ namespace OGUI
         void AddText(ostr::string text);
         void AddBindText(Name attrName);
         void BuildParagraph();
+        void UpdateInlineLayout();
 
         void MarkLayoutDirty(bool visibility) override;
         void UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss) override;

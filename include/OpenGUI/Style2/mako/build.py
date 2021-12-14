@@ -97,7 +97,7 @@ def gen_text():
     add_longhand("font-style", "TextStyle", "TextStyle::Normal", restyle_damage="TextLayout|Font")
     add_longhand("font-weight", "int", "400", parser = "ParseTextWeight", restyle_damage="TextLayout|Font")
     add_longhand("line-height", "float", "1.f", parser = "ParseLineHeight", restyle_damage="TextLayout")
-    add_longhand("text-align", "TextAlign", "TextAlign::Start", restyle_damage="TextLayout")
+    add_longhand("text-align", "TextAlign", "TextAlign::Start")
     struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
     struct.headers.append("OpenGUI/Style2/Parse/TextParse.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")

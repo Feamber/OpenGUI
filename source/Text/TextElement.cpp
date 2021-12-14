@@ -115,25 +115,57 @@ namespace OGUI
             result.height = size.height;
         }
 
-        auto lineCount = te->_paragraph->get_line_count();
+        te->UpdateInlineLayout();
+        
+        return result;
+    }
+    
+    void TextElement::UpdateInlineLayout()
+    {
+        auto lineCount = _paragraph->get_line_count();
+        auto dropcapLines = _paragraph->get_dropcap_lines();
+        auto dropcapSize = _paragraph->get_dropcap_size();
         Vector2f off{0, 0};
-        Vector2f start{0, 0};
+		float maxWidth = _paragraph->get_max_width();
         for(int i=0; i<lineCount; ++i)
         {
-            off.y += te->_paragraph->get_line_ascent(i);
-            auto lineElements = te->_paragraph->get_line_objects(i);
+            using namespace godot;
+            off.y += _paragraph->get_line_ascent(i);
+            auto lineElements = _paragraph->get_line_objects(i);
+            auto align = _paragraph->get_align();
+            float totalWidth = maxWidth;
+            if(i <= dropcapLines)
+            {
+                if(TS->shaped_text_get_orientation(_paragraph->get_dropcap_rid()) == TextServer::ORIENTATION_HORIZONTAL)
+                    totalWidth -= dropcapSize.x;
+                else
+                    totalWidth -= dropcapSize.y;
+            }
+            float line_width = _paragraph->get_line_width(i);
+            float alignOff = 0.f;
+			switch (align) {
+				case HALIGN_FILL:
+				case HALIGN_LEFT:
+					break;
+				case HALIGN_CENTER: 
+					alignOff = std::floor((totalWidth - line_width) / 2.0);
+					break;
+				case HALIGN_RIGHT: 
+					alignOff = totalWidth - line_width;
+					break;
+			}
+            off.x = alignOff;
             for(auto j : lineElements)
             {
                 auto je = (VisualElement*)j;
-                auto rect = te->_paragraph->get_line_object_rect(i, j);
+                auto rect = _paragraph->get_line_object_rect(i, j);
                 je->_inlineLayout = {
-                    Vector2f{rect.position.x, rect.position.y } + off + start,
-                    Vector2f{rect.position.x+rect.size.x, rect.position.y + rect.size.y } + off + start
+                    Vector2f{rect.position.x, rect.position.y } + off,
+                    Vector2f{rect.position.x+rect.size.x, rect.position.y + rect.size.y } + off
                 };
             }
-            off.y += te->_paragraph->get_line_descent(i);
+            off.y += _paragraph->get_line_descent(i);
         }
-        return result;
     }
 
     float BaselineText(YGNodeRef node, float width, float height)
@@ -199,23 +231,6 @@ namespace OGUI
     {
         _paragraphDirty = true;
         auto& txt = StyleText::Get(_style);
-        auto GetHAlign = [&]() //resolve
-        {
-            switch(txt.textAlign)
-            {
-                case TextAlign::Left: return godot::HALIGN_LEFT;
-                case TextAlign::Right: return godot::HALIGN_RIGHT;
-                case TextAlign::Center: return godot::HALIGN_CENTER;
-                //TODO: handle direction
-                case TextAlign::Start: return godot::HALIGN_LEFT;
-                case TextAlign::End: return godot::HALIGN_RIGHT;
-                case TextAlign::Justify: return godot::HALIGN_FILL;
-                default:
-                    break;
-            }
-            return godot::HALIGN_LEFT;
-        };
-        _paragraph->set_align(GetHAlign());
         _paragraph->set_line_height(txt.lineHeight);
     
     }
@@ -282,13 +297,34 @@ namespace OGUI
         VisualElement::UpdateStyle(damage, ss);
         if(HasFlag(damage, RestyleDamage::TextLayout))
             SyncParagraphStyle();
-        auto text = &StyleText::Get(_style);
-        auto color = text->color;
+        auto text = StyleText::Get(_style);
+        auto color = text.color;
         _drawPolicy->color = godot::Color{color.x, color.y, color.z, color.w};
+        auto GetHAlign = [&]() //resolve
+        {
+            switch(text.textAlign)
+            {
+                case TextAlign::Left: return godot::HALIGN_LEFT;
+                case TextAlign::Right: return godot::HALIGN_RIGHT;
+                case TextAlign::Center: return godot::HALIGN_CENTER;
+                //TODO: handle direction
+                case TextAlign::Start: return godot::HALIGN_LEFT;
+                case TextAlign::End: return godot::HALIGN_RIGHT;
+                case TextAlign::Justify: return godot::HALIGN_FILL;
+                default:
+                    break;
+            }
+            return godot::HALIGN_LEFT;
+        };
+        if(_paragraph->get_align() != GetHAlign())
+        {
+            _paragraph->set_align(GetHAlign());
+            UpdateInlineLayout();
+        }
         if(HasFlag(damage, RestyleDamage::Font) || !_font)
         {
             std::vector<std::string_view> families;
-            std::split(text->fontFamily, families, ",");
+            std::split(text.fontFamily, families, ",");
             if(!families.empty())
             {
                 if(!_font)
@@ -314,7 +350,7 @@ namespace OGUI
                         olog::Warn(u"unknown font family name:{}"_o.format(family));
                 }
                 godot::Map<uint32_t, double> map;
-                map[godot::TS->name_to_tag("weight")] = text->fontWeight;
+                map[godot::TS->name_to_tag("weight")] = text.fontWeight;
                 _font->set_variation_coordinates(map);
             }
         }

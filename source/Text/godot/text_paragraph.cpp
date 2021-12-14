@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "text_paragraph.h"
+#include "OpenGUI/Core/Math/Vector.h"
 #include "text_server_adv.h"
 #include "font.h"
 using namespace godot;
@@ -541,32 +542,23 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 		}
 		float line_width = TS->shaped_text_get_width(lines_rid[i]);
 		if (max_width > 0) {
+			float offset = 0.f;
 			switch (align) {
 				case HALIGN_FILL:
-					if (TS->shaped_text_get_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
-						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-							ofs.x += l_width - line_width;
-						} else {
-							ofs.y += l_width - line_width;
-						}
-					}
-					break;
 				case HALIGN_LEFT:
 					break;
-				case HALIGN_CENTER: {
-					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-						ofs.x += std::floor((l_width - line_width) / 2.0);
-					} else {
-						ofs.y += std::floor((l_width - line_width) / 2.0);
-					}
-				} break;
-				case HALIGN_RIGHT: {
-					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-						ofs.x += l_width - line_width;
-					} else {
-						ofs.y += l_width - line_width;
-					}
-				} break;
+				case HALIGN_CENTER: 
+					offset = std::floor((l_width - line_width) / 2.0);
+					break;
+				case HALIGN_RIGHT: 
+					offset = l_width - line_width;
+					break;
+			}
+			
+			if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+				ofs.x += offset;
+			} else {
+				ofs.y += offset;
 			}
 		}
 		float clip_l;

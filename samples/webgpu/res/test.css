@@ -65,8 +65,8 @@ TextElement{
     font-size:25;
     height:100%; width:100%; 
     color:black;
-    text-align: justify;
-    line-height: 1.5;
+    text-align: right;
+    line-height: 1.2;
     background-color: transparent;
 }
 
