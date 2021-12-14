@@ -671,19 +671,19 @@ int main(int , char* []) {
 
 	std::vector<AppWindow*> windows;
 	SampleControls::Install();
-	//ExternalControlSample sample;
-	//windows.push_back(sample.MakeWindow());
-	//LuaSample lsample;
-	//windows.push_back(lsample.MakeWindow());
-	//DataBindSample sample2;
-	// windows.push_back(sample2.MakeWindow());
-	// windows.push_back(CreateNavigationTestWindow());
+	ExternalControlSample sample;
+	windows.push_back(sample.MakeWindow());
+	LuaSample lsample;
+	windows.push_back(lsample.MakeWindow());
+	DataBindSample sample2;
+	windows.push_back(sample2.MakeWindow());
+	windows.push_back(CreateNavigationTestWindow());
 	windows.push_back(CreateCssTestWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())
 	{
-		//sample3.Update();
+		// sample3.Update();
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");
@@ -691,7 +691,7 @@ int main(int , char* []) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
-			//sample2.Update();
+			sample2.Update();
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](AppWindow* win)

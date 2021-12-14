@@ -336,7 +336,7 @@ namespace OGUI
 			return make_pair(name, value);
 		};
         using PropertyList = std::vector<std::pair<std::string_view, std::string_view>>;
-		parser["PropertyList"] = [&](SemanticValues& vs, any& dt)
+		parser["PropertyList"] = [&](SemanticValues& vs, std::any& dt)
 		{
 			PropertyList list;
 			for (auto& p : vs)
