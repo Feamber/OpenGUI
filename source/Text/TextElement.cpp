@@ -251,8 +251,7 @@ namespace OGUI
                     if(!child->Visible())
                         return;
                     auto& pos = StylePosition::Get(child->_style);
-                    auto esize = child->GetSize();
-                    p->add_object(child, {esize.X, esize.Y}, GetInlineAlign(pos.verticalAlign)); 
+                    p->add_object(child, {0, 0}, GetInlineAlign(pos.verticalAlign)); 
                 },
                 [&](TextElement*& child) 
                 { 
@@ -279,7 +278,7 @@ namespace OGUI
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
         //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
-        _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1), godot::Color(1, 0, 0));
+        _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1, _opacity), godot::Color(1, 0, 0, _opacity));
         PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
     }
 
@@ -319,7 +318,8 @@ namespace OGUI
         if(_paragraph->get_align() != GetHAlign())
         {
             _paragraph->set_align(GetHAlign());
-            UpdateInlineLayout();
+            if(!_paragraphDirty)
+                UpdateInlineLayout();
         }
         if(HasFlag(damage, RestyleDamage::Font) || !_font)
         {

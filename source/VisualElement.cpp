@@ -177,7 +177,9 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	
 	BeginDraw(Ctx.prims);
 	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-	RoundBoxParams params {rect, uv, bg.backgroundColor };
+	auto bgcolor = bg.backgroundColor;
+	bgcolor.w *= _opacity;
+	RoundBoxParams params {rect, uv, bgcolor};
 	TextureInterface* tex = nullptr;
 	if (backgroundImageResource && backgroundImageResource->valid())
 	{
@@ -326,6 +328,15 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 	Context::Get().MarkDirty(this, reason);
 }
 
+const char* OGUI::VisualElement::GetName()
+{
+	return _name.c_str();
+}
+
+void OGUI::VisualElement::SetName(const char* name)
+{
+	_name = name;
+}
 
 void OGUI::VisualElement::DestoryTree(VisualElement* element)
 {

@@ -1,3 +1,4 @@
+#pragma once
 #include "OpenGUI/Core/olog.h"
 #include "sol/sol.hpp"
 #include <any>
@@ -93,12 +94,24 @@ namespace OGUI
 
     void BindLua(lua_State* L);
 
+    struct SubLuaBindable
+    {
+        struct LuaBindable* owner;
+        sol::table table;
+        std::string path;
+	    sol::object index(sol::string_view key);
+	    void new_index(sol::string_view key, sol::object value);
+    };
+
+    //TODO: nested binding path, eg. a.b.c
+    //TODO: dynamic data source
     struct LuaBindable : Bindable
     {
 	    sol::table table;
+        sol::table eventHandler;
 	    sol::object index(sol::string_view key);
 	    void new_index(sol::string_view key, sol::object value);
         bool HandleEvent(Name eventName, IEventArg &args) override;
-	    LuaBindable(sol::table inTable);
+	    LuaBindable(sol::table inTable, sol::table inHandler);
     };
 }

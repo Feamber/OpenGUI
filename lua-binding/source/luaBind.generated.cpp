@@ -23,6 +23,8 @@ void BindLua_generated(lua_State* L)
     {
         sol::usertype<OGUI::VisualElement> type = 
             lua.new_usertype<OGUI::VisualElement>("VisualElement", sol::base_classes, sol::bases<OGUI::Bindable>());
+        type["GetName"] = &OGUI::VisualElement::GetName;
+        type["SetName"] = &OGUI::VisualElement::SetName;
         type["Visible"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::Visible;
         type["SetVisibility"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetVisibility;
         type["IsClippingChildren"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::IsClippingChildren;

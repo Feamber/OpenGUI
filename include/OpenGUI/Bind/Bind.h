@@ -84,7 +84,7 @@ namespace OGUI reflect
         void Unbind(Bindable& other);
         void AddEventBind(Name eventName, EventHandlerType fun);
         virtual bool HandleEvent(Name eventName, IEventArg& args);
-        ~Bindable();
+        virtual ~Bindable();
     protected:
         void Build();
     };

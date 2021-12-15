@@ -55,6 +55,7 @@ namespace OGUI reflect
 		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
 
 	public:
+#pragma region Rendering
 		attr("script":true)
 		bool Visible() const;
 		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
@@ -63,9 +64,15 @@ namespace OGUI reflect
 		virtual void DrawDebugPrimitive(PrimitiveDraw::DrawContext& Ctx);
 		Matrix4x4 ApplyClipping();
 		bool CheckClip(const Matrix4x4& rect);
+		float _opacity;
+#pragma endregion
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
 		std::string _name;
+		attr("script":true)
+		const char* GetName();
+		attr("script":true)
+		void SetName(const char* name);
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 		attr("script":true)

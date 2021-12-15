@@ -23,7 +23,7 @@ function view:ReloadXml(ve)
 end
 
 function main(cppDataModel)
-    view.datamodel=MakeDataModel(data)
+    view.datamodel=MakeDataModel(data, data)
     view.cppDataModel = cppDataModel
     LoadXml("res/LuaBind.xml", function(ve) view:ReloadXml(ve) end) 
 end

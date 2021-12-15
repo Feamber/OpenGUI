@@ -1,4 +1,5 @@
 
+#include "OpenGUI/Style2/generated/effects.h"
 #include "Yoga.h"
 #include <algorithm>
 #include <cstdio>
@@ -54,15 +55,16 @@ public:
 
 namespace OGUI
 {
-	void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx)
+	void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx, float opacity = 1.f)
 	{
 		if(!element->Visible())
 			return;
 		auto clippingChild = element->IsClippingChildren();
 		if(clippingChild)
 			ctx.prims.clipStack.push_back(element->ApplyClipping());
+		element->_opacity = StyleEffects::Get(element->_style).opacity * opacity;
 		element->DrawPrimitive(ctx);
-		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx); });
+		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx, element->_opacity); });
 		if(clippingChild)
 			ctx.prims.clipStack.pop_back();
 	}

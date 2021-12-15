@@ -79,6 +79,8 @@ namespace OGUI
 
 sol::object OGUI::LuaBindable::index(sol::string_view key)
 {
+    if(key == "__raw")
+        return table;
     return table[key];
 }
 
@@ -91,18 +93,22 @@ void OGUI::LuaBindable::new_index(sol::string_view key, sol::object value)
 bool OGUI::LuaBindable::HandleEvent(Name eventName, IEventArg &args)
 {
     bool handled = Bindable::HandleEvent(eventName, args);
-    sol::optional<sol::function> function = table[eventName];
+    sol::optional<sol::function> function = eventHandler[eventName];
     if(function)
     {
-        sol::optional<bool> result = (*function)(this, args);
+        sol::optional<bool> result;
+        if(eventHandler==table)
+            result = (*function)(this, args);
+        else
+            result = (*function)(eventHandler, args);
         if(result)
             handled |= *result;
     }
     return handled;
 }
 
-OGUI::LuaBindable::LuaBindable(sol::table inTable)
-    :table(std::move(inTable))
+OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
+    :table(inTable), eventHandler(inHandler)
 {
     for(auto& kv : table)
     {
@@ -116,6 +122,9 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable)
         size_t size;
         auto luaType = value.get_type();
         auto type = GetCppType(luaType, size);
+
+        if(value.is<sol::function>())
+            continue;
         
         if(type == typeid(nullptr_t))
         {
@@ -147,9 +156,14 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable)
                 }
                 auto cbPath = "on" + std::string(path) + "Changed";
                 cbPath[2] = std::toupper(cbPath[2]); 
-                sol::optional<sol::function> onChange = table[cbPath];
+                sol::optional<sol::function> onChange = eventHandler[cbPath];
                 if(onChange)
-                    (*onChange)(table);
+                {
+                    if(eventHandler==table)
+                        (*onChange)(this);
+                    else
+                        (*onChange)(eventHandler, this);
+                }
             }
         });
         
@@ -193,14 +207,17 @@ void OGUI::BindLua(lua_State* state)
     BindLua_generated(state);
     sol::state_view lua(state);
 
-    auto type = lua.new_usertype<LuaBindable>("LuaBindable");
+    auto type = lua.new_usertype<LuaBindable>("LuaBindable", sol::base_classes, sol::bases<Bindable>());
     type[sol::meta_function::index] = &LuaBindable::index;
     type[sol::meta_function::new_index] = &LuaBindable::new_index;
-    lua["MakeDataModel"] = +[](sol::table table)
+    lua["MakeDataModel"] = +[](sol::table table, sol::table eventHandler)
     {
-        std::unique_ptr<Bindable> dm = std::make_unique<LuaBindable>(table);
-        return dm;
+        return std::make_unique<LuaBindable>(table, eventHandler);
     };
+	lua["ReleaseDataModel"] = +[](std::unique_ptr<Bindable>& dm)
+	{
+		dm.reset();
+	};
     lua["RouteEvent"] = +[](VisualElement* target, sol::table table)
     {
         LuaEvent event{table};

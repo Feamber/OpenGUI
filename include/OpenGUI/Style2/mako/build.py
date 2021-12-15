@@ -103,6 +103,16 @@ def gen_text():
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct, "shorthands/text.h.mako")
 
+def gen_effects():
+    struct = make_struct("effects", False)
+    def add_longhand(*args, **kwargs):
+        struct.add_longhand(*args, **kwargs)
+    add_longhand("opacity",	"float", "1")	
+    struct.headers.append("OpenGUI/Core/OMath.h")
+    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
+    render_struct(struct)
+
 def gen_background():
     struct = make_struct("background", False)
     def add_longhand(*args, **kwargs):
@@ -144,6 +154,7 @@ def main():
     gen_text()
     gen_background()
     gen_animation()
+    gen_effects()
 
 if __name__ == "__main__":
     main()

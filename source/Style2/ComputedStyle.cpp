@@ -5,6 +5,7 @@
 #include "OpenGUI/Style2/generated/border.h"
 #include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Style2/generated/text.h"
+#include "OpenGUI/Style2/generated/effects.h"
 
 OGUI::StyleRegistry& GetRegistry()
 {
@@ -29,6 +30,7 @@ void OGUI::RegisterBuiltinStructs()
     RegisterStyleStruct(GetDesc<StyleBackground>());
     RegisterStyleStruct(GetDesc<StyleBorder>());
     RegisterStyleStruct(GetDesc<StylePosition>());
+    RegisterStyleStruct(GetDesc<StyleEffects>());
 }
 
 OGUI::ComputedStyle::ComputedStyle(const ComputedStyle& other)

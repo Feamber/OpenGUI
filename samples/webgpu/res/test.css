@@ -9,6 +9,7 @@
     flex-wrap: wrap;
     background-color:rgb(255, 255, 255, 0.8);
     background-image:url(res/test4.jpg);
+    opacity: 0.3;
     /*animation-name: t360;
     animation-duration: 10s;
     animation-iteration-count: infinite;*/
@@ -65,7 +66,7 @@ TextElement{
     font-size:25;
     height:100%; width:100%; 
     color:black;
-    text-align: right;
+    text-align: center;
     line-height: 1.2;
     background-color: transparent;
 }
