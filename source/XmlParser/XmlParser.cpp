@@ -1,6 +1,7 @@
 
 
 #include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Context.h"
 #include "OpenGUI/XmlParser/XmlParser.h"
 #include "OpenGUI/XmlParser/XmlElementFactory.h"
 #include "OpenGUI/Style2/Parse.h"
@@ -395,6 +396,9 @@ namespace OGUI
                 delete e;
             return nullptr;
         }
+
+        std::map<Name, int> localXmlFilters;
+        Context::Get().RecursionUpdataFilter(state.root, localXmlFilters);
         return state.root;
     };
 

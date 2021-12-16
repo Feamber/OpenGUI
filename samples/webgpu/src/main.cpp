@@ -7,6 +7,7 @@
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Text/TextElement.h"
+#include "OpenGUI/VisualElement.h"
 #include "appbase.h"
 #include "webgpu.h"
 #include "OpenGUI/Bind/Bind.h"
@@ -613,6 +614,8 @@ struct XmlFiltersSample : public Bindable
 {
 	std::time_t a;
 	std::time_t b;
+	std::time_t c;
+	VisualElement* localFiltersTest = nullptr;
 	XmlFiltersSample()
 	{
 		
@@ -623,6 +626,10 @@ struct XmlFiltersSample : public Bindable
 		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "xmlFiltersSample", &reloader, "res/xmlFilters.xml", [&](OGUI::VisualElement* ve)
 		{
 			ve->_pseudoMask |= PseudoStates::Root;
+
+			localFiltersTest = QueryFirst(ve, "#local-filters-test");
+			// auto& context = Context::Get();
+			// context.SetXmlFilter_Local(ve, "local-filters-test", "local-filters-test-1");
 		});
 	}
 
@@ -634,19 +641,28 @@ struct XmlFiltersSample : public Bindable
 		if(now != a && now % 5 == 0)
 		{
 			a = now;
-			if(context.HasFilterTag("zh"))
-				context.SetXmlFilter("language", "en");
+			if(context.HasFilterTag_Global("zh"))
+				context.SetXmlFilter_Global("language", "en");
 			else
-				context.SetXmlFilter("language", "zh");
+				context.SetXmlFilter_Global("language", "zh");
 		}
 
 		if(now != b && now % 2 == 0)
 		{
 			b = now;
-			if(context.HasFilterTag("pc"))
-				context.SetXmlFilter("platform", "xbox");
+			if(context.HasFilterTag_Global("pc"))
+				context.SetXmlFilter_Global("platform", "xbox");
 			else
-				context.SetXmlFilter("platform", "pc");
+				context.SetXmlFilter_Global("platform", "pc");
+		}
+
+		if(now != c && now % 2 == 0)
+		{
+			c = now;
+			if(context.HasFilterTag_Local(localFiltersTest, "local-filters-test-1"))
+				context.SetXmlFilter_Local(localFiltersTest, "local-filters-test", "local-filters-test-2");
+			else
+				context.SetXmlFilter_Local(localFiltersTest, "local-filters-test", "local-filters-test-1");
 		}
 	}
 };
@@ -671,19 +687,21 @@ int main(int , char* []) {
 
 	std::vector<AppWindow*> windows;
 	SampleControls::Install();
-	ExternalControlSample sample;
-	windows.push_back(sample.MakeWindow());
-	LuaSample lsample;
-	windows.push_back(lsample.MakeWindow());
-	DataBindSample sample2;
-	windows.push_back(sample2.MakeWindow());
-	windows.push_back(CreateNavigationTestWindow());
-	windows.push_back(CreateCssTestWindow());
+	// ExternalControlSample sample;
+	// windows.push_back(sample.MakeWindow());
+	// LuaSample lsample;
+	// windows.push_back(lsample.MakeWindow());
+	// DataBindSample sample2;
+	// windows.push_back(sample2.MakeWindow());
+	// windows.push_back(CreateNavigationTestWindow());
+	// windows.push_back(CreateCssTestWindow());
+	XmlFiltersSample sample3;
+	windows.push_back(sample3.MakeWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())
 	{
-		// sample3.Update();
+		sample3.Update();
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");
@@ -691,7 +709,7 @@ int main(int , char* []) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event) && !windows.empty()) 
 		{
-			sample2.Update();
+			// sample2.Update();
 			//olog::Info(u"event type: {}  windowID: {}"_o, (int)event.type, (int)event.window.windowID);
 			
 			auto iter = std::remove_if(windows.begin(), windows.end(), [&](AppWindow* win)

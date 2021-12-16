@@ -759,68 +759,111 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause caus
 	return true;
 }
 
-void OGUI::Context::SetXmlFilter(const char* key, const char* filterTag)
+void OGUI::Context::SetXmlFilter_Global(const char* key, const char* filterTag)
 {
-	auto result = _xmlFiltersMap.try_emplace(key, filterTag);
-	if(result.second)
-	{
-		UpdataXmlFilterCache();
-		for(auto& winContext : windowContexts)
-			RecursionUpdataFilter(winContext->ui);
-	}
-	else if(result.first->second != filterTag)
-	{
+	auto result = _globalXmlFiltersMap.try_emplace(key, filterTag);
+	bool isSet = result.first->second != filterTag;
+	if(isSet)
 		result.first->second = filterTag;
-		UpdataXmlFilterCache();
-		for(auto& winContext : windowContexts)
-			RecursionUpdataFilter(winContext->ui);
-	}
-}
 
-void OGUI::Context::AddXmlFilter(const char* filterTag)
-{
-	auto result = _xmlFilters.emplace(filterTag);
-	if(result.second)
+	if(result.second || isSet)
 	{
-		UpdataXmlFilterCache();
+		UpdataXmlFilterCache_Global();
+		std::map<Name, int> localXmlFilters;
 		for(auto& winContext : windowContexts)
-			RecursionUpdataFilter(winContext->ui);
+		{
+			localXmlFilters.clear();
+			RecursionUpdataFilter(winContext->ui, localXmlFilters);
+		}
 	}
 }
 
-void OGUI::Context::RemoveXmlFilter(const char* filterTag)
+void OGUI::Context::CleanXmlFilter_Global(const char* key)
 {
-	if(_xmlFilters.erase(filterTag))
+	_globalXmlFiltersMap.erase(key);
+}
+
+void OGUI::Context::UpdataXmlFilterCache_Global()
+{
+	_globalXmlFiltersCache.clear();
+	for(auto pair : _globalXmlFiltersMap)
+		_globalXmlFiltersCache.insert(pair.second);
+}
+
+bool OGUI::Context::HasFilterTag_Global(const char* filterTag) const
+{
+	return HasFilterTag_Global(Name(filterTag));
+}
+
+bool OGUI::Context::HasFilterTag_Global(Name filterTag) const
+{
+	return _globalXmlFiltersCache.count(filterTag);
+}
+
+void OGUI::Context::SetXmlFilter_Local(VisualElement* element, const char* key, const char* filterTag)
+{
+	for(auto it = _localXmlFiltersMap.begin(); it != _localXmlFiltersMap.end(); )
 	{
-		UpdataXmlFilterCache();
-		for(auto& winContext : windowContexts)
-			RecursionUpdataFilter(winContext->ui);
+		if(!IsElementValid(it->first))
+			it = _localXmlFiltersMap.erase(it);
+		else
+			++it;
+	}
+
+	auto& localXmlFiltersMap = _localXmlFiltersMap.try_emplace(element).first->second;
+	auto result = localXmlFiltersMap.try_emplace(key, filterTag);
+	bool isSet = result.first->second != filterTag;
+	if(isSet)
+		result.first->second = filterTag;
+
+	if(result.second || isSet)
+	{
+		UpdataXmlFilterCache_Local();
+		std::map<Name, int> localXmlFilters;
+		RecursionUpdataFilter(element, localXmlFilters);
 	}
 }
 
-void OGUI::Context::UpdataXmlFilterCache()
+void OGUI::Context::UpdataXmlFilterCache_Local()
 {
-	_xmlFiltersCache.clear();
-	_xmlFiltersCache.insert(_xmlFilters.begin(), _xmlFilters.end());
-	for(auto pair : _xmlFiltersMap)
-		_xmlFiltersCache.insert(pair.second);
+	_localXmlFiltersCache.clear();
+	for(auto it : _localXmlFiltersMap)
+	{
+		auto result = _localXmlFiltersCache.emplace(it.first, std::set<Name>());
+		for(auto localXmlFiltersMap : it.second)
+			result.first->second.insert(localXmlFiltersMap.second);
+	}
 }
 
-bool OGUI::Context::HasFilterTag(const char* filterTag) const
+void OGUI::Context::CleanXmlFilter_Local(VisualElement* element, const char* key)
 {
-	return HasFilterTag(Name(filterTag));
+	auto& localXmlFiltersMap = _localXmlFiltersMap.try_emplace(element).first->second;
+	localXmlFiltersMap.erase(key);
 }
 
-bool OGUI::Context::HasFilterTag(Name filterTag) const
+bool OGUI::Context::HasFilterTag_Local(VisualElement* element, const char* filterTag) const
 {
-	return _xmlFiltersCache.count(filterTag);
+	return HasFilterTag_Local(element, Name(filterTag));
 }
 
-bool OGUI::Context::UpdataFilter(VisualElement* element)
+bool OGUI::Context::HasFilterTag_Local(VisualElement* element, const Name& filterTag) const
+{
+	if(!element)
+		return false;
+	auto find = _localXmlFiltersCache.find(element);
+	if(find != _localXmlFiltersCache.end())
+	{
+		if(find->second.count(filterTag))
+			return true;
+	}
+	return HasFilterTag_Local(element->GetHierachyParent(), filterTag);
+}
+
+bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters)
 {
 	for(const auto& filterTag : element->_xmlFilters)
 	{
-		if(!HasFilterTag(filterTag))
+		if(!localXmlFilters.count(filterTag) && !HasFilterTag_Global(filterTag))
 		{
 			if(element->Visible())
 			{
@@ -840,16 +883,36 @@ bool OGUI::Context::UpdataFilter(VisualElement* element)
 	return true;
 }
 
-void OGUI::Context::RecursionUpdataFilter(VisualElement* element)
+void OGUI::Context::RecursionUpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters)
 {
-	if(!UpdataFilter(element))
-			return;
-	element->Traverse([this](VisualElement* next)
+	auto find = _localXmlFiltersMap.find(element);
+	if(find != _localXmlFiltersMap.end())
 	{
-		if(!UpdataFilter(next))
+		for(auto it : find->second)
+		{
+			auto result = localXmlFilters.try_emplace(it.second);
+			result.first->second += 1;
+		}
+	}
+
+	if(!UpdataFilter(element, localXmlFilters))
 			return;
-		RecursionUpdataFilter(next);
+	element->Traverse([this, &localXmlFilters](VisualElement* next)
+	{
+		if(!UpdataFilter(next, localXmlFilters))
+			return;
+		RecursionUpdataFilter(next, localXmlFilters);
 	});
+
+	if(find != _localXmlFiltersMap.end())
+	{
+		for(auto it : find->second)
+		{
+			auto result = localXmlFilters.try_emplace(it.second);
+			if(--(result.first->second) == 0)
+				localXmlFilters.erase(result.first);
+		}
+	}
 }
 
 bool OGUI::Context::IsElementValid(OGUI::VisualElement* e) const

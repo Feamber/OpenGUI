@@ -9,6 +9,7 @@
 #include "OpenGUI/Event/FocusEvent.h"
 #include <algorithm>
 #include <memory>
+#include <tuple>
 #include <vector>
 #include <set>
 
@@ -77,19 +78,25 @@ namespace OGUI
 #pragma endregion
 
 #pragma region XmlFilter
-		std::set<Name> _xmlFilters;
-		std::map<Name, Name> _xmlFiltersMap;
-		std::set<Name> _xmlFiltersCache;
+		std::map<Name, Name> _globalXmlFiltersMap;
+		std::set<Name> _globalXmlFiltersCache;
 
-		void SetXmlFilter(const char* key, const char* filterTag);
-		void AddXmlFilter(const char* filterTag);
-		void RemoveXmlFilter(const char* filterTag);
-		void UpdataXmlFilterCache();
-		bool HasFilterTag(const char* filterTag) const;
-		bool HasFilterTag(Name filterTag) const;
+		void SetXmlFilter_Global(const char* key, const char* filterTag);
+		void CleanXmlFilter_Global(const char* key);
+		void UpdataXmlFilterCache_Global();
+		bool HasFilterTag_Global(const char* filterTag) const;
+		bool HasFilterTag_Global(Name filterTag) const;
 
-		bool UpdataFilter(VisualElement* element);
-		void RecursionUpdataFilter(VisualElement* element);
+		std::map<VisualElement*, std::map<Name, Name>> _localXmlFiltersMap;
+		std::map<VisualElement*, std::set<Name>> _localXmlFiltersCache;
+		void SetXmlFilter_Local(VisualElement* element, const char* key, const char* filterTag);
+		void CleanXmlFilter_Local(VisualElement* element, const char* key);
+		void UpdataXmlFilterCache_Local();
+		bool HasFilterTag_Local(VisualElement* element, const char* filterTag) const;
+		bool HasFilterTag_Local(VisualElement* element, const Name& filterTag) const;
+
+		bool UpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters);
+		void RecursionUpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters);
 #pragma endregion
 
 		//Systems

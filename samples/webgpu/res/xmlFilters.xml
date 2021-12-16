@@ -11,4 +11,10 @@
     <VisualElement name="xbox-icon" filters="xbox"/>
     <Text name="pcText" filters="pc">PC</Text>
     <Text name="xboxText" filters="xbox">Xbox</Text>
+
+    <Text filters="local-filters-test-1">local-filters-test-1</Text>
+    <VisualElement name="local-filters-test">
+        <Text filters="local-filters-test-1">local-filters-test-1</Text>
+        <Text filters="local-filters-test-2">local-filters-test-2</Text>
+    </VisualElement>
 </VisualElement>
