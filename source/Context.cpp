@@ -781,6 +781,7 @@ void OGUI::Context::SetXmlFilter_Global(const char* key, const char* filterTag)
 void OGUI::Context::CleanXmlFilter_Global(const char* key)
 {
 	_globalXmlFiltersMap.erase(key);
+	UpdataXmlFilterCache_Global();
 }
 
 void OGUI::Context::UpdataXmlFilterCache_Global()
@@ -798,65 +799,6 @@ bool OGUI::Context::HasFilterTag_Global(const char* filterTag) const
 bool OGUI::Context::HasFilterTag_Global(Name filterTag) const
 {
 	return _globalXmlFiltersCache.count(filterTag);
-}
-
-void OGUI::Context::SetXmlFilter_Local(VisualElement* element, const char* key, const char* filterTag)
-{
-	for(auto it = _localXmlFiltersMap.begin(); it != _localXmlFiltersMap.end(); )
-	{
-		if(!IsElementValid(it->first))
-			it = _localXmlFiltersMap.erase(it);
-		else
-			++it;
-	}
-
-	auto& localXmlFiltersMap = _localXmlFiltersMap.try_emplace(element).first->second;
-	auto result = localXmlFiltersMap.try_emplace(key, filterTag);
-	bool isSet = result.first->second != filterTag;
-	if(isSet)
-		result.first->second = filterTag;
-
-	if(result.second || isSet)
-	{
-		UpdataXmlFilterCache_Local();
-		std::map<Name, int> localXmlFilters;
-		RecursionUpdataFilter(element, localXmlFilters);
-	}
-}
-
-void OGUI::Context::UpdataXmlFilterCache_Local()
-{
-	_localXmlFiltersCache.clear();
-	for(auto it : _localXmlFiltersMap)
-	{
-		auto result = _localXmlFiltersCache.emplace(it.first, std::set<Name>());
-		for(auto localXmlFiltersMap : it.second)
-			result.first->second.insert(localXmlFiltersMap.second);
-	}
-}
-
-void OGUI::Context::CleanXmlFilter_Local(VisualElement* element, const char* key)
-{
-	auto& localXmlFiltersMap = _localXmlFiltersMap.try_emplace(element).first->second;
-	localXmlFiltersMap.erase(key);
-}
-
-bool OGUI::Context::HasFilterTag_Local(VisualElement* element, const char* filterTag) const
-{
-	return HasFilterTag_Local(element, Name(filterTag));
-}
-
-bool OGUI::Context::HasFilterTag_Local(VisualElement* element, const Name& filterTag) const
-{
-	if(!element)
-		return false;
-	auto find = _localXmlFiltersCache.find(element);
-	if(find != _localXmlFiltersCache.end())
-	{
-		if(find->second.count(filterTag))
-			return true;
-	}
-	return HasFilterTag_Local(element->GetHierachyParent(), filterTag);
 }
 
 bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters)
@@ -885,14 +827,10 @@ bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& lo
 
 void OGUI::Context::RecursionUpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters)
 {
-	auto find = _localXmlFiltersMap.find(element);
-	if(find != _localXmlFiltersMap.end())
+	for(auto localFilterTag : element->_localXmlFiltersCache)
 	{
-		for(auto it : find->second)
-		{
-			auto result = localXmlFilters.try_emplace(it.second);
-			result.first->second += 1;
-		}
+		auto result = localXmlFilters.try_emplace(localFilterTag);
+		result.first->second += 1;
 	}
 
 	if(!UpdataFilter(element, localXmlFilters))
@@ -904,14 +842,11 @@ void OGUI::Context::RecursionUpdataFilter(VisualElement* element, std::map<Name,
 		RecursionUpdataFilter(next, localXmlFilters);
 	});
 
-	if(find != _localXmlFiltersMap.end())
+	for(auto localFilterTag : element->_localXmlFiltersCache)
 	{
-		for(auto it : find->second)
-		{
-			auto result = localXmlFilters.try_emplace(it.second);
-			if(--(result.first->second) == 0)
-				localXmlFilters.erase(result.first);
-		}
+		auto result = localXmlFilters.try_emplace(localFilterTag);
+		if(--(result.first->second) == 0)
+			localXmlFilters.erase(result.first);
 	}
 }
 

@@ -1288,6 +1288,54 @@ OGUI::Vector2f OGUI::VisualElement::GetScrollPos()
 	return _scrollOffset;
 }
 
+void OGUI::VisualElement::SetXmlFilter(const char* key, const char* filterTag)
+{
+	auto result = _localXmlFiltersMap.try_emplace(key, filterTag);
+	bool isSet = result.first->second != filterTag;
+	if(isSet)
+		result.first->second = filterTag;
+
+	if(result.second || isSet)
+	{
+		UpdataXmlFilterCache();
+		std::map<Name, int> localXmlFilters;
+		Context::Get().RecursionUpdataFilter(this, localXmlFilters);
+	}
+}
+
+void OGUI::VisualElement::CleanXmlFilter(const char* key)
+{
+	_localXmlFiltersMap.erase(key);
+	UpdataXmlFilterCache();
+}
+
+void OGUI::VisualElement::UpdataXmlFilterCache()
+{
+	_localXmlFiltersCache.clear();
+	for(auto pair : _localXmlFiltersMap)
+		_localXmlFiltersCache.insert(pair.second);
+}
+
+bool OGUI::VisualElement::HasFilterTag(const char* filterTag) const
+{
+	return HasFilterTag(Name(filterTag));
+}
+
+bool OGUI::VisualElement::HasFilterTag(Name filterTag) const
+{
+	return HasFilterTag((VisualElement*)this, filterTag);
+}
+
+bool OGUI::VisualElement::HasFilterTag(OGUI::VisualElement* element, const Name& filterTag) const
+{
+	if(!element)
+		return false;
+	if(element->_localXmlFiltersCache.count(filterTag))
+		return true;
+	return HasFilterTag(element->GetHierachyParent(), filterTag);
+}
+
+
 void OGUI::BindTree(VisualElement* element, Bindable& bindable)
 {
 	element->Bind(bindable);

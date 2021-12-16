@@ -87,14 +87,6 @@ namespace OGUI
 		bool HasFilterTag_Global(const char* filterTag) const;
 		bool HasFilterTag_Global(Name filterTag) const;
 
-		std::map<VisualElement*, std::map<Name, Name>> _localXmlFiltersMap;
-		std::map<VisualElement*, std::set<Name>> _localXmlFiltersCache;
-		void SetXmlFilter_Local(VisualElement* element, const char* key, const char* filterTag);
-		void CleanXmlFilter_Local(VisualElement* element, const char* key);
-		void UpdataXmlFilterCache_Local();
-		bool HasFilterTag_Local(VisualElement* element, const char* filterTag) const;
-		bool HasFilterTag_Local(VisualElement* element, const Name& filterTag) const;
-
 		bool UpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters);
 		void RecursionUpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters);
 #pragma endregion

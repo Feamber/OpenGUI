@@ -615,7 +615,9 @@ struct XmlFiltersSample : public Bindable
 	std::time_t a;
 	std::time_t b;
 	std::time_t c;
+	std::time_t d;
 	VisualElement* localFiltersTest = nullptr;
+	VisualElement* localFiltersTest2 = nullptr;
 	XmlFiltersSample()
 	{
 		
@@ -628,6 +630,7 @@ struct XmlFiltersSample : public Bindable
 			ve->_pseudoMask |= PseudoStates::Root;
 
 			localFiltersTest = QueryFirst(ve, "#local-filters-test");
+			localFiltersTest2 = QueryFirst(ve, "#local-filters-test2");
 			// auto& context = Context::Get();
 			// context.SetXmlFilter_Local(ve, "local-filters-test", "local-filters-test-1");
 		});
@@ -659,10 +662,19 @@ struct XmlFiltersSample : public Bindable
 		if(now != c && now % 2 == 0)
 		{
 			c = now;
-			if(context.HasFilterTag_Local(localFiltersTest, "local-filters-test-1"))
-				context.SetXmlFilter_Local(localFiltersTest, "local-filters-test", "local-filters-test-2");
+			if(localFiltersTest->HasFilterTag("local-filters-test-1"))
+				localFiltersTest->SetXmlFilter("local-filters-test", "local-filters-test-2");
 			else
-				context.SetXmlFilter_Local(localFiltersTest, "local-filters-test", "local-filters-test-1");
+				localFiltersTest->SetXmlFilter("local-filters-test", "local-filters-test-1");
+		}
+
+		if(now != d && now % 2 == 0)
+		{
+			d = now;
+			if(localFiltersTest2->HasFilterTag("local-filters-test-2"))
+				localFiltersTest2->SetXmlFilter("local-filters-test", "local-filters-test-1");
+			else
+				localFiltersTest2->SetXmlFilter("local-filters-test", "local-filters-test-2");
 		}
 	}
 };

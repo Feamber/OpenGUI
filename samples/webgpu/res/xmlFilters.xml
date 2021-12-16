@@ -17,4 +17,8 @@
         <Text filters="local-filters-test-1">local-filters-test-1</Text>
         <Text filters="local-filters-test-2">local-filters-test-2</Text>
     </VisualElement>
+    <VisualElement name="local-filters-test2">
+        <Text filters="local-filters-test-1">local-filters-test-1</Text>
+        <Text filters="local-filters-test-2">local-filters-test-2</Text>
+    </VisualElement>
 </VisualElement>

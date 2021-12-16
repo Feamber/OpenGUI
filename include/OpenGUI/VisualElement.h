@@ -274,8 +274,20 @@ namespace OGUI reflect
 
 #pragma region Xml
 		std::map<ostr::string, VisualElement*> _slots;
-		std::set<Name> _xmlFilters;
 		bool _isXmlRoot = false;
+#pragma endregion 
+
+#pragma region XmlFilter
+		std::set<Name> _xmlFilters;
+		std::map<Name, Name> _localXmlFiltersMap;
+		std::set<Name> _localXmlFiltersCache;
+
+		void SetXmlFilter(const char* key, const char* filterTag);
+		void CleanXmlFilter(const char* key);
+		void UpdataXmlFilterCache();
+		bool HasFilterTag(const char* filterTag) const;
+		bool HasFilterTag(Name filterTag) const;
+		bool HasFilterTag(VisualElement* element, const Name& filterTag) const;
 #pragma endregion 
 	};
 
