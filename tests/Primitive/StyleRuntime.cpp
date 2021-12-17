@@ -30,7 +30,7 @@ TEST_CASE("StyleParse", "[Parser][NameSelector]")
     styleSt.Initialize();
     ve->_name = "TestElement";
     ve->_styleSheets.push_back(&styleSt);
-    Context::Get().styleSystem.Update(ve.get());
+    Context::Get().styleSystem.Update(ve.get(), true);
     REQUIRE(StylePosition::Get(ve->_style).left.value == 100.f);
     REQUIRE(StyleText::Get(ve->_style).fontSize == 24.f);
 }

@@ -11,7 +11,13 @@
     background-image:url(res/test4.jpg);
 }
 
+@font-face {
+    font-family: TestFont;
+    src: url(res/arial.ttf);
+}
+
 TextElement {
+    font-family: TestFont;
     background-color: transparent;
 }
 

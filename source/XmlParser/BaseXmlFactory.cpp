@@ -166,8 +166,6 @@ namespace OGUI
 
         // !Xml筛选，只有符合所有FilterTag才显示，否则隐藏
         FindAttribute(xe, Attr_Filters(), u","_o, element->_xmlFilters);
-        if(element->_xmlFilters.size())
-            Context::Get().UpdataFilter(element);
         return true;
     }
 
