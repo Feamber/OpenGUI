@@ -57,7 +57,7 @@ namespace OGUI
 		~Context();
 
 		std::set<VisualElement*> _allElementHandle;
-		inline bool IsElementValid(VisualElement*) const;
+		bool IsElementValid(VisualElement*) const;
 
 #pragma region FocusNavigation
 		std::vector<EKeyCode> keyNavigation_Up {EKeyCode::W, EKeyCode::Up};

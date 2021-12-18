@@ -21,17 +21,6 @@ struct _Is_specialization : bool_constant<_Is_specialization_v<_Type, _Template>
 
 // size in pointers of std::function and std::any (roughly 3 pointers larger than std::string when building debug)
 constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
-    
-class bad_any_cast : public bad_cast { // thrown by failed any_cast
-public:
-    [[nodiscard]] const char* __CLR_OR_THIS_CALL what() const noexcept override {
-        return "Bad any_cast";
-    }
-};
-
-[[noreturn]] inline void _Throw_bad_any_cast() {
-    throw bad_any_cast{};
-}
 
 inline constexpr size_t _Any_trivial_space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
@@ -404,9 +393,6 @@ template <class _Ty>
         "const remove_cv_t<remove_reference_t<T>>&");
 
     const auto _Ptr = any_cast<_Remove_cvref_t<_Ty>>(&_Any);
-    if (!_Ptr) {
-        _Throw_bad_any_cast();
-    }
 
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
@@ -416,9 +402,6 @@ template <class _Ty>
         "any_cast<T>(any&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>&");
 
     const auto _Ptr = any_cast<_Remove_cvref_t<_Ty>>(&_Any);
-    if (!_Ptr) {
-        _Throw_bad_any_cast();
-    }
 
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
@@ -428,9 +411,6 @@ template <class _Ty>
         "any_cast<T>(any&&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>");
 
     const auto _Ptr = any_cast<_Remove_cvref_t<_Ty>>(&_Any);
-    if (!_Ptr) {
-        _Throw_bad_any_cast();
-    }
 
     return static_cast<remove_cv_t<_Ty>>(std::move(*_Ptr));
 }
