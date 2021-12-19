@@ -1,7 +1,7 @@
 #include <limits>
 
 #include "OpenGUI/Core/PrimitiveDraw.h"
-#include "nanovg.h"
+#include "OpenGUI/Core/nanovg.h"
 
 namespace OGUI
 {
