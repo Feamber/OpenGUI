@@ -90,7 +90,7 @@ bool SampleControls::Slider::OnMouseMove(struct PointerMoveEvent& event)
     Transform(offset, _invRotation);
     auto size = GetSize();
     float percentage = offset.X / size.X;
-    _value = _dragStartValue + (_maxValue - _minValue) * percentage + _minValue;
+    _value = _dragStartValue + (_maxValue - _minValue) * percentage;
     _value = std::clamp(_value, _minValue, _maxValue);
     Notify(VALUE);
     OnValueChanged();

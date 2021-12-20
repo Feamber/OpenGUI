@@ -20,8 +20,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <memory.h>
-
-#include "nanovg.h"
+#include "OpenGUI/Core/nanovg.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4100)  // unreferenced formal parameter
@@ -298,8 +297,6 @@ NVGcontext* nvgCreateInternal(NVGparams* params)
 
 	nvg__setDevicePixelRatio(ctx, 1.0f);
 
-	if (ctx->params.renderCreate(ctx->params.userPtr) == 0) goto error;
-
 	return ctx;
 
 error:
@@ -318,8 +315,6 @@ void nvgDeleteInternal(NVGcontext* ctx)
 	if (ctx == NULL) return;
 	if (ctx->commands != NULL) free(ctx->commands);
 	if (ctx->cache != NULL) nvg__deletePathCache(ctx->cache);
-	if (ctx->params.renderDelete != NULL)
-		ctx->params.renderDelete(ctx->params.userPtr);
 
 	free(ctx);
 }
@@ -340,11 +335,6 @@ void nvgBeginFrame(NVGcontext* ctx, float devicePixelRatio)
 	ctx->fillTriCount = 0;
 	ctx->strokeTriCount = 0;
 	ctx->textTriCount = 0;
-}
-
-void nvgEndFrame(NVGcontext* ctx)
-{
-	ctx->params.renderFlush(ctx->params.userPtr);
 }
 
 NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b)
