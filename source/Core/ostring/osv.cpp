@@ -142,20 +142,23 @@ int string_view::to_int() const noexcept
 
 float string_view::to_float() const noexcept
 {
-	int value = 0;
+	float value = 0;
 	bool is = false;
 	float v = 10;
 	string_view sv = this->trim();
 	for (const auto& c : sv._str)
 	{
 		if(c == u'.')
+		{
+			is = true;
 			continue;
+		}
 		if(!is)
 			value = value * 10 + c - u'0';
 		else
 		{
 			value += (float)(c - u'0') / v;
-			v /= 10;
+			v *= 10;
 		};
 	}
 	return value;
