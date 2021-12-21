@@ -17,4 +17,5 @@ namespace OGUI
 	OGUI_API bool ParseValue(std::string_view str, YGDisplay& value);
 	OGUI_API bool ParseValue(std::string_view str, EInlineAlign& value);
 	OGUI_API bool ParseFourSides(std::string_view str, YGValue& left, YGValue& top, YGValue& right, YGValue& bottom);
+	OGUI_API bool ParseRatio(std::string_view str, float& value);
 }

@@ -62,6 +62,7 @@ def gen_position():
     add_longhand("flex-wrap",		"YGWrap",			"YGWrapNoWrap"   ,restyle_damage="Layout")		
     add_longhand("flex-display",	"YGDisplay",		"YGDisplayFlex"   ,restyle_damage="Layout")		
     add_longhand("vertical-align",	"EInlineAlign",		"EInlineAlign::Middle"   ,restyle_damage="Layout")	
+    add_longhand("aspect-ratio",      "float",           "YGUndefined",  restyle_damage="Layout", parser = "ParseRatio")
 
     struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Core/OMath.h")

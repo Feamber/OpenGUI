@@ -612,6 +612,7 @@ void OGUI::VisualElement::SyncYogaStyle()
 	YGNodeStyleSetPositionType(_ygnode, pos.position);
 	YGNodeStyleSetOverflow(_ygnode, ToYGOverflow(pos.overflow));
 	YGNodeStyleSetAlignSelf(_ygnode, pos.alignSelf);
+	YGNodeStyleSetAspectRatio(_ygnode, pos.aspectRatio);
 	SetYGValue(_ygnode, YGNodeStyleSetMaxWidth, pos.maxWidth);
 	SetYGValue(_ygnode, YGNodeStyleSetMaxHeight, pos.maxHeight);
 	SetYGValue(_ygnode, YGNodeStyleSetMinWidth, pos.minWidth);

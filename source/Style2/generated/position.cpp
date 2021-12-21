@@ -102,6 +102,7 @@ void OGUI::StylePosition::Initialize()
     flexWrap = YGWrapNoWrap;
     flexDisplay = YGDisplayFlex;
     verticalAlign = EInlineAlign::Middle;
+    aspectRatio = YGUndefined;
 }
 
 void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -306,6 +307,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->verticalAlign = EInlineAlign::Middle;
                     break;
                     }
+                case Ids::aspectRatio:{
+                    auto v = fget();
+                    v->aspectRatio = YGUndefined;
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -471,6 +477,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 case Ids::verticalAlign:{
                     auto v = fget();
                     v->verticalAlign = pst->verticalAlign;
+                    break;
+                    }
+                case Ids::aspectRatio:{
+                    auto v = fget();
+                    v->aspectRatio = pst->aspectRatio;
                     break;
                     }
                 default: break;
@@ -639,6 +650,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 case Ids::verticalAlign:{
                     auto v = fget();
                     v->verticalAlign = sheet.Get<EInlineAlign>(prop.value);
+                    break;
+                    }
+                case Ids::aspectRatio:{
+                    auto v = fget();
+                    v->aspectRatio = sheet.Get<float>(prop.value);
                     break;
                     }
                 default: break;
@@ -1259,6 +1275,24 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     damage |= RestyleDamage::Layout;
                 break;
                 }
+            case Ids::aspectRatio:{
+                auto v = fget();
+                auto prevValue = v->aspectRatio;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->aspectRatio = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->aspectRatio = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->aspectRatio = OGUI::Lerp(v->aspectRatio, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->aspectRatio = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                
+                if(prevValue != v->aspectRatio)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
             default: break;
         }
     }
@@ -1369,6 +1403,9 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             case Ids::verticalAlign:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::aspectRatio:
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             case Ids::margin:
@@ -1745,6 +1782,17 @@ bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_
             else
             {
                 errorMsg = "failed to parse vertical-align value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::aspectRatio:{
+            float v;
+            if(ParseRatio(value, v))
+                rule.properties.push_back({phash, sheet.Push<float>(v)});
+            else
+            {
+                errorMsg = "failed to parse aspect-ratio value!";
                 return false;
             }
             return true;

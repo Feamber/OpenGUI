@@ -57,6 +57,7 @@ namespace OGUI
             static constexpr size_t flexWrap = OGUI::hash("flex-wrap"sv);
             static constexpr size_t flexDisplay = OGUI::hash("flex-display"sv);
             static constexpr size_t verticalAlign = OGUI::hash("vertical-align"sv);
+            static constexpr size_t aspectRatio = OGUI::hash("aspect-ratio"sv);
             static constexpr size_t margin = OGUI::hash("margin"sv);
             static constexpr size_t padding = OGUI::hash("padding"sv);
         };
@@ -92,6 +93,7 @@ namespace OGUI
         YGWrap flexWrap;
         YGDisplay flexDisplay;
         EInlineAlign verticalAlign;
+        float aspectRatio;
         void Initialize();
         static const StylePosition& GetDefault();
         static const StylePosition& Get(const ComputedStyle& style);

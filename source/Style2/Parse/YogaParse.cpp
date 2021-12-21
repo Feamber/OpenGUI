@@ -195,3 +195,25 @@ bool OGUI::ParseFourSides(std::string_view str, YGValue& left, YGValue& top, YGV
     else
         return false;
 }
+
+
+bool OGUI::ParseRatio(std::string_view str, float& value)
+{
+    std::vector<std::string_view> tokens;
+    std::split(str, tokens, " /");
+    if(tokens.size() == 1)
+    {
+        return ParseValue(str, value);
+    }
+    else if(tokens.size() == 2)
+    {
+        float w, h;
+        if(!ParseValue(tokens[0], w))
+            return false;
+        if(!ParseValue(tokens[1], h))
+            return false;
+        value = w / h;
+        return true;
+    }
+    return false;
+}
