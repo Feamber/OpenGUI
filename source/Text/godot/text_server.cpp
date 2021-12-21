@@ -984,21 +984,86 @@ OGUI::Color4f math_cast(const Color& p_color)
 	return {p_color.r, p_color.g, p_color.b, p_color.a};
 }
 
+namespace OGUI
+{
+
+	uint32_t ToColor32ABGR(Color4f color)
+	{
+		color.x = std::clamp(color.x, 0.f, 1.f);   
+		color.y = std::clamp(color.y, 0.f, 1.f);   
+		color.z = std::clamp(color.z, 0.f, 1.f);   
+		color.w = std::clamp(color.w, 0.f, 1.f);   
+		uint8_t r = color.x * 255;
+		uint8_t g = color.y * 255;
+		uint8_t b = color.z * 255;
+		uint8_t a = color.w * 255;
+		return ((uint32_t)a << 24) + ((uint32_t)b << 16) + ((uint32_t)g << 8) + (uint32_t)r;
+	}
+
+	Vertex MakeVertex(Vector2f position, Vector2f UV, Color4f color)
+    {
+		Vertex v;
+		v.position = position;
+		v.texcoord = UV;
+		v.color = ToColor32ABGR(color);
+		v.aa = {0.5f, 1.f};
+		return v;
+    }
+
+	void BoxShape(PrimDrawList& list, PrimDrawResource& resource, Rect rect, Rect uv, Color4f color)
+	{
+		Vector2f side_len = rect.max - rect.min;
+		if (!side_len.X || !side_len.Y)
+			return;
+
+		auto& command = list.GetCommand(resource);
+		const uint32_t vcount = list.vertices.size();
+		//const uint32_t icount = list.indices.size();
+		
+		const Vector2f RU = rect.max;
+		const Vector2f RB = Vector2f(rect.max.X, rect.min.Y);
+		const Vector2f LU = Vector2f(rect.min.X, rect.max.Y);
+		const Vector2f LB = rect.min;
+
+		const Vector2f RUUV = uv.max;
+		const Vector2f RBUV = Vector2f(uv.max.X, uv.min.Y);
+		const Vector2f LUUV = Vector2f(uv.min.X, uv.max.Y);
+		const Vector2f LBUV = uv.min;
+
+		const auto vRU = MakeVertex( RU, RUUV, color );
+		const auto vLU = MakeVertex( LU, LUUV, color );
+		const auto vRB = MakeVertex( RB, RBUV, color );
+		const auto vLB = MakeVertex( LB, LBUV, color );
+
+		list.vertices.emplace_back(vRU); // vcount + 0
+		list.vertices.emplace_back(vLU); // vcount + 1
+		list.vertices.emplace_back(vRB); // vcount + 2
+		list.vertices.emplace_back(vLB); // vcount + 3
+
+		list.indices.emplace_back(vcount + 0u);
+		list.indices.emplace_back(vcount + 1u);
+		list.indices.emplace_back(vcount + 2u);
+		list.indices.emplace_back(vcount + 2u);
+		list.indices.emplace_back(vcount + 1u);
+		list.indices.emplace_back(vcount + 3u);
+		command.element_count += 6;
+	}
+}
+
 void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, const std::optional<OGUI::ComputedTransform> transform) const
 {
-	using namespace OGUI::PrimitiveDraw;
-	BoxParams params;
+	using namespace OGUI;
+	PrimDrawResource resource;
+	resource.texture = p_texture;
+	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
 	auto dstRect = p_rect;
 	dstRect.position.y = - p_rect.position.y;
 	dstRect.size.y = - p_rect.size.y;
-	params.rect = math_cast(dstRect);
 	auto srcRect = p_src_rect;
 	srcRect.position.y = 1 - p_src_rect.position.y ;
 	srcRect.size.y = - p_src_rect.size.y;
-	params.uv = math_cast(srcRect);
-	params.color = math_cast(p_modulate);
 	auto begin = list.vertices.size();
-	PrimitiveDraw<BoxShape>(p_texture, list, params);
+	BoxShape(list, resource, math_cast(dstRect), math_cast(srcRect), math_cast(p_modulate));
 	auto end = list.vertices.size();
 	if(transform)
 		for(auto i=begin; i<end; ++i)
@@ -1007,12 +1072,12 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 
 void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const
 {
-	using namespace OGUI::PrimitiveDraw;
-	BoxParams params;
+	using namespace OGUI;
+	PrimDrawResource resource;
+	resource.texture = nullptr;
+	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
 	auto dstRect = p_rect;
 	dstRect.position.y = - p_rect.position.y;
 	dstRect.size.y = - p_rect.size.y;
-	params.rect = math_cast(dstRect);
-	params.color = math_cast(p_color);
-	PrimitiveDraw<BoxShape>(nullptr, list, params);
+	BoxShape(list, resource, math_cast(dstRect), {Vector2f::vector_zero(), Vector2f::vector_one()}, math_cast(p_color));
 }

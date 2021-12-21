@@ -26,10 +26,7 @@
 namespace OGUI reflect
 {
 	using namespace ostr::literal;
-	namespace PrimitiveDraw
-	{
-		struct OGUI_API DrawContext;
-	}
+	struct OGUI_API PrimDrawContext;
 
 	struct Matrix4x4f{};
 
@@ -58,10 +55,11 @@ namespace OGUI reflect
 #pragma region Rendering
 		attr("script":true)
 		bool Visible() const;
-		virtual void DrawPrimitive(PrimitiveDraw::DrawContext& Ctx);
-		void DrawBackgroundPrimitive(PrimitiveDraw::DrawContext& Ctx);
-		void DrawBorderPrimitive(PrimitiveDraw::DrawContext& Ctx);
-		virtual void DrawDebugPrimitive(PrimitiveDraw::DrawContext& Ctx);
+		TextureInterface* GetBackgroundImage(const struct StyleBackground& bg);
+		virtual void DrawPrimitive(PrimDrawContext& Ctx);
+		void DrawBackgroundPrimitive(PrimDrawContext& Ctx);
+		void DrawBorderPrimitive(PrimDrawContext& Ctx);
+		virtual void DrawDebugPrimitive(PrimDrawContext& Ctx);
 		Matrix4x4 ApplyClipping();
 		bool CheckClip(const Matrix4x4& rect);
 		float _opacity;

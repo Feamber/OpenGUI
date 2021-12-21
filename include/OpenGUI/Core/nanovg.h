@@ -42,6 +42,16 @@ struct NVGcolor {
 };
 typedef struct NVGcolor NVGcolor;
 
+struct NVGmargin {
+	float top, right, bottom, left;
+};
+
+struct NVGbox {
+	float extend[2];
+	float radius[4];
+	NVGmargin margin;
+};
+
 struct NVGpaint {
 	float xform[6];
 	float extent[2];
@@ -49,7 +59,8 @@ struct NVGpaint {
 	float feather;
 	NVGcolor innerColor;
 	NVGcolor outerColor;
-	int image;
+	NVGbox box;
+	void* image;
 };
 typedef struct NVGpaint NVGpaint;
 
@@ -135,9 +146,6 @@ typedef struct NVGglyphPosition NVGglyphPosition;
 // frame buffer size. In that case you would set windowWidth/Height to the window size
 // devicePixelRatio to: frameBufferWidth / windowWidth.
 void nvgBeginFrame(NVGcontext* ctx, float devicePixelRatio);
-
-// Ends drawing flushing remaining render state.
-void nvgEndFrame(NVGcontext* ctx);
 
 //
 // Composite operation
@@ -369,28 +377,13 @@ NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float inr, float
 // (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
-						 float angle, int image, float alpha);
+						 float angle, void* image, NVGcolor ocol);
 
-//
-// Scissoring
-//
-// Scissoring allows you to clip the rendering into a rectangle. This is useful for various
-// user interface cases like rendering a text edit or a timeline.
-
-// Sets the current scissor rectangle.
-// The scissor rectangle is transformed by the current transform.
-void nvgScissor(NVGcontext* ctx, float x, float y, float w, float h);
-
-// Intersects current scissor rectangle with the specified rectangle.
-// The scissor rectangle is transformed by the current transform.
-// Note: in case the rotation of previous scissor rect differs from
-// the current one, the intersection will be done between the specified
-// rectangle and the previous scissor rectangle transformed in the current
-// transform space. The resulting shape is always rectangle.
-void nvgIntersectScissor(NVGcontext* ctx, float x, float y, float w, float h);
-
-// Reset and disables scissoring.
-void nvgResetScissor(NVGcontext* ctx);
+						 // Creates and returns an image pattern. Parameters (ox,oy) specify the left-top location of the image pattern,
+// (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
+// The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
+NVGpaint nvgImagePatternEx(NVGcontext* ctx, float ox, float oy, float ex, float ey,
+						 float angle, void* image, NVGcolor ocol, NVGbox box);
 
 //
 // Paths
@@ -495,9 +488,8 @@ typedef struct NVGpath NVGpath;
 struct NVGparams {
 	void* userPtr;
 	int edgeAntiAlias;
-	void (*renderFill)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, const float* bounds, const NVGpath* paths, int npaths);
-	void (*renderStroke)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, float strokeWidth, const NVGpath* paths, int npaths);
-	void (*renderTriangles)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, const NVGvertex* verts, int nverts, float fringe);
+	void (*renderFill)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, float fringe, const float* bounds, const NVGpath* paths, int npaths);
+	void (*renderStroke)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, float fringe, float strokeWidth, const NVGpath* paths, int npaths);
 };
 typedef struct NVGparams NVGparams;
 

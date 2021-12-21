@@ -1,11 +1,11 @@
-
+#include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/generated/effects.h"
 #include "Yoga.h"
 #include <algorithm>
 #include <cstdio>
 #include <vector>
 #include <memory>
-#include "OpenGUI/Configure.h"
+#include "OpenGUI/Core/nanovg.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Event/PointerEvent.h"
@@ -55,7 +55,7 @@ public:
 
 namespace OGUI
 {
-	void RenderRec(VisualElement* element, PrimitiveDraw::DrawContext& ctx, float opacity = 1.f)
+	void RenderRec(VisualElement* element, PrimDrawContext& ctx, float opacity = 1.f)
 	{
 		if(!element->Visible())
 			return;
@@ -210,7 +210,8 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 {
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
-	wctx.currentDrawCtx = std::make_shared<PrimitiveDraw::DrawContext>(PrimitiveDraw::DrawContext{wctx});
+	wctx.currentDrawCtx = std::make_shared<PrimDrawContext>(wctx);
+	nvgBeginFrame(wctx.currentDrawCtx->nvg, 0.5f); 
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }

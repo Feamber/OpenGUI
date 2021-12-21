@@ -16,6 +16,7 @@ namespace OGUI reflect
     {
         Vector2f position;
         Vector2f texcoord;
+		Vector2f aa;
         // Alignment
 		uint32_t  color; 
 

@@ -1,5 +1,6 @@
 
 
+#include "OpenGUI/Core/nanovg.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Transform.h"
@@ -155,14 +156,9 @@ OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f 
 	return result;
 }
 
-void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
+OGUI::TextureInterface* OGUI::VisualElement::GetBackgroundImage(const StyleBackground& bg)
 {
-	using namespace PrimitiveDraw;
-	Rect rect = GetRect();
-	auto&& ctx = Context::Get();
-	auto& bg = StyleBackground::Get(_style);
-	auto& bd = StyleBorder::Get(_style);
-	auto transform = _worldTransform;
+	auto& ctx = Context::Get();
 	if (!bg.backgroundImage.empty())
 	{
 		//start new load
@@ -175,45 +171,51 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	else //release old texture
 		backgroundImageResource = nullptr;
 	
-	BeginDraw(Ctx.prims);
-	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-	auto bgcolor = bg.backgroundColor;
-	bgcolor.w *= _opacity;
-	RoundBoxParams params {rect, uv, bgcolor};
 	TextureInterface* tex = nullptr;
 	if (backgroundImageResource && backgroundImageResource->valid())
-	{
 		tex = backgroundImageResource->Get();
-	}
-	params.radius[0] = bd.borderTopLeftRadius.value;// / Ctx.resolution.Y;
-	params.radius[1] = bd.borderTopRightRadius.value;// / Ctx.resolution.Y;
-	params.radius[2] = bd.borderBottomRightRadius.value;// / Ctx.resolution.Y;
-	params.radius[3] = bd.borderBottomLeftRadius.value;// / Ctx.resolution.Y;
-	PrimitiveDraw::PrimitiveDraw<RoundBoxShape2>(tex, Ctx.prims, params, 20);
+	return tex;
+}
+
+void OGUI::VisualElement::DrawBackgroundPrimitive(PrimDrawContext& Ctx)
+{
+	Rect rect = GetRect();
+	auto& bg = StyleBackground::Get(_style);
+	auto& bd = StyleBorder::Get(_style);
+	auto transform = _worldTransform;
+	auto bgcolor = bg.backgroundColor;
+	auto tex = GetBackgroundImage(bg);
+	bgcolor.w *= _opacity;
+	BeginDraw(Ctx.prims);
+	nvgBeginPath(Ctx.nvg);
+	nvgRoundedRectVarying(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, bd.borderTopLeftRadius.value, bd.borderTopRightRadius.value, bd.borderBottomRightRadius.value, bd.borderBottomLeftRadius.value);
+	auto image = nvgImagePattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, tex, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
+	nvgFillPaint(Ctx.nvg, image);
+	nvgFill(Ctx.nvg);
 	EndDraw(Ctx.prims, transform);
 }
 
-void OGUI::VisualElement::DrawBorderPrimitive(OGUI::PrimitiveDraw::DrawContext & Ctx)
-{}
-
-void OGUI::VisualElement::DrawDebugPrimitive(OGUI::PrimitiveDraw::DrawContext & Ctx)
+void OGUI::VisualElement::DrawBorderPrimitive(PrimDrawContext & Ctx)
 {
-	using namespace PrimitiveDraw;
 
+}
+
+void OGUI::VisualElement::DrawDebugPrimitive(PrimDrawContext & Ctx)
+{
 	if((FocusNavDebugState == CollisionBox || FocusNavDebugState == ElementQuad))
 	{
 		time_t seconds = time(NULL);
 		if(seconds - navDebugLastUpdate < 3)
 		{
 			BeginDraw(Ctx.prims);
-			BoxParams params;
-			params.uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-			params.rect = navDebugRect;
-			params.color = FocusNavDebugState == CollisionBox ? 
+			auto rect = navDebugRect;
+			auto color = FocusNavDebugState == CollisionBox ? 
 				Color4f(225, 0, 0, 0.3f) : 
-				Color4f(46, 225, 225, 0.3f);
-
-			PrimitiveDraw::PrimitiveDraw<BoxShape>(nullptr, Ctx.prims, params);
+				Color4f(46, 225, 225, 0.3f);nvgBeginPath(Ctx.nvg);
+			nvgBeginPath(Ctx.nvg);
+			nvgRect(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y);
+			nvgFillColor(Ctx.nvg, nvgRGBAf(color.x, color.y, color.z, color.w));
+			nvgFill(Ctx.nvg);
 			EndDraw(Ctx.prims, float4x4());
 		}
 	}
@@ -297,7 +299,7 @@ OGUI::VisualElement::~VisualElement()
 		delete sheet;
 }
 
-void OGUI::VisualElement::DrawPrimitive(OGUI::PrimitiveDraw::DrawContext& Ctx)
+void OGUI::VisualElement::DrawPrimitive(PrimDrawContext& Ctx)
 {
 	DrawBackgroundPrimitive(Ctx);
 	DrawBorderPrimitive(Ctx);

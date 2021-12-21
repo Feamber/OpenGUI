@@ -10,13 +10,15 @@ static char const triangle_vert_wgsl[] = R"(
 	struct VertexIn {
 		[[location(0)]] aPos : vec2<f32>;
 		[[location(1)]] aUV  : vec2<f32>;
-		[[location(2)]] aCol : vec4<f32>;
-		[[location(3)]] aCUV  : vec2<f32>;
+		[[location(2)]] aAA  : vec2<f32>;
+		[[location(3)]] aCol : vec4<f32>;
+		[[location(4)]] aCUV  : vec2<f32>;
 	};
 	struct VertexOut {
 		[[location(0)]] vCol : vec4<f32>;
 		[[location(1)]] vUV  : vec2<f32>;
-		[[location(2)]] vCUV  : vec2<f32>;
+		[[location(2)]] vAA  : vec2<f32>;
+		[[location(3)]] vCUV  : vec2<f32>;
 		[[builtin(position)]] Position : vec4<f32>;
 	};
 	[[stage(vertex)]] fn main(input : VertexIn) -> VertexOut {
@@ -25,6 +27,7 @@ static char const triangle_vert_wgsl[] = R"(
 		output.vCol = input.aCol;
         output.vUV = input.aUV;
         output.vUV.y = 1.0 - output.vUV.y;
+		output.vAA = input.aAA;
 		output.vCUV = input.aCUV;
 		return output;
 	}
@@ -35,7 +38,8 @@ static char const triangle_frag_wgsl[] = R"(
 	struct VertexOut {
 		[[location(0)]] vCol : vec4<f32>;
 		[[location(1)]] vUV  : vec2<f32>;
-		[[location(2)]] vCUV  : vec2<f32>;
+		[[location(2)]] vAA  : vec2<f32>;
+		[[location(3)]] vCUV  : vec2<f32>;
 		[[builtin(position)]] Position : vec4<f32>;
 	};
     [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
@@ -45,7 +49,12 @@ static char const triangle_frag_wgsl[] = R"(
 	fn main(input : VertexOut) ->  [[location(0)]] vec4<f32> {
 		var visible : f32;
 		visible = f32(all(input.vCUV == clamp(input.vCUV, vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, 1.0))));
-		return visible * input.vCol * textureSample(myTexture, mySampler, input.vUV);
+		var edge : f32;
+		edge = min(1.0, (1.0-abs((input.vAA.x * 2.0) - 1.0))) * input.vAA.y;
+		var color : vec4<f32> = visible * input.vCol * textureSample(myTexture, mySampler, input.vUV);
+		color.w = color.w * edge;
+		return color;
+		//return vec4<f32>(edge, edge, edge, edge);
     }
 )";
 

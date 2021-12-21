@@ -45,7 +45,7 @@ namespace OGUI
         void UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss) override;
         void SyncParagraphStyle();
         void GetChildren(std::vector<VisualElement *>& Children) override;
-        void DrawPrimitive(PrimitiveDraw::DrawContext &Ctx) override;
+        void DrawPrimitive(PrimDrawContext &Ctx) override;
 
         void BuildParagraphRec(godot::TextParagraph* p, const struct StyleText& txt);
     };

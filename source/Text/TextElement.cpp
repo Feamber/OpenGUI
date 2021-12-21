@@ -269,17 +269,17 @@ namespace OGUI
         }
     }
     
-    void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
+    void TextElement::DrawPrimitive(PrimDrawContext &Ctx)
     {
         if(_layoutType == LayoutType::Inline)
             return;
         BuildParagraph();
-        VisualElement::DrawPrimitive(Ctx);
-        PrimitiveDraw::BeginDraw(Ctx.prims);
+        //VisualElement::DrawPrimitive(Ctx);
+        BeginDraw(Ctx.prims);
         auto Rect = GetRect();
         //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1, _opacity), godot::Color(1, 0, 0, _opacity));
-        PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
+        EndDraw(Ctx.prims, _worldTransform);
     }
 
     void TextElement::MarkLayoutDirty(bool visibility)

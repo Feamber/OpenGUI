@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Context.h"
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Core/OName.h"
@@ -20,10 +21,7 @@ namespace godot
 
 namespace OGUI
 {
-	namespace PrimitiveDraw
-	{
-		struct DrawContext;
-	};
+	struct PrimDrawContext;
 
 	class VisualElement;
 	class VisualWindow;
@@ -43,7 +41,7 @@ namespace OGUI
 		inline WindowHandle GetWindowHandle() const { return window; }
 		inline VisualWindow* GetWindowUI() const { return ui; }
 
-		std::shared_ptr<PrimitiveDraw::DrawContext> currentDrawCtx;
+		std::shared_ptr<PrimDrawContext> currentDrawCtx;
 		bool _cssCacheInvalidated = true;
 	protected:
 		WindowHandle window;
