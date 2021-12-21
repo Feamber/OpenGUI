@@ -295,7 +295,13 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 			else
 				element->ReleaseAfterPseudoElement();
 		}
+		else if(element->_inlineStyle)
+			ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>{}, refresh);
 		matchingContext.currentElement = nullptr;
+	}
+	else 
+	{
+
 	}
 	UpdateStyle(element, sstack);
 	if(element->_beforeElement)
@@ -348,7 +354,9 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 			style->ApplyProperties(record.sheet->storage, properties.properties);
 		}
 	}
-	{ 	//apply inline styles
+	if(element->_inlineStyle)
+	{ 	
+		//apply inline styles
 		resolvedStyle.ApplyProperties(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parent);
 		for(auto& properties : element->_inlineStyle->rule.animation)
 		{

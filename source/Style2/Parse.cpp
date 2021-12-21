@@ -317,7 +317,7 @@ namespace OGUI
 			{
 				parser.log = [](size_t line, size_t col, const string& msg)
 				{
-					cerr << line << ":" << col << ": " << msg << "\n";
+            		olog::Error(u"内联样式解析失败，{} : {} [{}]"_o.format((int)line, (int)col, msg));
 				};
 				ok = parser.load_grammar(grammar);
 			}
