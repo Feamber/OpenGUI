@@ -278,7 +278,6 @@ static NVGstate* nvg__getState(NVGcontext* ctx)
 NVGcontext* nvgCreateInternal(NVGparams* params)
 {
 	NVGcontext* ctx = (NVGcontext*)malloc(sizeof(NVGcontext));
-	int i;
 	if (ctx == NULL) goto error;
 	memset(ctx, 0, sizeof(NVGcontext));
 
@@ -311,7 +310,6 @@ NVGparams* nvgInternalParams(NVGcontext* ctx)
 
 void nvgDeleteInternal(NVGcontext* ctx)
 {
-	int i;
 	if (ctx == NULL) return;
 	if (ctx->commands != NULL) free(ctx->commands);
 	if (ctx->cache != NULL) nvg__deletePathCache(ctx->cache);
