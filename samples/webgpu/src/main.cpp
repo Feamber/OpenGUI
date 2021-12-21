@@ -639,8 +639,10 @@ struct XmlFiltersSample : public Bindable
 	void Update()
 	{
 		std::time_t now = std::time(0);
-
 		auto& context = Context::Get();
+		if(!context.IsElementValid(localFiltersTest) || !context.IsElementValid(localFiltersTest2))
+			return;
+
 		if(now != a && now % 5 == 0)
 		{
 			a = now;
@@ -706,7 +708,7 @@ int main(int , char* []) {
 	// DataBindSample sample2;
 	// windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
-	// windows.push_back(CreateCssTestWindow());
+	windows.push_back(CreateCssTestWindow());
 	XmlFiltersSample sample3;
 	windows.push_back(sample3.MakeWindow());
 	// main loop
