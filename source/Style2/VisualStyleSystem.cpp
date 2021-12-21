@@ -348,6 +348,29 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 			style->ApplyProperties(record.sheet->storage, properties.properties);
 		}
 	}
+	{ 	//apply inline styles
+		resolvedStyle.ApplyProperties(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parent);
+		for(auto& properties : element->_inlineStyle->rule.animation)
+		{
+			AnimStyle* style = nullptr;
+			for(auto& anim : anims)
+			{
+				if(anim.animationName == properties.name)
+				{
+					style = &anim;
+					break;
+				}
+			}
+			if(!style)
+			{
+				anims.push_back({});
+				style = &anims.back();
+				style->Initialize();
+				style->animationName = properties.name;
+			}
+			style->ApplyProperties(element->_inlineStyle->storage, properties.properties);
+		}
+	}
 	{
 		element->_preAnimatedStyle = std::move(resolvedStyle);
 		element->_style = element->_preAnimatedStyle;
