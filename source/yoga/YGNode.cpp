@@ -322,7 +322,8 @@ void YGNode::setPosition(
     const YGDirection direction,
     const float mainSize,
     const float crossSize,
-    const float ownerWidth) {
+    const float ownerWidth,
+    const float ownerHeight) {
   /* Root nodes should be always layouted as LTR, so we don't return negative
    * values. */
   const YGDirection directionRespectingRoot =
@@ -340,18 +341,20 @@ void YGNode::setPosition(
   const YGFloatOptional relativePositionCross =
       relativePosition(crossAxis, crossSize);
 
+  const float mainDim = YGFlexDirectionIsRow(mainAxis) ? ownerWidth : ownerHeight;
+  const float crossDim = YGFlexDirectionIsRow(mainAxis) ? ownerHeight : ownerWidth;
   setLayoutPosition(
-      (getLeadingMargin(mainAxis, ownerWidth) + relativePositionMain).unwrap(),
+      (getLeadingMargin(mainAxis, mainDim) + relativePositionMain).unwrap(),
       leading[mainAxis]);
   setLayoutPosition(
-      (getTrailingMargin(mainAxis, ownerWidth) + relativePositionMain).unwrap(),
+      (getTrailingMargin(mainAxis, mainDim) + relativePositionMain).unwrap(),
       trailing[mainAxis]);
   setLayoutPosition(
-      (getLeadingMargin(crossAxis, ownerWidth) + relativePositionCross)
+      (getLeadingMargin(crossAxis, crossDim) + relativePositionCross)
           .unwrap(),
       leading[crossAxis]);
   setLayoutPosition(
-      (getTrailingMargin(crossAxis, ownerWidth) + relativePositionCross)
+      (getTrailingMargin(crossAxis, crossDim) + relativePositionCross)
           .unwrap(),
       trailing[crossAxis]);
 }

@@ -316,7 +316,8 @@ public:
       const YGDirection direction,
       const float mainSize,
       const float crossSize,
-      const float ownerWidth);
+      const float ownerWidth,
+      const float ownerHeight);
   void setLayoutDoesLegacyFlagAffectsLayout(bool doesLegacyFlagAffectsLayout);
   void setLayoutDidUseLegacyFlag(bool didUseLegacyFlag);
   void markDirtyAndPropogateDownwards();

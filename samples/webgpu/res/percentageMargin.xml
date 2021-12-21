@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualElement>
+    <Style path="res/percentageMargin.css"/>
+    <VisualElement name="container">
+        <VisualElement name="bugged"/>
+        <VisualElement name="element"/>
+    </VisualElement>
+</VisualElement>

@@ -1213,7 +1213,7 @@ static void YGConstrainMaxSizeForMode(
   const YGFloatOptional maxSize =
       YGResolveValue(
           node->getStyle().maxDimensions()[dim[axis]], ownerAxisSize) +
-      YGFloatOptional(node->getMarginForAxis(axis, ownerWidth));
+      YGFloatOptional(node->getMarginForAxis(axis, ownerAxisSize));
   switch (*mode) {
     case YGMeasureModeExactly:
     case YGMeasureModeAtMost:
@@ -1302,7 +1302,7 @@ static void YGNodeComputeFlexBasisForChild(
     auto marginRow =
         child->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
     auto marginColumn =
-        child->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
+        child->getMarginForAxis(YGFlexDirectionColumn, ownerHeight).unwrap();
 
     if (isRowStyleDimDefined) {
       childWidth =
@@ -1453,7 +1453,7 @@ static void YGNodeAbsoluteLayoutChild(
 
   auto marginRow = child->getMarginForAxis(YGFlexDirectionRow, width).unwrap();
   auto marginColumn =
-      child->getMarginForAxis(YGFlexDirectionColumn, width).unwrap();
+      child->getMarginForAxis(YGFlexDirectionColumn, height).unwrap();
 
   if (YGNodeIsStyleDimDefined(child, YGFlexDirectionRow, width)) {
     childWidth =
@@ -1552,7 +1552,7 @@ static void YGNodeAbsoluteLayoutChild(
     childWidth = child->getLayout().measuredDimensions[YGDimensionWidth] +
         child->getMarginForAxis(YGFlexDirectionRow, width).unwrap();
     childHeight = child->getLayout().measuredDimensions[YGDimensionHeight] +
-        child->getMarginForAxis(YGFlexDirectionColumn, width).unwrap();
+        child->getMarginForAxis(YGFlexDirectionColumn, height).unwrap();
   }
 
   YGLayoutNodeInternal(
@@ -1578,7 +1578,7 @@ static void YGNodeAbsoluteLayoutChild(
         node->getLayout().measuredDimensions[dim[mainAxis]] -
             child->getLayout().measuredDimensions[dim[mainAxis]] -
             node->getTrailingBorder(mainAxis) -
-            child->getTrailingMargin(mainAxis, width).unwrap() -
+            child->getTrailingMargin(mainAxis, isMainAxisRow ? width : height).unwrap() -
             child->getTrailingPosition(mainAxis, isMainAxisRow ? width : height)
                 .unwrap(),
         leading[mainAxis]);
@@ -1605,7 +1605,7 @@ static void YGNodeAbsoluteLayoutChild(
         node->getLayout().measuredDimensions[dim[crossAxis]] -
             child->getLayout().measuredDimensions[dim[crossAxis]] -
             node->getTrailingBorder(crossAxis) -
-            child->getTrailingMargin(crossAxis, width).unwrap() -
+            child->getTrailingMargin(crossAxis, isMainAxisRow ? height : width).unwrap() -
             child
                 ->getTrailingPosition(crossAxis, isMainAxisRow ? height : width)
                 .unwrap(),
@@ -1915,7 +1915,7 @@ static float YGNodeComputeFlexBasisForChildren(
           ? availableInnerHeight
           : availableInnerWidth;
       child->setPosition(
-          childDirection, mainDim, crossDim, availableInnerWidth);
+          childDirection, mainDim, crossDim, availableInnerWidth, availableInnerHeight);
     }
 
     if (child->getStyle().positionType() == YGPositionTypeAbsolute) {
@@ -1944,7 +1944,9 @@ static float YGNodeComputeFlexBasisForChildren(
 
     totalOuterFlexBasis +=
         (child->getLayout().computedFlexBasis +
-         child->getMarginForAxis(mainAxis, availableInnerWidth))
+         child->getMarginForAxis(mainAxis, YGFlexDirectionIsRow(mainAxis)
+          ? availableInnerWidth
+          : availableInnerHeight))
             .unwrap();
   }
 
@@ -1981,7 +1983,7 @@ static YGCollectFlexItemsRowValues YGCalculateCollectFlexItemsRowValues(
     }
     child->setLineIndex(lineCount);
     const float childMarginMainAxis =
-        child->getMarginForAxis(mainAxis, availableInnerWidth).unwrap();
+        child->getMarginForAxis(mainAxis, availableInnerMainDim).unwrap();
     const float flexBasisWithMinAndMaxConstraints =
         YGNodeBoundAxisWithinMinAndMax(
             child,
@@ -2120,10 +2122,10 @@ static float YGDistributeFreeSpaceSecondPass(
     deltaFreeSpace += updatedMainSize - childFlexBasis;
 
     const float marginMain =
-        currentRelativeChild->getMarginForAxis(mainAxis, availableInnerWidth)
+        currentRelativeChild->getMarginForAxis(mainAxis, availableInnerMainDim)
             .unwrap();
     const float marginCross =
-        currentRelativeChild->getMarginForAxis(crossAxis, availableInnerWidth)
+        currentRelativeChild->getMarginForAxis(crossAxis, availableInnerCrossDim)
             .unwrap();
 
     float childCrossSize;
@@ -2406,6 +2408,7 @@ static void YGJustifyMainAxis(
     const float availableInnerMainDim,
     const float availableInnerCrossDim,
     const float availableInnerWidth,
+    const float availableInnerHeight,
     const bool performLayout,
     void* const layoutContext) {
   const auto& style = node->getStyle();
@@ -2523,7 +2526,7 @@ static void YGJustifyMainAxis(
             child->getLeadingPosition(mainAxis, availableInnerMainDim)
                     .unwrap() +
                 node->getLeadingBorder(mainAxis) +
-                child->getLeadingMargin(mainAxis, availableInnerWidth).unwrap(),
+                child->getLeadingMargin(mainAxis, availableInnerMainDim).unwrap(),
             pos[mainAxis]);
       }
     } else {
@@ -2556,14 +2559,14 @@ static void YGJustifyMainAxis(
           // because they weren't computed. This means we can't call
           // YGNodeDimWithMargin.
           collectedFlexItemsValues.mainDim += betweenMainDim +
-              child->getMarginForAxis(mainAxis, availableInnerWidth).unwrap() +
+              child->getMarginForAxis(mainAxis, availableInnerMainDim).unwrap() +
               childLayout.computedFlexBasis.unwrap();
           collectedFlexItemsValues.crossDim = availableInnerCrossDim;
         } else {
           // The main dimension is the sum of all the elements dimension plus
           // the spacing.
           collectedFlexItemsValues.mainDim += betweenMainDim +
-              YGNodeDimWithMargin(child, mainAxis, availableInnerWidth);
+              YGNodeDimWithMargin(child, mainAxis, availableInnerMainDim);
 
           if (isNodeBaselineLayout) {
             // If the child is baseline aligned then the cross dimension is
@@ -2571,13 +2574,13 @@ static void YGJustifyMainAxis(
             const float ascent = YGBaseline(child, layoutContext) +
                 child
                     ->getLeadingMargin(
-                        YGFlexDirectionColumn, availableInnerWidth)
+                        YGFlexDirectionColumn, availableInnerHeight)
                     .unwrap();
             const float descent =
                 child->getLayout().measuredDimensions[YGDimensionHeight] +
                 child
                     ->getMarginForAxis(
-                        YGFlexDirectionColumn, availableInnerWidth)
+                        YGFlexDirectionColumn, availableInnerHeight)
                     .unwrap() -
                 ascent;
 
@@ -2591,7 +2594,7 @@ static void YGJustifyMainAxis(
             // when the items are not baseline aligned
             collectedFlexItemsValues.crossDim = YGFloatMax(
                 collectedFlexItemsValues.crossDim,
-                YGNodeDimWithMargin(child, crossAxis, availableInnerWidth));
+                YGNodeDimWithMargin(child, crossAxis, availableInnerCrossDim));
           }
         }
       } else if (performLayout) {
@@ -2728,10 +2731,10 @@ static void YGNodelayoutImpl(
       node->getTrailingMargin(flexRowDirection, ownerWidth).unwrap();
   node->setLayoutMargin(marginRowTrailing, endEdge);
   const float marginColumnLeading =
-      node->getLeadingMargin(flexColumnDirection, ownerWidth).unwrap();
+      node->getLeadingMargin(flexColumnDirection, ownerHeight).unwrap();
   node->setLayoutMargin(marginColumnLeading, YGEdgeTop);
   const float marginColumnTrailing =
-      node->getTrailingMargin(flexColumnDirection, ownerWidth).unwrap();
+      node->getTrailingMargin(flexColumnDirection, ownerHeight).unwrap();
   node->setLayoutMargin(marginColumnTrailing, YGEdgeBottom);
 
   const float marginAxisRow = marginRowLeading + marginRowTrailing;
@@ -3029,6 +3032,7 @@ static void YGNodelayoutImpl(
         availableInnerMainDim,
         availableInnerCrossDim,
         availableInnerWidth,
+        availableInnerHeight,
         performLayout,
         layoutContext);
 
@@ -3080,7 +3084,7 @@ static void YGNodelayoutImpl(
                 child->getLeadingPosition(crossAxis, availableInnerCrossDim)
                         .unwrap() +
                     node->getLeadingBorder(crossAxis) +
-                    child->getLeadingMargin(crossAxis, availableInnerWidth)
+                    child->getLeadingMargin(crossAxis, availableInnerCrossDim)
                         .unwrap(),
                 pos[crossAxis]);
           }
@@ -3090,7 +3094,7 @@ static void YGNodelayoutImpl(
               YGFloatIsUndefined(child->getLayout().position[pos[crossAxis]])) {
             child->setLayoutPosition(
                 node->getLeadingBorder(crossAxis) +
-                    child->getLeadingMargin(crossAxis, availableInnerWidth)
+                    child->getLeadingMargin(crossAxis, availableInnerCrossDim)
                         .unwrap(),
                 pos[crossAxis]);
           }
@@ -3116,7 +3120,7 @@ static void YGNodelayoutImpl(
                   child->getLayout().measuredDimensions[dim[mainAxis]];
               const auto& childStyle = child->getStyle();
               float childCrossSize = !childStyle.aspectRatio().isUndefined()
-                  ? child->getMarginForAxis(crossAxis, availableInnerWidth)
+                  ? child->getMarginForAxis(crossAxis, availableInnerCrossDim)
                           .unwrap() +
                       (isMainAxisRow
                            ? childMainSize / childStyle.aspectRatio().unwrap()
@@ -3124,7 +3128,7 @@ static void YGNodelayoutImpl(
                   : collectedFlexItemsValues.crossDim;
 
               childMainSize +=
-                  child->getMarginForAxis(mainAxis, availableInnerWidth)
+                  child->getMarginForAxis(mainAxis, availableInnerMainDim)
                       .unwrap();
 
               YGMeasureMode childMainMeasureMode = YGMeasureModeExactly;
@@ -3182,7 +3186,7 @@ static void YGNodelayoutImpl(
             }
           } else {
             const float remainingCrossDim = containerCrossAxis -
-                YGNodeDimWithMargin(child, crossAxis, availableInnerWidth);
+                YGNodeDimWithMargin(child, crossAxis, availableInnerCrossDim);
 
             if (child->marginLeadingValue(crossAxis).unit == YGUnitAuto &&
                 child->marginTrailingValue(crossAxis).unit == YGUnitAuto) {
@@ -3291,20 +3295,20 @@ static void YGNodelayoutImpl(
             lineHeight = YGFloatMax(
                 lineHeight,
                 child->getLayout().measuredDimensions[dim[crossAxis]] +
-                    child->getMarginForAxis(crossAxis, availableInnerWidth)
+                    child->getMarginForAxis(crossAxis, availableInnerCrossDim)
                         .unwrap());
           }
           if (YGNodeAlignItem(node, child) == YGAlignBaseline) {
             const float ascent = YGBaseline(child, layoutContext) +
                 child
                     ->getLeadingMargin(
-                        YGFlexDirectionColumn, availableInnerWidth)
+                        YGFlexDirectionColumn, availableInnerHeight)
                     .unwrap();
             const float descent =
                 child->getLayout().measuredDimensions[YGDimensionHeight] +
                 child
                     ->getMarginForAxis(
-                        YGFlexDirectionColumn, availableInnerWidth)
+                        YGFlexDirectionColumn, availableInnerHeight)
                     .unwrap() -
                 ascent;
             maxAscentForCurrentLine =
@@ -3330,7 +3334,7 @@ static void YGNodelayoutImpl(
               case YGAlignFlexStart: {
                 child->setLayoutPosition(
                     currentLead +
-                        child->getLeadingMargin(crossAxis, availableInnerWidth)
+                        child->getLeadingMargin(crossAxis, availableInnerCrossDim)
                             .unwrap(),
                     pos[crossAxis]);
                 break;
@@ -3338,7 +3342,7 @@ static void YGNodelayoutImpl(
               case YGAlignFlexEnd: {
                 child->setLayoutPosition(
                     currentLead + lineHeight -
-                        child->getTrailingMargin(crossAxis, availableInnerWidth)
+                        child->getTrailingMargin(crossAxis, availableInnerCrossDim)
                             .unwrap() -
                         child->getLayout().measuredDimensions[dim[crossAxis]],
                     pos[crossAxis]);
@@ -3356,7 +3360,7 @@ static void YGNodelayoutImpl(
               case YGAlignStretch: {
                 child->setLayoutPosition(
                     currentLead +
-                        child->getLeadingMargin(crossAxis, availableInnerWidth)
+                        child->getLeadingMargin(crossAxis, availableInnerCrossDim)
                             .unwrap(),
                     pos[crossAxis]);
 
@@ -3367,14 +3371,14 @@ static void YGNodelayoutImpl(
                   const float childWidth = isMainAxisRow
                       ? (child->getLayout()
                              .measuredDimensions[YGDimensionWidth] +
-                         child->getMarginForAxis(mainAxis, availableInnerWidth)
+                         child->getMarginForAxis(mainAxis, availableInnerMainDim)
                              .unwrap())
                       : lineHeight;
 
                   const float childHeight = !isMainAxisRow
                       ? (child->getLayout()
                              .measuredDimensions[YGDimensionHeight] +
-                         child->getMarginForAxis(crossAxis, availableInnerWidth)
+                         child->getMarginForAxis(crossAxis, availableInnerCrossDim)
                              .unwrap())
                       : lineHeight;
 
@@ -3815,7 +3819,7 @@ bool YGLayoutNodeInternal(
     const float marginAxisRow =
         node->getMarginForAxis(YGFlexDirectionRow, ownerWidth).unwrap();
     const float marginAxisColumn =
-        node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth).unwrap();
+        node->getMarginForAxis(YGFlexDirectionColumn, ownerHeight).unwrap();
 
     // First, try to use the layout cache.
     if (YGNodeCanUseCachedMeasurement(
@@ -4173,7 +4177,7 @@ YOGA_EXPORT void YGNodeCalculateLayoutWithContext(
     height = (YGResolveValue(
                   node->getResolvedDimension(dim[YGFlexDirectionColumn]),
                   ownerHeight) +
-              node->getMarginForAxis(YGFlexDirectionColumn, ownerWidth))
+              node->getMarginForAxis(YGFlexDirectionColumn, ownerHeight))
                  .unwrap();
     heightMeasureMode = YGMeasureModeExactly;
   } else if (!YGResolveValue(maxDimensions[YGDimensionHeight], ownerHeight)
@@ -4203,7 +4207,7 @@ YOGA_EXPORT void YGNodeCalculateLayoutWithContext(
           0, // tree root
           gCurrentGenerationCount.load(std::memory_order_relaxed))) {
     node->setPosition(
-        node->getLayout().direction(), ownerWidth, ownerHeight, ownerWidth);
+        node->getLayout().direction(), ownerWidth, ownerHeight, ownerWidth, ownerHeight);
     YGRoundToPixelGrid(node, node->getConfig()->pointScaleFactor, 0.0f, 0.0f);
 
 #ifdef DEBUG
@@ -4256,7 +4260,8 @@ YOGA_EXPORT void YGNodeCalculateLayoutWithContext(
           nodeWithoutLegacyFlag->getLayout().direction(),
           ownerWidth,
           ownerHeight,
-          ownerWidth);
+          ownerWidth,
+          ownerHeight);
       YGRoundToPixelGrid(
           nodeWithoutLegacyFlag,
           nodeWithoutLegacyFlag->getConfig()->pointScaleFactor,
