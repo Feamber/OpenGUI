@@ -33,6 +33,7 @@ namespace OGUI
         godot::TextParagraph* _paragraph = nullptr;
         std::shared_ptr<godot::Font> _font;
         bool _paragraphDirty = false;
+        int currShadowPass = 0;
 
         void AddInlineElement(VisualElement* element);
         void AddInlineText(TextElement* text);
@@ -48,5 +49,6 @@ namespace OGUI
         void DrawPrimitive(PrimitiveDraw::DrawContext &Ctx) override;
 
         void BuildParagraphRec(godot::TextParagraph* p, const struct StyleText& txt);
+        void GetShadowPassRec(int& pass);
     };
 }

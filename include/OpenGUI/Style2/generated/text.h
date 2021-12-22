@@ -11,6 +11,7 @@
 #include "OpenGUI/Style2/Parse/MathParse.h"
 #include "OpenGUI/Style2/Parse/TextParse.h"
 #include "OpenGUI/Style2/Lerp/MathLerp.h"
+#include "OpenGUI/Style2/Lerp/TextLerp.h"
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
@@ -28,6 +29,7 @@ namespace OGUI
             static constexpr size_t fontWeight = OGUI::hash("font-weight"sv);
             static constexpr size_t lineHeight = OGUI::hash("line-height"sv);
             static constexpr size_t textAlign = OGUI::hash("text-align"sv);
+            static constexpr size_t textShadow = OGUI::hash("text-shadow"sv);
         };
         float fontSize;
         Color4f color;
@@ -36,6 +38,7 @@ namespace OGUI
         int fontWeight;
         float lineHeight;
         TextAlign textAlign;
+        std::vector<TextShadow> textShadow;
         void Initialize();
         static const StyleText& GetDefault();
         static const StyleText& Get(const ComputedStyle& style);

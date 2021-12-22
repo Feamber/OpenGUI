@@ -6,6 +6,20 @@
 #include "OpenGUI/Core/open_string.h"
 using namespace ostr::literal;
 
+bool OGUI::ParseLength(std::string_view str, float& value)
+{
+    std::string numstr;
+    if (ends_with(str, "px"))
+    {
+        numstr = str.substr(0, str.length() - 2);
+    }
+    else 
+    {
+        return false;
+    }
+    return ParseValue(numstr, value);
+}
+
 bool OGUI::ParseValue(std::string_view str, YGValue& value)
 {
     if (str == "auto")

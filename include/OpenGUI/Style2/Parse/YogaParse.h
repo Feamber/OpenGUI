@@ -7,6 +7,7 @@
 
 namespace OGUI
 {
+	OGUI_API bool ParseLength(std::string_view str, float& value);
 	OGUI_API bool ParseValue(std::string_view str, YGValue& value);
 	OGUI_API bool ParseValue(std::string_view str, YGPositionType& value);
 	OGUI_API bool ParseValue(std::string_view str, StyleOverflow& value);

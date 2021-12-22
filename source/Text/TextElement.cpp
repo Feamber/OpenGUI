@@ -2,6 +2,7 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 
 #include "OpenGUI/Style2/Properties.h"
+#include "OpenGUI/Style2/Shadow.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Text/TextTypes.h"
@@ -46,14 +47,27 @@ namespace OGUI
     class TextElementGlyphDraw : public godot::TextServer::GlyphDrawPolicy
     {
         public:
-        godot::Color color = godot::Color(1,1,1);
-        godot::Color get_color(const godot::TextServer::Glyph &glyph) override
+        TextElement* root;
+        Color4f color = Color4f::vector_one();
+        std::vector<TextShadow> shadows;
+        
+        void draw(PrimDrawList &list, const Rect &rect, TextureHandle texture, const Rect &uv, const Color4f &inColor = Color4f::vector_one()) override
         {
-            return color;
-        }
-        std::optional<ComputedTransform> get_transform(const godot::TextServer::Glyph &glyph) override
-        {
-            return {};
+            using namespace PrimitiveDraw;
+            BoxParams params;
+            params.rect = rect;
+            params.uv = uv;
+            params.color = color * inColor;
+            if(root->currShadowPass != -1)
+            {
+                if(shadows.size() <= root->currShadowPass)
+                    return;
+                auto& shadow = shadows[root->currShadowPass];
+                params.rect.min += shadow.offset;
+                params.rect.max += shadow.offset;
+                params.color = shadow.color * inColor;
+            }
+            PrimitiveDraw::PrimitiveDraw<BoxShape>(texture, list, params);
         }
     };
 
@@ -188,6 +202,7 @@ namespace OGUI
         _inlines.push_back(InlineType{text});
         text->_layoutType = LayoutType::Inline;
         text->_physicalParent = this;
+        text->_drawPolicy->root = this;
         UpdateRoot(text);
         _paragraphDirty = true;
     }
@@ -268,6 +283,33 @@ namespace OGUI
             }, inl);
         }
     }
+
+    void TextElement::GetShadowPassRec(int& pass)
+    {
+        auto& txt = StyleText::Get(_style);
+        pass = std::max(pass, (int)txt.textShadow.size());
+        for(auto& inl : _inlines)
+        {
+            std::visit(overloaded
+            {
+                [&](ostr::string& text) 
+                { 
+                },
+                [&](VisualElement*& child) 
+                { 
+                },
+                [&](TextElement*& child) 
+                { 
+                    if(!child->Visible())
+                        return;
+                    child->GetShadowPassRec(pass);
+                },
+                [&](std::shared_ptr<BindText>& Bind) 
+                { 
+                }
+            }, inl);
+        }
+    }
     
     void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
     {
@@ -278,7 +320,17 @@ namespace OGUI
         PrimitiveDraw::BeginDraw(Ctx.prims);
         auto Rect = GetRect();
         //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
-        _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), godot::Color(1, 1, 1, _opacity), godot::Color(1, 0, 0, _opacity));
+        auto& txt = StyleText::Get(_style);
+        int shadowPasses;
+        GetShadowPassRec(shadowPasses);
+        auto gcolor = godot::Color(1, 1, 1, _opacity);
+        for(int i=0;i<shadowPasses;++i)
+        {
+            currShadowPass = i;
+            _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
+        }
+        currShadowPass = -1;
+        _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
         PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
     }
 
@@ -298,7 +350,9 @@ namespace OGUI
             SyncParagraphStyle();
         auto text = StyleText::Get(_style);
         auto color = text.color;
-        _drawPolicy->color = godot::Color{color.x, color.y, color.z, color.w};
+        _drawPolicy->color = color;
+        _drawPolicy->shadows = text.textShadow;
+        
         auto GetHAlign = [&]() //resolve
         {
             switch(text.textAlign)
@@ -384,6 +438,7 @@ namespace OGUI
         YGNodeSetMeasureFunc(_ygnode, MeasureText);
         YGNodeSetBaselineFunc(_ygnode, BaselineText);
         _drawPolicy = std::make_shared<TextElementGlyphDraw>();
+        _drawPolicy->root = this;
     }
 
     TextElement::~TextElement()

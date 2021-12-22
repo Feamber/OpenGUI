@@ -76,6 +76,7 @@ void OGUI::StyleText::Initialize()
     fontWeight = 400;
     lineHeight = 1.f;
     textAlign = TextAlign::Start;
+    textShadow = {};
 }
 
 void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -154,6 +155,11 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v->textAlign = TextAlign::Start;
                     break;
                     }
+                case Ids::textShadow:{
+                    auto v = fget();
+                    v->textShadow = {};
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -194,6 +200,11 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Ids::textAlign:{
                     auto v = fget();
                     v->textAlign = pst->textAlign;
+                    break;
+                    }
+                case Ids::textShadow:{
+                    auto v = fget();
+                    v->textShadow = pst->textShadow;
                     break;
                     }
                 default: break;
@@ -237,6 +248,11 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Ids::textAlign:{
                     auto v = fget();
                     v->textAlign = sheet.Get<TextAlign>(prop.value);
+                    break;
+                    }
+                case Ids::textShadow:{
+                    auto v = fget();
+                    v->textShadow = ToOwned(sheet.Get<gsl::span<TextShadow>>(prop.value));
                     break;
                     }
                 default: break;
@@ -403,6 +419,21 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 
                 break;
                 }
+            case Ids::textShadow:{
+                auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->textShadow = ToOwned(sheet.Get<gsl::span<TextShadow>>(prop.from));
+                else if(prop.alpha == 1.f)
+                    v->textShadow = ToOwned(sheet.Get<gsl::span<TextShadow>>(prop.to));
+                else if(prop.from == prop.to)
+                    v->textShadow = OGUI::Lerp(v->textShadow, sheet.Get<gsl::span<TextShadow>>(prop.to), prop.alpha);
+                else
+                    v->textShadow = OGUI::Lerp(sheet.Get<gsl::span<TextShadow>>(prop.from), sheet.Get<gsl::span<TextShadow>>(prop.to), prop.alpha);
+                
+                break;
+                }
             default: break;
         }
     }
@@ -438,6 +469,9 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             case Ids::textAlign:
+                rule.properties.push_back({phash,(int)keyword});
+                return true;
+            case Ids::textShadow:
                 rule.properties.push_back({phash,(int)keyword});
                 return true;
             default: break;
@@ -520,6 +554,17 @@ bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view
             else
             {
                 errorMsg = "failed to parse text-align value!";
+                return false;
+            }
+            return true;
+        }
+        case Ids::textShadow:{
+            std::vector<TextShadow> v;
+            if(ParseValue(value, v))
+                rule.properties.push_back({phash, sheet.Push<gsl::span<TextShadow>>(v)});
+            else
+            {
+                errorMsg = "failed to parse text-shadow value!";
                 return false;
             }
             return true;

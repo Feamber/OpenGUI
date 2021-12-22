@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #pragma once
+#include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "config.h"
 #include "rid.h"
@@ -172,8 +173,7 @@ public:
 	};
 
 	struct GlyphDrawPolicy {
-		virtual Color get_color(const TextServer::Glyph& glyph) = 0;
-		virtual std::optional<OGUI::ComputedTransform> get_transform(const TextServer::Glyph& glyph) = 0;
+		virtual void draw(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one());
 	};
 
 	struct ShapedTextData {
@@ -468,7 +468,7 @@ public:
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
 
 	void canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const;
-	void canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), const std::optional<OGUI::ComputedTransform> transform = {}) const;
+	void canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), GlyphDrawPolicy* policy = nullptr) const;
 
 	TextServer();
 	virtual ~TextServer();

@@ -2644,10 +2644,7 @@ void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list,
 				Point2i cpos = p_pos;
 				cpos += gl.rect.position;
 				Size2i csize = gl.rect.size;
-				if(policy)
-					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate * policy->get_color(glyph), policy->get_transform(glyph));
-				else
-					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate);
+				canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate, policy.get());
             }
 		}
 	}
@@ -2693,10 +2690,7 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawLis
 				Point2i cpos = p_pos;
 				cpos += gl.rect.position;
 				Size2i csize = gl.rect.size;
-				if(policy)
-					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate * policy->get_color(glyph), policy->get_transform(glyph));
-				else
-					canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate);
+				canvas_item_add_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate, policy.get());
             }
 		}
 	}

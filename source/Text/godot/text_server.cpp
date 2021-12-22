@@ -984,7 +984,17 @@ OGUI::Color4f math_cast(const Color& p_color)
 	return {p_color.r, p_color.g, p_color.b, p_color.a};
 }
 
-void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, const std::optional<OGUI::ComputedTransform> transform) const
+void TextServer::GlyphDrawPolicy::draw(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color)
+{
+	using namespace OGUI::PrimitiveDraw;
+	BoxParams params;
+	params.rect = rect;
+	params.uv = uv;
+	params.color = color;
+	PrimitiveDraw<BoxShape>(texture, list, params);
+}
+
+void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, GlyphDrawPolicy* policy) const
 {
 	using namespace OGUI::PrimitiveDraw;
 	BoxParams params;
@@ -997,12 +1007,10 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 	srcRect.size.y = - p_src_rect.size.y;
 	params.uv = math_cast(srcRect);
 	params.color = math_cast(p_modulate);
-	auto begin = list.vertices.size();
-	PrimitiveDraw<BoxShape>(p_texture, list, params);
-	auto end = list.vertices.size();
-	if(transform)
-		for(auto i=begin; i<end; ++i)
-			list.vertices[i].position = OGUI::multiply(*transform, list.vertices[i].position);
+	if(policy)
+		policy->draw(list, params.rect, p_texture, params.uv, params.color);
+	else
+		PrimitiveDraw<BoxShape>(p_texture, list, params);
 }
 
 void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const

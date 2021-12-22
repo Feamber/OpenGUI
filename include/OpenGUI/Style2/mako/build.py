@@ -99,9 +99,11 @@ def gen_text():
     add_longhand("font-weight", "int", "400", parser = "ParseTextWeight", restyle_damage="TextLayout|Font")
     add_longhand("line-height", "float", "1.f", parser = "ParseLineHeight", restyle_damage="TextLayout")
     add_longhand("text-align", "TextAlign", "TextAlign::Start")
+    add_longhand("text-shadow", "TextShadow", "{}", vector=True)
     struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
     struct.headers.append("OpenGUI/Style2/Parse/TextParse.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/TextLerp.h")
     render_struct(struct, "shorthands/text.h.mako")
 
 def gen_effects():
