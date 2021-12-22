@@ -181,9 +181,12 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	bgcolor.w *= _opacity;
 	RoundBoxParams params {rect, uv, bgcolor};
 	TextureInterface* tex = nullptr;
-	if (backgroundImageResource && backgroundImageResource->valid())
+	if (backgroundImageResource)
 	{
-		tex = backgroundImageResource->Get();
+		if(backgroundImageResource->valid())
+			tex = backgroundImageResource->Get();
+		else 
+			bgcolor.w = 0;
 	}
 	params.radius[0] = bd.borderTopLeftRadius.value;// / Ctx.resolution.Y;
 	params.radius[1] = bd.borderTopRightRadius.value;// / Ctx.resolution.Y;
