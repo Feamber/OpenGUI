@@ -5,17 +5,23 @@
 namespace OGUI
 {
     template<class T>
-    void BroadcastEvent(VisualElement* element, T& event)
+    bool BroadcastEvent(VisualElement* element, T& event)
     {
+        bool ghandled = false;
         element->Traverse([&](VisualElement* next) 
         { 
             if (next->_isPseudoElement)
                 return;
+            bool handled = false;
             if(auto eventBind = next->GetEventBind(event.GetEventName()))
-				SendEvent(*next, *eventBind, event, MakeEventArg("element", next));
-            next->_eventHandler.Handle(event);
+				handled |= SendEvent(*next, *eventBind, event, MakeEventArg("element", next));
+            handled |= next->_eventHandler.Handle(event);
+            ghandled |= handled;
+            if(handled)
+                return;
             BroadcastEvent<T>(next, event); 
         });
+        return ghandled;
     }
 
     inline void BuildRoutePath(VisualElement* target, std::vector<VisualElement*>& path)
@@ -39,6 +45,7 @@ namespace OGUI
         int phaseMask = (int)event.PhaseMask;
         EventRoutePhase& currentPhase = event.currentPhase;
         std::vector<VisualElement*> routePath;
+        bool result = false;
         if (currentPhase == EventRoutePhase::None)
             currentPhase = (EventRoutePhase)(phaseMask & -phaseMask);
         if (currentPhase == EventRoutePhase::TrickleDown)
@@ -48,32 +55,35 @@ namespace OGUI
             for (int i = count-1; i >= 0; --i)
             {
                 auto& element = routePath[i];
+                bool handled = false;
                 if(auto eventBind = element->GetEventBind(event.GetEventName()))
-					SendEvent(*element, *eventBind, event, MakeEventArg("element", element));
-                if(element->_eventHandler.Handle(event))
+					handled |= SendEvent(*element, *eventBind, event, MakeEventArg("element", element));
+                handled |= element->_eventHandler.Handle(event);
+                if(handled)
                     return true;
             }
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
         if (currentPhase == EventRoutePhase::Reach)
         {
+            bool handled = false;
             if(auto eventBind = target->GetEventBind(event.GetEventName()))
-				SendEvent(*target, *eventBind, event, MakeEventArg("element", target));
-            if(target->_eventHandler.Handle(event))
-                return true;
+				handled |= SendEvent(*target, *eventBind, event, MakeEventArg("element", target));
+            handled |= target->_eventHandler.Handle(event);
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
                 {
                     if(auto eventBind = parent->GetEventBind(event.GetEventName()))
-					    SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
-                    if(parent->_eventHandler.Handle(event))
-                        return true;
+					    handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
+                    handled |= parent->_eventHandler.Handle(event);
                 }
+            if(handled)
+                    return true;
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
         if (currentPhase == EventRoutePhase::Broadcast)
         {
-            BroadcastEvent<T>(target, event);
+            result = BroadcastEvent<T>(target, event);
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
         if (currentPhase == EventRoutePhase::BubbleUp)
@@ -81,14 +91,16 @@ namespace OGUI
             if(routePath.size() == 0) BuildRoutePath(target, routePath);
             for(auto parent : routePath)
             {
+                bool handled = false;
                 if(auto eventBind = parent->GetEventBind(event.GetEventName()))
-					SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
-                if(parent->_eventHandler.Handle(event))
-                    return true;
+					handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
+                handled |= parent->_eventHandler.Handle(event);
+                if(handled)
+                        return true;
             }
             currentPhase = NextPhase(currentPhase, phaseMask);
         }
 
-        return false;
+        return result;
     }
 }

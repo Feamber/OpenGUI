@@ -389,8 +389,6 @@ bool  OGUI::Context::OnMouseLeave(const WindowHandle window)
 	return false;
 }
 
-static bool gPrevPressed = false;
-
 bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 {
 	auto root = GetWindowContext(window).GetWindowUI();
@@ -400,19 +398,9 @@ bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 	if (_keyboardFocused)
 	{
 		bool result;
-		if (gPrevPressed == false)
-		{
-			KeyDownEvent e;
-			e.key = keyCode;
-			result = RouteEvent(_keyboardFocused, e);
-			gPrevPressed = true;
-		}
-		else
-		{
-			KeyHoldEvent e;
-			e.key = keyCode;
-			result = RouteEvent(_keyboardFocused, e);
-		}
+		KeyDownEvent e;
+		e.key = keyCode;
+		result = RouteEvent(_keyboardFocused, e);
 
 		if(!result)
 		{
@@ -449,7 +437,6 @@ bool OGUI::Context::OnKeyUp(const OGUI::WindowHandle window, EKeyCode keyCode)
 
 	if (_keyboardFocused)
 		RouteEvent(_keyboardFocused, e);
-	gPrevPressed = false;
 
 	return false;
 }
