@@ -203,7 +203,7 @@ void OGUI::VisualElement::DrawDebugPrimitive(OGUI::PrimitiveDraw::DrawContext & 
 {
 	using namespace PrimitiveDraw;
 
-	if((FocusNavDebugState == CollisionBox || FocusNavDebugState == ElementQuad))
+	if((FocusNavDebugState == CollisionBox || FocusNavDebugState == ElementQuad) && Context::Get().IsFocusNavDebug())
 	{
 		time_t seconds = time(NULL);
 		if(seconds - navDebugLastUpdate < 3)

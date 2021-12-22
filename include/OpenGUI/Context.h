@@ -91,6 +91,12 @@ namespace OGUI
 		void RecursionUpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters);
 #pragma endregion
 
+#pragma region Debug
+		bool _ShowFocusNavDebug = false;
+		bool IsFocusNavDebug() const { return _ShowFocusNavDebug; };
+		void ActivationFocusNavDebug(bool isEnable);
+#pragma endregion
+
 		//Systems
 		VisualStyleSystem styleSystem;
 
