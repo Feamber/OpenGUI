@@ -1,3 +1,4 @@
+#include "OpenGUI/Context.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/VisualElement.h"
@@ -106,7 +107,7 @@ bool OGUI::LuaBindable::HandleEvent(Name eventName, IEventArg &args)
     }
     return handled;
 }
-
+OGUI::LuaBindable::~LuaBindable() {}
 OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
     :table(inTable), eventHandler(inHandler)
 {
@@ -206,6 +207,7 @@ void OGUI::BindLua(lua_State* state)
 {
     BindLua_generated(state);
     sol::state_view lua(state);
+    lua["GetOguiContext"] = &OGUI::Context::Get;
 
     auto type = lua.new_usertype<LuaBindable>("LuaBindable", sol::base_classes, sol::bases<Bindable>());
     type[sol::meta_function::index] = &LuaBindable::index;

@@ -10,8 +10,8 @@ rd /q/s %UEOGUIPath%\Private
 
 xcopy /y /r /E /H /C /I /f %OGUIPath%\lua-binding\source %UEPluginPath%\Private
 xcopy /y /r /E /H /C /I /f %OGUIPath%\lua-binding\include %UEPluginPath%\Private
-xcopy /y /r /E /H /C /I /f %OGUIPath%\include %UEPluginPath%\Public
-xcopy /y /r /E /H /C /I /f %OGUIPath%\source %UEPluginPath%\Private
+xcopy /y /r /E /H /C /I /f %OGUIPath%\include %UEOGUIPath%\Public
+xcopy /y /r /E /H /C /I /f %OGUIPath%\source %UEOGUIPath%\Private
 rd /q/s %UEOGUIPath%\Public\External\harfbuzz
 rd /q/s %UEOGUIPath%\Public\External\icu
 rd /q/s %UEOGUIPath%\Public\External\freetype
