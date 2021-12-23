@@ -158,25 +158,34 @@ void IOThread::loaderThreadFunction()
 }
 
 // AsyncBitmap
-void AsyncBitmap::Initialize(const char* path) 
+bool AsyncBitmap::Initialize(const char* path) 
 {
     auto& ctx = Context::Get();
     auto f = ctx.fileImpl->Open(path);
-    bitmap = ctx.bmParserImpl->LoadFromFile(f);
-    ctx.fileImpl->Close(f);
+    if(f)
+    {
+        bitmap = ctx.bmParserImpl->LoadFromFile(f);
+        ctx.fileImpl->Close(f);
+        return true;
+    }
+    return false;
 }
 
 void AsyncBitmap::Finalize() 
 {
-    auto& ctx = Context::Get();
-    ctx.bmParserImpl->Free(bitmap);
+    if(bitmap.resource.bytes)
+    {
+        auto& ctx = Context::Get();
+        ctx.bmParserImpl->Free(bitmap);
+    }
 }
 
 // AsyncBlob
-void AsyncBlob::Initialize(const char* path) 
+bool AsyncBlob::Initialize(const char* path) 
 {
     auto& ctx = Context::Get();
     resource = ctx.fileImpl->Load(path);
+    return true;
 }
 
 void AsyncBlob::Finalize() 

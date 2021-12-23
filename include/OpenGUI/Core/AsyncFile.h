@@ -10,14 +10,13 @@ namespace OGUI
         friend class IOThread;
         virtual ~AsyncFile();
         virtual void Finalize() = 0;
-        virtual void Initialize(const char* path) = 0;
+        virtual bool Initialize(const char* path) = 0;
         virtual size_t size() const = 0;
         virtual bool valid() const;
     protected:
         inline void __initialize(const char* path)
         {
-            this->Initialize(path);
-            is_ready = true;
+            is_ready = this->Initialize(path);
         }
         std::atomic_bool is_ready = false;
     };  
@@ -25,7 +24,7 @@ namespace OGUI
     struct OGUI_API AsyncBlob : public AsyncFile
     {
     public:
-        void Initialize(const char* path) final;
+        bool Initialize(const char* path) final;
         void Finalize() final;
         FORCEINLINE const MemoryResource& GetResource() const
         {

@@ -6,7 +6,7 @@ namespace OGUI
     class OGUI_API AsyncBitmap final : public AsyncFile
     {
     public:
-        void Initialize(const char* path) final;
+        bool Initialize(const char* path) final;
         void Finalize() final;
         FORCEINLINE const Bitmap GetBitmap() const
         {
