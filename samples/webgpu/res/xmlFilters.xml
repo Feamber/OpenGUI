@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <VisualElement>
     <Style path="res/xmlFilters.css"/>
     <Text name="zhText" filters="zh">中文

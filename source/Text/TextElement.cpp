@@ -321,7 +321,7 @@ namespace OGUI
         auto Rect = GetRect();
         //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
         auto& txt = StyleText::Get(_style);
-        int shadowPasses;
+        int shadowPasses = 0;
         GetShadowPassRec(shadowPasses);
         auto gcolor = godot::Color(1, 1, 1, _opacity);
         for(int i=0;i<shadowPasses;++i)
