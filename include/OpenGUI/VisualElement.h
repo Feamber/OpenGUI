@@ -148,7 +148,9 @@ namespace OGUI reflect
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<std::string> _styleClasses;
 
+		attr("script":true)
 		void AddStyleClass(std::string_view styleClass);
+		attr("script":true)
 		void RemoveStyleClass(std::string_view styleClass);
 		void MarkTransformDirty();
 		void MarkStyleTransformDirty();
