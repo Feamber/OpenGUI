@@ -137,30 +137,33 @@ bool YGNode::isTrailingPosDefined(const YGFlexDirection axis) const {
 
 YGFloatOptional YGNode::getLeadingMargin(
     const YGFlexDirection axis,
-    const float widthSize) const {
+    const float widthSize,
+    const float heightSize) const {
   auto leadingMargin = YGFlexDirectionIsRow(axis)
       ? computeEdgeValueForRow(
             style_.margin(), YGEdgeStart, leading[axis], CompactValue::ofZero())
       : computeEdgeValueForColumn(
             style_.margin(), leading[axis], CompactValue::ofZero());
-  return YGResolveValueMargin(leadingMargin, widthSize);
+  return YGResolveValueMargin(leadingMargin, YGFlexDirectionIsRow(axis) ? widthSize : heightSize);
 }
 
 YGFloatOptional YGNode::getTrailingMargin(
     const YGFlexDirection axis,
-    const float widthSize) const {
+    const float widthSize,
+    const float heightSize) const {
   auto trailingMargin = YGFlexDirectionIsRow(axis)
       ? computeEdgeValueForRow(
             style_.margin(), YGEdgeEnd, trailing[axis], CompactValue::ofZero())
       : computeEdgeValueForColumn(
             style_.margin(), trailing[axis], CompactValue::ofZero());
-  return YGResolveValueMargin(trailingMargin, widthSize);
+  return YGResolveValueMargin(trailingMargin, YGFlexDirectionIsRow(axis) ? widthSize : heightSize);
 }
 
 YGFloatOptional YGNode::getMarginForAxis(
     const YGFlexDirection axis,
-    const float widthSize) const {
-  return getLeadingMargin(axis, widthSize) + getTrailingMargin(axis, widthSize);
+    const float widthSize,
+    const float heightSize) const {
+  return getLeadingMargin(axis, widthSize, heightSize) + getTrailingMargin(axis, widthSize, heightSize);
 }
 
 YGSize YGNode::measure(
@@ -341,20 +344,18 @@ void YGNode::setPosition(
   const YGFloatOptional relativePositionCross =
       relativePosition(crossAxis, crossSize);
 
-  const float mainDim = YGFlexDirectionIsRow(mainAxis) ? ownerWidth : ownerHeight;
-  const float crossDim = YGFlexDirectionIsRow(mainAxis) ? ownerHeight : ownerWidth;
   setLayoutPosition(
-      (getLeadingMargin(mainAxis, mainDim) + relativePositionMain).unwrap(),
+      (getLeadingMargin(mainAxis, ownerWidth, ownerHeight) + relativePositionMain).unwrap(),
       leading[mainAxis]);
   setLayoutPosition(
-      (getTrailingMargin(mainAxis, mainDim) + relativePositionMain).unwrap(),
+      (getTrailingMargin(mainAxis, ownerWidth, ownerHeight) + relativePositionMain).unwrap(),
       trailing[mainAxis]);
   setLayoutPosition(
-      (getLeadingMargin(crossAxis, crossDim) + relativePositionCross)
+      (getLeadingMargin(crossAxis, ownerWidth, ownerHeight) + relativePositionCross)
           .unwrap(),
       leading[crossAxis]);
   setLayoutPosition(
-      (getTrailingMargin(crossAxis, crossDim) + relativePositionCross)
+      (getTrailingMargin(crossAxis, ownerWidth, ownerHeight) + relativePositionCross)
           .unwrap(),
       trailing[crossAxis]);
 }
@@ -495,7 +496,7 @@ float YGNode::getTrailingBorder(const YGFlexDirection axis) const {
 
 YGFloatOptional YGNode::getLeadingPadding(
     const YGFlexDirection axis,
-    const float widthSize) const {
+    const float widthSize, const float heightSize) const {
   auto leadingPadding = YGFlexDirectionIsRow(axis)
       ? computeEdgeValueForRow(
             style_.padding(),
@@ -505,32 +506,32 @@ YGFloatOptional YGNode::getLeadingPadding(
       : computeEdgeValueForColumn(
             style_.padding(), leading[axis], CompactValue::ofZero());
   return YGFloatOptionalMax(
-      YGResolveValue(leadingPadding, widthSize), YGFloatOptional(0.0f));
+      YGResolveValue(leadingPadding, YGFlexDirectionIsRow(axis) ? widthSize : heightSize), YGFloatOptional(0.0f));
 }
 
 YGFloatOptional YGNode::getTrailingPadding(
     const YGFlexDirection axis,
-    const float widthSize) const {
+    const float widthSize, const float heightSize) const {
   auto trailingPadding = YGFlexDirectionIsRow(axis)
       ? computeEdgeValueForRow(
             style_.padding(), YGEdgeEnd, trailing[axis], CompactValue::ofZero())
       : computeEdgeValueForColumn(
             style_.padding(), trailing[axis], CompactValue::ofZero());
   return YGFloatOptionalMax(
-      YGResolveValue(trailingPadding, widthSize), YGFloatOptional(0.0f));
+      YGResolveValue(trailingPadding, YGFlexDirectionIsRow(axis) ? widthSize : heightSize), YGFloatOptional(0.0f));
 }
 
 YGFloatOptional YGNode::getLeadingPaddingAndBorder(
     const YGFlexDirection axis,
-    const float widthSize) const {
-  return getLeadingPadding(axis, widthSize) +
+    const float widthSize, const float heightSize) const {
+  return getLeadingPadding(axis, widthSize, heightSize) +
       YGFloatOptional(getLeadingBorder(axis));
 }
 
 YGFloatOptional YGNode::getTrailingPaddingAndBorder(
     const YGFlexDirection axis,
-    const float widthSize) const {
-  return getTrailingPadding(axis, widthSize) +
+    const float widthSize, const float heightSize) const {
+  return getTrailingPadding(axis, widthSize, heightSize) +
       YGFloatOptional(getTrailingBorder(axis));
 }
 
