@@ -38,6 +38,7 @@ namespace meta {
         {
             J.attribute("name", P.name);
             J.attribute("isStatic", P.isStatic);
+            J.attribute("isConst", P.isConst);
             serializeAttr(J, P.attrs);
             J.attributeObject("parameters", [&]
             {

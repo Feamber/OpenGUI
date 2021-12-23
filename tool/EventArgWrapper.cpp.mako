@@ -7,12 +7,14 @@
 %for record in db.records:
 bool OGUI::TryGet(const ${record.name}& event, std::string_view name, OGUI::any& out)
 {
+%if record.isEvent:
     static Name eventName = "${record.event_name}";
     if(name == "eventName")
     {
         out = eventName;
         return true;
     }
+%endif
 %for base in record.bases:
     if(TryGet((const ${base}&)event, name, out))
         return true;

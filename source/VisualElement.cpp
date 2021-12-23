@@ -1,6 +1,8 @@
 
 
+#include "OpenGUI/Event/AttachEvent.h"
 #include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Event/EventRouter.h"
 #include "OpenGUI/Event/PointerEvent.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Selector.h"
@@ -378,6 +380,12 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 {
+	{
+		PreAttachEvent event;
+		event.prevParent = child->GetHierachyParent();
+		event.nextParent = this;
+		RouteEvent(child, event);
+	}
 	_scrollSizeDirty = true;
 	child->_physicalParent = this;
 	if(_ygnode)
@@ -388,10 +396,21 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 	UpdateRoot(child);
 	auto& Ctx = Context::Get();
 	Ctx._layoutDirty = true;
+	{
+		PostAttachEvent event;
+		event.prevParent = child->GetHierachyParent();
+		event.nextParent = this;
+		RouteEvent(child, event);
+	}
 }
 
 void OGUI::VisualElement::RemoveChild(VisualElement* child)
 {
+	{
+		PreDetachEvent event;
+		event.prevParent = this;
+		RouteEvent(child, event);
+	}
 	_scrollSizeDirty = true;
     child->_physicalParent = nullptr;
 	if(_ygnode)
@@ -400,6 +419,11 @@ void OGUI::VisualElement::RemoveChild(VisualElement* child)
 	_children.erase(end, _children.end());
 	child->_root = child->_layoutRoot = nullptr;
 	child->_layoutType = LayoutType::None;
+	{
+		PostDetachEvent event;
+		event.prevParent = this;
+		RouteEvent(child, event);
+	}
 }
 
 OGUI::VisualElement* OGUI::VisualElement::GetRoot()

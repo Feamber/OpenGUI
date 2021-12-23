@@ -16,7 +16,7 @@ namespace OGUI full_reflect
         ActivateWindow,
     };
 
-    struct push_attr("event":true) 
+    struct push_attr("event-data":true) 
     FocusDataBase : public EventBase
     {
         FocusChangeCause cause;
@@ -35,7 +35,20 @@ namespace OGUI full_reflect
         VisualElement* newFocused = nullptr;
     };
 
-    struct OGUI_API PreGotKeyboardFocusEvent : PreKeyboardFocusData
+    struct FocusData : public FocusDataBase
+    {
+        const std::vector<VisualElement*>* oldFocusedPath;
+        const std::vector<VisualElement*>* currentFocusedPath;
+    };
+
+    struct KeyboardFocusData : public FocusDataBase
+    {
+        VisualElement* oldFocused = nullptr;
+        VisualElement* currentFocused = nullptr;
+    };
+
+    struct OGUI_API pop_attr() push_attr("event":true) 
+    PreGotKeyboardFocusEvent : PreKeyboardFocusData
     {
         static const Name& GetEventName();
     };
@@ -53,18 +66,6 @@ namespace OGUI full_reflect
     struct OGUI_API PreLostFocusEvent : PreFocusData
     {
         static const Name& GetEventName();
-    };
-
-    struct FocusData : public FocusDataBase
-    {
-        const std::vector<VisualElement*>* oldFocusedPath;
-        const std::vector<VisualElement*>* currentFocusedPath;
-    };
-
-    struct KeyboardFocusData : public FocusDataBase
-    {
-        VisualElement* oldFocused = nullptr;
-        VisualElement* currentFocused = nullptr;
     };
 
     struct OGUI_API GotKeyboardFocusEvent : KeyboardFocusData

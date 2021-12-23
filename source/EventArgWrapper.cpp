@@ -6,12 +6,6 @@
 
 bool OGUI::TryGet(const OGUI::EventBase& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "event-base";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
     switchstr(name)
     {
         casestr("currentPhase") out = event.currentPhase; break;
@@ -20,14 +14,243 @@ bool OGUI::TryGet(const OGUI::EventBase& event, std::string_view name, OGUI::any
     }
     return true;
 }
-bool OGUI::TryGet(const OGUI::PointerData& event, std::string_view name, OGUI::any& out)
+bool OGUI::TryGet(const OGUI::FocusDataBase& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-data";
+    if(TryGet((const OGUI::EventBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("cause") out = event.cause; break;
+        casestr("causeDescribe") out = event.causeDescribe; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::PreFocusData& event, std::string_view name, OGUI::any& out)
+{
+    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("currentFocusedPath") out = event.currentFocusedPath; break;
+        casestr("newFocusedPath") out = event.newFocusedPath; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::PreKeyboardFocusData& event, std::string_view name, OGUI::any& out)
+{
+    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("currentFocused") out = event.currentFocused; break;
+        casestr("newFocused") out = event.newFocused; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::FocusData& event, std::string_view name, OGUI::any& out)
+{
+    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("oldFocusedPath") out = event.oldFocusedPath; break;
+        casestr("currentFocusedPath") out = event.currentFocusedPath; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::KeyboardFocusData& event, std::string_view name, OGUI::any& out)
+{
+    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("oldFocused") out = event.oldFocused; break;
+        casestr("currentFocused") out = event.currentFocused; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::PreGotKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "pre-got-keyboard-focus";
     if(name == "eventName")
     {
         out = eventName;
         return true;
     }
+    if(TryGet((const OGUI::PreKeyboardFocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::PreLostKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "pre-lost-keyboard-focus";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::PreKeyboardFocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::PreGotFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "pre-got-focus";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::PreFocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::PreLostFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "pre-lost-focus";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::PreFocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::GotKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "got-keyboard-focus";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::KeyboardFocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::LostKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "lost-keyboard-focus";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::KeyboardFocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::GotFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "got-focus";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::FocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::LostFocusEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "lost-focus";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::FocusData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::PreDetachEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "pre-detach";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::EventBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("prevParent") out = event.prevParent; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::PreAttachEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "pre-attach";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::EventBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("prevParent") out = event.prevParent; break;
+        casestr("nextParent") out = event.nextParent; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::PostDetachEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "post-detach";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::EventBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("prevParent") out = event.prevParent; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::PostAttachEvent& event, std::string_view name, OGUI::any& out)
+{
+    static Name eventName = "post-attach";
+    if(name == "eventName")
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::EventBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("prevParent") out = event.prevParent; break;
+        casestr("nextParent") out = event.nextParent; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::PointerData& event, std::string_view name, OGUI::any& out)
+{
     if(TryGet((const OGUI::EventBase&)event, name, out))
         return true;
     switchstr(name)
@@ -53,7 +276,7 @@ bool OGUI::TryGet(const OGUI::PointerData& event, std::string_view name, OGUI::a
 }
 bool OGUI::TryGet(const OGUI::PointerDownEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-down-event";
+    static Name eventName = "pointer-down";
     if(name == "eventName")
     {
         out = eventName;
@@ -65,7 +288,7 @@ bool OGUI::TryGet(const OGUI::PointerDownEvent& event, std::string_view name, OG
 }
 bool OGUI::TryGet(const OGUI::PointerMoveEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-move-event";
+    static Name eventName = "pointer-move";
     if(name == "eventName")
     {
         out = eventName;
@@ -77,7 +300,7 @@ bool OGUI::TryGet(const OGUI::PointerMoveEvent& event, std::string_view name, OG
 }
 bool OGUI::TryGet(const OGUI::PointerUpEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-up-event";
+    static Name eventName = "pointer-up";
     if(name == "eventName")
     {
         out = eventName;
@@ -89,7 +312,7 @@ bool OGUI::TryGet(const OGUI::PointerUpEvent& event, std::string_view name, OGUI
 }
 bool OGUI::TryGet(const OGUI::PointerClickEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-click-event";
+    static Name eventName = "pointer-click";
     if(name == "eventName")
     {
         out = eventName;
@@ -101,7 +324,7 @@ bool OGUI::TryGet(const OGUI::PointerClickEvent& event, std::string_view name, O
 }
 bool OGUI::TryGet(const OGUI::PointerDoubleClickEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-double-click-event";
+    static Name eventName = "pointer-double-click";
     if(name == "eventName")
     {
         out = eventName;
@@ -113,7 +336,7 @@ bool OGUI::TryGet(const OGUI::PointerDoubleClickEvent& event, std::string_view n
 }
 bool OGUI::TryGet(const OGUI::PointerEnterEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-enter-event";
+    static Name eventName = "pointer-enter";
     if(name == "eventName")
     {
         out = eventName;
@@ -125,7 +348,7 @@ bool OGUI::TryGet(const OGUI::PointerEnterEvent& event, std::string_view name, O
 }
 bool OGUI::TryGet(const OGUI::PointerLeaveEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-leave-event";
+    static Name eventName = "pointer-leave";
     if(name == "eventName")
     {
         out = eventName;
@@ -137,7 +360,7 @@ bool OGUI::TryGet(const OGUI::PointerLeaveEvent& event, std::string_view name, O
 }
 bool OGUI::TryGet(const OGUI::PointerScrollEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "pointer-scroll-event";
+    static Name eventName = "pointer-scroll";
     if(name == "eventName")
     {
         out = eventName;
@@ -149,7 +372,7 @@ bool OGUI::TryGet(const OGUI::PointerScrollEvent& event, std::string_view name, 
 }
 bool OGUI::TryGet(const OGUI::TouchGestureEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "touch-gesture-event";
+    static Name eventName = "touch-gesture";
     if(name == "eventName")
     {
         out = eventName;
@@ -161,7 +384,7 @@ bool OGUI::TryGet(const OGUI::TouchGestureEvent& event, std::string_view name, O
 }
 bool OGUI::TryGet(const OGUI::TouchFirstMoveEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "touch-first-move-event";
+    static Name eventName = "touch-first-move";
     if(name == "eventName")
     {
         out = eventName;
@@ -173,7 +396,7 @@ bool OGUI::TryGet(const OGUI::TouchFirstMoveEvent& event, std::string_view name,
 }
 bool OGUI::TryGet(const OGUI::TouchPressureChangeEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "touch-pressure-change-event";
+    static Name eventName = "touch-pressure-change";
     if(name == "eventName")
     {
         out = eventName;
@@ -183,205 +406,8 @@ bool OGUI::TryGet(const OGUI::TouchPressureChangeEvent& event, std::string_view 
         return true;
     return false;
 }
-bool OGUI::TryGet(const OGUI::FocusDataBase& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "focus-data-base";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::EventBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("cause") out = event.cause; break;
-        casestr("causeDescribe") out = event.causeDescribe; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::PreFocusData& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "pre-focus-data";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("currentFocusedPath") out = event.currentFocusedPath; break;
-        casestr("newFocusedPath") out = event.newFocusedPath; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::PreKeyboardFocusData& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "pre-keyboard-focus-data";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("currentFocused") out = event.currentFocused; break;
-        casestr("newFocused") out = event.newFocused; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::PreGotKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "pre-got-keyboard-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::PreKeyboardFocusData&)event, name, out))
-        return true;
-    return false;
-}
-bool OGUI::TryGet(const OGUI::PreLostKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "pre-lost-keyboard-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::PreKeyboardFocusData&)event, name, out))
-        return true;
-    return false;
-}
-bool OGUI::TryGet(const OGUI::PreGotFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "pre-got-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::PreFocusData&)event, name, out))
-        return true;
-    return false;
-}
-bool OGUI::TryGet(const OGUI::PreLostFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "pre-lost-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::PreFocusData&)event, name, out))
-        return true;
-    return false;
-}
-bool OGUI::TryGet(const OGUI::FocusData& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "focus-data";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("oldFocusedPath") out = event.oldFocusedPath; break;
-        casestr("currentFocusedPath") out = event.currentFocusedPath; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::KeyboardFocusData& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "keyboard-focus-data";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::FocusDataBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("oldFocused") out = event.oldFocused; break;
-        casestr("currentFocused") out = event.currentFocused; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::GotKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "got-keyboard-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::KeyboardFocusData&)event, name, out))
-        return true;
-    return false;
-}
-bool OGUI::TryGet(const OGUI::LostKeyboardFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "lost-keyboard-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::KeyboardFocusData&)event, name, out))
-        return true;
-    return false;
-}
-bool OGUI::TryGet(const OGUI::GotFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "got-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::FocusData&)event, name, out))
-        return true;
-    return false;
-}
-bool OGUI::TryGet(const OGUI::LostFocusEvent& event, std::string_view name, OGUI::any& out)
-{
-    static Name eventName = "lost-focus-event";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::FocusData&)event, name, out))
-        return true;
-    return false;
-}
 bool OGUI::TryGet(const OGUI::KeyData& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "key-data";
-    if(name == "eventName")
-    {
-        out = eventName;
-        return true;
-    }
     if(TryGet((const OGUI::EventBase&)event, name, out))
         return true;
     switchstr(name)
@@ -395,7 +421,7 @@ bool OGUI::TryGet(const OGUI::KeyData& event, std::string_view name, OGUI::any& 
 }
 bool OGUI::TryGet(const OGUI::KeyDownEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "key-down-event";
+    static Name eventName = "key-down";
     if(name == "eventName")
     {
         out = eventName;
@@ -407,7 +433,7 @@ bool OGUI::TryGet(const OGUI::KeyDownEvent& event, std::string_view name, OGUI::
 }
 bool OGUI::TryGet(const OGUI::KeyUpEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "key-up-event";
+    static Name eventName = "key-up";
     if(name == "eventName")
     {
         out = eventName;
@@ -419,7 +445,7 @@ bool OGUI::TryGet(const OGUI::KeyUpEvent& event, std::string_view name, OGUI::an
 }
 bool OGUI::TryGet(const OGUI::KeyHoldEvent& event, std::string_view name, OGUI::any& out)
 {
-    static Name eventName = "key-hold-event";
+    static Name eventName = "key-hold";
     if(name == "eventName")
     {
         out = eventName;

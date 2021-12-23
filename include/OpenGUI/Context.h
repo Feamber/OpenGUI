@@ -18,7 +18,7 @@ namespace godot
 	class TextServer;
 }
 
-namespace OGUI
+namespace OGUI reflect
 {
 	namespace PrimitiveDraw
 	{
@@ -50,13 +50,15 @@ namespace OGUI
 		VisualWindow* ui;
 	};
 
-	class OGUI_API Context
+	class OGUI_API reflect
+	Context
 	{
 	public:
 		Context();
 		~Context();
 
 		std::set<VisualElement*> _allElementHandle;
+		attr("script":true)
 		bool IsElementValid(VisualElement*) const;
 
 #pragma region FocusNavigation
@@ -73,7 +75,9 @@ namespace OGUI
 		VisualElement* _keyboardFocused = nullptr;
 		
 		//可能激活失败，比如：在弹出的消息窗口没关闭时没法操作其他窗口
+		attr("script":true)
 		bool ActivateWindow(VisualWindow* newWindow);
+		attr("script":true)
 		bool SetFocus(VisualElement* element, FocusChangeCause cause = FocusChangeCause::UserActions, std::string describe = "");
 #pragma endregion
 
@@ -81,9 +85,13 @@ namespace OGUI
 		std::map<Name, Name> _globalXmlFiltersMap;
 		std::set<Name> _globalXmlFiltersCache;
 
+		attr("script":true)
 		void SetXmlFilter_Global(const char* key, const char* filterTag);
+		attr("script":true)
 		void CleanXmlFilter_Global(const char* key);
+		attr("script":true)
 		void UpdataXmlFilterCache_Global();
+		attr("script":true)
 		bool HasFilterTag_Global(const char* filterTag) const;
 		bool HasFilterTag_Global(Name filterTag) const;
 

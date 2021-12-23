@@ -5,10 +5,12 @@
 #include "clang/AST/Attrs.inc"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclBase.h"
+#include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclTemplate.h"
 #include "clang/AST/Type.h"
 #include "clang/Basic/SourceManager.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/Support/Casting.h"
 #include <vector>
 
 void meta::ASTConsumer::HandleTranslationUnit(ASTContext &ctx)
@@ -252,6 +254,14 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
                 newFunction.line = location.getLine();
             }
             newFunction.attrs = attr;
+            if(auto methodDecl = llvm::dyn_cast<clang::CXXMethodDecl>(decl))
+            {
+                newFunction.isConst = methodDecl->isConst();
+            }
+            else
+            {
+                newFunction.isConst = false;
+            }
             if(!functionDecl->isNoReturn())
                 newFunction.retType = GetTypeName(functionDecl->getReturnType(), _ASTContext);
             std::vector<std::string> newStack;

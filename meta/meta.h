@@ -22,6 +22,7 @@ namespace meta
     struct Function
     {
         bool isStatic;
+        bool isConst;
         std::string name;
         std::string attrs;
         std::vector<Field> parameters;

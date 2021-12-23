@@ -1,6 +1,8 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/ostring/ostr.h"
 
+#include "OpenGUI/Event/AttachEvent.h"
+#include "OpenGUI/Event/EventRouter.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Shadow.h"
 #include "OpenGUI/Style2/Transform.h"
@@ -190,21 +192,45 @@ namespace OGUI
 
     void TextElement::AddInlineElement(VisualElement* element)
     {
+        {
+            PreAttachEvent event;
+            event.prevParent = element->GetHierachyParent();
+            event.nextParent = this;
+            RouteEvent(element, event);
+        }
         _inlines.push_back(InlineType{element});
         element->_layoutType = LayoutType::Inline;
         element->_physicalParent = this;
         UpdateRoot(element);
         _paragraphDirty = true;
+        {
+            PostAttachEvent event;
+            event.prevParent = element->GetHierachyParent();
+            event.nextParent = this;
+            RouteEvent(element, event);
+        }
     }
 
     void TextElement::AddInlineText(TextElement* text)
     {
+        {
+            PreAttachEvent event;
+            event.prevParent = text->GetHierachyParent();
+            event.nextParent = this;
+            RouteEvent(text, event);
+        }
         _inlines.push_back(InlineType{text});
         text->_layoutType = LayoutType::Inline;
         text->_physicalParent = this;
         text->_drawPolicy->root = this;
         UpdateRoot(text);
         _paragraphDirty = true;
+        {
+            PostAttachEvent event;
+            event.prevParent = text->GetHierachyParent();
+            event.nextParent = this;
+            RouteEvent(text, event);
+        }
     }
 
     void TextElement::AddText(ostr::string text)

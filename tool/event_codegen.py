@@ -14,16 +14,18 @@ class Field(object):
         self.type = type
 
 class Record(object):
-    def __init__(self, name, fields, bases):
+    def __init__(self, name, fields, bases, isEvent):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
-        self.event_name = re.sub("([A-Z]+)", lambda m: "-" + m.group(1).lower(), self.short_name).replace("_", "-").strip("-")
+        self.event_name = re.sub("([A-Z]+)", lambda m: "-" + m.group(1).lower(), self.short_name.replace("Event", "")).replace("_", "-").strip("-")
         self.fields = fields
         self.bases = bases
+        self.isEvent = isEvent
 
 class Binding(object):
     def __init__(self):
         self.records = []
+        self.events = []
         self.headers = set()
 
 def GetInclude(path):
@@ -34,7 +36,7 @@ def main():
     db = Binding()
     for key, value in meta["records"].items():
         attr = value["attrs"]
-        if not "event" in attr:
+        if not "event" in attr and not "event-data" in attr:
             continue
         file = value["fileName"]
         fields = []
@@ -42,14 +44,21 @@ def main():
             field = Field(key2, value2["type"])
             fields.append(field)
         db.headers.add(GetInclude(file))
-        db.records.append(Record(key, fields, value["bases"]))
+        record = Record(key, fields, value["bases"], "event" in attr)
+        if record.isEvent:
+            db.events.append(record)
+        db.records.append(record)
     template = os.path.join(BASE, "EventArgWrapper.cpp.mako")
     content = render(template, db = db)
-    output = os.path.join(BASE, "EventArgWrapper.cpp")
+    output = os.path.join(BASE, "../source/EventArgWrapper.cpp")
     write(output, content)
     template = os.path.join(BASE, "EventArgWrapper.h.mako")
     content = render(template, db = db)
-    output = os.path.join(BASE, "EventArgWrapper.h")
+    output = os.path.join(BASE, "../include/OpenGUI/Bind/EventArgWrapper.h")
+    write(output, content)
+    template = os.path.join(BASE, "EventName.cpp.mako")
+    content = render(template, db = db)
+    output = os.path.join(BASE, "../source/EventName.cpp")
     write(output, content)
 
 def render(filename, **context):

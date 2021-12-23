@@ -5,7 +5,7 @@
 
 namespace OGUI full_reflect
 {
-    struct push_attr("event":true) 
+    struct attr("event-data":true) 
     PointerData : public EventBase
     {
         int pointerId = 0;
@@ -24,7 +24,8 @@ namespace OGUI full_reflect
         float pressure = 0;
     };
     
-    struct OGUI_API PointerDownEvent : PointerData 
+    struct OGUI_API push_attr("event":true) 
+    PointerDownEvent : PointerData 
     {
         static const Name& GetEventName();
     };

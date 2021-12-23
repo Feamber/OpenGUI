@@ -374,6 +374,8 @@ cpp.hint
 /cmake-build-debug-visual-studio
 .vscode/*
 !.vscode/launch.json
+meta/bin/
+meta/lib/
 
 *.exe
 .VSCodeCounter

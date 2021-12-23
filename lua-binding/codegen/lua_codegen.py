@@ -16,11 +16,12 @@ class Field(object):
         self.setter = None
 
 class FunctionDesc(object):
-    def __init__(self, retType, fields):
+    def __init__(self, retType, fields, isConst):
         self.retType = retType
         self.fields = fields
+        self.isConst = isConst
     def getSignature(self, record):
-        return self.retType +"("+ (record.name + "::" if record else "") + "*)("+ str.join(", ",  [x.type for x in self.fields]) + ")"
+        return self.retType +"("+ (record.name + "::" if record else "") + "*)("+ str.join(", ",  [x.type for x in self.fields])  + ")" + ("const" if self.isConst else "")
 
 class Function(object):
     def __init__(self, name):
@@ -89,7 +90,7 @@ def main():
         db.event_arg_types[v] = True
     for key, value in meta["records"].items():
         file = value["fileName"]
-        isEvent = "event" in value["attrs"]
+        isEvent = "event" in value["attrs"] or "event-data" in value["attrs"]
         fields = []
         for key2, value2 in value["fields"].items():
             if isEvent:
@@ -180,7 +181,7 @@ def parseFunctions(dict, headers = None):
         for key2, value2 in value["parameters"].items():
             field = Field(key2, value2["type"])
             fields.append(field)
-        function.descs.append(FunctionDesc(value["retType"], fields))
+        function.descs.append(FunctionDesc(value["retType"], fields, value["isConst"]))
     return functionsDict
 
 if __name__ == "__main__":

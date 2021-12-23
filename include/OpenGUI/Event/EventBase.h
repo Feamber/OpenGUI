@@ -15,7 +15,8 @@ namespace OGUI full_reflect
         NoBroadcast = TrickleDown | Reach | BubbleUp,
     };
 
-    struct attr("event":true) EventBase
+    struct attr("event-data":true) 
+    EventBase
     {
         static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
         EventRoutePhase currentPhase = EventRoutePhase::None;
