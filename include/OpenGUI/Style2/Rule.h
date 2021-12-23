@@ -112,6 +112,7 @@ namespace OGUI
 
     struct StyleSheet
     {
+        std::vector<std::shared_ptr<class AsyncRenderTexture>> preloaded;
         std::string path;
         StyleSheetStorage storage;
 		std::vector<StyleRule> styleRules;

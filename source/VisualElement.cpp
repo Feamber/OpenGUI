@@ -166,7 +166,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	if (!bg.backgroundImage.empty())
 	{
 		//start new load
-		if (!backgroundImageResource || !backgroundImageResource->valid() || backgroundImageUrl != bg.backgroundImage)
+		if (!backgroundImageResource || backgroundImageUrl != bg.backgroundImage)
 		{
 			backgroundImageResource = ctx.textureManager->RequireFromFileSystem(bg.backgroundImage);
 			backgroundImageUrl = bg.backgroundImage;
@@ -179,7 +179,6 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 	Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
 	auto bgcolor = bg.backgroundColor;
 	bgcolor.w *= _opacity;
-	RoundBoxParams params {rect, uv, bgcolor};
 	TextureInterface* tex = nullptr;
 	if (backgroundImageResource)
 	{
@@ -188,6 +187,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(OGUI::PrimitiveDraw::DrawConte
 		else 
 			bgcolor.w = 0;
 	}
+	RoundBoxParams params {rect, uv, bgcolor};
 	params.radius[0] = bd.borderTopLeftRadius.value;// / Ctx.resolution.Y;
 	params.radius[1] = bd.borderTopRightRadius.value;// / Ctx.resolution.Y;
 	params.radius[2] = bd.borderBottomRightRadius.value;// / Ctx.resolution.Y;
