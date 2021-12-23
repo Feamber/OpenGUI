@@ -81,11 +81,11 @@ namespace std
 			auto substr = s.substr(lastPos, pos - lastPos);
 			tokens.push_back(substr);//use emplace_back after C++11
 			
-			string::size_type escapeStart = s.find_first_of(escape[0], pos);
-			string::size_type escapeEnd = s.find_first_of(escape[1], escapeStart);
+			string::size_type escapeStart2 = s.find_first_of(escape[0], pos);
+			string::size_type escapeEnd2 = s.find_first_of(escape[1], escapeStart2);
 			lastPos = s.find_first_not_of(delimiters, pos);
 			pos = s.find_first_of(delimiters, lastPos);
-			while(pos > escapeStart && pos < escapeEnd)
+			while(pos > escapeStart2 && pos < escapeEnd2)
 				pos = s.find_first_of(delimiters, pos+1);
 		}
 	}
