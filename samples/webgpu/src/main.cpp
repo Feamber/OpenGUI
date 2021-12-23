@@ -460,6 +460,14 @@ SampleWindow* CreateNavigationTestWindow()
 	});
 }
 
+SampleWindow* CreatePercentageMarginWindow()
+{
+	return  new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "percentageMargin", &reloader, "res/percentageMargin.xml", [](OGUI::VisualElement* ve)
+	{
+		ve->_pseudoMask |= PseudoStates::Root;
+	});
+}
+
 SampleWindow* CreateCssTestWindow()
 {
 	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", &reloader, "res/test.xml", [](OGUI::VisualElement* ve)
@@ -708,14 +716,15 @@ int main(int , char* []) {
 	// DataBindSample sample2;
 	// windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
-	windows.push_back(CreateCssTestWindow());
-	XmlFiltersSample sample3;
-	windows.push_back(sample3.MakeWindow());
+	//windows.push_back(CreateCssTestWindow());
+	windows.push_back(CreatePercentageMarginWindow());
+	//XmlFiltersSample sample3;
+	//windows.push_back(sample3.MakeWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())
 	{
-		sample3.Update();
+		//sample3.Update();
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");

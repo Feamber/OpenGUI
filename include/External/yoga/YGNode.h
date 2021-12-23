@@ -215,27 +215,30 @@ public:
       const float axisSize) const;
   YGFloatOptional getLeadingMargin(
       const YGFlexDirection axis,
-      const float widthSize) const;
+      const float widthSize,
+    const float heightSize) const;
   YGFloatOptional getTrailingMargin(
       const YGFlexDirection axis,
-      const float widthSize) const;
+      const float widthSize,
+     const float heightSize) const;
   float getLeadingBorder(const YGFlexDirection flexDirection) const;
   float getTrailingBorder(const YGFlexDirection flexDirection) const;
   YGFloatOptional getLeadingPadding(
       const YGFlexDirection axis,
-      const float widthSize) const;
+      const float widthSize, const float heightSize) const;
   YGFloatOptional getTrailingPadding(
       const YGFlexDirection axis,
-      const float widthSize) const;
+      const float widthSize, const float heightSize) const;
   YGFloatOptional getLeadingPaddingAndBorder(
       const YGFlexDirection axis,
-      const float widthSize) const;
+      const float widthSize, const float heightSize) const;
   YGFloatOptional getTrailingPaddingAndBorder(
       const YGFlexDirection axis,
-      const float widthSize) const;
+      const float widthSize, const float heightSize) const;
   YGFloatOptional getMarginForAxis(
       const YGFlexDirection axis,
-      const float widthSize) const;
+      const float widthSize,
+      const float heightSize) const;
   // Setters
 
   void setContext(void* context) { context_ = context; }
@@ -316,7 +319,8 @@ public:
       const YGDirection direction,
       const float mainSize,
       const float crossSize,
-      const float ownerWidth);
+      const float ownerWidth,
+      const float ownerHeight);
   void setLayoutDoesLegacyFlagAffectsLayout(bool doesLegacyFlagAffectsLayout);
   void setLayoutDidUseLegacyFlag(bool didUseLegacyFlag);
   void markDirtyAndPropogateDownwards();
