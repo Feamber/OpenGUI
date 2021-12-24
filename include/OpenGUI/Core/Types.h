@@ -189,6 +189,44 @@ namespace OGUI reflect
 		Backslash = 0xDC,	// \| key on US standard keyboard
 		RBranket = 0xDD,	// ]} key on US standard keyboard
 		Quote = 0xDE,		// '" key on US standard keyboard
+
+		Gamepad_Left2D = 223,
+		Gamepad_LeftX = 224,
+		Gamepad_LeftY = 225,
+		Gamepad_Right2D = 226,
+		Gamepad_RightX = 227,
+		Gamepad_RightY = 228,
+		Gamepad_LeftTriggerAxis = 229,
+		Gamepad_RightTriggerAxis = 230,
+		
+		Gamepad_LeftThumbstick = 231,
+		Gamepad_RightThumbstick = 232,
+		Gamepad_Special_Left = 233,
+		Gamepad_Special_Left_X = 234,
+		Gamepad_Special_Left_Y = 235,
+		Gamepad_Special_Right = 236,
+		Gamepad_FaceButton_Bottom = 237,
+		Gamepad_FaceButton_Right = 238,
+		Gamepad_FaceButton_Left = 239,
+		Gamepad_FaceButton_Top = 240,
+		Gamepad_LeftShoulder = 241,
+		Gamepad_RightShoulder = 242,
+		Gamepad_LeftTrigger = 243,
+		Gamepad_RightTrigger = 244,
+		Gamepad_DPad_Up = 245,
+		Gamepad_DPad_Down = 246,
+		Gamepad_DPad_Right = 247,
+		Gamepad_DPad_Left = 248,
+		
+		Gamepad_LeftStick_Up = 249,
+		Gamepad_LeftStick_Down = 250,
+		Gamepad_LeftStick_Right = 251,
+		Gamepad_LeftStick_Left = 252,
+		
+		Gamepad_RightStick_Up = 253,
+		Gamepad_RightStick_Down = 254,
+		Gamepad_RightStick_Right = 255,
+		Gamepad_RightStick_Left = 256,
 	};
 
 	enum class attr("script":true)
