@@ -71,7 +71,6 @@ struct NVGstate {
 	int lineCap;
 	float alpha;
 	float xform[6];
-	NVGscissor scissor;
 	float fontSize;
 	float letterSpacing;
 	float lineHeight;
@@ -571,9 +570,6 @@ void nvgReset(NVGcontext* ctx)
 	state->alpha = 1.0f;
 	nvgTransformIdentity(state->xform);
 
-	state->scissor.extent[0] = -1.0f;
-	state->scissor.extent[1] = -1.0f;
-
 	state->fontSize = 16.0f;
 	state->letterSpacing = 0.0f;
 	state->lineHeight = 1.0f;
@@ -799,7 +795,7 @@ NVGpaint nvgBoxGradient(NVGcontext* ctx,
 
 NVGpaint nvgImagePattern(NVGcontext* ctx,
 								float cx, float cy, float w, float h, float angle,
-								int image, float alpha)
+								void* image, NVGcolor ocol)
 {
 	NVGpaint p;
 	NVG_NOTUSED(ctx);
@@ -814,77 +810,32 @@ NVGpaint nvgImagePattern(NVGcontext* ctx,
 
 	p.image = image;
 
-	p.innerColor = p.outerColor = nvgRGBAf(1,1,1,alpha);
+	p.innerColor = p.outerColor = ocol;
 
 	return p;
 }
 
-// Scissoring
-void nvgScissor(NVGcontext* ctx, float x, float y, float w, float h)
+NVGpaint nvgImagePatternEx(NVGcontext* ctx, float cx, float cy, float w, float h,
+						 float angle, void* image, NVGcolor ocol, float px, float py, NVGbox box)
 {
-	NVGstate* state = nvg__getState(ctx);
+	NVGpaint p;
+	NVG_NOTUSED(ctx);
+	memset(&p, 0, sizeof(p));
 
-	w = nvg__maxf(0.0f, w);
-	h = nvg__maxf(0.0f, h);
+	nvgTransformRotate(p.xform, angle);
+	p.xform[4] = cx;
+	p.xform[5] = cy;
 
-	nvgTransformIdentity(state->scissor.xform);
-	state->scissor.xform[4] = x+w*0.5f;
-	state->scissor.xform[5] = y+h*0.5f;
-	nvgTransformMultiply(state->scissor.xform, state->xform);
+	p.extent[0] = w;
+	p.extent[1] = h;
 
-	state->scissor.extent[0] = w*0.5f;
-	state->scissor.extent[1] = h*0.5f;
-}
+	p.image = image;
 
-static void nvg__isectRects(float* dst,
-							float ax, float ay, float aw, float ah,
-							float bx, float by, float bw, float bh)
-{
-	float minx = nvg__maxf(ax, bx);
-	float miny = nvg__maxf(ay, by);
-	float maxx = nvg__minf(ax+aw, bx+bw);
-	float maxy = nvg__minf(ay+ah, by+bh);
-	dst[0] = minx;
-	dst[1] = miny;
-	dst[2] = nvg__maxf(0.0f, maxx - minx);
-	dst[3] = nvg__maxf(0.0f, maxy - miny);
-}
+	p.innerColor = p.outerColor = ocol;
 
-void nvgIntersectScissor(NVGcontext* ctx, float x, float y, float w, float h)
-{
-	NVGstate* state = nvg__getState(ctx);
-	float pxform[6], invxorm[6];
-	float rect[4];
-	float ex, ey, tex, tey;
+	p.box = box;
 
-	// If no previous scissor has been set, set the scissor as current scissor.
-	if (state->scissor.extent[0] < 0) {
-		nvgScissor(ctx, x, y, w, h);
-		return;
-	}
-
-	// Transform the current scissor rect into current transform space.
-	// If there is difference in rotation, this will be approximation.
-	memcpy(pxform, state->scissor.xform, sizeof(float)*6);
-	ex = state->scissor.extent[0];
-	ey = state->scissor.extent[1];
-	nvgTransformInverse(invxorm, state->xform);
-	nvgTransformMultiply(pxform, invxorm);
-	tex = ex*nvg__absf(pxform[0]) + ey*nvg__absf(pxform[2]);
-	tey = ex*nvg__absf(pxform[1]) + ey*nvg__absf(pxform[3]);
-
-	// Intersect rects.
-	nvg__isectRects(rect, pxform[4]-tex,pxform[5]-tey,tex*2,tey*2, x,y,w,h);
-
-	nvgScissor(ctx, rect[0], rect[1], rect[2], rect[3]);
-}
-
-void nvgResetScissor(NVGcontext* ctx)
-{
-	NVGstate* state = nvg__getState(ctx);
-	memset(state->scissor.xform, 0, sizeof(state->scissor.xform));
-	state->scissor.extent[0] = -1.0f;
-	state->scissor.extent[1] = -1.0f;
+	return p;
 }
 
 // Global composite operation.
@@ -2099,7 +2050,7 @@ void nvgFill(NVGcontext* ctx)
 	fillPaint.innerColor.a *= state->alpha;
 	fillPaint.outerColor.a *= state->alpha;
 
-	ctx->params.renderFill(ctx->params.userPtr, &fillPaint, state->compositeOperation, &state->scissor, ctx->fringeWidth,
+	ctx->params.renderFill(ctx->params.userPtr, &fillPaint, state->compositeOperation, ctx->fringeWidth,
 						   ctx->cache->bounds, ctx->cache->paths, ctx->cache->npaths);
 
 	// Count triangles
@@ -2141,7 +2092,7 @@ void nvgStroke(NVGcontext* ctx)
 	else
 		nvg__expandStroke(ctx, strokeWidth*0.5f, 0.0f, state->lineCap, state->lineJoin, state->miterLimit);
 
-	ctx->params.renderStroke(ctx->params.userPtr, &strokePaint, state->compositeOperation, &state->scissor, ctx->fringeWidth,
+	ctx->params.renderStroke(ctx->params.userPtr, &strokePaint, state->compositeOperation, ctx->fringeWidth,
 							 strokeWidth, ctx->cache->paths, ctx->cache->npaths);
 
 	// Count triangles

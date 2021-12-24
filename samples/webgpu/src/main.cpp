@@ -242,9 +242,9 @@ public:
 			for(auto& cmd : list.command_list)
 			{
 				auto& last_cmd = list.command_list[last_index < 0 ? 0 : last_index];
-				if(last_cmd.texture != cmd.texture || last_index < 0)
+				if(last_cmd.resource.texture != cmd.resource.texture || last_index < 0)
 				{
-					WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.texture;
+					WGPU_OGUI_Texture* texture = (WGPU_OGUI_Texture*)cmd.resource.texture;
 					if(!texture)
 						texture = default_ogui_texture;
 					if(texture != default_ogui_texture && 
@@ -272,7 +272,7 @@ public:
 					wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 				}
 				wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
-					cmd.vertex_offset * sizeof(Vertex),
+					0,
 					WGPU_WHOLE_SIZE
 				);
 				wgpuRenderPassEncoderSetIndexBuffer(pass, index_buffer, WGPUIndexFormat_Uint16,
@@ -395,15 +395,18 @@ protected:
 		vertAttrs[1].format = WGPUVertexFormat_Float32x2;
 		vertAttrs[1].offset = offsetof(Vertex, texcoord);
 		vertAttrs[1].shaderLocation = 1;
-		vertAttrs[2].format = WGPUVertexFormat_Unorm8x4;
-		vertAttrs[2].offset = offsetof(Vertex, color);
+		vertAttrs[2].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[2].offset = offsetof(Vertex, aa);
 		vertAttrs[2].shaderLocation = 2;
-		vertAttrs[3].format = WGPUVertexFormat_Float32x2;
-		vertAttrs[3].offset = offsetof(Vertex, clipUV);
+		vertAttrs[3].format = WGPUVertexFormat_Unorm8x4;
+		vertAttrs[3].offset = offsetof(Vertex, color);
 		vertAttrs[3].shaderLocation = 3;
+		vertAttrs[4].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[4].offset = offsetof(Vertex, clipUV);
+		vertAttrs[4].shaderLocation = 4;
 		WGPUVertexBufferLayout vertDesc = {};
 		vertDesc.arrayStride = sizeof(Vertex);
-		vertDesc.attributeCount = 4;
+		vertDesc.attributeCount = 5;
 		vertDesc.attributes = vertAttrs;
 
 		// shader stages

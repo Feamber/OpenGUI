@@ -53,23 +53,21 @@ namespace OGUI
         Color4f color = Color4f::vector_one();
         std::vector<TextShadow> shadows;
         
-        void draw(PrimDrawList &list, const Rect &rect, TextureHandle texture, const Rect &uv, const Color4f &inColor = Color4f::vector_one()) override
+        void draw(PrimDrawList &list, const Rect &inRect, TextureHandle texture, const Rect &inUv, const Color4f &inColor = Color4f::vector_one()) override
         {
-            using namespace PrimitiveDraw;
-            BoxParams params;
-            params.rect = rect;
-            params.uv = uv;
-            params.color = color * inColor;
+            auto rect = inRect;
+            auto uv = inUv;
+            auto finalcolor = color * inColor;
             if(root->currShadowPass != -1)
             {
                 if(shadows.size() <= root->currShadowPass)
                     return;
                 auto& shadow = shadows[root->currShadowPass];
-                params.rect.min += shadow.offset;
-                params.rect.max += shadow.offset;
-                params.color = shadow.color * inColor;
+                rect.min += shadow.offset;
+                rect.max += shadow.offset;
+                finalcolor = shadow.color * inColor;
             }
-            PrimitiveDraw::PrimitiveDraw<BoxShape>(texture, list, params);
+            godot::TextServer::GlyphDrawPolicy::drawQuad(list, rect, texture, uv, finalcolor);
         }
     };
 
@@ -337,13 +335,13 @@ namespace OGUI
         }
     }
     
-    void TextElement::DrawPrimitive(PrimitiveDraw::DrawContext &Ctx)
+    void TextElement::DrawPrimitive(PrimDrawContext &Ctx)
     {
         if(_layoutType == LayoutType::Inline)
             return;
         BuildParagraph();
-        VisualElement::DrawPrimitive(Ctx);
-        PrimitiveDraw::BeginDraw(Ctx.prims);
+        //VisualElement::DrawPrimitive(Ctx);
+        BeginDraw(Ctx.prims);
         auto Rect = GetRect();
         //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
         auto& txt = StyleText::Get(_style);
@@ -357,7 +355,7 @@ namespace OGUI
         }
         currShadowPass = -1;
         _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
-        PrimitiveDraw::EndDraw(Ctx.prims, _worldTransform);
+        EndDraw(Ctx.prims, _worldTransform);
     }
 
     void TextElement::MarkLayoutDirty(bool visibility)

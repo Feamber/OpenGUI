@@ -1,27 +1,266 @@
 #include <limits>
 
+#include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/nanovg.h"
+#include "OpenGUI/Style2/Transform.h"
+
+uint32_t ToColor32ABGR(NVGcolor color)
+{
+    color.r = std::clamp(color.r, 0.f, 1.f);   
+    color.g = std::clamp(color.g, 0.f, 1.f);   
+    color.b = std::clamp(color.b, 0.f, 1.f);   
+    color.a = std::clamp(color.a, 0.f, 1.f);   
+    uint8_t r = color.r * 255;
+    uint8_t g = color.g * 255;
+    uint8_t b = color.b * 255;
+    uint8_t a = color.a * 255;
+    return ((uint32_t)a << 24) + ((uint32_t)b << 16) + ((uint32_t)g << 8) + (uint32_t)r;
+}
+
+static void nvg__xformIdentity(float* t)
+{
+	t[0] = 1.0f; t[1] = 0.0f;
+	t[2] = 0.0f; t[3] = 1.0f;
+	t[4] = 0.0f; t[5] = 0.0f;
+}
+
+static void nvg__xformInverse(float* inv, float* t)
+{
+	double invdet, det = (double)t[0] * t[3] - (double)t[2] * t[1];
+	if (det > -1e-6 && det < 1e-6) {
+		nvg__xformIdentity(t);
+		return;
+	}
+	invdet = 1.0 / det;
+	inv[0] = (float)(t[3] * invdet);
+	inv[2] = (float)(-t[2] * invdet);
+	inv[4] = (float)(((double)t[2] * t[5] - (double)t[3] * t[4]) * invdet);
+	inv[1] = (float)(-t[1] * invdet);
+	inv[3] = (float)(t[0] * invdet);
+	inv[5] = (float)(((double)t[1] * t[4] - (double)t[0] * t[5]) * invdet);
+}
+
+static OGUI::Vector2f nvg__remapUV(OGUI::Vector2f is, OGUI::Vector2f size, const NVGbox& box)
+{
+    OGUI::Vector2f result;
+    if(box.extend[0] == 0.f || box.extend[1] == 0.f)
+        return is / size;
+
+    float marginLeft;
+    float marginRight;
+    float marginTop;
+    float marginBottom;
+    {
+        if(is.y < box.margin.bottom)
+            marginLeft = box.margin.left + box.radius[3];
+        else if(is.y < box.margin.bottom + box.radius[3])
+        {
+            auto off = box.margin.bottom + box.radius[3] - is.y;
+            off = off*off + box.radius[3]*box.radius[3];
+            marginLeft = box.margin.left + box.radius[3] - std::sqrt(off);
+        }
+        else if(is.y > (size.y - box.margin.top))
+            marginLeft = box.margin.left + box.radius[0];
+        else if(is.y > (size.y - box.margin.top) - box.radius[0])
+        {
+            auto off = is.y - (size.y - box.margin.top) + box.radius[0];
+            off = off*off + box.radius[0]*box.radius[0];
+            marginLeft = box.margin.left + box.radius[0] - std::sqrt(off);
+        }
+        else 
+            marginLeft = box.margin.left;
+        if(is.y < box.margin.bottom)
+            marginRight = box.margin.right + box.radius[2];
+        else if(is.y < box.margin.bottom + box.radius[2])
+        {
+            auto off = box.margin.bottom + box.radius[2] - is.y;
+            off = off*off + box.radius[2]*box.radius[2];
+            marginRight = box.margin.right + box.radius[2] - std::sqrt(off);
+        }
+        else if(is.y > (size.y - box.margin.top))
+            marginRight = box.margin.right + box.radius[1];
+        else if(is.y > (size.y - box.margin.top) - box.radius[1])
+        {
+            auto off = is.y - (size.y - box.margin.top) + box.radius[1];
+            off = off*off + box.radius[1]*box.radius[1];
+            marginRight = box.margin.right + box.radius[1] - std::sqrt(off);
+        }
+        else 
+            marginRight = box.margin.right;
+        if(is.x < box.margin.left)
+            marginTop = box.margin.top + box.radius[0];
+        else if(is.x < box.margin.left + box.radius[0])
+        {
+            auto off = box.margin.left + box.radius[0] - is.x;
+            off = off*off + box.radius[0]*box.radius[0];
+            marginTop = box.margin.top + box.radius[0] - std::sqrt(off);
+        }
+        else if(is.x > (size.x - box.margin.right))
+            marginTop = box.margin.right + box.radius[1];
+        else if(is.x > (size.x - box.margin.right) - box.radius[1])
+        {
+            auto off = is.x - (size.x - box.margin.right) + box.radius[1];
+            off = off*off + box.radius[1]*box.radius[1];
+            marginTop = box.margin.top + box.radius[1] - std::sqrt(off);
+        }
+        else 
+            marginTop = box.margin.top;
+        if(is.x < box.margin.left)
+            marginBottom = box.margin.bottom + box.radius[3];
+        else if(is.x < box.margin.left + box.radius[3])
+        {
+            auto off = box.margin.left + box.radius[3] - is.x;
+            off = off*off + box.radius[3]*box.radius[3];
+            marginBottom = box.margin.bottom + box.radius[3] - std::sqrt(off);
+        }
+        else if(is.x > (size.x - box.margin.right))
+            marginBottom = box.margin.right + box.radius[2];
+        else if(is.x > (size.x - box.margin.right) - box.radius[2])
+        {
+            auto off = is.x - (size.x - box.margin.right) + box.radius[2];
+            off = off*off + box.radius[2]*box.radius[2];
+            marginBottom = box.margin.bottom + box.radius[2] - std::sqrt(off);
+        }
+        else 
+            marginBottom = box.margin.bottom;
+    }
+
+    if(is.x < marginLeft)
+    {
+        result.x = is.x / box.extend[0];
+    }
+    else if((size.x - is.x) < marginRight)
+    {
+        result.x = 1 - (size.x - is.x) / box.extend[0];
+    }
+    else 
+    {
+        auto alpha = (is.x - marginLeft) / (size.x - marginLeft - marginRight);
+        result.x = (marginLeft / box.extend[0]) * alpha + (1 - marginRight / box.extend[0]) * (1-alpha);
+    }
+
+    if(is.y < marginBottom)
+    {
+        result.y = is.y / box.extend[1];
+    }
+    else if((size.y - is.y) < marginTop)
+    {
+        result.y = 1 - (size.y - is.y) / box.extend[1];
+    }
+    else 
+    {
+        auto alpha = (is.y - marginBottom) / (size.y - marginBottom - marginTop);
+        result.y = (marginBottom / box.extend[1]) * alpha + (1 - marginTop / box.extend[1]) * (1-alpha);
+    }
+    return result;
+}
+
+static OGUI::ComputedTransform nvg__getMatrix(NVGpaint* paint)
+{
+    float invxform[6];
+    nvg__xformInverse(invxform, paint->xform);
+    return {invxform, {invxform[4], invxform[5]}};
+}
+
+static void nvg__renderPath(OGUI::PrimDrawContext* dc, const NVGpath& path, NVGpaint* paint, const OGUI::ComputedTransform& transform, float fringe)
+{
+    using namespace OGUI;
+    Vector2f extend{paint->extent[0], paint->extent[1]};
+    auto& vertices = dc->prims.vertices;
+    auto& indices = dc->prims.indices;
+    auto push_vertex = [&](const NVGvertex& nv)
+    {
+        Vertex v;
+        v.position = {nv.x, nv.y};
+        v.aa = {nv.u, fringe};
+        auto imgSpace = multiply(transform, v.position);
+        v.texcoord = nvg__remapUV(imgSpace, extend, paint->box);
+        v.color = ToColor32ABGR(paint->innerColor);
+        vertices.push_back(v);
+    };
+    //auto& path = paths[i];
+    if(path.nfill)
+    {
+        vertices.reserve(vertices.size() + path.nfill);
+        indices.reserve(indices.size() + path.nfill * 3);
+        size_t start = vertices.size();
+        for(int j=0; j<path.nfill; ++j)
+        {
+            push_vertex(path.fill[j]);
+            if(j<path.nfill-2)
+            {
+                size_t id = vertices.size();
+                indices.push_back(start);
+                indices.push_back(id + 1);
+                indices.push_back(id);
+            }
+        }
+    }
+    if(path.nstroke)
+    {
+        vertices.reserve(vertices.size() + path.nstroke);
+        indices.reserve(indices.size() + path.nstroke * 3);
+        for(int j=0; j<path.nstroke; ++j)
+        {
+            push_vertex(path.stroke[j]);
+            if(j<path.nstroke-2)
+            {
+                size_t id = vertices.size() - 1;
+                indices.push_back(id);
+                indices.push_back(id + 1 + (j % 2));
+                indices.push_back(id + 1 + !(j % 2));
+            }
+        }
+    }
+}
+
+static void nvg__renderFill(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, float fringe,
+							  const float* bounds, const NVGpath* paths, int npaths)
+{
+    using namespace OGUI;
+    auto dc = (PrimDrawContext*)uptr;
+    PrimDrawResource resource;
+    resource.texture = (TextureHandle)paint->image;
+    resource.compositeOperation = compositeOperation;
+    auto invTransform = nvg__getMatrix(paint);
+    //fast path
+    if(npaths == 1 && paths[0].convex) 
+    {
+        auto& command = dc->prims.GetCommand(resource);
+        auto begin = dc->prims.indices.size();
+        for(int i=0; i<npaths; ++i)
+            nvg__renderPath(dc, paths[i], paint, invTransform, fringe);
+        command.element_count += dc->prims.indices.size()-begin;
+    }
+    //slow path
+    else 
+    {
+    }
+}
+
+
+static void nvg__renderStroke(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, float fringe,
+								float strokeWidth, const NVGpath* paths, int npaths)
+{
+    using namespace OGUI;
+    auto dc = (PrimDrawContext*)uptr;
+    PrimDrawResource resource;
+    resource.texture = (TextureHandle)paint->image;
+    resource.compositeOperation = compositeOperation;
+    auto invTransform = nvg__getMatrix(paint);
+    //fast path
+    auto& command = dc->prims.GetCommand(resource);
+    auto& indices = dc->prims.indices;
+    auto begin = indices.size();
+    float aa = (fringe*0.5f + strokeWidth*0.5f) / fringe;
+    for(int i=0; i<npaths; ++i)
+        nvg__renderPath(dc, paths[i], paint, invTransform, aa);
+    command.element_count += indices.size()-begin;
+}
 
 namespace OGUI
 {
-    uint32_t ToColor32ABGR(Vector4f color)
-    {
-        color.x = std::clamp(color.x, 0.f, 1.f);   
-        color.y = std::clamp(color.y, 0.f, 1.f);   
-        color.z = std::clamp(color.z, 0.f, 1.f);   
-        color.w = std::clamp(color.w, 0.f, 1.f);   
-        uint8_t r = color.x * 255;
-        uint8_t g = color.y * 255;
-        uint8_t b = color.z * 255;
-        uint8_t a = color.w * 255;
-        return ((uint32_t)a << 24) + ((uint32_t)b << 16) + ((uint32_t)g << 8) + (uint32_t)r;
-    }
-
-    Vertex MakeVertex(Vector2f position, Vector2f UV, Color4f color)
-    {
-        return Vertex{ position, UV, ToColor32ABGR(color) };
-    }
 
     const Vector2f Transform(Vector2f p, const float4x4& transform)
     {
@@ -32,12 +271,12 @@ namespace OGUI
         return p;
     }
 
-    OGUI_API void PrimitiveDraw::BeginDraw(PrimDrawList& list)
+    OGUI_API void BeginDraw(PrimDrawList& list)
     {
         list.beginCount = list.vertices.size();
     }
 
-    OGUI_API void PrimitiveDraw::EndDraw(PrimDrawList& list,
+    OGUI_API void EndDraw(PrimDrawList& list,
         const float4x4& transform)
     {
         int count = list.vertices.size();
@@ -57,316 +296,39 @@ namespace OGUI
         }
     }
 
-    void PrimitiveDraw::BoxShape(PrimDrawList& list, const BoxParams& params)
+    PrimDrawCommand& PrimDrawList::GetCommand(const PrimDrawResource& resource)
     {
-        Vector2f side_len = params.rect.max - params.rect.min;
-        if (!side_len.X || !side_len.Y)
-            return;
-
-        const uint32_t vcount = list.vertices.size();
-        //const uint32_t icount = list.indices.size();
-        
-        const Vector2f RU = params.rect.max;
-        const Vector2f RB = Vector2f(params.rect.max.X, params.rect.min.Y);
-        const Vector2f LU = Vector2f(params.rect.min.X, params.rect.max.Y);
-        const Vector2f LB = params.rect.min;
-
-        const Vector2f RUUV = params.uv.max;
-        const Vector2f RBUV = Vector2f(params.uv.max.X, params.uv.min.Y);
-        const Vector2f LUUV = Vector2f(params.uv.min.X, params.uv.max.Y);
-        const Vector2f LBUV = params.uv.min;
-
-        const auto vRU = MakeVertex( RU, RUUV, params.color );
-        const auto vLU = MakeVertex( LU, LUUV, params.color );
-        const auto vRB = MakeVertex( RB, RBUV, params.color );
-        const auto vLB = MakeVertex( LB, LBUV, params.color );
-
-        list.vertices.emplace_back(vRU); // vcount + 0
-        list.vertices.emplace_back(vLU); // vcount + 1
-        list.vertices.emplace_back(vRB); // vcount + 2
-        list.vertices.emplace_back(vLB); // vcount + 3
-
-        list.indices.emplace_back(vcount + 0u);
-        list.indices.emplace_back(vcount + 1u);
-        list.indices.emplace_back(vcount + 2u);
-        list.indices.emplace_back(vcount + 2u);
-        list.indices.emplace_back(vcount + 1u);
-        list.indices.emplace_back(vcount + 3u);
+        if(!command_list.empty()) 
+        {
+            auto& res = command_list.back().resource;
+            if(res.texture == resource.texture && 
+            res.compositeOperation.dstAlpha == resource.compositeOperation.dstAlpha &&
+            res.compositeOperation.dstRGB == resource.compositeOperation.dstRGB &&
+            res.compositeOperation.srcAlpha == resource.compositeOperation.srcAlpha &&
+            res.compositeOperation.srcRGB == resource.compositeOperation.srcRGB)
+            {
+                return command_list.back();
+            }
+        }
+        auto& result = command_list.emplace_back();
+        result.resource = resource;
+        result.index_offset = indices.size();
+        result.element_count = 0;
+        return result;
     }
 
-    PrimitiveDraw::BoxParams PrimitiveDraw::BoxParams::MakeSolid(const Rect rect, const Color4f color)
+    PrimDrawContext::PrimDrawContext(WindowContext& wctx)
+        :wctx(wctx)
     {
-        Rect uv = {Vector2f::vector_zero(), Vector2f::vector_one()};
-        return { rect, uv, color };
-    }
+        NVGparams params;
 
-    void PrimitiveDraw::CircleShape(PrimDrawList& list, const CircleParams& params, int32_t sampleCount)
-	{
-		const uint32_t vcount = list.vertices.size();
-		//const uint32_t icount = list.indices.size();
+        memset(&params, 0, sizeof(params));
+        params.renderFill = nvg__renderFill;
+        params.renderStroke = nvg__renderStroke;
+        params.userPtr = this;
+        params.edgeAntiAlias = true;
 
-        Vector2f uvCenter = (params.uv.min + params.uv.max) / 2;
-        Vector2f uvSizeHalf = (params.uv.max - params.uv.min) / 2;
-
-        // center 
-        list.vertices.emplace_back(MakeVertex( params.pos, uvCenter, params.color ));
-
-        // add border 
-        double DeltaDegree = math::PI_ * 2 / sampleCount;
-        for (int i = 0; i < sampleCount; ++i)
-        {
-			// add vertex 
-			Vector2f deltaPos;
-			math::sincos(deltaPos.Y, deltaPos.X, DeltaDegree * i);
-            list.vertices.emplace_back(MakeVertex( params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color ));
-
-			// add index 
-			list.indices.emplace_back(vcount);
-            list.indices.emplace_back(vcount + i + 1);
-            list.indices.emplace_back(vcount + (i + 1) % sampleCount + 1);
-        }
-    }
-
-    void PrimitiveDraw::FanShape(PrimDrawList& list, const FanParams& params, int32_t sampleCount /* = 10 */)
-	{
-		const uint32_t vcount = list.vertices.size();
-		//const uint32_t icount = list.indices.size();
-
-		Vector2f uvCenter = (params.uv.min + params.uv.max) / 2;
-		Vector2f uvSizeHalf = (params.uv.max - params.uv.min) / 2;
-
-		// center 
-		list.vertices.emplace_back(MakeVertex( params.pos, uvCenter, params.color ));
-
-		// add border 
-		double DeltaDegree = params.degree / sampleCount;
-		for (int i = 0; i <= sampleCount; ++i) 
-        {
-			// add vertex 
-			Vector2f deltaPos;
-			math::sincos(deltaPos.Y, deltaPos.X, params.beginDegree + DeltaDegree * i);
-			list.vertices.emplace_back(MakeVertex( params.pos + deltaPos * params.radius, uvCenter + deltaPos * uvSizeHalf, params.color ));
-
-			// add index 
-            if (i == 0) 
-                continue;
-			list.indices.emplace_back(vcount);
-			list.indices.emplace_back(vcount + i);
-			list.indices.emplace_back(vcount + i + 1);
-		}
-    }
-
-    // Draw Round Box 2:
-    // radius of rounded corner:
-    //     lt: left top
-    //     rt: right top
-    //     rb: right bottom
-    //     lb: left bottom
-    // 
-    // whole box:
-    //     (0,y)       (x,y)
-    //     (0,0)       (x,0)
-    // 
-    // split into:
-    //             -------------------------------------------------   (x,y)
-    //             |       |            top bar                | rt|
-    //             |   lt  <-----------------------^---------------|
-    //             |       |                       |               |
-    //             |-------|         center        |               |
-    //   left bar  |       |                       |    right bar  |
-    //             |-------v----------------------->               |
-    //             |                   |           |---------------|
-    //             |                   |           |               |
-    //             |                   |           |               |
-    //             |        lb         |bottom bar |       rb      |
-    //             |                   |           |               |
-    //             |                   |           |               |
-    //     (0,0)   -------------------------------------------------
-    // 
-    // cordinates:
-    //     top bar: 
-    //         (lt,0)      (x-rt,0)
-    //         (lt,y-rt)   (x-rt,y-rt)
-    // 
-    //     left bar:
-    //         (0,y-lt)    (lt,y-lt)
-    //         (0,lb)      (lt,lb)
-    // 
-    //     bottom bar:
-    //         (lb,lb)     (x-rb,lb)
-    //         (lb,0)      (x-rb,0)
-    // 
-    //     right bar:
-    //         (x-rb,y-rt) (x,y-rt)
-    //         (x-rb,rb)   (x,rb)
-    // 
-    //     center:
-    //         (lt,y-rt)   (x-rb,y-rt)
-    //         (lt,lb)     (x-rb,lb)
-    //
-    void PrimitiveDraw::RoundBoxShape2(PrimDrawList& list, const PrimitiveDraw::RoundBoxParams& params, int32_t sampleCount)
-    {
-        auto prect = params.rect;
-        FanParams fans[4];
-        int fanCount = 0;
-        BoxParams boxes[5];
-        float radius[4];
-        std::memcpy(radius, params.radius, sizeof(radius));
-        auto size = prect.max - prect.min;
-        float shortEdge = std::min(size.X, size.Y);
-        for (int i = 0; i < 4; ++i) radius[i] = std::clamp(radius[i], 0.f, shortEdge/2);
-        Vector2f uvS = (params.uv.max - params.uv.min) / (prect.max - prect.min);
-        if (radius[0] > 0.f)
-        {
-            Rect rect = {Vector2f{prect.min.X, prect.min.Y + radius[3]}, Vector2f{prect.min.X + radius[0], prect.max.Y - radius[0]}};
-            Rect uv = {Vector2f{params.uv.min.X, params.uv.min.Y + radius[3] * uvS.Y}, Vector2f{params.uv.min.X + radius[3] * uvS.X, params.uv.max.Y - radius[0] * uvS.Y}};
-            boxes[fanCount] = {
-                rect, uv, params.color
-            };
-            fans[fanCount++] = {
-                Vector2f(prect.min.X + radius[0], prect.max.Y - radius[0]),
-                Rect{Vector2f(params.uv.min.X, params.uv.max.Y - radius[0] * uvS.Y * 2), Vector2f(params.uv.min.X + radius[0] * uvS.X * 2, params.uv.max.Y)},
-                params.color,
-                radius[0],
-                math::PI_ / 2,
-                math::PI_ / 2};
-        }
-        if (radius[1] > 0.f)
-        {
-            Rect rect = {Vector2f{prect.min.X + radius[0], prect.max.Y - radius[1]}, Vector2f{prect.max.X - radius[1], prect.max.Y}};
-            Rect uv = {Vector2f{params.uv.min.X + radius[0] * uvS.X, params.uv.max.Y - radius[1] * uvS.Y}, Vector2f{params.uv.max.X - radius[1] * uvS.X, params.uv.max.Y}};
-            boxes[fanCount] = {
-                rect, uv, params.color
-            };
-
-            fans[fanCount++] = {
-                Vector2f(prect.max.X - radius[1], prect.max.Y - radius[1]),
-                Rect{Vector2f(params.uv.max.X - radius[1] * uvS.X * 2, params.uv.max.Y - radius[0] * uvS.Y * 2), params.uv.max},
-                params.color,
-                radius[1],
-                math::PI_ / 2,
-                0};
-        }
-        if (radius[2] > 0.f)
-        {
-            Rect rect = {Vector2f{prect.max.X - radius[2], prect.min.Y + radius[2]}, Vector2f{prect.max.X, prect.max.Y - radius[1]}};
-            Rect uv = {Vector2f{params.uv.max.X - radius[2] * uvS.X, params.uv.min.Y + radius[2] * uvS.Y}, Vector2f{params.uv.max.X, params.uv.max.Y - radius[1] * uvS.Y}};
-            boxes[fanCount] = {
-                rect, uv, params.color
-            };
-
-            fans[fanCount++] = {
-                Vector2f(prect.max.X - radius[2], prect.min.Y + radius[2]),
-                Rect{Vector2f(params.uv.max.X - radius[2] * uvS.X * 2, params.uv.min.Y), Vector2f(params.uv.max.X, params.uv.min.Y + radius[2] * uvS.Y * 2)},
-                params.color,
-                radius[2],
-                math::PI_ / 2,
-                -math::PI_ / 2};
-        }
-        if (radius[3] > 0.f)
-        {
-            Rect rect = {Vector2f{prect.min.X + radius[3], prect.min.Y}, Vector2f{prect.max.X - radius[2], prect.min.Y + radius[3]}};
-            Rect uv = {Vector2f{params.uv.min.X + radius[3] * uvS.X, params.uv.min.Y}, Vector2f{params.uv.max.X - radius[2] * uvS.X, params.uv.min.Y + radius[3] * uvS.Y}};
-            boxes[fanCount] = {
-                rect, uv, params.color
-            };
-
-            fans[fanCount++] = {
-                Vector2f(prect.min.X + radius[3], prect.min.Y + radius[3]),
-                Rect{params.uv.min, Vector2f(params.uv.min.X + radius[3] * uvS.X * 2, params.uv.min.Y + radius[3] * uvS.Y * 2)},
-                params.color,
-                radius[3],
-                math::PI_ / 2,
-                -math::PI_};
-        }
-        {
-            Rect rect = {Vector2f{prect.min.X + radius[0], prect.min.Y + radius[3]}, Vector2f{prect.max.X - radius[2], prect.max.Y - radius[1]}};
-            Rect uv = {Vector2f{params.uv.min.X + radius[0] * uvS.X, params.uv.min.Y + radius[3] * uvS.Y}, Vector2f{params.uv.max.X - radius[2] * uvS.X, params.uv.max.Y - radius[1] * uvS.Y}};
-            boxes[fanCount] = {
-                rect, uv, params.color
-            };
-        }
-        for (int i = 0; i < fanCount + 1; i++)
-            BoxShape(list, boxes[i]);
-
-        for (int i = 0; i < fanCount; i++)
-            FanShape(list, fans[i], sampleCount);
-    }
-    
-    void PrimitiveDraw::RoundBoxShape(PrimDrawList& list, const RoundBoxParams& params, int32_t sampleCount /* = 10 */)
-	{
-        float radius = params.radius[0];
-		//const uint32_t vcount = list.vertices.size();
-		//const uint32_t icount = list.indices.size();
-
-        // calculate info 
-        Vector2f uvSize = params.uv.max - params.uv.min;
-        Vector2f boxSize = params.rect.max - params.rect.min;
-        Vector2f uvBorder = uvSize * radius / boxSize;
-
-        // center rect 
-		//    |     |  
-		// --------------
-		//    |  x  |  
-		// --------------
-		//    |     |   
-        Rect centerRect{ params.rect.min + radius, params.rect.max - radius};
-        Rect centerRectUV{ params.uv.min + uvBorder, params.uv.max - uvBorder };
+        nvg = nvgCreateInternal(&params);
         
-        // draw order 
-        //  4 |  1  | 5
-        // ----  1  -----
-        //  2 |  1  | 3
-		// ----  1  -----
-		//  6 |  1  | 7 
-        
-        // draw middle rect(1) 
-        BoxShape(list, {
-			Rect{Vector2f(centerRect.min.X, params.rect.min.Y), Vector2f(centerRect.max.X, params.rect.max.Y)},
-			Rect{Vector2f(centerRectUV.min.X, params.rect.min.Y), Vector2f(centerRectUV.max.X, params.rect.max.Y)},
-            params.color
-        });
-
-        // draw border rect(2->3) 
-		BoxShape(list, {
-			Rect{Vector2f(params.rect.min.X, centerRect.min.Y), Vector2f(centerRect.min.X, centerRect.max.Y)},
-			Rect{Vector2f(params.uv.min.X, centerRectUV.min.Y),Vector2f(centerRectUV.min.X, centerRectUV.max.Y)},
-			params.color
-        });
-		BoxShape(list, {
-			Rect{Vector2f(centerRect.max.X, centerRect.min.Y), Vector2f(params.rect.max.X, centerRect.max.Y)},
-			Rect{Vector2f(centerRectUV.max.X, centerRectUV.min.Y), Vector2f(params.rect.max.X, centerRectUV.max.Y)},
-			params.color
-        });
-
-        // draw corner fan(4->7) 
-        FanShape(list, {
-            Vector2f(centerRect.min.X, centerRect.max.Y),
-            Rect{Vector2f(params.uv.min.X, centerRectUV.max.Y), Vector2f(centerRectUV.min.X, params.uv.max.Y)},
-            params.color,
-            radius,
-			math::PI_ / 2,
-            math::PI_ / 2 });
-		FanShape(list, {
-			Vector2f(centerRect.max.X, centerRect.max.Y),
-			Rect{Vector2f(centerRectUV.max.X, centerRectUV.max.Y), Vector2f(centerRectUV.max.X, centerRectUV.max.Y)},
-			params.color,
-            radius,
-			math::PI_ / 2,
-			0 });
-		FanShape(list, {
-			Vector2f(centerRect.min.X, centerRect.min.Y),
-			Rect{Vector2f(params.uv.min.X, params.uv.min.Y), Vector2f(centerRectUV.min.X, centerRectUV.min.Y)},
-			params.color,
-            radius,
-			math::PI_ / 2,
-			-math::PI_ });
-		FanShape(list, {
-			Vector2f(centerRect.max.X, centerRect.min.Y),
-			Rect{Vector2f(centerRectUV.min.X, params.uv.min.Y), Vector2f(params.uv.max.X, centerRectUV.min.Y)},
-			params.color,
-            radius,
-			math::PI_ / 2,
-			-math::PI_ / 2 });
     }
 }

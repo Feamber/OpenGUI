@@ -174,6 +174,7 @@ public:
 
 	struct GlyphDrawPolicy {
 		virtual void draw(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one());
+		static void drawQuad(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one());
 	};
 
 	struct ShapedTextData {

@@ -48,7 +48,6 @@ TextElement{
     justify-content:center;
     align-items:center;
     background-color: initial;
-    background-image:url(res/van.jpg); 
 }
 #Child1 {
     width:100px;
@@ -58,6 +57,7 @@ TextElement{
     flex-direction: row;
     overflow: scroll;
     flex-wrap: wrap;
+    background-image:url(res/van.jpg); 
 }
 
 #Child3 { 
