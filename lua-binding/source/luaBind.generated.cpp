@@ -43,6 +43,8 @@ void BindLua_generated(lua_State* L)
         type["RemoveChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetRoot;
         type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetLayoutRoot;
+        type["AddStyleClass"] = (void(OGUI::VisualElement::*)(std::basic_string_view<char>))&OGUI::VisualElement::AddStyleClass;
+        type["RemoveStyleClass"] = (void(OGUI::VisualElement::*)(std::basic_string_view<char>))&OGUI::VisualElement::RemoveStyleClass;
         type["SetPseudoClass"] = (void(OGUI::VisualElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
         type["Bind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Bind;
         type["Unbind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Unbind;

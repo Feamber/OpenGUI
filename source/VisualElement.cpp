@@ -9,6 +9,7 @@
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/OMath.h"
+#include <algorithm>
 #include <type_traits>
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
@@ -527,6 +528,25 @@ OGUI::Rect OGUI::VisualElement::GetRect() const
 OGUI::Vector2f OGUI::VisualElement::GetSize() const
 {
 	return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
+}
+
+void OGUI::VisualElement::AddStyleClass(std::string_view styleClass)
+{
+	if(std::find(_styleClasses.begin(), _styleClasses.end(), styleClass) != _styleClasses.end())
+	{
+		_styleClasses.emplace_back(styleClass);
+		Context::Get().InvalidateCssCache();
+	}
+}
+
+void OGUI::VisualElement::RemoveStyleClass(std::string_view styleClass)
+{
+	auto find =  std::find(_styleClasses.begin(), _styleClasses.end(), styleClass);
+	if(find == _styleClasses.end())
+	{
+		_styleClasses.erase(find);
+		Context::Get().InvalidateCssCache();
+	}
 }
 
 void OGUI::VisualElement::MarkTransformDirty()
