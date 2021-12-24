@@ -376,6 +376,7 @@ cpp.hint
 !.vscode/launch.json
 meta/bin/
 meta/lib/
+lua-binding/IntelliSense/
 
 *.exe
 .VSCodeCounter

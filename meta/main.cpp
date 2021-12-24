@@ -3,6 +3,7 @@
 #include "clang/Frontend/FrontendActions.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
+#include "clang/Frontend/CompilerInstance.h"
 // Declares llvm::cl::extrahelp.
 #include "llvm/Support/CommandLine.h"
 #include <fstream>
@@ -38,7 +39,9 @@ public:
 
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& compiler, llvm::StringRef file)
     {
-        return std::make_unique<meta::ASTConsumer>(db);
+      auto& LO = compiler.getLangOpts();
+      LO.CommentOpts.ParseAllComments = true;
+      return std::make_unique<meta::ASTConsumer>(db);
     }
 };
 
@@ -57,7 +60,6 @@ int main(int argc, const char **argv) {
   meta::OptionsParser& OptionsParser = ExpectedParser.get();
   tooling::ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
-
   int result = Tool.run(tooling::newFrontendActionFactory<ReflectFrontendAction>().get());
   std::string OutPath;
   if(Output.empty())

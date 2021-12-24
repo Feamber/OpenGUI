@@ -1,12 +1,12 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Context.h"
-#include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Event/EventBase.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {

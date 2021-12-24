@@ -15,7 +15,9 @@ namespace meta
     {
         std::string name;
         std::string type;
+        std::string rawType;
         std::string attrs;
+        std::string comment;
         int line;
     };
 
@@ -25,8 +27,10 @@ namespace meta
         bool isConst;
         std::string name;
         std::string attrs;
+        std::string comment;
         std::vector<Field> parameters;
         std::string retType;
+        std::string rawRetType;
         std::string fileName;
         int line;
     };
@@ -36,6 +40,7 @@ namespace meta
         std::vector<std::string> bases;
         std::string name;
         std::string attrs;
+        std::string comment;
         std::vector<Field> fields;
         std::vector<Field> statics;
         std::vector<Function> methods;
@@ -48,6 +53,7 @@ namespace meta
         std::string name;
         std::string attrs;
         uint64_t value;
+        std::string comment;
         int line;
     };
 
@@ -57,6 +63,7 @@ namespace meta
         std::string attrs;
         std::vector<Enumerator> values;
         std::string fileName;
+        std::string comment;
         int line;
     };
 

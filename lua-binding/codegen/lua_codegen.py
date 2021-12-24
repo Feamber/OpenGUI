@@ -8,18 +8,59 @@ from pathlib import Path
 
 BASE = os.path.dirname(os.path.realpath(__file__).replace("\\", "/"))
 
+def mysplit(string:str):
+    result = []
+    s = 0
+    i = 0
+    ln = len(string)
+    c = 0
+    while i < ln:
+        if string[i]=="<":
+            c=c+1
+        elif string[i]==">" and c>0:
+            c=c-1
+        elif string[i]=="," and c==0:
+            result.append(str(string[s : i]).strip())
+            s = i+1
+        i = i+1
+    if s != i:
+        result.append(string[s : i].strip())
+    return result
+
+    
+
+
+def lua_type_name(name : str):
+    name = str(name)
+    if name == "float" or name == "double":
+        return "number"
+    if name == "int" or  name == "size_t" or name == "uint32_t" \
+        or name == "int32_t" or name == "uint":
+        return "integer"
+    if name.startswith("std::string") or name == "ostr::string" or name == "char":
+        return "string"
+    name = name.replace("::", ".")
+    i = name.find("<")
+    if i!=-1 :
+        return name[0 : i] + "<" + str.join(",", [lua_type_name(inner) for inner in mysplit(name[i+1 : len(name)-1])]) + ">"
+    return name
+
 class Field(object):
-    def __init__(self, name, type):
+    def __init__(self, name, type, rawType, comment):
         self.name = name
         self.type = type
+        self.luaType = lua_type_name(rawType)
         self.getter = None
         self.setter = None
+        self.comment = comment
 
 class FunctionDesc(object):
-    def __init__(self, retType, fields, isConst):
+    def __init__(self, retType, rawRetType, fields, isConst, comment):
         self.retType = retType
+        self.luaRetType = lua_type_name(rawRetType)
         self.fields = fields
         self.isConst = isConst
+        self.comment = comment
     def getSignature(self, record):
         return self.retType +"("+ (record.name + "::" if record else "") + "*)("+ str.join(", ",  [x.type for x in self.fields])  + ")" + ("const" if self.isConst else "")
 
@@ -30,12 +71,14 @@ class Function(object):
         self.descs = []
 
 class Record(object):
-    def __init__(self, name, fields, methods, bases):
+    def __init__(self, name, fields, methods, bases, comment):
         self.name = name
+        self.luaName = name.replace("::", ".")
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.fields = fields
         self.methods = methods
         self.bases = bases
+        self.comment = comment
     def allFields(self):
         result = []
         result.extend(self.fields)
@@ -51,16 +94,19 @@ class Record(object):
         return result
 
 class Enumerator(object):
-    def __init__(self, name, value):
+    def __init__(self, name, value, comment):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.value = value
+        self.comment = comment
 
 class Enum(object):
-    def __init__(self, name, enumerators):
+    def __init__(self, name, enumerators, comment):
         self.name = name
+        self.luaName = lua_type_name(name)
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.enumerators = enumerators
+        self.comment = comment
 
 class Binding(object):
     def __init__(self):
@@ -81,6 +127,7 @@ def GetInclude(path):
 
 def main():
     meta = json.load(open(os.path.join(BASE, "../../build/meta.json")))
+    function_by_file = {}
     db = Binding()
     for v in [  
                 "float", "double", 
@@ -98,7 +145,7 @@ def main():
             attr = value2["attrs"]
             if not "script" in attr:
                 continue
-            field = Field(key2, value2["type"])
+            field = Field(key2, value2["type"], value2["rawType"], value2["comment"])
             fields.append(field)
         functions = parseFunctions(value["methods"])
         bases = []
@@ -111,7 +158,7 @@ def main():
                 continue
             db.event_arg_types[key+"*"]=True
             db.headers.add(GetInclude(file))
-            db.add_record(Record(key, fields, functions, bases))
+            db.add_record(Record(key, fields, functions, bases, value["comment"]))
     for key, value in meta["enums"].items():
         attr = value["attrs"]
         if not "script" in attr:
@@ -123,16 +170,33 @@ def main():
         db.headers.add(GetInclude(file))
         enumerators = []
         for key2, value2 in value["values"].items():
-            enumerators.append(Enumerator(key2, value2["value"]))
+            enumerators.append(Enumerator(key2, value2["value"], value2["comment"]))
         db.event_arg_types[key]=True
-        db.enums.append(Enum(key, enumerators))
+        db.enums.append(Enum(key, enumerators, value["comment"]))
         
-    db.functions = parseFunctions(meta["functions"], headers=db.headers)
-    
+    db.functions = parseFunctions(meta["functions"], headers=db.headers, function_by_file=function_by_file)
     template = os.path.join(BASE, "luaBind.cpp.mako")
     content = render(template, db = db)
     output = os.path.join(BASE, "../source/luaBind.generated.cpp")
     write(output, content)
+
+    for record in db.records:
+        template = os.path.join(BASE, "RecordIntelliSense.lua.mako")
+        content = render(template, record = record)
+        output = os.path.join(BASE, "../IntelliSense/%s.lua"%record.name.replace("::", "_"))
+        write(output, content)
+    for enum in db.enums:
+        template = os.path.join(BASE, "EnumIntelliSense.lua.mako")
+        content = render(template, enum = enum)
+        output = os.path.join(BASE, "../IntelliSense/%s.lua"%enum.name.replace("::", "_"))
+        write(output, content)
+    for file, functions in function_by_file.items():
+        template = os.path.join(BASE, "FunctionIntelliSense.lua.mako")
+        content = render(template, functions = functions)
+        output = os.path.join(BASE, "../IntelliSense/%s.lua"%(file.replace("\\", "_")))
+        write(output, content)
+
+
 
 def render(filename, **context):
     try:
@@ -163,7 +227,7 @@ def abort(message):
         print(message, file=sys.stderr)
         sys.exit(1)
 
-def parseFunctions(dict, headers = None):
+def parseFunctions(dict, headers = None, function_by_file = None):
     functionsDict = {}
     for value in dict:
         attr = value["attrs"]
@@ -179,9 +243,14 @@ def parseFunctions(dict, headers = None):
         function = functionsDict.setdefault(name, Function(name))
         fields = []
         for key2, value2 in value["parameters"].items():
-            field = Field(key2, value2["type"])
+            field = Field(key2, value2["type"], value2["rawType"], value2["comment"])
             fields.append(field)
-        function.descs.append(FunctionDesc(value["retType"], fields, value["isConst"]))
+        f = FunctionDesc(value["retType"], value["rawRetType"], fields, value["isConst"], value["comment"])
+        function.descs.append(f)
+        if not (function_by_file is None):
+            path = GetInclude(file)
+            function_by_file.setdefault(path, set())
+            function_by_file[path].add(function)
     return functionsDict
 
 if __name__ == "__main__":
