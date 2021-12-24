@@ -6,6 +6,10 @@
 #include <typeindex>
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Bind/Bind.h"
+#ifndef LUABIND_API
+#define LUABIND_API
+#endif
+
 namespace sol::stack
 {
     template<>
@@ -92,7 +96,7 @@ namespace OGUI
         });
     }
 
-    void BindLua(lua_State* L);
+    LUABIND_API void BindLua(lua_State* L);
 
     struct SubLuaBindable
     {
