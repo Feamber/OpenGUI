@@ -169,7 +169,6 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
     {
     case (clang::Decl::Namespace):
     case (clang::Decl::CXXRecord):
-    case (clang::Decl::Enum):
     case (clang::Decl::ClassTemplate):
         if(childBehavior == PAR_NoReflect)
             return;

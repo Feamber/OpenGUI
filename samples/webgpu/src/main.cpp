@@ -719,7 +719,7 @@ int main(int , char* []) {
 	// DataBindSample sample2;
 	// windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
-	//windows.push_back(CreateCssTestWindow());
+	windows.push_back(CreateCssTestWindow());
 	windows.push_back(CreatePercentageMarginWindow());
 	//XmlFiltersSample sample3;
 	//windows.push_back(sample3.MakeWindow());
