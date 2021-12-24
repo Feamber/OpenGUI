@@ -26,7 +26,9 @@ namespace meta {
         J.attributeObject(P.name, [&]
         {
             J.attribute("type", P.type);
+            J.attribute("rawType", P.rawType);
             serializeAttr(J, P.attrs);
+            J.attribute("comment", P.comment);
             J.attribute("line", P.line);
         });
     }
@@ -40,12 +42,14 @@ namespace meta {
             J.attribute("isStatic", P.isStatic);
             J.attribute("isConst", P.isConst);
             serializeAttr(J, P.attrs);
+            J.attribute("comment", P.comment);
             J.attributeObject("parameters", [&]
             {
                 for(auto param : P.parameters)
                     serialize(J, param);
             });
             J.attribute("retType", P.retType);
+            J.attribute("rawRetType", P.rawRetType);
             if(!method)
                 J.attribute("fileName", P.fileName);
             J.attribute("line", P.line);
@@ -82,6 +86,7 @@ std::string meta::serialize(const Database& P)
                     for(auto f : record.methods)
                         serialize(J, f, true);
                 });
+                J.attribute("comment", record.comment);
                 J.attribute("fileName", record.fileName);
                 J.attribute("line", record.line);
             });
@@ -110,10 +115,12 @@ std::string meta::serialize(const Database& P)
                         {
                             serializeAttr(J, v.attrs);
                             J.attribute("value", v.value);
+                            J.attribute("comment", v.comment);
                             J.attribute("line", v.line);
                         });
                     }
                 });
+                J.attribute("comment", e.comment);
                 J.attribute("fileName", e.fileName);
                 J.attribute("line", e.line);
             });

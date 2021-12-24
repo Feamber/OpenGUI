@@ -29,6 +29,7 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/CommandLine.h"
 #include "clang/Tooling/CommonOptionsParser.h"
+#include "llvm/Support/Path.h"
 
 using namespace clang::tooling;
 using namespace llvm;
@@ -118,6 +119,13 @@ llvm::Error OptionsParser::init(
   if(!Filter.empty())
   {
       std::vector<std::string> filters = Filter;
+      for(auto& filter : filters)
+      {
+        llvm::SmallString<256> path(filter);
+        sys::path::remove_dots(path, true, sys::path::Style::windows);
+        filter = path.c_str();
+        replaceAll(filter, "\\", "/");
+      }
       auto newEnd = std::remove_if(SourcePathList.begin(), SourcePathList.end(), 
       [&](std::string& path)
       {

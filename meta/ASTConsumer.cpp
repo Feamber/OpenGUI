@@ -63,6 +63,18 @@ std::string GetTypeName(clang::QualType type, clang::ASTContext* ctx)
     return baseName;
 }
 
+
+std::string GetRawTypeName(clang::QualType type, clang::ASTContext* ctx)
+{
+    if(type->isPointerType() || type->isReferenceType())
+        type = type->getPointeeType();
+    type = type.getUnqualifiedType();
+    auto baseName = type.getAsString(ctx->getLangOpts());
+    Remove(baseName, "struct ");
+    Remove(baseName, "class ");
+    return baseName;
+}
+
 std::string ParseLeafAttribute(clang::NamedDecl* decl, std::vector<std::string>& attrStack)
 {
     std::string attr;
@@ -86,6 +98,23 @@ std::string ParseLeafAttribute(clang::NamedDecl* decl, std::vector<std::string>&
         attr += pattr;
     }
     return attr;
+}
+
+std::string GetComment(clang::Decl* decl, clang::ASTContext* ctx, clang::SourceManager& sm)
+{
+    using namespace clang;
+    std::string comment;
+    const RawComment* rc = ctx->getRawCommentForDeclNoCache(decl);
+    if(rc)
+    {
+        SourceRange range = rc->getSourceRange();
+
+        PresumedLoc startPos = sm.getPresumedLoc(range.getBegin());
+        PresumedLoc endPos = sm.getPresumedLoc(range.getEnd());
+
+        comment = rc->getBriefText(*ctx);
+    }
+    return comment;
 }
 
 void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::string>& attrStack, ParseBehavior behavior, Record* record)
@@ -153,7 +182,9 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
             attr += ", ";
         attr += pattr;
     }
-    
+    auto& sm = _ASTContext->getSourceManager();
+    auto location = sm.getPresumedLoc(decl->getLocation());
+    auto comment = GetComment(decl, _ASTContext, sm);
     switch (kind)
     {
     case (clang::Decl::Namespace):
@@ -178,10 +209,10 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
                 return;
             }
             Record newRecord;
+            newRecord.comment = comment;
             if(!recordDecl->isAnonymousStructOrUnion())
             {
                 newRecord.name = recordDecl->getQualifiedNameAsString();
-                auto location = _ASTContext->getSourceManager().getPresumedLoc(recordDecl->getLocation());
                 newRecord.fileName = location.getFilename();
                 newRecord.line = location.getLine();
                 newRecord.attrs = attr;
@@ -220,8 +251,8 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
             if(!enumDecl)
                 return;
             Enum newEnum;
+            newEnum.comment = comment;
             newEnum.name = enumDecl->getQualifiedNameAsString();
-            auto location = _ASTContext->getSourceManager().getPresumedLoc(enumDecl->getLocation());
             newEnum.fileName = location.getFilename();
             newEnum.line = location.getLine();
             newEnum.attrs = attr;
@@ -229,10 +260,11 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
             for(auto enumerator : enumDecl->enumerators())
             {
                 Enumerator newEnumerator;
+                newEnumerator.comment = GetComment(enumerator, _ASTContext, sm);
                 newEnumerator.name = enumerator->getQualifiedNameAsString();
                 newEnumerator.attrs = ParseLeafAttribute(enumerator, newStack);
                 newEnumerator.value = enumerator->getInitVal().getRawData()[0];
-                newEnumerator.line = _ASTContext->getSourceManager().getPresumedLineNumber(enumerator->getLocation());
+                newEnumerator.line = sm.getPresumedLineNumber(enumerator->getLocation());
                 newEnum.values.push_back(newEnumerator);
             }
             db.enums.push_back(std::move(newEnum));
@@ -245,9 +277,9 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
             if(!functionDecl)
                 return;
             Function newFunction;
+            newFunction.comment = comment;
             newFunction.isStatic = functionDecl->isStatic();
             newFunction.name = functionDecl->getQualifiedNameAsString();
-            auto location = _ASTContext->getSourceManager().getPresumedLoc(functionDecl->getLocation());
             if(!location.isInvalid())
             {
                 newFunction.fileName = location.getFilename();
@@ -263,16 +295,20 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
                 newFunction.isConst = false;
             }
             if(!functionDecl->isNoReturn())
+            {
                 newFunction.retType = GetTypeName(functionDecl->getReturnType(), _ASTContext);
+                newFunction.rawRetType = GetRawTypeName(functionDecl->getReturnType(), _ASTContext);
+            }
             std::vector<std::string> newStack;
             for(auto param : functionDecl->parameters())
             {
                 Field newField;
-                
+                newField.comment = GetComment(param, _ASTContext, sm);
                 newField.attrs = ParseLeafAttribute(param, newStack);
                 newField.name = param->getNameAsString();
                 newField.type = GetTypeName(param->getType(), _ASTContext);
-                newField.line = _ASTContext->getSourceManager().getPresumedLineNumber(param->getLocation());
+                newField.rawType = GetRawTypeName(param->getType(), _ASTContext);
+                newField.line = location.getLine();
                 newFunction.parameters.push_back(std::move(newField));
             }
             if(record)
@@ -286,10 +322,12 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
             if(!fieldDecl)
                 return;
             Field newField;
+            newField.comment = comment;
             newField.attrs = attr;
             newField.name = fieldDecl->getNameAsString();
             newField.type = GetTypeName(fieldDecl->getType(), _ASTContext);
-            newField.line = _ASTContext->getSourceManager().getPresumedLineNumber(fieldDecl->getLocation());
+            newField.rawType = GetRawTypeName(fieldDecl->getType(), _ASTContext);
+            newField.line = location.getLine();
             if(record)
                 record->fields.push_back(std::move(newField));
             else
@@ -302,10 +340,11 @@ void meta::ASTConsumer::HandleDecl(clang::NamedDecl* decl, std::vector<std::stri
             if(!varDecl || !varDecl->isStaticDataMember())
                 return;
             Field newField;
+            newField.comment = comment;
             newField.attrs = attr;
             newField.name = varDecl->getNameAsString();
             newField.type = GetTypeName(varDecl->getType(), _ASTContext);
-            newField.line = _ASTContext->getSourceManager().getPresumedLineNumber(varDecl->getLocation());
+            newField.line = location.getLine();
             if(record)
                 record->statics.push_back(std::move(newField));
             else
