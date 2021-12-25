@@ -50,7 +50,7 @@ struct SpdlogLogger : LogInterface
 	std::shared_ptr<spdlog::sinks::daily_file_sink_mt> get_file_sink()
 	{
 		static std::shared_ptr<spdlog::sinks::daily_file_sink_mt> _static = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
-			"Daily.log",        // file name
+			"log/Daily.log",        // file name
 			0,                  // hour
 			0,                  // minute
 			false,              // truncate
