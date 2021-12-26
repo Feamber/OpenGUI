@@ -65,17 +65,3 @@ void OGUI::StyleComplexSelector::UpdateSpecificity()
 		specificity += bitcount((uint32_t)sel.reversedPseudoMask) * classWeight;
 	}
 }
-
-void OGUI::StyleComplexSelector::SetPseudoElement(std::string_view name)
-{
-	PseudoElements id = PseudoElements::After;
-	switchstr(name)
-	{
-		casestr("before") id = PseudoElements::Before; break;
-		casestr("after") id = PseudoElements::After; break;
-		default:
-			OUNREACHABLE
-			return;
-	}
-	pseudoElem = id;
-}

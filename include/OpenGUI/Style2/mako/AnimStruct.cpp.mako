@@ -49,52 +49,56 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
 }
 
 
-bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg, int animCount)
+void OGUI::AnimStyle::SetupParser()
 {
-    size_t hash = OGUI::hash(name);
-
-    //shorthands
-    %if struct.shorthands:
-    switch(hash)
+%if struct.shorthands:
+%for prop in struct.shorthands:
+    CSSParser::Register${to_camel_case(prop.name)}();
+%endfor
+%endif
     {
-    %for prop in struct.shorthands:
-        case Ids::${prop.ident}:
-            return Parse::Parse${to_camel_case(prop.name)}(sheet, name, value, rule, errorMsg)
-    %endfor
-        default: break;
+        using namespace CSSParser;
+        std::string grammar = "animation-name <- 'animation-name' _ ':' _ Name+";
+        RegisterProperty("animation-name");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationName;
+            parser["animation-name"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(vs.size() < anim.size())
+                    throw peg::parse_error("animation-name dose not match animation properties count.");
+                anim.resize(vs.size());
+                for(int i=0; i<vs.size(); ++i)
+                    anim[i].name = std::any_cast<std::string&>(vs[i]);
+            };
+        });
+    }
+%for prop in struct.longhands:
+    %if prop.name!="animation-name":
+	{
+        using namespace CSSParser;
+        std::string grammar = "${prop.name} <- '${prop.name}' _ ':' _ (GlobalValue / ${prop.valueRule}+)";
+        RegisterProperty("${prop.name}");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::${prop.ident};
+            parser["${prop.name}"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("${prop.name} dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(std::any_cast<${prop.storage_type}&>(vs[0]))});
+            };
+        });
     }
     %endif
-    std::vector<std::string_view> tokens;
-    std::split(value, tokens, ", ");
-    //longhands
-    switch(hash)
-    {
-    %for prop in struct.longhands:
-        case Ids::${prop.ident}:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                ${prop.storage_type} v;
-                if(${prop.parser}(tokens[i], v))
-            %if prop.name=="animation-name":
-                    rule.animation[i].name = v;
-            %else:
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-            %endif
-                else
-                {
-                    errorMsg = "failed to parse ${prop.name} value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-    %endfor
-        default: break;
-    }
-    return false;
+%endfor
 }

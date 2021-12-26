@@ -203,7 +203,7 @@ namespace OGUI
         {
             auto pathSv = path.to_sv();
 
-            auto value = ParseCSSFile(std::string(pathSv.begin(), pathSv.end()));
+            auto value = ParseFile(std::string(pathSv.begin(), pathSv.end()));
             if (!value)
             {
                 olog::Error(u"<OGUI:Style path={}> ParseCSSFile失败!"_o, path);

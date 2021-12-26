@@ -1,59 +1,39 @@
 <%! 
     from tool.style_codegen import to_small_camel_case, to_camel_case
-    from tool.style_codegen import (LOGICAL_CORNERS, PHYSICAL_CORNERS, LOGICAL_SIDES,
-                      PHYSICAL_SIDES, LOGICAL_SIZES, LOGICAL_AXES)
 %>
-<%def name="shorthand(name, sub_properties)">
-    <% struct.add_shorthand(name, sub_properties.split()) %>
-    ${caller.body()}
-</%def>
-
-<%def name="four_sides_shorthand(name, sub_property_pattern)">
-    <% sub_properties=' '.join(sub_property_pattern % side for side in PHYSICAL_SIDES) %>
-    <%call expr="self.shorthand(name, sub_properties=sub_properties)">
-namespace OGUI
+<%def name="four_sides_shorthand(name, sub_property_pattern, sides)">
+    <% prop = struct.add_shorthand(name, [sub_property_pattern % side for side in sides]) %>
+namespace OGUI::CSSParser
 {
-    namespace Parse
+    void Register${to_camel_case(name)}()
     {
-        bool Parse${to_camel_case(name)}(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+        std::string grammar = "${prop.name} <- '${prop.name}' _ ':' _ (GlobalValue / ${prop.sub_properties[0].valueRule}{1, 4})";
+        RegisterProperty("${prop.name}");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            YGValue values[4];
-            if(!ParseFourSides(value, values[0], values[1], values[2], values[3]))
-            {
-                errorMsg = "failed to parse ${name} value!";
-                return false;
-            }
-        %for index, side in enumerate(["left", "top", "right", "bottom"]):
-            rule.properties.push_back(StyleProperty{Style${struct.ident}::Ids::${to_small_camel_case(sub_property_pattern % side)}, sheet.Push(values[${index}])});
-        %endfor
-            return true;
-        }
+            parser["${prop.name}"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                {
+                    int keyword = (int)std::any_cast<StyleKeyword>(vs[0]);
+
+                %for subprop in prop.sub_properties:
+                    ctx.rule->properties.push_back({Style${struct.ident}::Ids::${subprop.ident}, keyword});
+                %endfor
+                }
+                else
+                {
+                    auto& v0 = vs[0];
+                    auto& v1 = vs.size() > 1 ? vs[1] : v0;
+                    auto& v2 = vs.size() > 2 ? vs[2] : v0;
+                    auto& v3 = vs.size() > 3 ? vs[3] : v1;
+                    
+                %for i, subprop in enumerate(prop.sub_properties):
+                    ctx.rule->properties.push_back({Style${struct.ident}::Ids::${subprop.ident}, ctx.storage->Push<${subprop.view_type}>(std::any_cast<${subprop.storage_type}>(v${i}))});
+                %endfor
+                }
+            };
+        });
     }
 }
-    </%call>
-</%def>
-
-<%def name="four_corners_shorthand(name, sub_property_pattern)">
-    <% sub_properties=' '.join(sub_property_pattern % side for side in PHYSICAL_CORNERS) %>
-    <%call expr="self.shorthand(name, sub_properties=sub_properties)">
-namespace OGUI
-{
-    namespace Parse
-    {
-        bool Parse${to_camel_case(name)}(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
-        {
-            YGValue values[4];
-            if(!ParseFourSides(value, values[0], values[1], values[2], values[3]))
-            {
-                errorMsg = "failed to parse ${name} value!";
-                return false;
-            }
-        %for index, side in enumerate(["top-left", "top-right", "bottom-right", "bottom-left"]):
-            rule.properties.push_back(StyleProperty{Style${struct.ident}::Ids::${to_small_camel_case(sub_property_pattern % side)}, sheet.Push(values[${index}])});
-        %endfor
-            return true;
-        }
-    }
-}
-    </%call>
 </%def>

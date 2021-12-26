@@ -5,29 +5,40 @@
 
 
 
+
     
-    
-    
-    
-namespace OGUI
+namespace OGUI::CSSParser
 {
-    namespace Parse
+    void RegisterBorderRadius()
     {
-        bool ParseBorderRadius(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+        std::string grammar = "border-radius <- 'border-radius' _ ':' _ (GlobalValue / YGValueZero{1, 4})";
+        RegisterProperty("border-radius");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            YGValue values[4];
-            if(!ParseFourSides(value, values[0], values[1], values[2], values[3]))
-            {
-                errorMsg = "failed to parse border-radius value!";
-                return false;
-            }
-            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderTopLeftRadius, sheet.Push(values[0])});
-            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderTopRightRadius, sheet.Push(values[1])});
-            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderBottomRightRadius, sheet.Push(values[2])});
-            rule.properties.push_back(StyleProperty{StyleBorder::Ids::borderBottomLeftRadius, sheet.Push(values[3])});
-            return true;
-        }
+            parser["border-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                {
+                    int keyword = (int)std::any_cast<StyleKeyword>(vs[0]);
+
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderTopLeftRadius, keyword});
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderTopRightRadius, keyword});
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderBottomRightRadius, keyword});
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderBottomLeftRadius, keyword});
+                }
+                else
+                {
+                    auto& v0 = vs[0];
+                    auto& v1 = vs.size() > 1 ? vs[1] : v0;
+                    auto& v2 = vs.size() > 2 ? vs[2] : v0;
+                    auto& v3 = vs.size() > 3 ? vs[3] : v1;
+                    
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderTopLeftRadius, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v0))});
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderTopRightRadius, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v1))});
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderBottomRightRadius, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v2))});
+                    ctx.rule->properties.push_back({StyleBorder::Ids::borderBottomLeftRadius, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v3))});
+                }
+            };
+        });
     }
 }
-    
-

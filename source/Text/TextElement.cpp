@@ -381,13 +381,13 @@ namespace OGUI
         {
             switch(text.textAlign)
             {
-                case TextAlign::Left: return godot::HALIGN_LEFT;
-                case TextAlign::Right: return godot::HALIGN_RIGHT;
-                case TextAlign::Center: return godot::HALIGN_CENTER;
+                case ETextAlign::Left: return godot::HALIGN_LEFT;
+                case ETextAlign::Right: return godot::HALIGN_RIGHT;
+                case ETextAlign::Center: return godot::HALIGN_CENTER;
                 //TODO: handle direction
-                case TextAlign::Start: return godot::HALIGN_LEFT;
-                case TextAlign::End: return godot::HALIGN_RIGHT;
-                case TextAlign::Justify: return godot::HALIGN_FILL;
+                case ETextAlign::Start: return godot::HALIGN_LEFT;
+                case ETextAlign::End: return godot::HALIGN_RIGHT;
+                case ETextAlign::Justify: return godot::HALIGN_FILL;
                 default:
                     break;
             }

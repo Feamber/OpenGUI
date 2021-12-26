@@ -4,21 +4,22 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include <gsl/span>
 #include <unordered_map>
-namespace OGUI
+namespace OGUI reflect
 {
 
 	enum class StyleKeyword : int
 	{
 		Inherit,
 		Initial,
-		Auto,
 		Unset,
+		Auto,
 		True,
 		False,
 		None
 	};
 
-	enum class StyleOverflow
+	enum class attr("style-enum":true)
+	EFlexOverflow
 	{
 		Visible,
 		Hidden,

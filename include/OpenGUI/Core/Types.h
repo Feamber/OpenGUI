@@ -229,7 +229,7 @@ namespace OGUI reflect
 		Gamepad_RightStick_Left = 256,
 	};
 
-	enum class attr("script":true)
+	enum class attr("script":true, "style-enum":true)
 	EInlineAlign : uint32
 	{
 		Baseline,

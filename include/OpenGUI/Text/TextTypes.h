@@ -1,15 +1,18 @@
 #pragma once
+#include "OpenGUI/meta.h"
 #include <cinttypes>
 
-namespace OGUI
+namespace OGUI reflect
 {
-    enum class TextStyle
+    enum class attr("style-enum":true)
+    ETextStyle
     {
         Normal,
         Italic
     };
 
-    enum class TextAlign
+    enum class attr("style-enum":true)
+    ETextAlign
     {
         Start,
         End,

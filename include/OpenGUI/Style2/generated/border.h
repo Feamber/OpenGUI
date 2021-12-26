@@ -6,13 +6,10 @@
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
-#include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
-#include "OpenGUI/Style2/Parse/MathParse.h"
-#include "OpenGUI/Style2/Parse/YogaParse.h"
+#include "yoga/Yoga.h"
 #include "OpenGUI/Style2/Lerp/MathLerp.h"
 #include "OpenGUI/Style2/Lerp/YogaLerp.h"
-#include "yoga/Yoga.h"
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
@@ -23,20 +20,20 @@ namespace OGUI
         constexpr static bool inherited = false;
         struct Ids
         {
-            static constexpr size_t borderLeftWidth = OGUI::hash("border-left-width"sv);
             static constexpr size_t borderTopWidth = OGUI::hash("border-top-width"sv);
             static constexpr size_t borderRightWidth = OGUI::hash("border-right-width"sv);
             static constexpr size_t borderBottomWidth = OGUI::hash("border-bottom-width"sv);
+            static constexpr size_t borderLeftWidth = OGUI::hash("border-left-width"sv);
             static constexpr size_t borderTopLeftRadius = OGUI::hash("border-top-left-radius"sv);
             static constexpr size_t borderTopRightRadius = OGUI::hash("border-top-right-radius"sv);
             static constexpr size_t borderBottomRightRadius = OGUI::hash("border-bottom-right-radius"sv);
             static constexpr size_t borderBottomLeftRadius = OGUI::hash("border-bottom-left-radius"sv);
             static constexpr size_t borderRadius = OGUI::hash("border-radius"sv);
         };
-        float borderLeftWidth;
         float borderTopWidth;
         float borderRightWidth;
         float borderBottomWidth;
+        float borderLeftWidth;
         YGValue borderTopLeftRadius;
         YGValue borderTopRightRadius;
         YGValue borderBottomRightRadius;
@@ -50,6 +47,6 @@ namespace OGUI
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
-        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
+        static void SetupParser();
     };
 }

@@ -292,7 +292,7 @@ public:
 				else if (std::find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
 				{
 					std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-					auto asset = ParseCSSFile(path);
+					auto asset = ParseFile(path);
 					if (asset)
 					{
 						std::vector<VisualElement*> stack {};

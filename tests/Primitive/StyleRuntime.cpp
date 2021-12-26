@@ -16,7 +16,7 @@ R"(#TestElement {
 
         
 })";
-    auto res = ParseCSS(exampleCSS);
+    auto res = Parse(exampleCSS);
 
     return res.value();
 }

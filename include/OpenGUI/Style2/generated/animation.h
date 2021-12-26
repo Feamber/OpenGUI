@@ -5,11 +5,7 @@
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
-#include "OpenGUI/Style2/Parse/CommonParse.h"
-#include "OpenGUI/Style2/Parse/AnimParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
-#include "OpenGUI/Style2/Parse/MathParse.h"
-#include "OpenGUI/Style2/Lerp/MathLerp.h"
 #include "OpenGUI/Style2/AnimTypes.h"
 namespace OGUI
 {
@@ -43,6 +39,6 @@ namespace OGUI
         static void ApplyProperties(std::vector<AnimStyle>& group, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
         void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props);
 		void ResolveReference(const gsl::span<StyleSheet*>& sheets);
-        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg, int animCount);
+        static void SetupParser();
     };
 }

@@ -6,13 +6,11 @@
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
-#include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "yoga/Yoga.h"
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Style2/Transform.h"
-#include "OpenGUI/Style2/Parse/MathParse.h"
-#include "OpenGUI/Style2/Parse/YogaParse.h"
 #include "OpenGUI/Style2/Lerp/MathLerp.h"
 #include "OpenGUI/Style2/Lerp/YogaLerp.h"
 namespace OGUI
@@ -29,18 +27,18 @@ namespace OGUI
             static constexpr size_t flexGrow = OGUI::hash("flex-grow"sv);
             static constexpr size_t flexShrink = OGUI::hash("flex-shrink"sv);
             static constexpr size_t flexBasis = OGUI::hash("flex-basis"sv);
-            static constexpr size_t left = OGUI::hash("left"sv);
             static constexpr size_t top = OGUI::hash("top"sv);
             static constexpr size_t right = OGUI::hash("right"sv);
             static constexpr size_t bottom = OGUI::hash("bottom"sv);
-            static constexpr size_t marginLeft = OGUI::hash("margin-left"sv);
+            static constexpr size_t left = OGUI::hash("left"sv);
             static constexpr size_t marginTop = OGUI::hash("margin-top"sv);
             static constexpr size_t marginRight = OGUI::hash("margin-right"sv);
             static constexpr size_t marginBottom = OGUI::hash("margin-bottom"sv);
-            static constexpr size_t paddingLeft = OGUI::hash("padding-left"sv);
+            static constexpr size_t marginLeft = OGUI::hash("margin-left"sv);
             static constexpr size_t paddingTop = OGUI::hash("padding-top"sv);
             static constexpr size_t paddingRight = OGUI::hash("padding-right"sv);
             static constexpr size_t paddingBottom = OGUI::hash("padding-bottom"sv);
+            static constexpr size_t paddingLeft = OGUI::hash("padding-left"sv);
             static constexpr size_t width = OGUI::hash("width"sv);
             static constexpr size_t height = OGUI::hash("height"sv);
             static constexpr size_t position = OGUI::hash("position"sv);
@@ -65,22 +63,22 @@ namespace OGUI
         float flexGrow;
         float flexShrink;
         YGValue flexBasis;
-        YGValue left;
         YGValue top;
         YGValue right;
         YGValue bottom;
-        YGValue marginLeft;
+        YGValue left;
         YGValue marginTop;
         YGValue marginRight;
         YGValue marginBottom;
-        YGValue paddingLeft;
+        YGValue marginLeft;
         YGValue paddingTop;
         YGValue paddingRight;
         YGValue paddingBottom;
+        YGValue paddingLeft;
         YGValue width;
         YGValue height;
         YGPositionType position;
-        StyleOverflow overflow;
+        EFlexOverflow overflow;
         YGAlign alignSelf;
         YGValue maxWidth;
         YGValue maxHeight;
@@ -103,6 +101,6 @@ namespace OGUI
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
-        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
+        static void SetupParser();
     };
 }

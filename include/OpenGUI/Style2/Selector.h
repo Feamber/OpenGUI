@@ -70,7 +70,6 @@ namespace OGUI reflect
 
 		OGUI_API void UpdateSpecificity();
 		OGUI_API bool IsSimple() { return selectors.size() == 1; }
-		OGUI_API void SetPseudoElement(std::string_view name);
 	}; 
 	class VisualElement;
 

@@ -24,13 +24,31 @@ void OGUI::RegisterStyleStruct(const StyleDesc& desc)
     registry.descriptions.push_back(desc);
 }
 
+namespace OGUI
+{
+	//helper
+	template<class T>
+	StyleDesc RegisterStyleStruct()
+	{
+		StyleDesc desc;
+		desc.hash = T::hash;
+		desc.inherited = T::inherited;
+		desc.name = T::name;
+		desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
+		desc.ApplyProperties = &T::ApplyProperties;
+        RegisterStyleStruct(desc);
+        T::SetupParser();
+		return desc;
+	}
+}
+
 void OGUI::RegisterBuiltinStructs()
 {
-    RegisterStyleStruct(GetDesc<StyleText>());
-    RegisterStyleStruct(GetDesc<StyleBackground>());
-    RegisterStyleStruct(GetDesc<StyleBorder>());
-    RegisterStyleStruct(GetDesc<StylePosition>());
-    RegisterStyleStruct(GetDesc<StyleEffects>());
+    RegisterStyleStruct<StyleText>();
+    RegisterStyleStruct<StyleBackground>();
+    RegisterStyleStruct<StyleBorder>();
+    RegisterStyleStruct<StylePosition>();
+    RegisterStyleStruct<StyleEffects>();
 }
 
 OGUI::ComputedStyle::ComputedStyle(const ComputedStyle& other)

@@ -7,7 +7,7 @@ from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
 
-PHYSICAL_SIDES = ["left", "top", "right", "bottom"]
+PHYSICAL_SIDES = ["top", "right", "bottom", "left"]
 LOGICAL_SIDES = ["block-start", "block-end", "inline-start", "inline-end"]
 PHYSICAL_SIZES = ["width", "height"]
 LOGICAL_SIZES = ["block-size", "inline-size"]
@@ -136,6 +136,7 @@ class Longhand(Property):
         name,
         type,
         initial_value,
+        valueRule,
         spec=None,
         keyword=None,
         rule_types_allowed=DEFAULT_RULES,
@@ -160,6 +161,7 @@ class Longhand(Property):
         self.initial_value = initial_value
         self.logical = arg_to_bool(logical)
         self.is_vector = arg_to_bool(vector)
+        self.valueRule = valueRule
         if self.is_vector:
             self.view_type = "gsl::span<{}>".format(type)
             self.storage_type = "std::vector<{}>".format(type)
@@ -209,11 +211,13 @@ class StyleStruct(object):
         longhand = Longhand(*args, **kwargs)
         self.longhands.append(longhand)
         self.name_to_longhand[longhand.name] = longhand
+        return longhand
 
     def add_shorthand(self, name, sub_properties, *args, **kwargs):
         sub_properties = [self.name_to_longhand[s] for s in sub_properties]
         shorthand = Shorthand(name, sub_properties, *args, **kwargs)
         self.shorthands.append(shorthand)
+        return shorthand
 
         
 BASE = os.path.dirname(os.path.realpath(__file__).replace(os.path.sep, "/"))

@@ -6,58 +6,79 @@
 
 
 
+
     
-    
-    
-    
-namespace OGUI
+namespace OGUI::CSSParser
 {
-    namespace Parse
+    void RegisterMargin()
     {
-        bool ParseMargin(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+        std::string grammar = "margin <- 'margin' _ ':' _ (GlobalValue / LengthPercentage{1, 4})";
+        RegisterProperty("margin");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            YGValue values[4];
-            if(!ParseFourSides(value, values[0], values[1], values[2], values[3]))
-            {
-                errorMsg = "failed to parse margin value!";
-                return false;
-            }
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::marginLeft, sheet.Push(values[0])});
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::marginTop, sheet.Push(values[1])});
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::marginRight, sheet.Push(values[2])});
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::marginBottom, sheet.Push(values[3])});
-            return true;
-        }
+            parser["margin"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                {
+                    int keyword = (int)std::any_cast<StyleKeyword>(vs[0]);
+
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginTop, keyword});
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginRight, keyword});
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginBottom, keyword});
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginLeft, keyword});
+                }
+                else
+                {
+                    auto& v0 = vs[0];
+                    auto& v1 = vs.size() > 1 ? vs[1] : v0;
+                    auto& v2 = vs.size() > 2 ? vs[2] : v0;
+                    auto& v3 = vs.size() > 3 ? vs[3] : v1;
+                    
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginTop, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v0))});
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginRight, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v1))});
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginBottom, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v2))});
+                    ctx.rule->properties.push_back({StylePosition::Ids::marginLeft, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v3))});
+                }
+            };
+        });
     }
 }
-    
 
 
 
-
     
-    
-    
-    
-namespace OGUI
+namespace OGUI::CSSParser
 {
-    namespace Parse
+    void RegisterPadding()
     {
-        bool ParsePadding(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg)
+        std::string grammar = "padding <- 'padding' _ ':' _ (GlobalValue / LengthPercentage{1, 4})";
+        RegisterProperty("padding");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            YGValue values[4];
-            if(!ParseFourSides(value, values[0], values[1], values[2], values[3]))
-            {
-                errorMsg = "failed to parse padding value!";
-                return false;
-            }
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::paddingLeft, sheet.Push(values[0])});
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::paddingTop, sheet.Push(values[1])});
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::paddingRight, sheet.Push(values[2])});
-            rule.properties.push_back(StyleProperty{StylePosition::Ids::paddingBottom, sheet.Push(values[3])});
-            return true;
-        }
+            parser["padding"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                {
+                    int keyword = (int)std::any_cast<StyleKeyword>(vs[0]);
+
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingTop, keyword});
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingRight, keyword});
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingBottom, keyword});
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingLeft, keyword});
+                }
+                else
+                {
+                    auto& v0 = vs[0];
+                    auto& v1 = vs.size() > 1 ? vs[1] : v0;
+                    auto& v2 = vs.size() > 2 ? vs[2] : v0;
+                    auto& v3 = vs.size() > 3 ? vs[3] : v1;
+                    
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingTop, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v0))});
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingRight, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v1))});
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingBottom, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v2))});
+                    ctx.rule->properties.push_back({StylePosition::Ids::paddingLeft, ctx.storage->Push<YGValue>(std::any_cast<YGValue>(v3))});
+                }
+            };
+        });
     }
 }
-    
-

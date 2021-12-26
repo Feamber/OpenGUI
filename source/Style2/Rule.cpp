@@ -5,7 +5,6 @@
 #include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Context.h"
 
-
 void OGUI::StyleSheet::Initialize()
 {
     int i=0;

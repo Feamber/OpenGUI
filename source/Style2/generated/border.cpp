@@ -70,14 +70,14 @@ void OGUI::StyleBorder::Dispose(ComputedStyle& style)
 
 void OGUI::StyleBorder::Initialize()
 {
-    borderLeftWidth = 0.f;
     borderTopWidth = 0.f;
     borderRightWidth = 0.f;
     borderBottomWidth = 0.f;
-    borderTopLeftRadius = YGValueZero;
-    borderTopRightRadius = YGValueZero;
-    borderBottomRightRadius = YGValueZero;
-    borderBottomLeftRadius = YGValueZero;
+    borderLeftWidth = 0.f;
+    borderTopLeftRadius = LengthPercentage;
+    borderTopRightRadius = LengthPercentage;
+    borderBottomRightRadius = LengthPercentage;
+    borderBottomLeftRadius = LengthPercentage;
 }
 
 void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -122,11 +122,6 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             {
                 switch(prop.id)
                 {
-                case Ids::borderLeftWidth:{
-                    auto v = fget();
-                    v->borderLeftWidth = 0.f;
-                    break;
-                    }
                 case Ids::borderTopWidth:{
                     auto v = fget();
                     v->borderTopWidth = 0.f;
@@ -142,24 +137,29 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                     v->borderBottomWidth = 0.f;
                     break;
                     }
+                case Ids::borderLeftWidth:{
+                    auto v = fget();
+                    v->borderLeftWidth = 0.f;
+                    break;
+                    }
                 case Ids::borderTopLeftRadius:{
                     auto v = fget();
-                    v->borderTopLeftRadius = YGValueZero;
+                    v->borderTopLeftRadius = LengthPercentage;
                     break;
                     }
                 case Ids::borderTopRightRadius:{
                     auto v = fget();
-                    v->borderTopRightRadius = YGValueZero;
+                    v->borderTopRightRadius = LengthPercentage;
                     break;
                     }
                 case Ids::borderBottomRightRadius:{
                     auto v = fget();
-                    v->borderBottomRightRadius = YGValueZero;
+                    v->borderBottomRightRadius = LengthPercentage;
                     break;
                     }
                 case Ids::borderBottomLeftRadius:{
                     auto v = fget();
-                    v->borderBottomLeftRadius = YGValueZero;
+                    v->borderBottomLeftRadius = LengthPercentage;
                     break;
                     }
                 default: break;
@@ -169,11 +169,6 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             { 
                 switch(prop.id)
                 {
-                case Ids::borderLeftWidth:{
-                    auto v = fget();
-                    v->borderLeftWidth = pst->borderLeftWidth;
-                    break;
-                    }
                 case Ids::borderTopWidth:{
                     auto v = fget();
                     v->borderTopWidth = pst->borderTopWidth;
@@ -187,6 +182,11 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                 case Ids::borderBottomWidth:{
                     auto v = fget();
                     v->borderBottomWidth = pst->borderBottomWidth;
+                    break;
+                    }
+                case Ids::borderLeftWidth:{
+                    auto v = fget();
+                    v->borderLeftWidth = pst->borderLeftWidth;
                     break;
                     }
                 case Ids::borderTopLeftRadius:{
@@ -217,11 +217,6 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
         {
             switch(prop.id)
             {
-                case Ids::borderLeftWidth:{
-                    auto v = fget();
-                    v->borderLeftWidth = sheet.Get<float>(prop.value);
-                    break;
-                    }
                 case Ids::borderTopWidth:{
                     auto v = fget();
                     v->borderTopWidth = sheet.Get<float>(prop.value);
@@ -235,6 +230,11 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                 case Ids::borderBottomWidth:{
                     auto v = fget();
                     v->borderBottomWidth = sheet.Get<float>(prop.value);
+                    break;
+                    }
+                case Ids::borderLeftWidth:{
+                    auto v = fget();
+                    v->borderLeftWidth = sheet.Get<float>(prop.value);
                     break;
                     }
                 case Ids::borderTopLeftRadius:{
@@ -301,24 +301,6 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
     {
         switch(prop.id)
         {
-            case Ids::borderLeftWidth:{
-                auto v = fget();
-                auto prevValue = v->borderLeftWidth;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
-                if(prop.alpha == 0.f)
-                    v->borderLeftWidth = sheet.Get<float>(prop.from);
-                else if(prop.alpha == 1.f)
-                    v->borderLeftWidth = sheet.Get<float>(prop.to);
-                else if(prop.from == prop.to)
-                    v->borderLeftWidth = OGUI::Lerp(v->borderLeftWidth, sheet.Get<float>(prop.to), prop.alpha);
-                else
-                    v->borderLeftWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
-                
-                if(prevValue != v->borderLeftWidth)
-                    damage |= RestyleDamage::Layout;
-                break;
-                }
             case Ids::borderTopWidth:{
                 auto v = fget();
                 auto prevValue = v->borderTopWidth;
@@ -370,6 +352,24 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                     v->borderBottomWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 if(prevValue != v->borderBottomWidth)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::borderLeftWidth:{
+                auto v = fget();
+                auto prevValue = v->borderLeftWidth;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->borderLeftWidth = sheet.Get<float>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->borderLeftWidth = sheet.Get<float>(prop.to);
+                else if(prop.from == prop.to)
+                    v->borderLeftWidth = OGUI::Lerp(v->borderLeftWidth, sheet.Get<float>(prop.to), prop.alpha);
+                else
+                    v->borderLeftWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                
+                if(prevValue != v->borderLeftWidth)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
@@ -439,148 +439,135 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
     return damage;
 }
 
-bool OGUI::StyleBorder::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
+void OGUI::StyleBorder::SetupParser()
 {
-    size_t phash = OGUI::hash(prop);
-
-    StyleKeyword keyword = StyleKeyword::None;
-    ParseValue(value, keyword);
-    if(keyword != StyleKeyword::None)
-    {
-        switch(phash)
+    CSSParser::RegisterBorderRadius();
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-top-width <- 'border-top-width' _ ':' _ (GlobalValue / Length)";
+        RegisterProperty("border-top-width");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            case Ids::borderLeftWidth:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderTopWidth:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderRightWidth:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderBottomWidth:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderTopLeftRadius:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderTopRightRadius:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderBottomRightRadius:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderBottomLeftRadius:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::borderRadius:
-                rule.properties.push_back({Ids::borderTopLeftRadius,(int)keyword});
-                rule.properties.push_back({Ids::borderTopRightRadius,(int)keyword});
-                rule.properties.push_back({Ids::borderBottomRightRadius,(int)keyword});
-                rule.properties.push_back({Ids::borderBottomLeftRadius,(int)keyword});
-            default: break;
-        }
-        return false;
+            static size_t hash = Ids::borderTopWidth;
+            parser["border-top-width"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
     }
-    //shorthands
-    switch(phash)
-    {
-        case Ids::borderRadius:
-            return Parse::ParseBorderRadius(sheet, prop, value, rule, errorMsg);
-        default: break;
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-right-width <- 'border-right-width' _ ':' _ (GlobalValue / Length)";
+        RegisterProperty("border-right-width");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::borderRightWidth;
+            parser["border-right-width"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
     }
-    //longhands
-    switch(phash)
-    {
-        case Ids::borderLeftWidth:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-left-width value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::borderTopWidth:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-top-width value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::borderRightWidth:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-right-width value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::borderBottomWidth:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-bottom-width value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::borderTopLeftRadius:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-top-left-radius value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::borderTopRightRadius:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-top-right-radius value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::borderBottomRightRadius:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-bottom-right-radius value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::borderBottomLeftRadius:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse border-bottom-left-radius value!";
-                return false;
-            }
-            return true;
-        }
-        default: break;
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-bottom-width <- 'border-bottom-width' _ ':' _ (GlobalValue / Length)";
+        RegisterProperty("border-bottom-width");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::borderBottomWidth;
+            parser["border-bottom-width"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
     }
-    return false;
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-left-width <- 'border-left-width' _ ':' _ (GlobalValue / Length)";
+        RegisterProperty("border-left-width");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::borderLeftWidth;
+            parser["border-left-width"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-top-left-radius <- 'border-top-left-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        RegisterProperty("border-top-left-radius");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::borderTopLeftRadius;
+            parser["border-top-left-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-top-right-radius <- 'border-top-right-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        RegisterProperty("border-top-right-radius");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::borderTopRightRadius;
+            parser["border-top-right-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-bottom-right-radius <- 'border-bottom-right-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        RegisterProperty("border-bottom-right-radius");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::borderBottomRightRadius;
+            parser["border-bottom-right-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "border-bottom-left-radius <- 'border-bottom-left-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        RegisterProperty("border-bottom-left-radius");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::borderBottomLeftRadius;
+            parser["border-bottom-left-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
 }

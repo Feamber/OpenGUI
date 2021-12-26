@@ -72,10 +72,10 @@ void OGUI::StyleText::Initialize()
     fontSize = 20.f;
     color = Color4f(0,0,0,1);
     fontFamily = {};
-    fontStyle = TextStyle::Normal;
+    fontStyle = ETextStyle::Normal;
     fontWeight = 400;
     lineHeight = 1.f;
-    textAlign = TextAlign::Start;
+    textAlign = ETextAlign::Start;
     textShadow = {};
 }
 
@@ -137,7 +137,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::fontStyle:{
                     auto v = fget();
-                    v->fontStyle = TextStyle::Normal;
+                    v->fontStyle = ETextStyle::Normal;
                     break;
                     }
                 case Ids::fontWeight:{
@@ -152,7 +152,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::textAlign:{
                     auto v = fget();
-                    v->textAlign = TextAlign::Start;
+                    v->textAlign = ETextAlign::Start;
                     break;
                     }
                 case Ids::textShadow:{
@@ -232,7 +232,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::fontStyle:{
                     auto v = fget();
-                    v->fontStyle = sheet.Get<TextStyle>(prop.value);
+                    v->fontStyle = sheet.Get<ETextStyle>(prop.value);
                     break;
                     }
                 case Ids::fontWeight:{
@@ -247,7 +247,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::textAlign:{
                     auto v = fget();
-                    v->textAlign = sheet.Get<TextAlign>(prop.value);
+                    v->textAlign = sheet.Get<ETextAlign>(prop.value);
                     break;
                     }
                 case Ids::textShadow:{
@@ -356,13 +356,13 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->fontStyle = sheet.Get<TextStyle>(prop.from);
+                    v->fontStyle = sheet.Get<ETextStyle>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->fontStyle = sheet.Get<TextStyle>(prop.to);
+                    v->fontStyle = sheet.Get<ETextStyle>(prop.to);
                 else if(prop.from == prop.to)
-                    v->fontStyle = OGUI::Lerp(v->fontStyle, sheet.Get<TextStyle>(prop.to), prop.alpha);
+                    v->fontStyle = OGUI::Lerp(v->fontStyle, sheet.Get<ETextStyle>(prop.to), prop.alpha);
                 else
-                    v->fontStyle = OGUI::Lerp(sheet.Get<TextStyle>(prop.from), sheet.Get<TextStyle>(prop.to), prop.alpha);
+                    v->fontStyle = OGUI::Lerp(sheet.Get<ETextStyle>(prop.from), sheet.Get<ETextStyle>(prop.to), prop.alpha);
                 
                 if(prevValue != v->fontStyle)
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
@@ -409,13 +409,13 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->textAlign = sheet.Get<TextAlign>(prop.from);
+                    v->textAlign = sheet.Get<ETextAlign>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->textAlign = sheet.Get<TextAlign>(prop.to);
+                    v->textAlign = sheet.Get<ETextAlign>(prop.to);
                 else if(prop.from == prop.to)
-                    v->textAlign = OGUI::Lerp(v->textAlign, sheet.Get<TextAlign>(prop.to), prop.alpha);
+                    v->textAlign = OGUI::Lerp(v->textAlign, sheet.Get<ETextAlign>(prop.to), prop.alpha);
                 else
-                    v->textAlign = OGUI::Lerp(sheet.Get<TextAlign>(prop.from), sheet.Get<TextAlign>(prop.to), prop.alpha);
+                    v->textAlign = OGUI::Lerp(sheet.Get<ETextAlign>(prop.from), sheet.Get<ETextAlign>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -440,136 +440,134 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
     return damage;
 }
 
-bool OGUI::StyleText::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
+void OGUI::StyleText::SetupParser()
 {
-    size_t phash = OGUI::hash(prop);
-
-    StyleKeyword keyword = StyleKeyword::None;
-    ParseValue(value, keyword);
-    if(keyword != StyleKeyword::None)
-    {
-        switch(phash)
+	{
+        using namespace CSSParser;
+        std::string grammar = "font-size <- 'font-size' _ ':' _ (GlobalValue / Number)";
+        RegisterProperty("font-size");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            case Ids::fontSize:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::color:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::fontFamily:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::fontStyle:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::fontWeight:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::lineHeight:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::textAlign:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::textShadow:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            default: break;
-        }
-        return false;
+            static size_t hash = Ids::fontSize;
+            parser["font-size"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
     }
-    //longhands
-    switch(phash)
-    {
-        case Ids::fontSize:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse font-size value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::color:{
-            Color4f v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<Color4f>(v)});
-            else
-            {
-                errorMsg = "failed to parse color value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::fontFamily:{
-            std::string v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<std::string>(v)});
-            else
-            {
-                errorMsg = "failed to parse font-family value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::fontStyle:{
-            TextStyle v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<TextStyle>(v)});
-            else
-            {
-                errorMsg = "failed to parse font-style value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::fontWeight:{
-            int v;
-            if(ParseTextWeight(value, v))
-                rule.properties.push_back({phash, sheet.Push<int>(v)});
-            else
-            {
-                errorMsg = "failed to parse font-weight value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::lineHeight:{
-            float v;
-            if(ParseLineHeight(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse line-height value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::textAlign:{
-            TextAlign v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<TextAlign>(v)});
-            else
-            {
-                errorMsg = "failed to parse text-align value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::textShadow:{
-            std::vector<TextShadow> v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<gsl::span<TextShadow>>(v)});
-            else
-            {
-                errorMsg = "failed to parse text-shadow value!";
-                return false;
-            }
-            return true;
-        }
-        default: break;
+	{
+        using namespace CSSParser;
+        std::string grammar = "color <- 'color' _ ':' _ (GlobalValue / Color)";
+        RegisterProperty("color");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::color;
+            parser["color"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<Color4f>(std::any_cast<Color4f&>(vs[0]))});
+            };
+        });
     }
-    return false;
+	{
+        using namespace CSSParser;
+        std::string grammar = "font-family <- 'font-family' _ ':' _ (GlobalValue / String)";
+        RegisterProperty("font-family");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::fontFamily;
+            parser["font-family"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<std::string>(std::any_cast<std::string&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "font-style <- 'font-style' _ ':' _ (GlobalValue / ETextStyle)";
+        RegisterProperty("font-style");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::fontStyle;
+            parser["font-style"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<ETextStyle>(std::any_cast<ETextStyle&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "font-weight <- 'font-weight' _ ':' _ (GlobalValue / TextWeight)";
+        RegisterProperty("font-weight");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::fontWeight;
+            parser["font-weight"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<int>(std::any_cast<int&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "line-height <- 'line-height' _ ':' _ (GlobalValue / TextLineHeight)";
+        RegisterProperty("line-height");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::lineHeight;
+            parser["line-height"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "text-align <- 'text-align' _ ':' _ (GlobalValue / ETextAlign)";
+        RegisterProperty("text-align");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::textAlign;
+            parser["text-align"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<ETextAlign>(std::any_cast<ETextAlign&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        std::string grammar = "text-shadow <- 'text-shadow' _ ':' _ (GlobalValue / TextShadow)";
+        RegisterProperty("text-shadow");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::textShadow;
+            parser["text-shadow"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<gsl::span<TextShadow>>(std::any_cast<std::vector<TextShadow>&>(vs[0]))});
+            };
+        });
+    }
 }
