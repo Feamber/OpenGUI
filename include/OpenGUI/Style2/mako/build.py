@@ -2,12 +2,13 @@ import json
 import os.path
 import re
 import sys
+import json
 
 BASE = os.path.dirname(os.path.realpath(__file__).replace("\\", "/"))
 ROOT = os.path.join(BASE, "../../../..")
 
 sys.path.insert(0, ROOT)
-from tool.style_codegen import PHYSICAL_CORNERS, PHYSICAL_SIDES, PHYSICAL_SIZES, StyleStruct, renderer, DEFAULT_HEADER_TEMPLATE_PATH, DEFAULT_SOURCE_TEMPLATE_PATH
+from tool.style_codegen import PHYSICAL_CORNERS, PHYSICAL_SIDES, PHYSICAL_SIZES, StyleStruct, renderer, DEFAULT_HEADER_TEMPLATE_PATH, DEFAULT_SOURCE_TEMPLATE_PATH, to_small_camel_case
 HEADER_OUT_DIR = os.path.join(ROOT, "include/OpenGUI/Style2/generated")
 SOURCE_OUT_DIR = os.path.join(ROOT, "source/Style2/generated")
 INCLUDE_DIR = os.path.join(ROOT, "include")
@@ -197,6 +198,52 @@ def gen_animation():
     write(struct.header_path, header_file)
     write(struct.source_path, source_file)
 
+def to_syntax(ident):
+    return re.sub("([A-Z]+)", lambda m: "-" + m.group(1).lower(), ident).strip("-")
+class Enumerator(object):
+    def __init__(self, name, value):
+        self.name = name
+        self.short_name = str.rsplit(name, "::", 1)[-1]
+        self.syntax = to_syntax(self.short_name)
+        self.value = value
+
+class Enum(object):
+    def __init__(self, name, enumerators):
+        self.name = name
+        self.short_name = str.rsplit(name, "::", 1)[-1]
+        self.raw_name = self.short_name[1:]
+        self.enumerators = enumerators
+        
+class DB(object):
+    def __init__(self):
+        self.enums = []
+        self.headers = set()
+
+def GetInclude(path):
+    return path.replace("\\", "/").rsplit("include/", 1)[-1]
+
+def gen_enum_parser():
+    meta = json.load(open(os.path.join(ROOT, "build/meta.json")))
+    db = DB()
+    for key, value in meta["enums"].items():
+        attr = value["attrs"]
+        if not "style-enum" in attr:
+            continue
+        file = value["fileName"]
+        if str.endswith(file, ".cpp"):
+            print("unable to gen lua bind for records in cpp, name:%s" % value["name"], file=sys.stderr)
+            continue
+        db.headers.add(GetInclude(file))
+        enumerators = []
+        for key2, value2 in value["values"].items():
+            enumerators.append(Enumerator(key2, value2["value"]))
+        db.enums.append(Enum(key, enumerators))
+        template = os.path.join(BASE, "EnumParser.cpp.mako")
+        content = render(template, db = db)
+        output = os.path.join(SOURCE_OUT_DIR, "EnumParser.cpp")
+        write(output, content)
+
+
 
 def main():
     gen_position()
@@ -205,6 +252,7 @@ def main():
     gen_background()
     gen_animation()
     gen_effects()
+    gen_enum_parser()
 
 
 if __name__ == "__main__":
