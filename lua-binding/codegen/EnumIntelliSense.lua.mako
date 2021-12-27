@@ -8,6 +8,6 @@
 local E${enum.short_name} = {}
 
 ---@type ${enum.luaName}
-local ${enum.short_name}
+${enum.short_name} = {}
 
 return E${enum.short_name}
