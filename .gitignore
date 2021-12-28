@@ -378,6 +378,8 @@ meta/bin/
 meta/lib/
 lua-binding/IntelliSense/
 
+!resources/**
+
 *.exe
 .VSCodeCounter
 CopyOgui.bat

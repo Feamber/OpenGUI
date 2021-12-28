@@ -99,14 +99,12 @@ target_link_libraries(OpenGUI
 )
 
 if(OPENGUI_USE_FREETYPE OR OPENGUI_USE_HARFBUZZ OR OPENGUI_USE_ICU)
-    download_and_extract(
-        ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/FontLibs.zip
-        ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/FontLibs.zip
+    extract_file(
+        ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Release/FontLibs.zip
         ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
     )
-    download_and_extract(
-        ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/FontLibs.zip
-        ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/FontLibs.zip
+    extract_file(
+        ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Debug/FontLibs.zip
         ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
     )
 endif()

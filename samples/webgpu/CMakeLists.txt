@@ -7,46 +7,24 @@ if(${Vulkan_FOUND})
     message(STATUS "Found VK SDK. Include Dir: ${Vulkan_INCLUDE_DIRS}")
     set(vulkan TRUE)
 endif()
-
-download_and_extract2(
-    URL ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/common/OGUI_Xsd.zip
-    FILENAME ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/OGUI_Xsd.zip
-    HASH_TYPE SHA1
-    HASH 5b0947b8f2f949d42ed61d51e0c169f5c465bcfb
-    EXTRACT_DIR ${OPEN_GUI_ROOT_DIR}/OGUI_Xsd/bin/Release/netcoreapp3.1/publish/
-)
 	
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn_0.0.2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/dawn_0.0.2.zip
+extract_file(
+    ${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Release/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/SDL2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/SDL2.zip
+extract_file(
+    ${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Release/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/dawn_0.0.2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn_0.0.2.zip
+extract_file(
+	${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Debug/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/SDL2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/SDL2.zip
+extract_file(
+	${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Debug/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
 
-download_and_extract(
-    ${FILE_SERVER_DIR}/fonts/Vera.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Vera.zip
-    ${CMAKE_CURRENT_SOURCE_DIR}/res/
-)
-download_and_extract(
-    ${FILE_SERVER_DIR}/fonts/fireflysung.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/fireflysung.zip
-    ${CMAKE_CURRENT_SOURCE_DIR}/res/
-)
 file(GLOB_RECURSE resources res/*.*)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)
