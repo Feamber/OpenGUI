@@ -203,13 +203,13 @@ namespace OGUI
         {
             auto pathSv = path.to_sv();
 
-            auto value = ParseFile(std::string(pathSv.begin(), pathSv.end()));
-            if (!value)
+            auto sheet = CSSParser::ParseFile(std::string(pathSv.begin(), pathSv.end()));
+            if (!sheet)
             {
                 olog::Error(u"<OGUI:Style path={}> ParseCSSFile失败!"_o, path);
                 return false;
             }
-            auto sheet = new StyleSheet{value.value()};
+            
             sheet->Initialize();
             parent->_styleSheets.push_back(sheet);
             return true;

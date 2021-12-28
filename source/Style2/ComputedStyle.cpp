@@ -1,6 +1,7 @@
 
 #include "OpenGUI/Style2/ComputedStyle.h"
 #include "OpenGUI/Style2/Rule.h"
+#include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Style2/generated/border.h"
 #include "OpenGUI/Style2/generated/position.h"
@@ -24,26 +25,22 @@ void OGUI::RegisterStyleStruct(const StyleDesc& desc)
     registry.descriptions.push_back(desc);
 }
 
-namespace OGUI
+namespace OGUI::CSSParser
 {
-	//helper
-	template<class T>
-	StyleDesc RegisterStyleStruct()
-	{
-		StyleDesc desc;
-		desc.hash = T::hash;
-		desc.inherited = T::inherited;
-		desc.name = T::name;
-		desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
-		desc.ApplyProperties = &T::ApplyProperties;
-        RegisterStyleStruct(desc);
-        T::SetupParser();
-		return desc;
-	}
+    void SetupEnumParser();
+    void SetupAnimValueParser();
+    void SetupMathValueParser();
+    void SetupLayoutValueParser();
+    void SetupDrawValueParser();
 }
-
 void OGUI::RegisterBuiltinStructs()
 {
+    CSSParser::SetupAnimValueParser();
+    CSSParser::SetupMathValueParser();
+    CSSParser::SetupLayoutValueParser();
+    CSSParser::SetupEnumParser();
+    CSSParser::SetupDrawValueParser();
+    AnimStyle::SetupParser();
     RegisterStyleStruct<StyleText>();
     RegisterStyleStruct<StyleBackground>();
     RegisterStyleStruct<StyleBorder>();

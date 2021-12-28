@@ -494,7 +494,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             {
                 case Ids::transform:{
                     auto v = fget();
-                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.value));
+                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.value));
                     break;
                     }
                 case Ids::flexGrow:{
@@ -706,13 +706,13 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.from));
+                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.to));
+                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->transform = OGUI::Lerp(v->transform, sheet.Get<gsl::span<TransformFunction>>(prop.to), prop.alpha);
+                    v->transform = OGUI::Lerp(v->transform, sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 else
-                    v->transform = OGUI::Lerp(sheet.Get<gsl::span<TransformFunction>>(prop.from), sheet.Get<gsl::span<TransformFunction>>(prop.to), prop.alpha);
+                    v->transform = OGUI::Lerp(sheet.Get<const gsl::span<TransformFunction>>(prop.from), sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 
                     damage |= RestyleDamage::Transform;
                 break;
@@ -1305,28 +1305,33 @@ void OGUI::StylePosition::SetupParser()
     CSSParser::RegisterPadding();
 	{
         using namespace CSSParser;
-        std::string grammar = "transform <- 'transform' _ ':' _ (GlobalValue / TransformFunction)";
+        static const auto grammar = "transformValue <- GlobalValue / (TransformFunction (_ ',' _ TransformFunction)*) \ntransform <- 'transform' _ ':' _ transformValue";
         RegisterProperty("transform");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::transform;
-            parser["transform"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["transformValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<gsl::span<TransformFunction>>(std::any_cast<std::vector<TransformFunction>&>(vs[0]))});
+                {
+                    std::vector<TransformFunction> value;
+                    for(auto& e : vs)
+                        value.emplace_back(any_move<TransformFunction>(e));
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<TransformFunction>>(value)});
+                }
             };
         });
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "flex-grow <- 'flex-grow' _ ':' _ (GlobalValue / Number)";
+        static const auto grammar = "flex-growValue <- GlobalValue / Number \nflex-grow <- 'flex-grow' _ ':' _ flex-growValue";
         RegisterProperty("flex-grow");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::flexGrow;
-            parser["flex-grow"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["flex-growValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1337,12 +1342,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "flex-shrink <- 'flex-shrink' _ ':' _ (GlobalValue / Number)";
+        static const auto grammar = "flex-shrinkValue <- GlobalValue / Number \nflex-shrink <- 'flex-shrink' _ ':' _ flex-shrinkValue";
         RegisterProperty("flex-shrink");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::flexShrink;
-            parser["flex-shrink"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["flex-shrinkValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1353,12 +1358,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "flex-basis <- 'flex-basis' _ ':' _ (GlobalValue / Width)";
+        static const auto grammar = "flex-basisValue <- GlobalValue / Width \nflex-basis <- 'flex-basis' _ ':' _ flex-basisValue";
         RegisterProperty("flex-basis");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::flexBasis;
-            parser["flex-basis"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["flex-basisValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1369,12 +1374,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "top <- 'top' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "topValue <- GlobalValue / LengthPercentage \ntop <- 'top' _ ':' _ topValue";
         RegisterProperty("top");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::top;
-            parser["top"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["topValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1385,12 +1390,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "right <- 'right' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "rightValue <- GlobalValue / LengthPercentage \nright <- 'right' _ ':' _ rightValue";
         RegisterProperty("right");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::right;
-            parser["right"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["rightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1401,12 +1406,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "bottom <- 'bottom' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "bottomValue <- GlobalValue / LengthPercentage \nbottom <- 'bottom' _ ':' _ bottomValue";
         RegisterProperty("bottom");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::bottom;
-            parser["bottom"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["bottomValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1417,12 +1422,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "left <- 'left' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "leftValue <- GlobalValue / LengthPercentage \nleft <- 'left' _ ':' _ leftValue";
         RegisterProperty("left");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::left;
-            parser["left"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["leftValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1433,12 +1438,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "margin-top <- 'margin-top' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "margin-topValue <- GlobalValue / LengthPercentage \nmargin-top <- 'margin-top' _ ':' _ margin-topValue";
         RegisterProperty("margin-top");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::marginTop;
-            parser["margin-top"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["margin-topValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1449,12 +1454,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "margin-right <- 'margin-right' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "margin-rightValue <- GlobalValue / LengthPercentage \nmargin-right <- 'margin-right' _ ':' _ margin-rightValue";
         RegisterProperty("margin-right");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::marginRight;
-            parser["margin-right"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["margin-rightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1465,12 +1470,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "margin-bottom <- 'margin-bottom' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "margin-bottomValue <- GlobalValue / LengthPercentage \nmargin-bottom <- 'margin-bottom' _ ':' _ margin-bottomValue";
         RegisterProperty("margin-bottom");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::marginBottom;
-            parser["margin-bottom"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["margin-bottomValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1481,12 +1486,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "margin-left <- 'margin-left' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "margin-leftValue <- GlobalValue / LengthPercentage \nmargin-left <- 'margin-left' _ ':' _ margin-leftValue";
         RegisterProperty("margin-left");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::marginLeft;
-            parser["margin-left"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["margin-leftValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1497,12 +1502,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "padding-top <- 'padding-top' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "padding-topValue <- GlobalValue / LengthPercentage \npadding-top <- 'padding-top' _ ':' _ padding-topValue";
         RegisterProperty("padding-top");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::paddingTop;
-            parser["padding-top"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["padding-topValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1513,12 +1518,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "padding-right <- 'padding-right' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "padding-rightValue <- GlobalValue / LengthPercentage \npadding-right <- 'padding-right' _ ':' _ padding-rightValue";
         RegisterProperty("padding-right");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::paddingRight;
-            parser["padding-right"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["padding-rightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1529,12 +1534,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "padding-bottom <- 'padding-bottom' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "padding-bottomValue <- GlobalValue / LengthPercentage \npadding-bottom <- 'padding-bottom' _ ':' _ padding-bottomValue";
         RegisterProperty("padding-bottom");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::paddingBottom;
-            parser["padding-bottom"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["padding-bottomValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1545,12 +1550,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "padding-left <- 'padding-left' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "padding-leftValue <- GlobalValue / LengthPercentage \npadding-left <- 'padding-left' _ ':' _ padding-leftValue";
         RegisterProperty("padding-left");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::paddingLeft;
-            parser["padding-left"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["padding-leftValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1561,12 +1566,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "width <- 'width' _ ':' _ (GlobalValue / Width)";
+        static const auto grammar = "widthValue <- GlobalValue / Width \nwidth <- 'width' _ ':' _ widthValue";
         RegisterProperty("width");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::width;
-            parser["width"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1577,12 +1582,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "height <- 'height' _ ':' _ (GlobalValue / Width)";
+        static const auto grammar = "heightValue <- GlobalValue / Width \nheight <- 'height' _ ':' _ heightValue";
         RegisterProperty("height");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::height;
-            parser["height"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["heightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1593,12 +1598,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "position <- 'position' _ ':' _ (GlobalValue / FlexPosition)";
+        static const auto grammar = "positionValue <- GlobalValue / FlexPosition \nposition <- 'position' _ ':' _ positionValue";
         RegisterProperty("position");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::position;
-            parser["position"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["positionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1609,12 +1614,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "overflow <- 'overflow' _ ':' _ (GlobalValue / Overflow)";
+        static const auto grammar = "overflowValue <- GlobalValue / FlexOverflow \noverflow <- 'overflow' _ ':' _ overflowValue";
         RegisterProperty("overflow");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::overflow;
-            parser["overflow"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["overflowValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1625,12 +1630,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "align-self <- 'align-self' _ ':' _ (GlobalValue / Width)";
+        static const auto grammar = "align-selfValue <- GlobalValue / Width \nalign-self <- 'align-self' _ ':' _ align-selfValue";
         RegisterProperty("align-self");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::alignSelf;
-            parser["align-self"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["align-selfValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1641,12 +1646,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "max-width <- 'max-width' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "max-widthValue <- GlobalValue / LengthPercentage \nmax-width <- 'max-width' _ ':' _ max-widthValue";
         RegisterProperty("max-width");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::maxWidth;
-            parser["max-width"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["max-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1657,12 +1662,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "max-height <- 'max-height' _ ':' _ (GlobalValue / LengthPercentage)";
+        static const auto grammar = "max-heightValue <- GlobalValue / LengthPercentage \nmax-height <- 'max-height' _ ':' _ max-heightValue";
         RegisterProperty("max-height");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::maxHeight;
-            parser["max-height"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["max-heightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1673,12 +1678,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "min-width <- 'min-width' _ ':' _ (GlobalValue / Width)";
+        static const auto grammar = "min-widthValue <- GlobalValue / Width \nmin-width <- 'min-width' _ ':' _ min-widthValue";
         RegisterProperty("min-width");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::minWidth;
-            parser["min-width"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["min-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1689,12 +1694,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "min-height <- 'min-height' _ ':' _ (GlobalValue / Width)";
+        static const auto grammar = "min-heightValue <- GlobalValue / Width \nmin-height <- 'min-height' _ ':' _ min-heightValue";
         RegisterProperty("min-height");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::minHeight;
-            parser["min-height"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["min-heightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1705,12 +1710,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "flex-direction <- 'flex-direction' _ ':' _ (GlobalValue / FlexDirection)";
+        static const auto grammar = "flex-directionValue <- GlobalValue / FlexDirection \nflex-direction <- 'flex-direction' _ ':' _ flex-directionValue";
         RegisterProperty("flex-direction");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::flexDirection;
-            parser["flex-direction"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["flex-directionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1721,12 +1726,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "align-content <- 'align-content' _ ':' _ (GlobalValue / FlexAlign)";
+        static const auto grammar = "align-contentValue <- GlobalValue / FlexAlign \nalign-content <- 'align-content' _ ':' _ align-contentValue";
         RegisterProperty("align-content");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::alignContent;
-            parser["align-content"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["align-contentValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1737,12 +1742,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "align-items <- 'align-items' _ ':' _ (GlobalValue / FlexAlign)";
+        static const auto grammar = "align-itemsValue <- GlobalValue / FlexAlign \nalign-items <- 'align-items' _ ':' _ align-itemsValue";
         RegisterProperty("align-items");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::alignItems;
-            parser["align-items"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["align-itemsValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1753,12 +1758,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "justify-content <- 'justify-content' _ ':' _ (GlobalValue / FlexJustify)";
+        static const auto grammar = "justify-contentValue <- GlobalValue / FlexJustify \njustify-content <- 'justify-content' _ ':' _ justify-contentValue";
         RegisterProperty("justify-content");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::justifyContent;
-            parser["justify-content"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["justify-contentValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1769,12 +1774,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "flex-wrap <- 'flex-wrap' _ ':' _ (GlobalValue / FlexWrap)";
+        static const auto grammar = "flex-wrapValue <- GlobalValue / FlexWrap \nflex-wrap <- 'flex-wrap' _ ':' _ flex-wrapValue";
         RegisterProperty("flex-wrap");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::flexWrap;
-            parser["flex-wrap"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["flex-wrapValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1785,12 +1790,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "flex-display <- 'flex-display' _ ':' _ (GlobalValue / FlexDisplay)";
+        static const auto grammar = "flex-displayValue <- GlobalValue / FlexDisplay \nflex-display <- 'flex-display' _ ':' _ flex-displayValue";
         RegisterProperty("flex-display");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::flexDisplay;
-            parser["flex-display"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["flex-displayValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1801,12 +1806,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "vertical-align <- 'vertical-align' _ ':' _ (GlobalValue / InlineAlign)";
+        static const auto grammar = "vertical-alignValue <- GlobalValue / InlineAlign \nvertical-align <- 'vertical-align' _ ':' _ vertical-alignValue";
         RegisterProperty("vertical-align");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::verticalAlign;
-            parser["vertical-align"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["vertical-alignValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -1817,12 +1822,12 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "aspect-ratio <- 'aspect-ratio' _ ':' _ (GlobalValue / Number)";
+        static const auto grammar = "aspect-ratioValue <- GlobalValue / AspectRatio \naspect-ratio <- 'aspect-ratio' _ ':' _ aspect-ratioValue";
         RegisterProperty("aspect-ratio");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::aspectRatio;
-            parser["aspect-ratio"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["aspect-ratioValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});

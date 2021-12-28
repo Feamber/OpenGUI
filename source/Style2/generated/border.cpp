@@ -74,10 +74,10 @@ void OGUI::StyleBorder::Initialize()
     borderRightWidth = 0.f;
     borderBottomWidth = 0.f;
     borderLeftWidth = 0.f;
-    borderTopLeftRadius = LengthPercentage;
-    borderTopRightRadius = LengthPercentage;
-    borderBottomRightRadius = LengthPercentage;
-    borderBottomLeftRadius = LengthPercentage;
+    borderTopLeftRadius = YGValueZero;
+    borderTopRightRadius = YGValueZero;
+    borderBottomRightRadius = YGValueZero;
+    borderBottomLeftRadius = YGValueZero;
 }
 
 void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -144,22 +144,22 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                     }
                 case Ids::borderTopLeftRadius:{
                     auto v = fget();
-                    v->borderTopLeftRadius = LengthPercentage;
+                    v->borderTopLeftRadius = YGValueZero;
                     break;
                     }
                 case Ids::borderTopRightRadius:{
                     auto v = fget();
-                    v->borderTopRightRadius = LengthPercentage;
+                    v->borderTopRightRadius = YGValueZero;
                     break;
                     }
                 case Ids::borderBottomRightRadius:{
                     auto v = fget();
-                    v->borderBottomRightRadius = LengthPercentage;
+                    v->borderBottomRightRadius = YGValueZero;
                     break;
                     }
                 case Ids::borderBottomLeftRadius:{
                     auto v = fget();
-                    v->borderBottomLeftRadius = LengthPercentage;
+                    v->borderBottomLeftRadius = YGValueZero;
                     break;
                     }
                 default: break;
@@ -444,12 +444,12 @@ void OGUI::StyleBorder::SetupParser()
     CSSParser::RegisterBorderRadius();
 	{
         using namespace CSSParser;
-        std::string grammar = "border-top-width <- 'border-top-width' _ ':' _ (GlobalValue / Length)";
+        static const auto grammar = "border-top-widthValue <- GlobalValue / Length \nborder-top-width <- 'border-top-width' _ ':' _ border-top-widthValue";
         RegisterProperty("border-top-width");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderTopWidth;
-            parser["border-top-width"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-top-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -460,12 +460,12 @@ void OGUI::StyleBorder::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "border-right-width <- 'border-right-width' _ ':' _ (GlobalValue / Length)";
+        static const auto grammar = "border-right-widthValue <- GlobalValue / Length \nborder-right-width <- 'border-right-width' _ ':' _ border-right-widthValue";
         RegisterProperty("border-right-width");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderRightWidth;
-            parser["border-right-width"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-right-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -476,12 +476,12 @@ void OGUI::StyleBorder::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "border-bottom-width <- 'border-bottom-width' _ ':' _ (GlobalValue / Length)";
+        static const auto grammar = "border-bottom-widthValue <- GlobalValue / Length \nborder-bottom-width <- 'border-bottom-width' _ ':' _ border-bottom-widthValue";
         RegisterProperty("border-bottom-width");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderBottomWidth;
-            parser["border-bottom-width"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-bottom-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -492,12 +492,12 @@ void OGUI::StyleBorder::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "border-left-width <- 'border-left-width' _ ':' _ (GlobalValue / Length)";
+        static const auto grammar = "border-left-widthValue <- GlobalValue / Length \nborder-left-width <- 'border-left-width' _ ':' _ border-left-widthValue";
         RegisterProperty("border-left-width");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderLeftWidth;
-            parser["border-left-width"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-left-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -508,12 +508,12 @@ void OGUI::StyleBorder::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "border-top-left-radius <- 'border-top-left-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        static const auto grammar = "border-top-left-radiusValue <- GlobalValue / LengthPercentage \nborder-top-left-radius <- 'border-top-left-radius' _ ':' _ border-top-left-radiusValue";
         RegisterProperty("border-top-left-radius");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderTopLeftRadius;
-            parser["border-top-left-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-top-left-radiusValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -524,12 +524,12 @@ void OGUI::StyleBorder::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "border-top-right-radius <- 'border-top-right-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        static const auto grammar = "border-top-right-radiusValue <- GlobalValue / LengthPercentage \nborder-top-right-radius <- 'border-top-right-radius' _ ':' _ border-top-right-radiusValue";
         RegisterProperty("border-top-right-radius");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderTopRightRadius;
-            parser["border-top-right-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-top-right-radiusValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -540,12 +540,12 @@ void OGUI::StyleBorder::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "border-bottom-right-radius <- 'border-bottom-right-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        static const auto grammar = "border-bottom-right-radiusValue <- GlobalValue / LengthPercentage \nborder-bottom-right-radius <- 'border-bottom-right-radius' _ ':' _ border-bottom-right-radiusValue";
         RegisterProperty("border-bottom-right-radius");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderBottomRightRadius;
-            parser["border-bottom-right-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-bottom-right-radiusValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -556,12 +556,12 @@ void OGUI::StyleBorder::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "border-bottom-left-radius <- 'border-bottom-left-radius' _ ':' _ (GlobalValue / YGValueZero)";
+        static const auto grammar = "border-bottom-left-radiusValue <- GlobalValue / LengthPercentage \nborder-bottom-left-radius <- 'border-bottom-left-radius' _ ':' _ border-bottom-left-radiusValue";
         RegisterProperty("border-bottom-left-radius");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::borderBottomLeftRadius;
-            parser["border-bottom-left-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-bottom-left-radiusValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});

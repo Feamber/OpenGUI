@@ -120,9 +120,6 @@ public:
 	virtual void set_scale(int p_cache_index, int p_size, real_t p_scale); // Rendering scale for bitmap fonts (e.g. emoji fonts).
 	virtual real_t get_scale(int p_cache_index, int p_size) const;
 
-	virtual void set_spacing(int p_cache_index, int p_size, TextServer::SpacingType p_spacing, int p_value);
-	virtual int get_spacing(int p_cache_index, int p_size, TextServer::SpacingType p_spacing) const;
-
 	virtual int get_texture_count(int p_cache_index, const Vector2i &p_size) const;
 	virtual void clear_textures(int p_cache_index, const Vector2i &p_size);
 	virtual void remove_texture(int p_cache_index, const Vector2i &p_size, int p_texture_index);
@@ -230,9 +227,6 @@ public:
 
 	virtual void set_variation_coordinates(const Map<uint32_t, double> &p_variation_coordinates);
 	virtual Map<uint32_t, double> get_variation_coordinates() const;
-
-	virtual void set_spacing(TextServer::SpacingType p_spacing, int p_value);
-	virtual int get_spacing(TextServer::SpacingType p_spacing) const;
 
 	// Font metrics.
 	virtual real_t get_height(int p_size = -1) const;

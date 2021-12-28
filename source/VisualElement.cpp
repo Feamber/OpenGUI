@@ -770,7 +770,7 @@ void OGUI::VisualElement::SetPseudoClass(PseudoStates state, bool b)
 
 void OGUI::VisualElement::InitInlineStyle(std::string_view str)
 {
-	auto res = ParseInlineStyle(str);
+	auto res = CSSParser::ParseInlineStyle(str);
 	if(res)
 		_inlineStyle = std::make_unique<InlineStyle>(std::move(res.value()));
 }

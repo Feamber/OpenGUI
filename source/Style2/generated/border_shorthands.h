@@ -11,11 +11,11 @@ namespace OGUI::CSSParser
 {
     void RegisterBorderRadius()
     {
-        std::string grammar = "border-radius <- 'border-radius' _ ':' _ (GlobalValue / YGValueZero{1, 4})";
+        static const auto grammar = "border-radiusValue <- GlobalValue / LengthPercentage (w LengthPercentage){0, 3} \nborder-radius <- 'border-radius' _ ':' _ border-radiusValue";
         RegisterProperty("border-radius");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            parser["border-radius"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["border-radiusValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                 {

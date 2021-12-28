@@ -2,13 +2,14 @@
 //generated from Style2/mako/Struct.h.mako
 
 #pragma once
+#include "OpenGUI/Core/OMath.h"
+#include "OpenGUI/Style2/Lerp/MathLerp.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
-#include "OpenGUI/Core/OMath.h"
-#include "OpenGUI/Style2/Lerp/MathLerp.h"
+
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;

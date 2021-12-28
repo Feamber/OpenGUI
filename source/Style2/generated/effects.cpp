@@ -213,12 +213,12 @@ void OGUI::StyleEffects::SetupParser()
 {
 	{
         using namespace CSSParser;
-        std::string grammar = "opacity <- 'opacity' _ ':' _ (GlobalValue / Number)";
+        static const auto grammar = "opacityValue <- GlobalValue / Number \nopacity <- 'opacity' _ ':' _ opacityValue";
         RegisterProperty("opacity");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::opacity;
-            parser["opacity"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["opacityValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});

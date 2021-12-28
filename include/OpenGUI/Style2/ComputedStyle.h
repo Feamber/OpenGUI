@@ -27,6 +27,21 @@ namespace OGUI
 
 	OGUI_API void RegisterStyleStruct(const StyleDesc& Registry);
 	
+	//helper
+	template<class T>
+	StyleDesc RegisterStyleStruct()
+	{
+		StyleDesc desc;
+		desc.hash = T::hash;
+		desc.inherited = T::inherited;
+		desc.name = T::name;
+		desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
+		desc.ApplyProperties = &T::ApplyProperties;
+        RegisterStyleStruct(desc);
+        T::SetupParser();
+		return desc;
+	}
+	
 	OGUI_API void RegisterBuiltinStructs();
 
 	struct ComputedStyle

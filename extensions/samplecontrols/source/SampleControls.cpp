@@ -4,7 +4,7 @@
 
 void SampleControls::Install()
 {
-    RegisterStyleStruct(GetDesc<StyleSample>());
+    RegisterStyleStruct<StyleSample>();
     RegisterXmlParser<SliderXmlFactory>();
     RegisterXmlParser<ButtonXmlFactory>();
     RegisterXmlParser<CheckBoxXmlFactory>();

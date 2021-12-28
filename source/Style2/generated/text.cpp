@@ -74,7 +74,7 @@ void OGUI::StyleText::Initialize()
     fontFamily = {};
     fontStyle = ETextStyle::Normal;
     fontWeight = 400;
-    lineHeight = 1.f;
+    lineHeight = YGValueAuto;
     textAlign = ETextAlign::Start;
     textShadow = {};
 }
@@ -147,7 +147,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::lineHeight:{
                     auto v = fget();
-                    v->lineHeight = 1.f;
+                    v->lineHeight = YGValueAuto;
                     break;
                     }
                 case Ids::textAlign:{
@@ -227,7 +227,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::fontFamily:{
                     auto v = fget();
-                    v->fontFamily = sheet.Get<std::string>(prop.value);
+                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<std::string>>(prop.value));
                     break;
                     }
                 case Ids::fontStyle:{
@@ -242,7 +242,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::lineHeight:{
                     auto v = fget();
-                    v->lineHeight = sheet.Get<float>(prop.value);
+                    v->lineHeight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::textAlign:{
@@ -252,7 +252,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::textShadow:{
                     auto v = fget();
-                    v->textShadow = ToOwned(sheet.Get<gsl::span<TextShadow>>(prop.value));
+                    v->textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.value));
                     break;
                     }
                 default: break;
@@ -334,19 +334,17 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 }
             case Ids::fontFamily:{
                 auto v = fget();
-                auto prevValue = v->fontFamily;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->fontFamily = sheet.Get<std::string>(prop.from);
+                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<std::string>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->fontFamily = sheet.Get<std::string>(prop.to);
+                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<std::string>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->fontFamily = OGUI::Lerp(v->fontFamily, sheet.Get<std::string>(prop.to), prop.alpha);
+                    v->fontFamily = OGUI::Lerp(v->fontFamily, sheet.Get<const gsl::span<std::string>>(prop.to), prop.alpha);
                 else
-                    v->fontFamily = OGUI::Lerp(sheet.Get<std::string>(prop.from), sheet.Get<std::string>(prop.to), prop.alpha);
+                    v->fontFamily = OGUI::Lerp(sheet.Get<const gsl::span<std::string>>(prop.from), sheet.Get<const gsl::span<std::string>>(prop.to), prop.alpha);
                 
-                if(prevValue != v->fontFamily)
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
                 }
@@ -392,13 +390,13 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->lineHeight = sheet.Get<float>(prop.from);
+                    v->lineHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->lineHeight = sheet.Get<float>(prop.to);
+                    v->lineHeight = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->lineHeight = OGUI::Lerp(v->lineHeight, sheet.Get<float>(prop.to), prop.alpha);
+                    v->lineHeight = OGUI::Lerp(v->lineHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->lineHeight = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v->lineHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->lineHeight)
                     damage |= RestyleDamage::TextLayout;
@@ -424,13 +422,13 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->textShadow = ToOwned(sheet.Get<gsl::span<TextShadow>>(prop.from));
+                    v->textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->textShadow = ToOwned(sheet.Get<gsl::span<TextShadow>>(prop.to));
+                    v->textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->textShadow = OGUI::Lerp(v->textShadow, sheet.Get<gsl::span<TextShadow>>(prop.to), prop.alpha);
+                    v->textShadow = OGUI::Lerp(v->textShadow, sheet.Get<const gsl::span<TextShadow>>(prop.to), prop.alpha);
                 else
-                    v->textShadow = OGUI::Lerp(sheet.Get<gsl::span<TextShadow>>(prop.from), sheet.Get<gsl::span<TextShadow>>(prop.to), prop.alpha);
+                    v->textShadow = OGUI::Lerp(sheet.Get<const gsl::span<TextShadow>>(prop.from), sheet.Get<const gsl::span<TextShadow>>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -444,12 +442,12 @@ void OGUI::StyleText::SetupParser()
 {
 	{
         using namespace CSSParser;
-        std::string grammar = "font-size <- 'font-size' _ ':' _ (GlobalValue / Number)";
+        static const auto grammar = "font-sizeValue <- GlobalValue / Number \nfont-size <- 'font-size' _ ':' _ font-sizeValue";
         RegisterProperty("font-size");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::fontSize;
-            parser["font-size"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["font-sizeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -460,12 +458,12 @@ void OGUI::StyleText::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "color <- 'color' _ ':' _ (GlobalValue / Color)";
+        static const auto grammar = "colorValue <- GlobalValue / Color \ncolor <- 'color' _ ':' _ colorValue";
         RegisterProperty("color");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::color;
-            parser["color"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["colorValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -476,28 +474,33 @@ void OGUI::StyleText::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "font-family <- 'font-family' _ ':' _ (GlobalValue / String)";
+        static const auto grammar = "font-familyValue <- GlobalValue / (FontFamily (_ ',' _ FontFamily)*) \nfont-family <- 'font-family' _ ':' _ font-familyValue";
         RegisterProperty("font-family");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::fontFamily;
-            parser["font-family"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["font-familyValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<std::string>(std::any_cast<std::string&>(vs[0]))});
+                {
+                    std::vector<std::string> value;
+                    for(auto& e : vs)
+                        value.emplace_back(any_move<const std::string_view>(e));
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<std::string>>(value)});
+                }
             };
         });
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "font-style <- 'font-style' _ ':' _ (GlobalValue / ETextStyle)";
+        static const auto grammar = "font-styleValue <- GlobalValue / TextStyle \nfont-style <- 'font-style' _ ':' _ font-styleValue";
         RegisterProperty("font-style");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::fontStyle;
-            parser["font-style"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["font-styleValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -508,12 +511,12 @@ void OGUI::StyleText::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "font-weight <- 'font-weight' _ ':' _ (GlobalValue / TextWeight)";
+        static const auto grammar = "font-weightValue <- GlobalValue / TextWeight \nfont-weight <- 'font-weight' _ ':' _ font-weightValue";
         RegisterProperty("font-weight");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::fontWeight;
-            parser["font-weight"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["font-weightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -524,28 +527,28 @@ void OGUI::StyleText::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "line-height <- 'line-height' _ ':' _ (GlobalValue / TextLineHeight)";
+        static const auto grammar = "line-heightValue <- GlobalValue / Width \nline-height <- 'line-height' _ ':' _ line-heightValue";
         RegisterProperty("line-height");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::lineHeight;
-            parser["line-height"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["line-heightValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
             };
         });
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "text-align <- 'text-align' _ ':' _ (GlobalValue / ETextAlign)";
+        static const auto grammar = "text-alignValue <- GlobalValue / TextAlign \ntext-align <- 'text-align' _ ':' _ text-alignValue";
         RegisterProperty("text-align");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::textAlign;
-            parser["text-align"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["text-alignValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
@@ -556,17 +559,22 @@ void OGUI::StyleText::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "text-shadow <- 'text-shadow' _ ':' _ (GlobalValue / TextShadow)";
+        static const auto grammar = "text-shadowValue <- GlobalValue / (TextShadow (_ ',' _ TextShadow)*) \ntext-shadow <- 'text-shadow' _ ':' _ text-shadowValue";
         RegisterProperty("text-shadow");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::textShadow;
-            parser["text-shadow"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["text-shadowValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<gsl::span<TextShadow>>(std::any_cast<std::vector<TextShadow>&>(vs[0]))});
+                {
+                    std::vector<TextShadow> value;
+                    for(auto& e : vs)
+                        value.emplace_back(any_move<TextShadow>(e));
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<TextShadow>>(value)});
+                }
             };
         });
     }

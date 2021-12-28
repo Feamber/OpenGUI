@@ -58,7 +58,7 @@ void OGUI::AnimStyle::SetupParser()
 %endif
     {
         using namespace CSSParser;
-        std::string grammar = "animation-name <- 'animation-name' _ ':' _ Name+";
+        static const auto grammar = "animation-name <- 'animation-name' _ ':' _ Name (_ ',' _ Name)*";
         RegisterProperty("animation-name");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
@@ -70,7 +70,7 @@ void OGUI::AnimStyle::SetupParser()
                     throw peg::parse_error("animation-name dose not match animation properties count.");
                 anim.resize(vs.size());
                 for(int i=0; i<vs.size(); ++i)
-                    anim[i].name = std::any_cast<std::string&>(vs[i]);
+                    anim[i].name = std::any_cast<std::string_view&>(vs[i]);
             };
         });
     }
@@ -78,12 +78,12 @@ void OGUI::AnimStyle::SetupParser()
     %if prop.name!="animation-name":
 	{
         using namespace CSSParser;
-        std::string grammar = "${prop.name} <- '${prop.name}' _ ':' _ (GlobalValue / ${prop.valueRule}+)";
+        static const auto grammar = "${prop.name}Value <- GlobalValue / ${prop.valueRule}  (_ ',' _ ${prop.valueRule})*\n${prop.name} <- '${prop.name}' _ ':' _ ${prop.name}Value";
         RegisterProperty("${prop.name}");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::${prop.ident};
-            parser["${prop.name}"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["${prop.name}Value"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -95,7 +95,7 @@ void OGUI::AnimStyle::SetupParser()
                         anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
                     for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(std::any_cast<${prop.storage_type}&>(vs[0]))});
+                        anim[i].properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(std::any_cast<${prop.parsed_type}&>(vs[0]))});
             };
         });
     }

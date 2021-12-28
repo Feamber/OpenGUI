@@ -1,3 +1,4 @@
+
 import json
 import os.path
 import re
@@ -28,11 +29,12 @@ def make_struct(name, inherited):
 
 
 def render_struct(struct, shorthand_path=None):
+    struct.headers.append("OpenGUI/Configure.h")
     if shorthand_path:
         shorthand_template = os.path.join(BASE, shorthand_path)
         shorthand_file = render(shorthand_template, struct=struct)
         write(struct.shorthand_path, shorthand_file)
-    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct=struct)
+    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct=struct, linkage="OGUI_API")
     source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct=struct)
     write(struct.header_path, header_file)
     write(struct.source_path, source_file)
@@ -68,7 +70,7 @@ def gen_position():
     add_longhand("position",		"YGPositionType",	"YGPositionTypeRelative",
                  "FlexPosition", restyle_damage="Layout")
     add_longhand("overflow",		"EFlexOverflow",
-                 "EFlexOverflow::Visible", "Overflow", "FlexOverflow", restyle_damage="Layout")
+                 "EFlexOverflow::Visible", "FlexOverflow", restyle_damage="Layout")
     add_longhand("align-self",		"YGAlign",			"YGAlignAuto",
                  "Width", restyle_damage="Layout")
     for size in PHYSICAL_SIZES:
@@ -92,7 +94,7 @@ def gen_position():
     add_longhand("vertical-align",	"EInlineAlign",
                  "EInlineAlign::Middle", "InlineAlign", restyle_damage="Layout")
     add_longhand("aspect-ratio",      "float",           "YGUndefined",
-                 "Number",  restyle_damage="Layout", parser="ParseRatio")
+                 "AspectRatio",  restyle_damage="Layout", parser="ParseRatio")
 
     struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Core/Types.h")
@@ -113,7 +115,7 @@ def gen_border():
                      "0.f", "Length", restyle_damage="Layout")
     for corner in PHYSICAL_CORNERS:
         add_longhand("border-{0}-radius".format(corner),
-                     "YGValue", "LengthPercentage", "YGValueZero")
+                     "YGValue", "YGValueZero", "LengthPercentage")
     struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     struct.headers.append("OpenGUI/Style2/Lerp/YogaLerp.h")
@@ -129,19 +131,21 @@ def gen_text():
                  "Number", restyle_damage="TextLayout")
     add_longhand("color", "Color4f", "Color4f(0,0,0,1)", "Color")
     add_longhand("font-family", "std::string", "{}",
-                 "String", restyle_damage="TextLayout|Font")
+                 "FontFamily", string = True, vector = True, restyle_damage="TextLayout|Font")
     add_longhand("font-style", "ETextStyle", "ETextStyle::Normal",
-                 "ETextStyle", restyle_damage="TextLayout|Font")
+                 "TextStyle", restyle_damage="TextLayout|Font")
     add_longhand("font-weight", "int", "400", "TextWeight",
                  restyle_damage="TextLayout|Font")
-    add_longhand("line-height", "float", "1.f",
-                 "TextLineHeight", restyle_damage="TextLayout")
-    add_longhand("text-align", "ETextAlign", "ETextAlign::Start", "ETextAlign")
+    add_longhand("line-height", "YGValue", "YGValueAuto",
+                 "Width", restyle_damage="TextLayout")
+    add_longhand("text-align", "ETextAlign", "ETextAlign::Start", "TextAlign")
     add_longhand("text-shadow", "TextShadow", "{}", "TextShadow", vector=True)
+    struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Style2/Shadow.h")
     struct.headers.append("OpenGUI/Text/TextTypes.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     struct.headers.append("OpenGUI/Style2/Lerp/TextLerp.h")
+    struct.headers.append("OpenGUI/Style2/Lerp/YogaLerp.h")
     render_struct(struct, "shorthands/text.h.mako")
 
 
@@ -162,7 +166,7 @@ def gen_background():
         struct.add_longhand(*args, **kwargs)
     add_longhand("background-color",	"Color4f",
                  "Color4f(1.f,1.f,1.f,1.f)", "Color")
-    add_longhand("background-image",	"std::string",	"{}", "URL")
+    add_longhand("background-image",	"std::string",	"{}", "URL", string = True)
     struct.headers.append("OpenGUI/Core/OMath.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)
@@ -173,7 +177,7 @@ def gen_animation():
 
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("animation-name", "std::string", "{}", "Name")
+    add_longhand("animation-name", "std::string", "{}", "Name", string = True)
     add_longhand("animation-duration", "float", "1.f", "Time")
     add_longhand("animation-delay", "float", "0.f", "Time")
     add_longhand("animation-direction", "EAnimDirection",
@@ -198,8 +202,11 @@ def gen_animation():
     write(struct.header_path, header_file)
     write(struct.source_path, source_file)
 
+
 def to_syntax(ident):
     return re.sub("([A-Z]+)", lambda m: "-" + m.group(1).lower(), ident).strip("-")
+
+
 class Enumerator(object):
     def __init__(self, name, value):
         self.name = name
@@ -207,20 +214,24 @@ class Enumerator(object):
         self.syntax = to_syntax(self.short_name)
         self.value = value
 
+
 class Enum(object):
     def __init__(self, name, enumerators):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.raw_name = self.short_name[1:]
         self.enumerators = enumerators
-        
+
+
 class DB(object):
     def __init__(self):
         self.enums = []
         self.headers = set()
 
+
 def GetInclude(path):
     return path.replace("\\", "/").rsplit("include/", 1)[-1]
+
 
 def gen_enum_parser():
     meta = json.load(open(os.path.join(ROOT, "build/meta.json")))
@@ -231,18 +242,18 @@ def gen_enum_parser():
             continue
         file = value["fileName"]
         if str.endswith(file, ".cpp"):
-            print("unable to gen lua bind for records in cpp, name:%s" % value["name"], file=sys.stderr)
+            print("unable to gen lua bind for records in cpp, name:%s" %
+                  value["name"], file=sys.stderr)
             continue
         db.headers.add(GetInclude(file))
         enumerators = []
         for key2, value2 in value["values"].items():
             enumerators.append(Enumerator(key2, value2["value"]))
         db.enums.append(Enum(key, enumerators))
-        template = os.path.join(BASE, "EnumParser.cpp.mako")
-        content = render(template, db = db)
-        output = os.path.join(SOURCE_OUT_DIR, "EnumParser.cpp")
-        write(output, content)
-
+    template = os.path.join(BASE, "EnumParser.cpp.mako")
+    content = render(template, db=db)
+    output = os.path.join(SOURCE_OUT_DIR, "EnumParser.cpp")
+    write(output, content)
 
 
 def main():

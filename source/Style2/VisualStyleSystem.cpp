@@ -9,6 +9,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Core/Utilities/ipair.hpp"
 #include "OpenGUI/Core/olog.h"
@@ -115,7 +116,7 @@ namespace OGUI
 
 	VisualElement* QueryFirst(VisualElement* root, std::string_view str)
 	{
-		auto selector = ParseSelector(str);
+		auto selector = CSSParser::ParseSelector(str);
 		if (!selector)
 			return nullptr;
 		return QueryFirst(root, selector.value());
@@ -123,7 +124,7 @@ namespace OGUI
 
 	void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result)
 	{
-		auto selector = ParseSelector(str);
+		auto selector = CSSParser::ParseSelector(str);
 		if (!selector)
 			return;
 		return QueryAll(root, selector.value(), result);

@@ -350,16 +350,6 @@ real_t FontData::get_scale(int p_cache_index, int p_size) const {
 	return TS->font_get_scale(cache[p_cache_index], p_size);
 }
 
-void FontData::set_spacing(int p_cache_index, int p_size, TextServer::SpacingType p_spacing, int p_value) {
-	_ensure_rid(p_cache_index);
-	TS->font_set_spacing(cache[p_cache_index], p_size, p_spacing, p_value);
-}
-
-int FontData::get_spacing(int p_cache_index, int p_size, TextServer::SpacingType p_spacing) const {
-	_ensure_rid(p_cache_index);
-	return TS->font_get_spacing(cache[p_cache_index], p_size, p_spacing);
-}
-
 int FontData::get_texture_count(int p_cache_index, const Vector2i &p_size) const {
 	_ensure_rid(p_cache_index);
 	return TS->font_get_texture_count(cache[p_cache_index], p_size);
@@ -689,35 +679,6 @@ void Font::set_variation_coordinates(const Map<uint32_t, double> &p_variation_co
 
 Map<uint32_t, double> Font::get_variation_coordinates() const {
 	return variation_coordinates;
-}
-
-void Font::set_spacing(TextServer::SpacingType p_spacing, int p_value) {
-	_data_changed();
-	switch (p_spacing) {
-		case TextServer::SPACING_TOP: {
-			spacing_top = p_value;
-		} break;
-		case TextServer::SPACING_BOTTOM: {
-			spacing_bottom = p_value;
-		} break;
-		default: {
-			ERR_FAIL_MSG("Invalid spacing type: " + itos(p_spacing));
-		} break;
-	}
-}
-
-int Font::get_spacing(TextServer::SpacingType p_spacing) const {
-	switch (p_spacing) {
-		case TextServer::SPACING_TOP: {
-			return spacing_top;
-		} break;
-		case TextServer::SPACING_BOTTOM: {
-			return spacing_bottom;
-		} break;
-		default: {
-			ERR_FAIL_V_MSG(0, "Invalid spacing type: " + itos(p_spacing));
-		} break;
-	}
 }
 
 real_t Font::get_height(int p_size) const {

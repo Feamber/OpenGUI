@@ -66,7 +66,7 @@ TextElement{
     height:100%; width:100%; 
     color:black;
     text-align: center;
-    line-height: 1.2;
+    line-height: 120%;
     background-color: transparent;
     text-shadow: 3px 0px rgba(0,0,255,0.3), -3px 0px rgba(255,0,0,0.3);
 }
@@ -97,7 +97,7 @@ TextElement{
     animation-name:rotateanim, shapeanim;
     animation-duration: 0.5s;
     animation-delay: 0s, -0.5s;
-    animation-yield-mode:stop, goback;
+    animation-yield-mode:stop, go-back;
     animation-resume-mode:reset;
     animation-fill-mode: forwards, none;
 }
@@ -132,7 +132,7 @@ TextElement{
 
 @keyframes shapeanim {
     to {
-        transform:  scale(1.2, 1.2) rotate(480deg);
+        transform:  scale(1.2, 1.2), rotate(480deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         background-color:rgb(73, 214, 125);
@@ -143,7 +143,7 @@ TextElement{
 #Child2:focus {
     animation-name:shapeanim2, rotateanim2;
     animation-duration: 0.5s,  0.5s;
-    animation-yield-mode:goback, stop;
+    animation-yield-mode:go-back, stop;
     animation-resume-mode:reset;
 }
 
@@ -170,7 +170,7 @@ TextElement{
 
 @keyframes shapeanim2 {
     to {
-        transform:  scale(1.2, 1.2) rotate(360deg);
+        transform:  scale(1.2, 1.2), rotate(360deg);
         border-top-right-radius:0px;
         border-bottom-right-radius:0px;
         background-color:rgb(73, 214, 125);
@@ -180,31 +180,31 @@ TextElement{
 #Child2:focus::before {
     animation-name:rotateanim3;
     animation-duration: 0.5s;
-    animation-yield-mode:goback;
+    animation-yield-mode:go-back;
     animation-resume-mode:resume;
 }
 
 @keyframes rotateanim3 {
     to {
-        transform: scale(1.2, 1.2) translate(0, 50px) rotate(360deg);
+        transform: scale(1.2, 1.2), translate(0, 50px), rotate(360deg);
     }
 }
 
 @keyframes monan {
     12.5% {
-        transform: rotate(10deg) scale(1.25, 1.25);
+        transform: rotate(10deg), scale(1.25, 1.25);
     }
     37.5% {
-        transform: rotate(-10deg) scale(1.75, 1.75); 
+        transform: rotate(-10deg), scale(1.75, 1.75); 
     }
     62.5% {
-        transform:  rotate(10deg) scale(0.75, 0.75);
+        transform:  rotate(10deg), scale(0.75, 0.75);
     }
     87.5% {
-        transform:  rotate(-10deg) scale(0.9, 0.9);
+        transform:  rotate(-10deg), scale(0.9, 0.9);
     }
     100% {
-        transform:  rotate(0deg) scale(1.0, 1.0);
+        transform:  rotate(0deg), scale(1.0, 1.0);
     }
 }
 

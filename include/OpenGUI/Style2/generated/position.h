@@ -2,17 +2,18 @@
 //generated from Style2/mako/Struct.h.mako
 
 #pragma once
-#include "OpenGUI/Configure.h"
-#include "OpenGUI/Style2/Properties.h"
-#include "OpenGUI/Style2/Forward.h"
-#include "OpenGUI/Style2/Lerp/CommonLerp.h"
-#include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "yoga/Yoga.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "OpenGUI/Style2/Lerp/MathLerp.h"
 #include "OpenGUI/Style2/Lerp/YogaLerp.h"
+#include "OpenGUI/Configure.h"
+#include "OpenGUI/Style2/Properties.h"
+#include "OpenGUI/Style2/Forward.h"
+#include "OpenGUI/Style2/Lerp/CommonLerp.h"
+#include "OpenGUI/Core/Utilities/string_hash.hpp"
+
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;

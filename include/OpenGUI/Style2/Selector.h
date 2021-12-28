@@ -73,7 +73,6 @@ namespace OGUI reflect
 	}; 
 	class VisualElement;
 
-	OGUI_API std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
 	OGUI_API bool Match(VisualElement* current, StyleComplexSelector& complexSel);
 	attr("script":true)
 	OGUI_API VisualElement* QueryFirst(VisualElement* root, std::string_view str);

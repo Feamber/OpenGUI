@@ -143,6 +143,7 @@ class Longhand(Property):
         logical=False,
         aliases=None,
         flags=None,
+        string=False,
         vector=False,
         restyle_damage=None,
         parser = "ParseValue"
@@ -162,11 +163,19 @@ class Longhand(Property):
         self.logical = arg_to_bool(logical)
         self.is_vector = arg_to_bool(vector)
         self.valueRule = valueRule
+        self.is_string = arg_to_bool(string)
+        if self.is_string:
+            self.parsed_type = "const std::string_view"
+        else:
+            self.parsed_type = type
         if self.is_vector:
-            self.view_type = "gsl::span<{}>".format(type)
+            self.view_type = "const gsl::span<{}>".format(type)
             self.storage_type = "std::vector<{}>".format(type)
         else:
-            self.view_type = type
+            if self.is_string:
+                self.view_type = "const std::string_view"
+            else:
+                self.view_type = type
             self.storage_type = type
         self.restyle_damage = restyle_damage
         self.parser = parser
@@ -206,6 +215,7 @@ class StyleStruct(object):
         self.source_path = os.path.join(source_dir, self.name + ".cpp")
         self.shorthand_path = os.path.join(source_dir, self.name + "_shorthands.h")
         self.include_path = os.path.relpath(self.header_path, include_dir).replace(os.path.sep, '/')
+        self.is_string = False
 
     def add_longhand(self, *args, **kwargs):
         longhand = Longhand(*args, **kwargs)

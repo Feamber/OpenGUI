@@ -270,8 +270,21 @@ namespace OGUI
     {
         _paragraphDirty = true;
         auto& txt = StyleText::Get(_style);
-        _paragraph->set_line_height(txt.lineHeight);
-    
+        if(txt.lineHeight.unit == YGUnitPercent)
+        {
+            _paragraph->set_line_height(txt.lineHeight.value / 100.f);
+            _paragraph->set_spacing_bottom(0.f);
+        }
+        else if(txt.lineHeight.unit == YGUnitPoint)
+        {
+            _paragraph->set_line_height(1.f);
+            _paragraph->set_spacing_bottom(txt.lineHeight.value);
+        }
+        else
+        {
+            _paragraph->set_line_height(1.f);
+            _paragraph->set_spacing_bottom(0);
+        }
     }
 
     void TextElement::BuildParagraphRec(godot::TextParagraph* p, const StyleText& txt)
@@ -401,36 +414,29 @@ namespace OGUI
         }
         if(HasFlag(damage, RestyleDamage::Font) || !_font)
         {
-            std::vector<std::string_view> families;
-            std::split(text.fontFamily, families, ",");
-            if(!families.empty())
+            if(!_font)
+                _font.reset(new godot::Font);
+            _font->clear_data();
+            for(auto family : text.fontFamily)
             {
-                if(!_font)
-                    _font.reset(new godot::Font);
-                _font->clear_data();
-                for(auto family : families)
+                bool found = false;
+                for(auto sheet : ss)
                 {
-                    if(std::starts_with(family, "\"") && std::ends_with(family, "\""))
-                        family = family.substr(1, family.size() - 2);
-                    bool found = false;
-                    for(auto sheet : ss)
-                    {
-                        auto iter = sheet->namedStyleFamilies.find(family);
-                        if(iter == sheet->namedStyleFamilies.end())
-                            continue;
-                        auto& font = sheet->styleFonts[iter->second];
-                        for(auto& data : font.datas)
-                            _font->add_data(data);
-                        found = true;
-                        break;
-                    }
-                    if(!found)
-                        olog::Warn(u"unknown font family name:{}"_o.format(family));
+                    auto iter = sheet->namedStyleFamilies.find(family);
+                    if(iter == sheet->namedStyleFamilies.end())
+                        continue;
+                    auto& font = sheet->styleFonts[iter->second];
+                    for(auto& data : font.datas)
+                        _font->add_data(data);
+                    found = true;
+                    break;
                 }
-                godot::Map<uint32_t, double> map;
-                map[godot::TS->name_to_tag("weight")] = text.fontWeight;
-                _font->set_variation_coordinates(map);
+                if(!found)
+                    olog::Warn(u"unknown font family name:{}"_o.format(family));
             }
+            godot::Map<uint32_t, double> map;
+            map[godot::TS->name_to_tag("weight")] = text.fontWeight;
+            _font->set_variation_coordinates(map);
         }
     }
 

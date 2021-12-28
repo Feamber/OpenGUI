@@ -46,10 +46,11 @@ namespace OGUI::CSSParser
 			~w					<- [ \t]*
 			~PropertyList		<- Property? (_ ';' _ Property)* _ ';'?
 			String				 <- '"'< (!'"' .)* >'"'
-			Percentage		   <- Number%
+			Percentage		   <- Number '%'
 			Number				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
+			Integer				<- [0-9]+
 			URL					   <- 'url('< (!')' .)* >')'
-			GlobalValue			<- inherit / initial  / unset
+			GlobalValue			<- 'inherit' / 'initial'  / 'unset'
 		)";
 		return grammar;
 	}
@@ -72,7 +73,25 @@ namespace OGUI::CSSParser
 		};
 		parser["Number"] = [](SemanticValues& vs)
 		{
-			return ParseNumber(vs.token());
+			try
+			{
+				return std::stof(std::string{vs.token()});
+			}
+			catch (std::exception)
+			{
+				throw parse_error("invalid number.");
+			}
+		};
+		parser["Integer"] = [](SemanticValues& vs)
+		{
+			try
+			{
+				return (int)std::stoi(std::string{vs.token()});
+			}
+			catch (std::exception)
+			{
+				throw parse_error("invalid integer.");
+			}
 		};
 		parser["Percentage"] = [](SemanticValues& vs)
 		{
@@ -88,7 +107,8 @@ namespace OGUI::CSSParser
 	std::string_view GetStyleRuleGrammar()
 	{
 		static auto grammar = R"(
-			StyleRule			<- SelectorList _ '{' _ PropertyList _ '}' _
+			StyleRule			<- SelectorList _ StyleRuleBlock _
+			StyleRuleBlock			<- '{' _ PropertyList _ '}'
 			SelectorList		<- ComplexSelector (',' _ ComplexSelector)* _
 			ComplexSelector		<- Selector ComplexPart* ('::' PseudoElement)?
 			PseudoElement		<- 'before'/'after'
@@ -131,8 +151,10 @@ namespace OGUI::CSSParser
 		{
 			StyleComplexSelector complexSelector;
 			if (vs.back().type() == typeid(PseudoElements))
+			{
 				complexSelector.pseudoElem = std::any_cast<PseudoElements>(vs.back());
-			vs.pop_back();
+				vs.pop_back();
+			}
 			for (auto& p : vs)
 				complexSelector.selectors.push_back(any_move<StyleSelector>(p));
 			//complexSelector.ruleIndex = vs.line_info().first;
@@ -150,7 +172,7 @@ namespace OGUI::CSSParser
 				selectorList.push_back(any_move<StyleComplexSelector>(p));
 			return selectorList;
 		};
-		parser["StyleRule"].enter = [](const char*, size_t, std::any& dt)
+		parser["StyleRuleBlock"].enter = [](const char*, size_t, std::any& dt)
 		{
 			auto ctx = GetContext<StyleSheetContext&>(dt);
 			PushContext(dt, PropertyListContext{&ctx.styleSheet->storage, &ctx.styleSheet->styleRules.emplace_back()});
@@ -172,8 +194,9 @@ namespace OGUI::CSSParser
 	std::string_view GetKeyframeGrammar()
 	{
 		static auto grammar = R"(	
-			Keyframes			<- '@keyframes' w <IDENT> _ '{' _ KeyframeBlock* _ '}' _
-			KeyframeBlock		<- KeyframeSelectorList _ '{' _ PropertyList _ '}' _
+			Keyframes			<- '@keyframes' w <IDENT> _ '{' (_ Keyframe)* _ '}' _
+			Keyframe			<- KeyframeSelectorList _ KeyframeBlock
+			KeyframeBlock		<- '{' _ PropertyList _ '}' _
 			KeyframeSelectorList <- <KeyframeSelector> (w ',' w <KeyframeSelector> w)*
 			KeyframeSelector	<- ( Number  '%') / 'from' / 'to'
 		)";
@@ -190,7 +213,7 @@ namespace OGUI::CSSParser
 			auto ctx = GetContext<StyleSheetContext&>(dt);
 			PushContext(dt, PropertyListContext{&ctx.styleSheet->storage, &ctx.styleSheet->styleRules.emplace_back()});
 		};
-		parser["KeyframeBlock"] = [](SemanticValues& vs,  std::any& dt)
+		parser["Keyframe"] = [](SemanticValues& vs,  std::any& dt)
 		{
 			PopContext(dt);
 			auto ctx = GetContext<StyleSheetContext&>(dt);
@@ -201,7 +224,7 @@ namespace OGUI::CSSParser
 		{
 			AnimationCurve list;
 			for(auto& k : vs)
-				list.emplace_back(std::any_cast<float>(k));
+				list.push_back(Key{std::any_cast<float>(k)});
 			return list;
 		};
 		parser["KeyframeSelector"] = [](SemanticValues& vs)
@@ -236,11 +259,13 @@ namespace OGUI::CSSParser
 	std::string_view GetFontfaceGrammar()
 	{
 		static auto grammar = R"(
-			Fontface			<- '@font-face' _ '{' _ FontPropertyList _ '}' _
+			Fontface			<- '@font-face' _ FontfaceBlock _
+			FontfaceBlock		<- '{' _ FontPropertyList _ '}'
 			~FontPropertyList <- FontProperty? (_ ';' _ FontProperty)* _ ';'?
 			FontProperty 	  <- FontPropFace / FontPropSrc
-			FontPropFace	 <- 'font-family' _':' _ (Name / String)
-			FontPropSrc		  <- 'src' _ ':' _ FontSrc (_ ',' _ FontSrc)
+			FontFamily		 <- (Name / String)
+			FontPropFace	 <- 'font-family' _':' _ FontFamily
+			FontPropSrc		  <- 'src' _ ':' _ FontSrc (_ ',' _ FontSrc)*
 			FontSrc				 <- URL FontFormat?
 			~FontFormat		 <- 'format('< (!')' .)* >')'
 		)";
@@ -250,10 +275,14 @@ namespace OGUI::CSSParser
 	void SetupFontfaceActions(peg::parser& parser)
 	{
 		using namespace peg;
-		parser["Fontface"] .enter = [](const char*, size_t, std::any& dt)
+		parser["FontfaceBlock"].enter = [](const char*, size_t, std::any& dt)
 		{
 			auto ctx = GetContext<StyleSheetContext&>(dt);
 			PushContext(dt, FontfaceContext{&ctx.styleSheet->styleFonts.emplace_back()});
+		};
+		parser["FontFamily"] = [](SemanticValues& vs)
+		{
+			return any_move<std::string_view>(vs[0]);
 		};
 		parser["Fontface"] = [](SemanticValues& vs, std::any& dt)
 		{
@@ -310,7 +339,7 @@ namespace OGUI::CSSParser
 
 		void RegisterGrammar(std::string_view grammar, ParserSetupFunction setupFunction)
 		{
-			grammars.emplace_back(grammar, setupFunction);
+			grammars.push_back(Grammar{grammar, setupFunction});
 		}
 
 		void RegisterProperty(std::string_view name)
@@ -321,24 +350,27 @@ namespace OGUI::CSSParser
 		std::string GetGrammar()
 		{
 			static auto grammar = R"(
-				InlineStyle			<- PropertyList
 				Stylesheet			<- _ (StyleRule / Keyframes / Fontface)*
+				InlineStyle			<- PropertyList
 			)";
-			std::stringstream stream(grammar);
+			std::stringstream stream;
+			stream << grammar;
+			
+			bool first = true;
+			stream << "\n\n\nProperty <- ";
+			for(auto& property : properties)
+			{
+				if(!first)
+					stream << " / ";
+				first = false;
+				stream << property;
+			}
 			stream << "\n" << GetUtilsGrammar();
 			stream << "\n" << GetStyleRuleGrammar();
 			stream << "\n" << GetKeyframeGrammar();
 			stream << "\n" << GetFontfaceGrammar();
 			for(auto& grammar : grammars)
 				stream  << "\n" << grammar .grammar;
-			bool first = true;
-			stream << "\nProperty <- ";
-			for(auto& property : properties)
-			{
-				if(!first)
-					stream << " / ";
-				stream << property;
-			} 
 			return stream.str();
 		}
 
@@ -369,7 +401,6 @@ namespace OGUI::CSSParser
 					ok = parser.load_grammar(ctx->GetGrammar());
 					if(!ok)
 						return;
-					parser.enable_packrat_parsing();
 					ctx->SetupParserActions(parser);
 				}
 			};
@@ -377,33 +408,50 @@ namespace OGUI::CSSParser
 			return parserInitializer.parser;
 		}
 
-		std::optional<StyleSheet> Parse(std::string_view str)
+		bool ParseInternal(std::string_view str, const char* rule, std::any& dt)
 		{
 			auto& parser = GetParser();
+			auto r = parser[rule].parse(str.data(), str.size(), dt, nullptr, parser.log);
+			auto ret = r.ret && r.len == str.size();
+			if (parser.log && !ret) { r.error_info.output_log(parser.log, str.data(), str.size()); }
+			return ret;
+		}
+
+		template<class T>
+		bool ParseInternal(std::string_view str, const char* rule, std::any& dt, T& value)
+		{
+			auto& parser = GetParser();
+			auto r = parser[rule].parse_and_get_value(str.data(), str.size(), dt, value, nullptr, parser.log);
+			auto ret = r.ret && r.len == str.size();
+			if (parser.log && !ret) { r.error_info.output_log(parser.log, str.data(), str.size()); }
+			return ret;
+		}
+
+		StyleSheet* Parse(std::string_view str)
+		{
 			std::any dt{ParseContext{}};
-			StyleSheet ss;
-			PushContext(dt, StyleSheetContext{&ss});
-			if(parser["Stylesheet"].parse(str.data(), str.size(), dt).ret)
-				return ss;
-			return {};
+			auto ss = std::make_unique<StyleSheet>();
+			PushContext(dt, StyleSheetContext{ss.get()});
+			if(ParseInternal(str, "Stylesheet", dt))
+				return ss.release();
+			return nullptr;
 		}
 		
 		std::optional<StyleComplexSelector> ParseSelector(std::string_view str)
 		{
-			auto& parser = GetParser();
 			StyleComplexSelector selector;
-			if(parser["ComplexSelector"].parse_and_get_value(str.data(), str.size(), selector).ret);
+			std::any dt;
+			if(ParseInternal(str, "ComplexSelector", dt, selector))
 				return selector;
 			return {};
 		}
 
 		std::optional<InlineStyle> ParseInlineStyle(std::string_view str)
 		{
-			auto& parser = GetParser();
 			std::any dt{ParseContext{}};
 			InlineStyle is;
 			PushContext(dt, PropertyListContext{&is.storage, &is.rule});
-			if(parser["InlineStyle"].parse(str.data(), str.size(), dt).ret)
+			if(ParseInternal(str, "InlineStyle", dt))
 				return is;
 			return {};
 		}
@@ -419,7 +467,7 @@ namespace OGUI::CSSParser
 		CSSParser::Get().RegisterProperty(name);
 	}
 
-	std::optional<StyleSheet> Parse(std::string_view str)
+	StyleSheet* Parse(std::string_view str)
 	{
 		return CSSParser::Get().Parse(str);
 	}
@@ -435,14 +483,14 @@ namespace OGUI::CSSParser
 		return CSSParser::Get().ParseInlineStyle(str);
 	}
 
-	std::optional<StyleSheet> ParseFile(std::string path)
+	StyleSheet* ParseFile(std::string path)
 	{
 		auto& ctx = Context::Get().fileImpl;
         auto f = ctx->Open(path.c_str());
         if(!f)
         {
             olog::Warn(u"加载文件失败，filePath：{}"_o, path);
-            return std::optional<StyleSheet>();
+            return nullptr;
         }
         auto length = ctx->Length(f);
         std::string data;

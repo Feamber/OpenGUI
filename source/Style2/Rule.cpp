@@ -58,6 +58,6 @@ void OGUI::StyleSheet::Initialize()
 		for(auto& prop : rule.properties)
 		{
 			if(prop.id == StyleBackground::Ids::backgroundImage && !prop.keyword)
-				preloaded.push_back(ctx.textureManager->RequireFromFileSystem(storage.Get<std::string>(prop.value)));
+				preloaded.push_back(ctx.textureManager->RequireFromFileSystem(std::string(storage.Get<const std::string_view>(prop.value))));
 		}
 }

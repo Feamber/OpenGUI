@@ -33,8 +33,3 @@ namespace std
 	}
 
 }
-
-namespace OGUI
-{
-	OGUI_API float ParseNumber(std::string_view str);
-}

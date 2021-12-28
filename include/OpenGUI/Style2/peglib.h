@@ -3090,7 +3090,7 @@ private:
     const static std::vector<std::pair<char32_t, char32_t>> range = {
         {0x0080, 0xFFFF}};
     g["IdentStart"] <= seq(npd(lit(u8(u8"↑"))), npd(lit(u8(u8"⇑"))),
-                           cho(cls("a-zA-Z_%"), cls(range)));
+                           cho(cls("a-zA-Z_%-"), cls(range)));
 
     g["IdentRest"] <= cho(g["IdentStart"], cls("0-9"));
 
@@ -3695,15 +3695,15 @@ private:
       }
     }
 
-    for (auto &[name, rule] : grammar) {
-      if (!referenced.count(name)) {
-        if (log) {
-          auto line = line_info(s, rule.s_);
-          auto msg = "'" + name + "' is not referenced.";
-          log(line.first, line.second, msg);
-        }
-      }
-    }
+    // for (auto &[name, rule] : grammar) {
+    //   if (!referenced.count(name)) {
+    //     if (log) {
+    //       auto line = line_info(s, rule.s_);
+    //       auto msg = "'" + name + "' is not referenced.";
+    //       log(line.first, line.second, msg);
+    //     }
+    //   }
+    // }
 
     if (!ret) { return nullptr; }
 

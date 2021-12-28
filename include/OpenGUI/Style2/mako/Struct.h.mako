@@ -2,18 +2,18 @@
 //generated from Style2/mako/Struct.h.mako
 
 #pragma once
-#include "OpenGUI/Configure.h"
+%for header in struct.headers:
+#include "${header}"
+%endfor
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
-%for header in struct.headers:
-#include "${header}"
-%endfor
+
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
-    struct OGUI_API Style${struct.ident}
+    struct ${linkage} Style${struct.ident}
     {
         constexpr static std::string_view name = "${struct.name}"sv;
         constexpr static size_t hash = OGUI::hash(name);

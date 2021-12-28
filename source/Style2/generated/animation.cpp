@@ -68,7 +68,7 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
             switch(prop.id)
             {
                 case Ids::animationName:
-                    animationName = sheet.Get<std::string>(prop.value);
+                    animationName = sheet.Get<const std::string_view>(prop.value);
                     break;
                 case Ids::animationDuration:
                     animationDuration = sheet.Get<float>(prop.value);
@@ -108,7 +108,7 @@ void OGUI::AnimStyle::SetupParser()
 {
     {
         using namespace CSSParser;
-        std::string grammar = "animation-name <- 'animation-name' _ ':' _ Name+";
+        static const auto grammar = "animation-name <- 'animation-name' _ ':' _ Name (_ ',' _ Name)*";
         RegisterProperty("animation-name");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
@@ -120,18 +120,18 @@ void OGUI::AnimStyle::SetupParser()
                     throw peg::parse_error("animation-name dose not match animation properties count.");
                 anim.resize(vs.size());
                 for(int i=0; i<vs.size(); ++i)
-                    anim[i].name = std::any_cast<std::string&>(vs[i]);
+                    anim[i].name = std::any_cast<std::string_view&>(vs[i]);
             };
         });
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-duration <- 'animation-duration' _ ':' _ (GlobalValue / Time+)";
+        static const auto grammar = "animation-durationValue <- GlobalValue / Time  (_ ',' _ Time)*\nanimation-duration <- 'animation-duration' _ ':' _ animation-durationValue";
         RegisterProperty("animation-duration");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationDuration;
-            parser["animation-duration"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-durationValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -149,12 +149,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-delay <- 'animation-delay' _ ':' _ (GlobalValue / Time+)";
+        static const auto grammar = "animation-delayValue <- GlobalValue / Time  (_ ',' _ Time)*\nanimation-delay <- 'animation-delay' _ ':' _ animation-delayValue";
         RegisterProperty("animation-delay");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationDelay;
-            parser["animation-delay"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-delayValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -172,12 +172,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-direction <- 'animation-direction' _ ':' _ (GlobalValue / AnimDirection+)";
+        static const auto grammar = "animation-directionValue <- GlobalValue / AnimDirection  (_ ',' _ AnimDirection)*\nanimation-direction <- 'animation-direction' _ ':' _ animation-directionValue";
         RegisterProperty("animation-direction");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationDirection;
-            parser["animation-direction"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-directionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -195,12 +195,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-iteration-count <- 'animation-iteration-count' _ ':' _ (GlobalValue / AnimIterationCount+)";
+        static const auto grammar = "animation-iteration-countValue <- GlobalValue / AnimIterationCount  (_ ',' _ AnimIterationCount)*\nanimation-iteration-count <- 'animation-iteration-count' _ ':' _ animation-iteration-countValue";
         RegisterProperty("animation-iteration-count");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationIterationCount;
-            parser["animation-iteration-count"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-iteration-countValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -218,12 +218,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-play-state <- 'animation-play-state' _ ':' _ (GlobalValue / AnimPlayState+)";
+        static const auto grammar = "animation-play-stateValue <- GlobalValue / AnimPlayState  (_ ',' _ AnimPlayState)*\nanimation-play-state <- 'animation-play-state' _ ':' _ animation-play-stateValue";
         RegisterProperty("animation-play-state");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationPlayState;
-            parser["animation-play-state"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-play-stateValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -241,12 +241,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-timing-function <- 'animation-timing-function' _ ':' _ (GlobalValue / AnimTimingFunction+)";
+        static const auto grammar = "animation-timing-functionValue <- GlobalValue / AnimTimingFunction  (_ ',' _ AnimTimingFunction)*\nanimation-timing-function <- 'animation-timing-function' _ ':' _ animation-timing-functionValue";
         RegisterProperty("animation-timing-function");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationTimingFunction;
-            parser["animation-timing-function"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-timing-functionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -264,12 +264,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-fill-mode <- 'animation-fill-mode' _ ':' _ (GlobalValue / AnimFillMode+)";
+        static const auto grammar = "animation-fill-modeValue <- GlobalValue / AnimFillMode  (_ ',' _ AnimFillMode)*\nanimation-fill-mode <- 'animation-fill-mode' _ ':' _ animation-fill-modeValue";
         RegisterProperty("animation-fill-mode");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationFillMode;
-            parser["animation-fill-mode"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-fill-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -287,12 +287,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-yield-mode <- 'animation-yield-mode' _ ':' _ (GlobalValue / AnimYieldMode+)";
+        static const auto grammar = "animation-yield-modeValue <- GlobalValue / AnimYieldMode  (_ ',' _ AnimYieldMode)*\nanimation-yield-mode <- 'animation-yield-mode' _ ':' _ animation-yield-modeValue";
         RegisterProperty("animation-yield-mode");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationYieldMode;
-            parser["animation-yield-mode"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-yield-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
@@ -310,12 +310,12 @@ void OGUI::AnimStyle::SetupParser()
     }
 	{
         using namespace CSSParser;
-        std::string grammar = "animation-resume-mode <- 'animation-resume-mode' _ ':' _ (GlobalValue / AnimResumeMode+)";
+        static const auto grammar = "animation-resume-modeValue <- GlobalValue / AnimResumeMode  (_ ',' _ AnimResumeMode)*\nanimation-resume-mode <- 'animation-resume-mode' _ ':' _ animation-resume-modeValue";
         RegisterProperty("animation-resume-mode");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
             static size_t hash = Ids::animationResumeMode;
-            parser["animation-resume-mode"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["animation-resume-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
                 if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())

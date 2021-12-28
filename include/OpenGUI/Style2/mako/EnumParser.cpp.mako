@@ -5,11 +5,10 @@
 #include "${header}"
 %endfor
 
-namespace OGUI
+namespace OGUI::CSSParser
 {
 void SetupEnumParser()
 {
-    using namespace CSSParser;
     static auto grammar = R"(
     %for enum in db.enums:
         ${enum.raw_name} <- ${" / ".join(["'" + enumerator.syntax + "'" for enumerator in enum.enumerators])}

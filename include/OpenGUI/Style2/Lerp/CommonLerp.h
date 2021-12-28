@@ -38,5 +38,5 @@ namespace OGUI
         return result;
     }
     
-    OGUI_API std::string Lerp(std::string a, std::string b, float alpha);
+    OGUI_API std::string Lerp(std::string_view a, std::string_view b, float alpha);
 }

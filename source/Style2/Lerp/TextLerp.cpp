@@ -17,4 +17,10 @@ namespace OGUI
     {
         return LerpArray<TextShadow>(a, b, alpha);
     }
+
+    
+    std::vector<std::string> Lerp(gsl::span<const std::string> a, gsl::span<const std::string> b, float alpha)
+    {
+        return LerpArray<std::string>(a, b, alpha);
+    }
 }

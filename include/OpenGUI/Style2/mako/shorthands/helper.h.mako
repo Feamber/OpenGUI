@@ -2,16 +2,19 @@
     from tool.style_codegen import to_small_camel_case, to_camel_case
 %>
 <%def name="four_sides_shorthand(name, sub_property_pattern, sides)">
-    <% prop = struct.add_shorthand(name, [sub_property_pattern % side for side in sides]) %>
+    <% 
+        prop = struct.add_shorthand(name, [sub_property_pattern % side for side in sides])
+        valueRule = prop.sub_properties[0].valueRule
+    %>
 namespace OGUI::CSSParser
 {
     void Register${to_camel_case(name)}()
     {
-        std::string grammar = "${prop.name} <- '${prop.name}' _ ':' _ (GlobalValue / ${prop.sub_properties[0].valueRule}{1, 4})";
+        static const auto grammar = "${prop.name}Value <- GlobalValue / ${valueRule} (w ${valueRule}){0, 3} \n${prop.name} <- '${prop.name}' _ ':' _ ${prop.name}Value";
         RegisterProperty("${prop.name}");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            parser["${prop.name}"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["${prop.name}Value"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                 {

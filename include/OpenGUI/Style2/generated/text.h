@@ -2,15 +2,18 @@
 //generated from Style2/mako/Struct.h.mako
 
 #pragma once
+#include "yoga/Yoga.h"
+#include "OpenGUI/Style2/Shadow.h"
+#include "OpenGUI/Text/TextTypes.h"
+#include "OpenGUI/Style2/Lerp/MathLerp.h"
+#include "OpenGUI/Style2/Lerp/TextLerp.h"
+#include "OpenGUI/Style2/Lerp/YogaLerp.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
-#include "OpenGUI/Style2/Shadow.h"
-#include "OpenGUI/Text/TextTypes.h"
-#include "OpenGUI/Style2/Lerp/MathLerp.h"
-#include "OpenGUI/Style2/Lerp/TextLerp.h"
+
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
@@ -32,10 +35,10 @@ namespace OGUI
         };
         float fontSize;
         Color4f color;
-        std::string fontFamily;
+        std::vector<std::string> fontFamily;
         ETextStyle fontStyle;
         int fontWeight;
-        float lineHeight;
+        YGValue lineHeight;
         ETextAlign textAlign;
         std::vector<TextShadow> textShadow;
         void Initialize();

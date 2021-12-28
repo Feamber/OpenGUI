@@ -12,11 +12,11 @@ namespace OGUI::CSSParser
 {
     void RegisterMargin()
     {
-        std::string grammar = "margin <- 'margin' _ ':' _ (GlobalValue / LengthPercentage{1, 4})";
+        static const auto grammar = "marginValue <- GlobalValue / LengthPercentage (w LengthPercentage){0, 3} \nmargin <- 'margin' _ ':' _ marginValue";
         RegisterProperty("margin");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            parser["margin"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["marginValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                 {
@@ -51,11 +51,11 @@ namespace OGUI::CSSParser
 {
     void RegisterPadding()
     {
-        std::string grammar = "padding <- 'padding' _ ':' _ (GlobalValue / LengthPercentage{1, 4})";
+        static const auto grammar = "paddingValue <- GlobalValue / LengthPercentage (w LengthPercentage){0, 3} \npadding <- 'padding' _ ':' _ paddingValue";
         RegisterProperty("padding");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            parser["padding"] = [](peg::SemanticValues& vs, std::any& dt){
+            parser["paddingValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                 {

@@ -1,16 +1,15 @@
 //DO NOT MODIFY THIS FILE
 //generated from EnumParser.cpp.mako
 #include "OpenGUI/Style2/Parse.h"
-#include "OpenGUI/Style2/AnimTypes.h"
+#include "OpenGUI/Text/TextTypes.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Style2/Properties.h"
-#include "OpenGUI/Text/TextTypes.h"
+#include "OpenGUI/Style2/AnimTypes.h"
 
-namespace OGUI
+namespace OGUI::CSSParser
 {
 void SetupEnumParser()
 {
-    using namespace CSSParser;
     static auto grammar = R"(
         InlineAlign <- 'baseline' / 'top' / 'middle'
         FlexOverflow <- 'visible' / 'hidden' / 'clip' / 'scroll' / 'auto'

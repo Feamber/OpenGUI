@@ -18,20 +18,27 @@ namespace OGUI
     template<class T>
     struct span_trait : std::false_type {};
     template<class T>
-    struct span_trait<gsl::span<T>> : std::true_type { using type = T; };
+    struct span_trait<const gsl::span<T>> : std::true_type { using type = T; };
 
     struct StyleSheetStorage
     {
         std::vector<char> bulkData;
         std::vector<std::string> stringData;
+        std::unordered_map<size_t, size_t> stringArrSize;
 
         template<class T>
         T Get(VariantHandle handle) const
         {
             using st = span_trait<T>;
-            if constexpr(std::is_same_v<T, std::string>)
+            if constexpr(std::is_same_v<T, const std::string_view>)
             {
                 return stringData[handle.index];
+            }
+            else if constexpr(std::is_same_v<T, const gsl::span<std::string>>)
+            {
+                size_t size = stringArrSize.find(handle.index)->second;
+                auto begin = (std::string*)stringData.data()+handle.index;
+                return {begin, begin+size};
             }
             else if constexpr(st::value)
             {
@@ -51,10 +58,18 @@ namespace OGUI
         VariantHandle Push(const T& value)
         {
             using st = span_trait<T>;
-            if constexpr(std::is_same_v<T, std::string>)
+            if constexpr(std::is_same_v<T, const std::string_view>)
             {
-                stringData.push_back(value);
+                stringData.push_back(std::string{value});
                 return {(int)stringData.size()-1};
+            }
+            else if constexpr(std::is_same_v<T, const gsl::span<std::string>>)
+            {
+                size_t begin = stringData.size();
+                stringArrSize.insert({begin, value.size()});
+                for(auto& str : value)
+                    stringData.push_back(std::move(str));
+                return {(int)begin};
             }
             else if constexpr(st::value)
             {
