@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <algorithm>
+#include <string_view>
 #include <vector>
-
+#include "OpenGUI/Configure.h"
 
 namespace std
 {
@@ -30,4 +31,5 @@ namespace std
 		if (starting.size() > value.size()) return false;
 		return std::equal(starting.begin(), starting.end(), value.begin());
 	}
+
 }

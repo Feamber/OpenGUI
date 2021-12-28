@@ -247,59 +247,42 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
     return damage;
 }
 
-bool OGUI::Style${struct.ident}::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
+void OGUI::Style${struct.ident}::SetupParser()
 {
-    size_t phash = OGUI::hash(prop);
-
-    StyleKeyword keyword = StyleKeyword::None;
-    ParseValue(value, keyword);
-    if(keyword != StyleKeyword::None)
-    {
-        switch(phash)
-        {
-        %for prop in struct.longhands:
-            case Ids::${prop.ident}:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-        %endfor
-        %for prop in struct.shorthands:
-            case Ids::${prop.ident}:
-            %for subprop in prop.sub_properties:
-                rule.properties.push_back({Ids::${subprop.ident},(int)keyword});
-            %endfor
-        %endfor
-            default: break;
-        }
-        return false;
-    }
-    %if struct.shorthands:
-    //shorthands
-    switch(phash)
-    {
-    %for prop in struct.shorthands:
-        case Ids::${prop.ident}:
-            return Parse::Parse${to_camel_case(prop.name)}(sheet, prop, value, rule, errorMsg);
-    %endfor
-        default: break;
-    }
+%if struct.shorthands:
+%for prop in struct.shorthands:
+    CSSParser::Register${to_camel_case(prop.name)}();
+%endfor
+%endif
+%for prop in struct.longhands:
+	{
+        using namespace CSSParser;
+    %if prop.is_vector:
+        static const auto grammar = "${prop.name}Value <- GlobalValue / (${prop.valueRule} (_ ',' _ ${prop.valueRule})*) \n${prop.name} <- '${prop.name}' _ ':' _ ${prop.name}Value";
+    %else:
+        static const auto grammar = "${prop.name}Value <- GlobalValue / ${prop.valueRule} \n${prop.name} <- '${prop.name}' _ ':' _ ${prop.name}Value";
     %endif
-    //longhands
-    switch(phash)
-    {
-    %for prop in struct.longhands:
-        case Ids::${prop.ident}:{
-            ${prop.storage_type} v;
-            if(${prop.parser}(value, v))
-                rule.properties.push_back({phash, sheet.Push<${prop.view_type}>(v)});
-            else
-            {
-                errorMsg = "failed to parse ${prop.name} value!";
-                return false;
-            }
-            return true;
-        }
-    %endfor
-        default: break;
+        RegisterProperty("${prop.name}");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::${prop.ident};
+            parser["${prop.name}Value"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                %if prop.is_vector:
+                {
+                    ${prop.storage_type} value;
+                    for(auto& e : vs)
+                        value.emplace_back(any_move<${prop.parsed_type}>(e));
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(value)});
+                }
+                %else:
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(std::any_cast<${prop.parsed_type}&>(vs[0]))});
+                %endif
+            };
+        });
     }
-    return false;
+%endfor
 }

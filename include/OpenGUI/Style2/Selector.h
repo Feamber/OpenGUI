@@ -70,11 +70,9 @@ namespace OGUI reflect
 
 		OGUI_API void UpdateSpecificity();
 		OGUI_API bool IsSimple() { return selectors.size() == 1; }
-		OGUI_API void SetPseudoElement(std::string_view name);
 	}; 
 	class VisualElement;
 
-	OGUI_API std::optional<StyleComplexSelector> ParseSelector(std::string_view str);
 	OGUI_API bool Match(VisualElement* current, StyleComplexSelector& complexSel);
 	attr("script":true)
 	OGUI_API VisualElement* QueryFirst(VisualElement* root, std::string_view str);

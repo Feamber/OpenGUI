@@ -41,7 +41,7 @@ Button:active{
     background-color: transparent;
     justify-content: space-between;
     flex-direction: row;
-    padding: 0px, 100px;
+    padding: 0px 100px;
 }
 
 #TestSlider {

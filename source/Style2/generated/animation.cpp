@@ -68,7 +68,7 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
             switch(prop.id)
             {
                 case Ids::animationName:
-                    animationName = sheet.Get<std::string>(prop.value);
+                    animationName = sheet.Get<const std::string_view>(prop.value);
                     break;
                 case Ids::animationDuration:
                     animationDuration = sheet.Get<float>(prop.value);
@@ -104,203 +104,231 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
 }
 
 
-bool OGUI::AnimStyle::ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg, int animCount)
+void OGUI::AnimStyle::SetupParser()
 {
-    size_t hash = OGUI::hash(name);
-
-    //shorthands
-    std::vector<std::string_view> tokens;
-    std::split(value, tokens, ", ");
-    //longhands
-    switch(hash)
     {
-        case Ids::animationName:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                std::string v;
-                if(ParseValue(tokens[i], v))
-                    rule.animation[i].name = v;
-                else
-                {
-                    errorMsg = "failed to parse animation-name value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationDuration:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                float v;
-                if(ParseTime(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-duration value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationDelay:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                float v;
-                if(ParseTime(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-delay value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationDirection:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                EAnimDirection v;
-                if(ParseValue(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-direction value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationIterationCount:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                float v;
-                if(ParseIterationCount(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-iteration-count value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationPlayState:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                EAnimPlayState v;
-                if(ParseValue(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-play-state value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationTimingFunction:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                AnimTimingFunction v;
-                if(ParseValue(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-timing-function value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationFillMode:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                EAnimFillMode v;
-                if(ParseValue(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-fill-mode value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationYieldMode:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                EAnimYieldMode v;
-                if(ParseValue(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-yield-mode value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Ids::animationResumeMode:{
-            int count = std::min((int)tokens.size(), animCount);
-            for(int i=0; i<count; ++i)
-            {
-                EAnimResumeMode v;
-                if(ParseValue(tokens[i], v))
-                {
-                    auto handle = sheet.Push(v);
-                    for(int j=i; j<animCount; j+=count)
-                        rule.animation[j].properties.push_back({hash, handle});
-                }
-                else
-                {
-                    errorMsg = "failed to parse animation-resume-mode value!";
-                    return false;
-                }
-            }
-            return true;
-        }
-        default: break;
+        using namespace CSSParser;
+        static const auto grammar = "animation-name <- 'animation-name' _ ':' _ Name (_ ',' _ Name)*";
+        RegisterProperty("animation-name");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationName;
+            parser["animation-name"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(vs.size() < anim.size())
+                    throw peg::parse_error("animation-name dose not match animation properties count.");
+                anim.resize(vs.size());
+                for(int i=0; i<vs.size(); ++i)
+                    anim[i].name = std::any_cast<std::string_view&>(vs[i]);
+            };
+        });
     }
-    return false;
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-durationValue <- GlobalValue / Time  (_ ',' _ Time)*\nanimation-duration <- 'animation-duration' _ ':' _ animation-durationValue";
+        RegisterProperty("animation-duration");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationDuration;
+            parser["animation-durationValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-duration dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-delayValue <- GlobalValue / Time  (_ ',' _ Time)*\nanimation-delay <- 'animation-delay' _ ':' _ animation-delayValue";
+        RegisterProperty("animation-delay");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationDelay;
+            parser["animation-delayValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-delay dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-directionValue <- GlobalValue / AnimDirection  (_ ',' _ AnimDirection)*\nanimation-direction <- 'animation-direction' _ ':' _ animation-directionValue";
+        RegisterProperty("animation-direction");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationDirection;
+            parser["animation-directionValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-direction dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimDirection>(std::any_cast<EAnimDirection&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-iteration-countValue <- GlobalValue / AnimIterationCount  (_ ',' _ AnimIterationCount)*\nanimation-iteration-count <- 'animation-iteration-count' _ ':' _ animation-iteration-countValue";
+        RegisterProperty("animation-iteration-count");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationIterationCount;
+            parser["animation-iteration-countValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-iteration-count dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-play-stateValue <- GlobalValue / AnimPlayState  (_ ',' _ AnimPlayState)*\nanimation-play-state <- 'animation-play-state' _ ':' _ animation-play-stateValue";
+        RegisterProperty("animation-play-state");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationPlayState;
+            parser["animation-play-stateValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-play-state dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimPlayState>(std::any_cast<EAnimPlayState&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-timing-functionValue <- GlobalValue / AnimTimingFunction  (_ ',' _ AnimTimingFunction)*\nanimation-timing-function <- 'animation-timing-function' _ ':' _ animation-timing-functionValue";
+        RegisterProperty("animation-timing-function");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationTimingFunction;
+            parser["animation-timing-functionValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-timing-function dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<AnimTimingFunction>(std::any_cast<AnimTimingFunction&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-fill-modeValue <- GlobalValue / AnimFillMode  (_ ',' _ AnimFillMode)*\nanimation-fill-mode <- 'animation-fill-mode' _ ':' _ animation-fill-modeValue";
+        RegisterProperty("animation-fill-mode");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationFillMode;
+            parser["animation-fill-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-fill-mode dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimFillMode>(std::any_cast<EAnimFillMode&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-yield-modeValue <- GlobalValue / AnimYieldMode  (_ ',' _ AnimYieldMode)*\nanimation-yield-mode <- 'animation-yield-mode' _ ':' _ animation-yield-modeValue";
+        RegisterProperty("animation-yield-mode");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationYieldMode;
+            parser["animation-yield-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-yield-mode dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimYieldMode>(std::any_cast<EAnimYieldMode&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "animation-resume-modeValue <- GlobalValue / AnimResumeMode  (_ ',' _ AnimResumeMode)*\nanimation-resume-mode <- 'animation-resume-mode' _ ':' _ animation-resume-modeValue";
+        RegisterProperty("animation-resume-mode");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::animationResumeMode;
+            parser["animation-resume-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                auto& anim = ctx.rule->animation;
+                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                    throw peg::parse_error("animation-resume-mode dose not match animation-name count.");
+                anim.resize(std::max(anim.size(), vs.size()));
+                
+                if(vs.choice() == 0)
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    for(int i=0; i<vs.size(); ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimResumeMode>(std::any_cast<EAnimResumeMode&>(vs[0]))});
+            };
+        });
+    }
 }

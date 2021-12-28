@@ -280,8 +280,6 @@ void TextParagraph::clear_dropcap() {
 bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
 	ERR_FAIL_COND_V(!p_fonts, false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, draw_policy, p_opentype_features, p_language);
-	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
-	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	mark_dirty();
 	return res;
 }
@@ -342,6 +340,24 @@ void TextParagraph::tab_align(const Vector<float> &p_tab_stops) {
 void TextParagraph::set_flags(uint8_t p_flags) {
 	if (flags != p_flags) {
 		flags = p_flags;
+		mark_dirty();
+	}
+}
+
+void TextParagraph::set_spacing_top(int spacing)
+{
+	if(spacing_top != spacing)
+	{
+		spacing_top = spacing;
+		mark_dirty();
+	}
+}
+
+void TextParagraph::set_spacing_bottom(int spacing)
+{
+	if(spacing_bottom != spacing)
+	{
+		spacing_bottom = spacing;
 		mark_dirty();
 	}
 }
@@ -772,8 +788,6 @@ void TextParagraph::draw_line_outline(OGUI::PrimDrawList& list, const Vector2 &p
 TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, draw_policy, p_opentype_features, p_language);
-	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
-	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	max_width = p_width;
 }
 

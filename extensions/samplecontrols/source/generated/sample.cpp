@@ -209,38 +209,22 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
     return damage;
 }
 
-bool OGUI::StyleSample::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
+void OGUI::StyleSample::SetupParser()
 {
-    size_t phash = OGUI::hash(prop);
-
-    StyleKeyword keyword = StyleKeyword::None;
-    ParseValue(value, keyword);
-    if(keyword != StyleKeyword::None)
-    {
-        switch(phash)
+	{
+        using namespace CSSParser;
+        static const auto grammar = "some-valueValue <- GlobalValue / Number \nsome-value <- 'some-value' _ ':' _ some-valueValue";
+        RegisterProperty("some-value");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            case Ids::someValue:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            default: break;
-        }
-        return false;
+            static size_t hash = Ids::someValue;
+            parser["some-valueValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
     }
-    //longhands
-    switch(phash)
-    {
-        case Ids::someValue:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse some-value value!";
-                return false;
-            }
-            return true;
-        }
-        default: break;
-    }
-    return false;
 }

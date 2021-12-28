@@ -7,7 +7,7 @@ from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
 
-PHYSICAL_SIDES = ["left", "top", "right", "bottom"]
+PHYSICAL_SIDES = ["top", "right", "bottom", "left"]
 LOGICAL_SIDES = ["block-start", "block-end", "inline-start", "inline-end"]
 PHYSICAL_SIZES = ["width", "height"]
 LOGICAL_SIZES = ["block-size", "inline-size"]
@@ -136,12 +136,14 @@ class Longhand(Property):
         name,
         type,
         initial_value,
+        valueRule,
         spec=None,
         keyword=None,
         rule_types_allowed=DEFAULT_RULES,
         logical=False,
         aliases=None,
         flags=None,
+        string=False,
         vector=False,
         restyle_damage=None,
         parser = "ParseValue"
@@ -160,11 +162,20 @@ class Longhand(Property):
         self.initial_value = initial_value
         self.logical = arg_to_bool(logical)
         self.is_vector = arg_to_bool(vector)
+        self.valueRule = valueRule
+        self.is_string = arg_to_bool(string)
+        if self.is_string:
+            self.parsed_type = "const std::string_view"
+        else:
+            self.parsed_type = type
         if self.is_vector:
-            self.view_type = "gsl::span<{}>".format(type)
+            self.view_type = "const gsl::span<{}>".format(type)
             self.storage_type = "std::vector<{}>".format(type)
         else:
-            self.view_type = type
+            if self.is_string:
+                self.view_type = "const std::string_view"
+            else:
+                self.view_type = type
             self.storage_type = type
         self.restyle_damage = restyle_damage
         self.parser = parser
@@ -204,16 +215,19 @@ class StyleStruct(object):
         self.source_path = os.path.join(source_dir, self.name + ".cpp")
         self.shorthand_path = os.path.join(source_dir, self.name + "_shorthands.h")
         self.include_path = os.path.relpath(self.header_path, include_dir).replace(os.path.sep, '/')
+        self.is_string = False
 
     def add_longhand(self, *args, **kwargs):
         longhand = Longhand(*args, **kwargs)
         self.longhands.append(longhand)
         self.name_to_longhand[longhand.name] = longhand
+        return longhand
 
     def add_shorthand(self, name, sub_properties, *args, **kwargs):
         sub_properties = [self.name_to_longhand[s] for s in sub_properties]
         shorthand = Shorthand(name, sub_properties, *args, **kwargs)
         self.shorthands.append(shorthand)
+        return shorthand
 
         
 BASE = os.path.dirname(os.path.realpath(__file__).replace(os.path.sep, "/"))

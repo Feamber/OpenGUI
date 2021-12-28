@@ -1,6 +1,7 @@
 
 #include "OpenGUI/Style2/ComputedStyle.h"
 #include "OpenGUI/Style2/Rule.h"
+#include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Style2/generated/border.h"
 #include "OpenGUI/Style2/generated/position.h"
@@ -24,13 +25,27 @@ void OGUI::RegisterStyleStruct(const StyleDesc& desc)
     registry.descriptions.push_back(desc);
 }
 
+namespace OGUI::CSSParser
+{
+    void SetupEnumParser();
+    void SetupAnimValueParser();
+    void SetupMathValueParser();
+    void SetupLayoutValueParser();
+    void SetupDrawValueParser();
+}
 void OGUI::RegisterBuiltinStructs()
 {
-    RegisterStyleStruct(GetDesc<StyleText>());
-    RegisterStyleStruct(GetDesc<StyleBackground>());
-    RegisterStyleStruct(GetDesc<StyleBorder>());
-    RegisterStyleStruct(GetDesc<StylePosition>());
-    RegisterStyleStruct(GetDesc<StyleEffects>());
+    CSSParser::SetupAnimValueParser();
+    CSSParser::SetupMathValueParser();
+    CSSParser::SetupLayoutValueParser();
+    CSSParser::SetupEnumParser();
+    CSSParser::SetupDrawValueParser();
+    AnimStyle::SetupParser();
+    RegisterStyleStruct<StyleText>();
+    RegisterStyleStruct<StyleBackground>();
+    RegisterStyleStruct<StyleBorder>();
+    RegisterStyleStruct<StylePosition>();
+    RegisterStyleStruct<StyleEffects>();
 }
 
 OGUI::ComputedStyle::ComputedStyle(const ComputedStyle& other)

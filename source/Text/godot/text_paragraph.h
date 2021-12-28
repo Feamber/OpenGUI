@@ -146,6 +146,8 @@ public:
 
 	int get_spacing_top() const;
 	int get_spacing_bottom() const;
+	void set_spacing_top(int spacing);
+	void set_spacing_bottom(int spacing);
 
 	Size2 get_dropcap_size() const;
 	int get_dropcap_lines() const;

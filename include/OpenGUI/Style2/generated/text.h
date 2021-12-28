@@ -2,16 +2,18 @@
 //generated from Style2/mako/Struct.h.mako
 
 #pragma once
+#include "yoga/Yoga.h"
+#include "OpenGUI/Style2/Shadow.h"
+#include "OpenGUI/Text/TextTypes.h"
+#include "OpenGUI/Style2/Lerp/MathLerp.h"
+#include "OpenGUI/Style2/Lerp/TextLerp.h"
+#include "OpenGUI/Style2/Lerp/YogaLerp.h"
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
-#include "OpenGUI/Style2/Parse/CommonParse.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
-#include "OpenGUI/Style2/Parse/MathParse.h"
-#include "OpenGUI/Style2/Parse/TextParse.h"
-#include "OpenGUI/Style2/Lerp/MathLerp.h"
-#include "OpenGUI/Style2/Lerp/TextLerp.h"
+
 namespace OGUI
 {
     using namespace std::literals::string_view_literals;
@@ -33,11 +35,11 @@ namespace OGUI
         };
         float fontSize;
         Color4f color;
-        std::string fontFamily;
-        TextStyle fontStyle;
+        std::vector<std::string> fontFamily;
+        ETextStyle fontStyle;
         int fontWeight;
-        float lineHeight;
-        TextAlign textAlign;
+        YGValue lineHeight;
+        ETextAlign textAlign;
         std::vector<TextShadow> textShadow;
         void Initialize();
         static const StyleText& GetDefault();
@@ -48,6 +50,6 @@ namespace OGUI
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
             const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
-        static bool ParseProperties(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
+        static void SetupParser();
     };
 }

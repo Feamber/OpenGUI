@@ -257,7 +257,7 @@ bool OGUI::VisualElement::CheckClip(const Matrix4x4& rect)
 bool OGUI::VisualElement::IsClippingChildren()
 {
 	auto& pos = StylePosition::Get(_style);
-	return pos.overflow != StyleOverflow::Visible;
+	return pos.overflow != EFlexOverflow::Visible;
 }
 
 void OGUI::VisualElement::CreateYogaNode()
@@ -582,19 +582,19 @@ void OGUI::VisualElement::NotifyLayoutDirty(bool visiblity)
 
 namespace OGUI
 {
-	YGOverflow ToYGOverflow(StyleOverflow o)
+	YGOverflow ToYGOverflow(EFlexOverflow o)
 	{
 		switch(o)
 		{
-			case StyleOverflow::Auto:
+			case EFlexOverflow::Auto:
 				return YGOverflowScroll;
-			case StyleOverflow::Clip:
+			case EFlexOverflow::Clip:
 				return YGOverflowVisible;
-			case StyleOverflow::Visible:
+			case EFlexOverflow::Visible:
 				return YGOverflowVisible;
-			case StyleOverflow::Scroll:
+			case EFlexOverflow::Scroll:
 				return YGOverflowScroll;
-			case StyleOverflow::Hidden:
+			case EFlexOverflow::Hidden:
 				return YGOverflowHidden;
 			default:
 				return YGOverflowVisible;
@@ -770,7 +770,7 @@ void OGUI::VisualElement::SetPseudoClass(PseudoStates state, bool b)
 
 void OGUI::VisualElement::InitInlineStyle(std::string_view str)
 {
-	auto res = ParseInlineStyle(str);
+	auto res = CSSParser::ParseInlineStyle(str);
 	if(res)
 		_inlineStyle = std::make_unique<InlineStyle>(std::move(res.value()));
 }
@@ -1225,7 +1225,7 @@ bool OGUI::VisualElement::IsScrolling() const
 bool OGUI::VisualElement::CanScroll() const
 {
 	auto& pos = StylePosition::Get(_style);
-	if(pos.overflow == StyleOverflow::Clip || pos.overflow == StyleOverflow::Visible)
+	if(pos.overflow == EFlexOverflow::Clip || pos.overflow == EFlexOverflow::Visible)
 		return false;
 	return true;
 }

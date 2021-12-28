@@ -74,22 +74,22 @@ void OGUI::StylePosition::Initialize()
     flexGrow = 0.f;
     flexShrink = 1.f;
     flexBasis = YGValueAuto;
-    left = YGValueAuto;
     top = YGValueAuto;
     right = YGValueAuto;
     bottom = YGValueAuto;
-    marginLeft = YGValueZero;
+    left = YGValueAuto;
     marginTop = YGValueZero;
     marginRight = YGValueZero;
     marginBottom = YGValueZero;
-    paddingLeft = YGValueZero;
+    marginLeft = YGValueZero;
     paddingTop = YGValueZero;
     paddingRight = YGValueZero;
     paddingBottom = YGValueZero;
+    paddingLeft = YGValueZero;
     width = YGValueAuto;
     height = YGValueAuto;
     position = YGPositionTypeRelative;
-    overflow = StyleOverflow::Visible;
+    overflow = EFlexOverflow::Visible;
     alignSelf = YGAlignAuto;
     maxWidth = YGValueUndefined;
     maxHeight = YGValueUndefined;
@@ -167,11 +167,6 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->flexBasis = YGValueAuto;
                     break;
                     }
-                case Ids::left:{
-                    auto v = fget();
-                    v->left = YGValueAuto;
-                    break;
-                    }
                 case Ids::top:{
                     auto v = fget();
                     v->top = YGValueAuto;
@@ -187,9 +182,9 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->bottom = YGValueAuto;
                     break;
                     }
-                case Ids::marginLeft:{
+                case Ids::left:{
                     auto v = fget();
-                    v->marginLeft = YGValueZero;
+                    v->left = YGValueAuto;
                     break;
                     }
                 case Ids::marginTop:{
@@ -207,9 +202,9 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->marginBottom = YGValueZero;
                     break;
                     }
-                case Ids::paddingLeft:{
+                case Ids::marginLeft:{
                     auto v = fget();
-                    v->paddingLeft = YGValueZero;
+                    v->marginLeft = YGValueZero;
                     break;
                     }
                 case Ids::paddingTop:{
@@ -225,6 +220,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 case Ids::paddingBottom:{
                     auto v = fget();
                     v->paddingBottom = YGValueZero;
+                    break;
+                    }
+                case Ids::paddingLeft:{
+                    auto v = fget();
+                    v->paddingLeft = YGValueZero;
                     break;
                     }
                 case Ids::width:{
@@ -244,7 +244,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     }
                 case Ids::overflow:{
                     auto v = fget();
-                    v->overflow = StyleOverflow::Visible;
+                    v->overflow = EFlexOverflow::Visible;
                     break;
                     }
                 case Ids::alignSelf:{
@@ -339,11 +339,6 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->flexBasis = pst->flexBasis;
                     break;
                     }
-                case Ids::left:{
-                    auto v = fget();
-                    v->left = pst->left;
-                    break;
-                    }
                 case Ids::top:{
                     auto v = fget();
                     v->top = pst->top;
@@ -359,9 +354,9 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->bottom = pst->bottom;
                     break;
                     }
-                case Ids::marginLeft:{
+                case Ids::left:{
                     auto v = fget();
-                    v->marginLeft = pst->marginLeft;
+                    v->left = pst->left;
                     break;
                     }
                 case Ids::marginTop:{
@@ -379,9 +374,9 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->marginBottom = pst->marginBottom;
                     break;
                     }
-                case Ids::paddingLeft:{
+                case Ids::marginLeft:{
                     auto v = fget();
-                    v->paddingLeft = pst->paddingLeft;
+                    v->marginLeft = pst->marginLeft;
                     break;
                     }
                 case Ids::paddingTop:{
@@ -397,6 +392,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 case Ids::paddingBottom:{
                     auto v = fget();
                     v->paddingBottom = pst->paddingBottom;
+                    break;
+                    }
+                case Ids::paddingLeft:{
+                    auto v = fget();
+                    v->paddingLeft = pst->paddingLeft;
                     break;
                     }
                 case Ids::width:{
@@ -494,7 +494,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             {
                 case Ids::transform:{
                     auto v = fget();
-                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.value));
+                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.value));
                     break;
                     }
                 case Ids::flexGrow:{
@@ -512,11 +512,6 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->flexBasis = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Ids::left:{
-                    auto v = fget();
-                    v->left = sheet.Get<YGValue>(prop.value);
-                    break;
-                    }
                 case Ids::top:{
                     auto v = fget();
                     v->top = sheet.Get<YGValue>(prop.value);
@@ -532,9 +527,9 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->bottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Ids::marginLeft:{
+                case Ids::left:{
                     auto v = fget();
-                    v->marginLeft = sheet.Get<YGValue>(prop.value);
+                    v->left = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::marginTop:{
@@ -552,9 +547,9 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->marginBottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
-                case Ids::paddingLeft:{
+                case Ids::marginLeft:{
                     auto v = fget();
-                    v->paddingLeft = sheet.Get<YGValue>(prop.value);
+                    v->marginLeft = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::paddingTop:{
@@ -570,6 +565,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 case Ids::paddingBottom:{
                     auto v = fget();
                     v->paddingBottom = sheet.Get<YGValue>(prop.value);
+                    break;
+                    }
+                case Ids::paddingLeft:{
+                    auto v = fget();
+                    v->paddingLeft = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::width:{
@@ -589,7 +589,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     }
                 case Ids::overflow:{
                     auto v = fget();
-                    v->overflow = sheet.Get<StyleOverflow>(prop.value);
+                    v->overflow = sheet.Get<EFlexOverflow>(prop.value);
                     break;
                     }
                 case Ids::alignSelf:{
@@ -706,13 +706,13 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.from));
+                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->transform = ToOwned(sheet.Get<gsl::span<TransformFunction>>(prop.to));
+                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->transform = OGUI::Lerp(v->transform, sheet.Get<gsl::span<TransformFunction>>(prop.to), prop.alpha);
+                    v->transform = OGUI::Lerp(v->transform, sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 else
-                    v->transform = OGUI::Lerp(sheet.Get<gsl::span<TransformFunction>>(prop.from), sheet.Get<gsl::span<TransformFunction>>(prop.to), prop.alpha);
+                    v->transform = OGUI::Lerp(sheet.Get<const gsl::span<TransformFunction>>(prop.from), sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 
                     damage |= RestyleDamage::Transform;
                 break;
@@ -771,24 +771,6 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     damage |= RestyleDamage::Layout;
                 break;
                 }
-            case Ids::left:{
-                auto v = fget();
-                auto prevValue = v->left;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
-                if(prop.alpha == 0.f)
-                    v->left = sheet.Get<YGValue>(prop.from);
-                else if(prop.alpha == 1.f)
-                    v->left = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v->left = OGUI::Lerp(v->left, sheet.Get<YGValue>(prop.to), prop.alpha);
-                else
-                    v->left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
-                
-                if(prevValue != v->left)
-                    damage |= RestyleDamage::Layout;
-                break;
-                }
             case Ids::top:{
                 auto v = fget();
                 auto prevValue = v->top;
@@ -843,21 +825,21 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     damage |= RestyleDamage::Layout;
                 break;
                 }
-            case Ids::marginLeft:{
+            case Ids::left:{
                 auto v = fget();
-                auto prevValue = v->marginLeft;
+                auto prevValue = v->left;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->marginLeft = sheet.Get<YGValue>(prop.from);
+                    v->left = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->marginLeft = sheet.Get<YGValue>(prop.to);
+                    v->left = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->marginLeft = OGUI::Lerp(v->marginLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v->left = OGUI::Lerp(v->left, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v->left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->marginLeft)
+                if(prevValue != v->left)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
@@ -915,21 +897,21 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     damage |= RestyleDamage::Layout;
                 break;
                 }
-            case Ids::paddingLeft:{
+            case Ids::marginLeft:{
                 auto v = fget();
-                auto prevValue = v->paddingLeft;
+                auto prevValue = v->marginLeft;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->paddingLeft = sheet.Get<YGValue>(prop.from);
+                    v->marginLeft = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->paddingLeft = sheet.Get<YGValue>(prop.to);
+                    v->marginLeft = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->paddingLeft = OGUI::Lerp(v->paddingLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v->marginLeft = OGUI::Lerp(v->marginLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v->marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->paddingLeft)
+                if(prevValue != v->marginLeft)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
@@ -984,6 +966,24 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     v->paddingBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
                 if(prevValue != v->paddingBottom)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::paddingLeft:{
+                auto v = fget();
+                auto prevValue = v->paddingLeft;
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->paddingLeft = sheet.Get<YGValue>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->paddingLeft = sheet.Get<YGValue>(prop.to);
+                else if(prop.from == prop.to)
+                    v->paddingLeft = OGUI::Lerp(v->paddingLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
+                else
+                    v->paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                
+                if(prevValue != v->paddingLeft)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
@@ -1047,13 +1047,13 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->overflow = sheet.Get<StyleOverflow>(prop.from);
+                    v->overflow = sheet.Get<EFlexOverflow>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->overflow = sheet.Get<StyleOverflow>(prop.to);
+                    v->overflow = sheet.Get<EFlexOverflow>(prop.to);
                 else if(prop.from == prop.to)
-                    v->overflow = OGUI::Lerp(v->overflow, sheet.Get<StyleOverflow>(prop.to), prop.alpha);
+                    v->overflow = OGUI::Lerp(v->overflow, sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
                 else
-                    v->overflow = OGUI::Lerp(sheet.Get<StyleOverflow>(prop.from), sheet.Get<StyleOverflow>(prop.to), prop.alpha);
+                    v->overflow = OGUI::Lerp(sheet.Get<EFlexOverflow>(prop.from), sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
                 
                 if(prevValue != v->overflow)
                     damage |= RestyleDamage::Layout;
@@ -1299,505 +1299,541 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
     return damage;
 }
 
-bool OGUI::StylePosition::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
+void OGUI::StylePosition::SetupParser()
 {
-    size_t phash = OGUI::hash(prop);
-
-    StyleKeyword keyword = StyleKeyword::None;
-    ParseValue(value, keyword);
-    if(keyword != StyleKeyword::None)
-    {
-        switch(phash)
+    CSSParser::RegisterMargin();
+    CSSParser::RegisterPadding();
+	{
+        using namespace CSSParser;
+        static const auto grammar = "transformValue <- GlobalValue / (TransformFunction (_ ',' _ TransformFunction)*) \ntransform <- 'transform' _ ':' _ transformValue";
+        RegisterProperty("transform");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            case Ids::transform:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::flexGrow:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::flexShrink:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::flexBasis:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::left:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::top:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::right:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::bottom:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::marginLeft:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::marginTop:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::marginRight:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::marginBottom:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::paddingLeft:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::paddingTop:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::paddingRight:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::paddingBottom:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::width:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::height:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::position:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::overflow:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::alignSelf:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::maxWidth:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::maxHeight:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::minWidth:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::minHeight:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::flexDirection:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::alignContent:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::alignItems:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::justifyContent:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::flexWrap:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::flexDisplay:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::verticalAlign:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::aspectRatio:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::margin:
-                rule.properties.push_back({Ids::marginLeft,(int)keyword});
-                rule.properties.push_back({Ids::marginTop,(int)keyword});
-                rule.properties.push_back({Ids::marginRight,(int)keyword});
-                rule.properties.push_back({Ids::marginBottom,(int)keyword});
-            case Ids::padding:
-                rule.properties.push_back({Ids::paddingLeft,(int)keyword});
-                rule.properties.push_back({Ids::paddingTop,(int)keyword});
-                rule.properties.push_back({Ids::paddingRight,(int)keyword});
-                rule.properties.push_back({Ids::paddingBottom,(int)keyword});
-            default: break;
-        }
-        return false;
+            static size_t hash = Ids::transform;
+            parser["transformValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                {
+                    std::vector<TransformFunction> value;
+                    for(auto& e : vs)
+                        value.emplace_back(any_move<TransformFunction>(e));
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<TransformFunction>>(value)});
+                }
+            };
+        });
     }
-    //shorthands
-    switch(phash)
-    {
-        case Ids::margin:
-            return Parse::ParseMargin(sheet, prop, value, rule, errorMsg);
-        case Ids::padding:
-            return Parse::ParsePadding(sheet, prop, value, rule, errorMsg);
-        default: break;
+	{
+        using namespace CSSParser;
+        static const auto grammar = "flex-growValue <- GlobalValue / Number \nflex-grow <- 'flex-grow' _ ':' _ flex-growValue";
+        RegisterProperty("flex-grow");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::flexGrow;
+            parser["flex-growValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
     }
-    //longhands
-    switch(phash)
-    {
-        case Ids::transform:{
-            std::vector<TransformFunction> v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<gsl::span<TransformFunction>>(v)});
-            else
-            {
-                errorMsg = "failed to parse transform value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::flexGrow:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse flex-grow value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::flexShrink:{
-            float v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse flex-shrink value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::flexBasis:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse flex-basis value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::left:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse left value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::top:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse top value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::right:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse right value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::bottom:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse bottom value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::marginLeft:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse margin-left value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::marginTop:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse margin-top value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::marginRight:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse margin-right value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::marginBottom:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse margin-bottom value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::paddingLeft:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse padding-left value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::paddingTop:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse padding-top value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::paddingRight:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse padding-right value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::paddingBottom:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse padding-bottom value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::width:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse width value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::height:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse height value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::position:{
-            YGPositionType v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGPositionType>(v)});
-            else
-            {
-                errorMsg = "failed to parse position value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::overflow:{
-            StyleOverflow v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<StyleOverflow>(v)});
-            else
-            {
-                errorMsg = "failed to parse overflow value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::alignSelf:{
-            YGAlign v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGAlign>(v)});
-            else
-            {
-                errorMsg = "failed to parse align-self value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::maxWidth:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse max-width value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::maxHeight:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse max-height value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::minWidth:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse min-width value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::minHeight:{
-            YGValue v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGValue>(v)});
-            else
-            {
-                errorMsg = "failed to parse min-height value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::flexDirection:{
-            YGFlexDirection v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGFlexDirection>(v)});
-            else
-            {
-                errorMsg = "failed to parse flex-direction value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::alignContent:{
-            YGAlign v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGAlign>(v)});
-            else
-            {
-                errorMsg = "failed to parse align-content value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::alignItems:{
-            YGAlign v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGAlign>(v)});
-            else
-            {
-                errorMsg = "failed to parse align-items value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::justifyContent:{
-            YGJustify v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGJustify>(v)});
-            else
-            {
-                errorMsg = "failed to parse justify-content value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::flexWrap:{
-            YGWrap v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGWrap>(v)});
-            else
-            {
-                errorMsg = "failed to parse flex-wrap value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::flexDisplay:{
-            YGDisplay v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<YGDisplay>(v)});
-            else
-            {
-                errorMsg = "failed to parse flex-display value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::verticalAlign:{
-            EInlineAlign v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<EInlineAlign>(v)});
-            else
-            {
-                errorMsg = "failed to parse vertical-align value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::aspectRatio:{
-            float v;
-            if(ParseRatio(value, v))
-                rule.properties.push_back({phash, sheet.Push<float>(v)});
-            else
-            {
-                errorMsg = "failed to parse aspect-ratio value!";
-                return false;
-            }
-            return true;
-        }
-        default: break;
+	{
+        using namespace CSSParser;
+        static const auto grammar = "flex-shrinkValue <- GlobalValue / Number \nflex-shrink <- 'flex-shrink' _ ':' _ flex-shrinkValue";
+        RegisterProperty("flex-shrink");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::flexShrink;
+            parser["flex-shrinkValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
     }
-    return false;
+	{
+        using namespace CSSParser;
+        static const auto grammar = "flex-basisValue <- GlobalValue / Width \nflex-basis <- 'flex-basis' _ ':' _ flex-basisValue";
+        RegisterProperty("flex-basis");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::flexBasis;
+            parser["flex-basisValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "topValue <- GlobalValue / LengthPercentage \ntop <- 'top' _ ':' _ topValue";
+        RegisterProperty("top");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::top;
+            parser["topValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "rightValue <- GlobalValue / LengthPercentage \nright <- 'right' _ ':' _ rightValue";
+        RegisterProperty("right");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::right;
+            parser["rightValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "bottomValue <- GlobalValue / LengthPercentage \nbottom <- 'bottom' _ ':' _ bottomValue";
+        RegisterProperty("bottom");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::bottom;
+            parser["bottomValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "leftValue <- GlobalValue / LengthPercentage \nleft <- 'left' _ ':' _ leftValue";
+        RegisterProperty("left");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::left;
+            parser["leftValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "margin-topValue <- GlobalValue / LengthPercentage \nmargin-top <- 'margin-top' _ ':' _ margin-topValue";
+        RegisterProperty("margin-top");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::marginTop;
+            parser["margin-topValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "margin-rightValue <- GlobalValue / LengthPercentage \nmargin-right <- 'margin-right' _ ':' _ margin-rightValue";
+        RegisterProperty("margin-right");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::marginRight;
+            parser["margin-rightValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "margin-bottomValue <- GlobalValue / LengthPercentage \nmargin-bottom <- 'margin-bottom' _ ':' _ margin-bottomValue";
+        RegisterProperty("margin-bottom");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::marginBottom;
+            parser["margin-bottomValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "margin-leftValue <- GlobalValue / LengthPercentage \nmargin-left <- 'margin-left' _ ':' _ margin-leftValue";
+        RegisterProperty("margin-left");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::marginLeft;
+            parser["margin-leftValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "padding-topValue <- GlobalValue / LengthPercentage \npadding-top <- 'padding-top' _ ':' _ padding-topValue";
+        RegisterProperty("padding-top");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::paddingTop;
+            parser["padding-topValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "padding-rightValue <- GlobalValue / LengthPercentage \npadding-right <- 'padding-right' _ ':' _ padding-rightValue";
+        RegisterProperty("padding-right");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::paddingRight;
+            parser["padding-rightValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "padding-bottomValue <- GlobalValue / LengthPercentage \npadding-bottom <- 'padding-bottom' _ ':' _ padding-bottomValue";
+        RegisterProperty("padding-bottom");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::paddingBottom;
+            parser["padding-bottomValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "padding-leftValue <- GlobalValue / LengthPercentage \npadding-left <- 'padding-left' _ ':' _ padding-leftValue";
+        RegisterProperty("padding-left");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::paddingLeft;
+            parser["padding-leftValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "widthValue <- GlobalValue / Width \nwidth <- 'width' _ ':' _ widthValue";
+        RegisterProperty("width");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::width;
+            parser["widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "heightValue <- GlobalValue / Width \nheight <- 'height' _ ':' _ heightValue";
+        RegisterProperty("height");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::height;
+            parser["heightValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "positionValue <- GlobalValue / FlexPosition \nposition <- 'position' _ ':' _ positionValue";
+        RegisterProperty("position");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::position;
+            parser["positionValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGPositionType>(std::any_cast<YGPositionType&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "overflowValue <- GlobalValue / FlexOverflow \noverflow <- 'overflow' _ ':' _ overflowValue";
+        RegisterProperty("overflow");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::overflow;
+            parser["overflowValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<EFlexOverflow>(std::any_cast<EFlexOverflow&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "align-selfValue <- GlobalValue / Width \nalign-self <- 'align-self' _ ':' _ align-selfValue";
+        RegisterProperty("align-self");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::alignSelf;
+            parser["align-selfValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGAlign>(std::any_cast<YGAlign&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "max-widthValue <- GlobalValue / LengthPercentage \nmax-width <- 'max-width' _ ':' _ max-widthValue";
+        RegisterProperty("max-width");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::maxWidth;
+            parser["max-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "max-heightValue <- GlobalValue / LengthPercentage \nmax-height <- 'max-height' _ ':' _ max-heightValue";
+        RegisterProperty("max-height");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::maxHeight;
+            parser["max-heightValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "min-widthValue <- GlobalValue / Width \nmin-width <- 'min-width' _ ':' _ min-widthValue";
+        RegisterProperty("min-width");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::minWidth;
+            parser["min-widthValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "min-heightValue <- GlobalValue / Width \nmin-height <- 'min-height' _ ':' _ min-heightValue";
+        RegisterProperty("min-height");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::minHeight;
+            parser["min-heightValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGValue>(std::any_cast<YGValue&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "flex-directionValue <- GlobalValue / FlexDirection \nflex-direction <- 'flex-direction' _ ':' _ flex-directionValue";
+        RegisterProperty("flex-direction");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::flexDirection;
+            parser["flex-directionValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGFlexDirection>(std::any_cast<YGFlexDirection&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "align-contentValue <- GlobalValue / FlexAlign \nalign-content <- 'align-content' _ ':' _ align-contentValue";
+        RegisterProperty("align-content");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::alignContent;
+            parser["align-contentValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGAlign>(std::any_cast<YGAlign&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "align-itemsValue <- GlobalValue / FlexAlign \nalign-items <- 'align-items' _ ':' _ align-itemsValue";
+        RegisterProperty("align-items");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::alignItems;
+            parser["align-itemsValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGAlign>(std::any_cast<YGAlign&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "justify-contentValue <- GlobalValue / FlexJustify \njustify-content <- 'justify-content' _ ':' _ justify-contentValue";
+        RegisterProperty("justify-content");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::justifyContent;
+            parser["justify-contentValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGJustify>(std::any_cast<YGJustify&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "flex-wrapValue <- GlobalValue / FlexWrap \nflex-wrap <- 'flex-wrap' _ ':' _ flex-wrapValue";
+        RegisterProperty("flex-wrap");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::flexWrap;
+            parser["flex-wrapValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGWrap>(std::any_cast<YGWrap&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "flex-displayValue <- GlobalValue / FlexDisplay \nflex-display <- 'flex-display' _ ':' _ flex-displayValue";
+        RegisterProperty("flex-display");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::flexDisplay;
+            parser["flex-displayValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<YGDisplay>(std::any_cast<YGDisplay&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "vertical-alignValue <- GlobalValue / InlineAlign \nvertical-align <- 'vertical-align' _ ':' _ vertical-alignValue";
+        RegisterProperty("vertical-align");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::verticalAlign;
+            parser["vertical-alignValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<EInlineAlign>(std::any_cast<EInlineAlign&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "aspect-ratioValue <- GlobalValue / AspectRatio \naspect-ratio <- 'aspect-ratio' _ ':' _ aspect-ratioValue";
+        RegisterProperty("aspect-ratio");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::aspectRatio;
+            parser["aspect-ratioValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
 }

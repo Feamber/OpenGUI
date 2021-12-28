@@ -157,7 +157,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     }
                 case Ids::backgroundImage:{
                     auto v = fget();
-                    v->backgroundImage = sheet.Get<std::string>(prop.value);
+                    v->backgroundImage = sheet.Get<const std::string_view>(prop.value);
                     break;
                     }
                 default: break;
@@ -224,13 +224,13 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->backgroundImage = sheet.Get<std::string>(prop.from);
+                    v->backgroundImage = sheet.Get<const std::string_view>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->backgroundImage = sheet.Get<std::string>(prop.to);
+                    v->backgroundImage = sheet.Get<const std::string_view>(prop.to);
                 else if(prop.from == prop.to)
-                    v->backgroundImage = OGUI::Lerp(v->backgroundImage, sheet.Get<std::string>(prop.to), prop.alpha);
+                    v->backgroundImage = OGUI::Lerp(v->backgroundImage, sheet.Get<const std::string_view>(prop.to), prop.alpha);
                 else
-                    v->backgroundImage = OGUI::Lerp(sheet.Get<std::string>(prop.from), sheet.Get<std::string>(prop.to), prop.alpha);
+                    v->backgroundImage = OGUI::Lerp(sheet.Get<const std::string_view>(prop.from), sheet.Get<const std::string_view>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -240,52 +240,38 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
     return damage;
 }
 
-bool OGUI::StyleBackground::ParseProperties(StyleSheetStorage& sheet, std::string_view prop, std::string_view value, StyleRule& rule, std::string& errorMsg)
+void OGUI::StyleBackground::SetupParser()
 {
-    size_t phash = OGUI::hash(prop);
-
-    StyleKeyword keyword = StyleKeyword::None;
-    ParseValue(value, keyword);
-    if(keyword != StyleKeyword::None)
-    {
-        switch(phash)
+	{
+        using namespace CSSParser;
+        static const auto grammar = "background-colorValue <- GlobalValue / Color \nbackground-color <- 'background-color' _ ':' _ background-colorValue";
+        RegisterProperty("background-color");
+        RegisterGrammar(grammar, [](peg::parser& parser)
         {
-            case Ids::backgroundColor:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            case Ids::backgroundImage:
-                rule.properties.push_back({phash,(int)keyword});
-                return true;
-            default: break;
-        }
-        return false;
+            static size_t hash = Ids::backgroundColor;
+            parser["background-colorValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<Color4f>(std::any_cast<Color4f&>(vs[0]))});
+            };
+        });
     }
-    //longhands
-    switch(phash)
-    {
-        case Ids::backgroundColor:{
-            Color4f v;
-            if(ParseValue(value, v))
-                rule.properties.push_back({phash, sheet.Push<Color4f>(v)});
-            else
-            {
-                errorMsg = "failed to parse background-color value!";
-                return false;
-            }
-            return true;
-        }
-        case Ids::backgroundImage:{
-            std::string v;
-            if(ParseUrl(value, v))
-                rule.properties.push_back({phash, sheet.Push<std::string>(v)});
-            else
-            {
-                errorMsg = "failed to parse background-image value!";
-                return false;
-            }
-            return true;
-        }
-        default: break;
+	{
+        using namespace CSSParser;
+        static const auto grammar = "background-imageValue <- GlobalValue / URL \nbackground-image <- 'background-image' _ ':' _ background-imageValue";
+        RegisterProperty("background-image");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::backgroundImage;
+            parser["background-imageValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const std::string_view>(std::any_cast<const std::string_view&>(vs[0]))});
+            };
+        });
     }
-    return false;
 }

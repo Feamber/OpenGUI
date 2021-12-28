@@ -41,7 +41,7 @@ using namespace OGUI;
 
 #ifdef USE_TRACY
 	#define TRACY_IMPORTS
-	#define TRACY_ENABLE
+	//#define TRACY_ENABLE
 	#include "tracy/Tracy.hpp"
 #endif
 
@@ -292,7 +292,7 @@ public:
 				else if (std::find(allCssFile.begin(), allCssFile.end(), path) != allCssFile.end())
 				{
 					std::chrono::time_point begin = std::chrono::high_resolution_clock::now();
-					auto asset = ParseCSSFile(path);
+					std::unique_ptr<OGUI::StyleSheet> asset{CSSParser::ParseFile(path)};
 					if (asset)
 					{
 						std::vector<VisualElement*> stack {};
@@ -305,7 +305,8 @@ public:
 							{
 								if(styleSheet->path == path)
 								{
-									*styleSheet = asset.value();
+									delete styleSheet;
+									styleSheet = asset.release();
 									styleSheet->Initialize();
 									top->_selectorDirty = true;
 								}

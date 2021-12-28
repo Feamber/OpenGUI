@@ -17,7 +17,6 @@ namespace OGUI
 		bool inherited;
         void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
 		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
-		bool (*ParseProperties)(StyleSheetStorage& sheet, std::string_view name, std::string_view value, StyleRule& rule, std::string& errorMsg);
     };
 
 	struct StyleRegistry
@@ -30,7 +29,7 @@ namespace OGUI
 	
 	//helper
 	template<class T>
-	StyleDesc GetDesc()
+	StyleDesc RegisterStyleStruct()
 	{
 		StyleDesc desc;
 		desc.hash = T::hash;
@@ -38,9 +37,11 @@ namespace OGUI
 		desc.name = T::name;
 		desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
 		desc.ApplyProperties = &T::ApplyProperties;
-		desc.ParseProperties = &T::ParseProperties;
+        RegisterStyleStruct(desc);
+        T::SetupParser();
 		return desc;
 	}
+	
 	OGUI_API void RegisterBuiltinStructs();
 
 	struct ComputedStyle

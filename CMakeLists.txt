@@ -53,7 +53,7 @@ set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
 option(OPENGUI_USE_FREETYPE "Use FreeType as Text Rasterization Lib." ON)
 option(OPENGUI_USE_HARFBUZZ "Use Harfbuzz as Text Shape Lib." ON)
 option(OPENGUI_USE_ICU "Use libICU" ON)
-option(OPENGUI_USE_TRACY "Use Tracy" ON)
+option(OPENGUI_USE_TRACY "Use Tracy" OFF)
 option(OPENGUI_LIB "Build VM as Static Library." OFF)
 option(OPENGUI_TESTS "Build Test Targets." ON)
 option(OPENGUI_SAMPLES "Build Test Targets." ON)
@@ -99,14 +99,12 @@ target_link_libraries(OpenGUI
 )
 
 if(OPENGUI_USE_FREETYPE OR OPENGUI_USE_HARFBUZZ OR OPENGUI_USE_ICU)
-    download_and_extract(
-        ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/FontLibs.zip
-        ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/FontLibs.zip
+    extract_file(
+        ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Release/FontLibs.zip
         ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
     )
-    download_and_extract(
-        ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/FontLibs.zip
-        ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/FontLibs.zip
+    extract_file(
+        ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Debug/FontLibs.zip
         ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
     )
 endif()

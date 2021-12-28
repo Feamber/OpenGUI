@@ -6,7 +6,7 @@
 #include "OpenGUI/Style2/generated/position.h"
 #include <iostream>
 
-OGUI::StyleSheet LoadStyleSheet2()
+OGUI::StyleSheet* LoadStyleSheet2()
 {
     using namespace OGUI;
     const char* exampleCSS = 
@@ -16,9 +16,9 @@ R"(#TestElement {
 
         
 })";
-    auto res = ParseCSS(exampleCSS);
-
-    return res.value();
+    auto res = CSSParser::Parse(exampleCSS);
+    res->Initialize();
+    return res;
 }
 
 TEST_CASE("StyleParse", "[Parser][NameSelector]")
@@ -26,10 +26,8 @@ TEST_CASE("StyleParse", "[Parser][NameSelector]")
     using namespace OGUI;
     RegisterBuiltinStructs();
     auto ve = std::make_unique<VisualElement>();
-    auto styleSt = LoadStyleSheet2();
-    styleSt.Initialize();
     ve->_name = "TestElement";
-    ve->_styleSheets.push_back(&styleSt);
+    ve->_styleSheets.push_back(LoadStyleSheet2());
     Context::Get().styleSystem.Update(ve.get(), true);
     REQUIRE(StylePosition::Get(ve->_style).left.value == 100.f);
     REQUIRE(StyleText::Get(ve->_style).fontSize == 24.f);

@@ -22,11 +22,12 @@ def make_struct(name, inherited):
     return StyleStruct(name, inherited, HEADER_OUT_DIR, SOURCE_OUT_DIR, INCLUDE_DIR)
 
 def render_struct(struct, shorthand_path = None):
+    struct.headers.append("Configure.h")
     if shorthand_path:
         shorthand_template = os.path.join(BASE, shorthand_path)
         shorthand_file = render(shorthand_template, struct = struct)
         write(struct.shorthand_path, shorthand_file)
-    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct)
+    header_file = render(DEFAULT_HEADER_TEMPLATE_PATH, struct = struct, linkage="SAMPLECONTROLS_API")
     source_file = render(DEFAULT_SOURCE_TEMPLATE_PATH, struct = struct)
     write(struct.header_path, header_file)
     write(struct.source_path, source_file)
@@ -35,8 +36,7 @@ def gen_sample():
     struct = make_struct("sample", False)
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("some-value", "float", "0.5f")
-    struct.headers.append("OpenGUI/Style2/Parse/MathParse.h")
+    add_longhand("some-value", "float", "0.5f", "Number")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)
 

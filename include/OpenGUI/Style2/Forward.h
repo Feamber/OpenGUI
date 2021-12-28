@@ -13,7 +13,7 @@ namespace OGUI
     struct ComputedStyle;
 
 	template<class T>
-	std::vector<T> ToOwned(gsl::span<T> s)
+	std::vector<T> ToOwned(const gsl::span<T> s)
 	{
 		return {s.begin(), s.end()};
 	}

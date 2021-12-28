@@ -8,37 +8,23 @@ if(${Vulkan_FOUND})
     set(vulkan TRUE)
 endif()
 	
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/dawn_0.0.2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/dawn_0.0.2.zip
+extract_file(
+    ${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Release/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/release/SDL2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Release/SDL2.zip
+extract_file(
+    ${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Release/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/dawn_0.0.2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/dawn_0.0.2.zip
+extract_file(
+	${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Debug/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
-download_and_extract(
-    ${FILE_SERVER_DIR}/binaries/${OPENGUI_PLATFORM}/x64/debug/SDL2.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Debug/SDL2.zip
+extract_file(
+	${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Debug/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
 
-download_and_extract(
-    ${FILE_SERVER_DIR}/fonts/Vera.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/Vera.zip
-    ${CMAKE_CURRENT_SOURCE_DIR}/res/
-)
-download_and_extract(
-    ${FILE_SERVER_DIR}/fonts/fireflysung.zip
-    ${OPEN_GUI_ROOT_DIR}/build/PreBuilt/fireflysung.zip
-    ${CMAKE_CURRENT_SOURCE_DIR}/res/
-)
 file(GLOB_RECURSE resources res/*.*)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/res)
 file(COPY ${resources} DESTINATION ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/res)
