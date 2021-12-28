@@ -207,7 +207,7 @@ void OGUI::VisualElement::DrawBorderPrimitive(PrimDrawContext & Ctx)
 
 void OGUI::VisualElement::DrawDebugPrimitive(PrimDrawContext & Ctx)
 {
-	if((FocusNavDebugState == CollisionBox || FocusNavDebugState == ElementQuad))
+	if(Context::Get().IsFocusNavDebug() && (FocusNavDebugState == CollisionBox || FocusNavDebugState == ElementQuad))
 	{
 		time_t seconds = time(NULL);
 		if(seconds - navDebugLastUpdate < 3)
@@ -533,7 +533,7 @@ OGUI::Vector2f OGUI::VisualElement::GetSize() const
 
 void OGUI::VisualElement::AddStyleClass(std::string_view styleClass)
 {
-	if(std::find(_styleClasses.begin(), _styleClasses.end(), styleClass) != _styleClasses.end())
+	if(std::find(_styleClasses.begin(), _styleClasses.end(), styleClass) == _styleClasses.end())
 	{
 		_styleClasses.emplace_back(styleClass);
 		Context::Get().InvalidateCssCache();
@@ -543,7 +543,7 @@ void OGUI::VisualElement::AddStyleClass(std::string_view styleClass)
 void OGUI::VisualElement::RemoveStyleClass(std::string_view styleClass)
 {
 	auto find =  std::find(_styleClasses.begin(), _styleClasses.end(), styleClass);
-	if(find == _styleClasses.end())
+	if(find != _styleClasses.end())
 	{
 		_styleClasses.erase(find);
 		Context::Get().InvalidateCssCache();
