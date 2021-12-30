@@ -89,7 +89,7 @@ namespace OGUI reflect
         void Build();
     };
 
-    
+    //向 bindable 发送消息
     template <typename ... Args>
     bool SendEventTo(Bindable& bindable, Name eventName, Args&&... args)
     {
@@ -97,6 +97,7 @@ namespace OGUI reflect
         return bindable.HandleEvent(eventName, eargs);
     };
 
+    //向绑定到 bindable 的对象发送消息
     template <typename ... Args>
     bool SendEvent(Bindable& bindable, Name eventName, Args&&... args)
     {
