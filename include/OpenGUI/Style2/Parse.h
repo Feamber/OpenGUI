@@ -9,7 +9,7 @@
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Style2/ParseUtils.hpp"
 #include "peglib.h"
-#include "fmt/format.h"
+// #include "fmt/format.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 #include "OpenGUI/Core/Utilities/any_move.hpp"
 
