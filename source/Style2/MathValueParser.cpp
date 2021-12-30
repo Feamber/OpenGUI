@@ -195,7 +195,7 @@ std::string_view OGUI::MathValueParser::GetGrammar()
     static auto grammar = R"(
         NumberPercentage <- Number / Percentage
         Angle	     <- Number ('deg' / 'rad' / 'grad' / 'turn')
-        Hue          <- Number / Angle
+        Hue          <-  Angle / Number
         Color        <- ColorRGBA / ColorHSLA / ColorHex / ColorName
         ColorName    <- < IDENT >
         ColorRGBA    <- 'rgb' 'a'? '(' ((w NumberPercentage w ',' w NumberPercentage w ',' w NumberPercentage w (',' w NumberPercentage w)?) / (w NumberPercentage w NumberPercentage w NumberPercentage w ('/' w NumberPercentage)))')'

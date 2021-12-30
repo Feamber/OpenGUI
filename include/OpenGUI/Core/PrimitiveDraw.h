@@ -65,6 +65,7 @@ namespace OGUI
 		PrimDrawList prims;
 		NVGcontext* nvg;
 		PrimDrawContext(WindowContext& window);
+		~PrimDrawContext();
 	}; 
 
 	// Call from DrawList.

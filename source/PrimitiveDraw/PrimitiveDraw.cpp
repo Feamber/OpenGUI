@@ -331,4 +331,9 @@ namespace OGUI
         nvg = nvgCreateInternal(&params);
         
     }
+    
+	PrimDrawContext::~PrimDrawContext()
+    {
+        nvgDeleteInternal(nvg);
+    }
 }

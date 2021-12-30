@@ -94,7 +94,7 @@ def gen_position():
     add_longhand("vertical-align",	"EInlineAlign",
                  "EInlineAlign::Middle", "InlineAlign", restyle_damage="Layout")
     add_longhand("aspect-ratio",      "float",           "YGUndefined",
-                 "AspectRatio",  restyle_damage="Layout", parser="ParseRatio")
+                 "AspectRatio",  restyle_damage="Layout")
 
     struct.headers.append("yoga/Yoga.h")
     struct.headers.append("OpenGUI/Core/Types.h")
