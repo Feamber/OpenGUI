@@ -401,7 +401,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 					if (anim.style.animationResumeMode == EAnimResumeMode::Reset && anim.yielding)
 					{
 						//Play from begining
-						anim.time = 0;
+						anim.time = (newStyle.animationDirection == EAnimDirection::Normal || newStyle.animationDirection == EAnimDirection::Alternate) ? 0.f : 1.f;
 					}
 					else
 					{	//Sync iteration
