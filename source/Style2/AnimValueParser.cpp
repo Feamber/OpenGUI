@@ -31,7 +31,6 @@ std::string_view OGUI::AnimValueParser::GetGrammar()
     return grammar;
 }
 
-constexpr OGUI::AnimTimingFunction AnimLinearFuncion{};
 void OGUI::AnimValueParser::SetupAction(peg::parser &parser)
 {
     using namespace peg;
@@ -42,7 +41,8 @@ void OGUI::AnimValueParser::SetupAction(peg::parser &parser)
     };
     parser["AnimTimingFunction"] = [](SemanticValues& vs)
     {
-        return AnimLinearFuncion; //TODO
+        constexpr OGUI::AnimTimingFunction AnimLinearFunction{};    
+        return AnimLinearFunction; //TODO
     };
     parser["AnimIterationCount"] = [](SemanticValues& vs)
     {

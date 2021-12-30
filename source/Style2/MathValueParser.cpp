@@ -193,12 +193,13 @@ Color4f ParseColorName(std::string_view str)
 std::string_view OGUI::MathValueParser::GetGrammar()
 {
     static auto grammar = R"(
-        NumberPercentage <- Number / Percentage
+        NumberPercentage <- Percentage / Number
+        ColorComponent <- Percentage / Number
         Angle	     <- Number ('deg' / 'rad' / 'grad' / 'turn')
         Hue          <-  Angle / Number
         Color        <- ColorRGBA / ColorHSLA / ColorHex / ColorName
         ColorName    <- < IDENT >
-        ColorRGBA    <- 'rgb' 'a'? '(' ((w NumberPercentage w ',' w NumberPercentage w ',' w NumberPercentage w (',' w NumberPercentage w)?) / (w NumberPercentage w NumberPercentage w NumberPercentage w ('/' w NumberPercentage)))')'
+        ColorRGBA    <- 'rgb' 'a'? '(' ((w ColorComponent w ',' w ColorComponent w ',' w ColorComponent w (',' w NumberPercentage w)?) / (w ColorComponent w ColorComponent w ColorComponent w ('/' w NumberPercentage)))')'
         ColorHSLA    <- 'hsl' 'a'? '(' ((w Hue w ',' w Percentage w ',' w Percentage w (',' w NumberPercentage w)?) / (w Angle w Percentage w Percentage w ('/' w NumberPercentage)))')'
         ColorHex     <- '#' <[0-9a-fA-F]+>
 
@@ -231,7 +232,6 @@ int hex_number(const char a)
         throw peg::parse_error("invalid hex number.");
 };
 
-constexpr OGUI::AnimTimingFunction AnimLinearFuncion{};
 void OGUI::MathValueParser::SetupAction(peg::parser &parser)
 {
     using namespace peg;
@@ -239,6 +239,12 @@ void OGUI::MathValueParser::SetupAction(peg::parser &parser)
     parser["NumberPercentage"] = [](SemanticValues& vs)
     {
         return std::any_cast<float>(vs[0]);
+    };
+
+    parser["ColorComponent"] = [](SemanticValues& vs)
+    {
+        auto value = std::any_cast<float>(vs[0]);
+        return vs.choice() == 0 ? value : value / 255;
     };
 
     parser["Angle"] = [](SemanticValues& vs)
