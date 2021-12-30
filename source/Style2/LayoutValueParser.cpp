@@ -31,9 +31,9 @@ std::string_view OGUI::LayoutValueParser::GetGrammar()
         AspectRatio <- Number / Number '/' Number
         FlexPosition <- 'static' / 'relative' / 'absolute'
         FlexAlign <- 'auto' / 'flex-start' / 'center' / 'flex-end' / 'stretch' / 'baseline' / 'space-between' / 'space-around'
-        FlexDirection <- 'column' / 'column-reverse' / 'row' / 'row-reverse'
+        FlexDirection <- 'column-reverse' / 'column' / 'row-reverse'/ 'row' 
         FlexJustify <- 'flex-start' / 'center' / 'flex-end' / 'space-between' / 'space-around' / 'space-evenly'
-        FlexWrap <- 'no-wrap' / 'wrap' / 'wrap-reverse'
+        FlexWrap <- 'no-wrap' / 'wrap-reverse' / 'wrap' 
         FlexDisplay <- 'flex' / 'none'
     )";
     return grammar;
@@ -101,7 +101,15 @@ void OGUI::LayoutValueParser::SetupAction(peg::parser &parser)
     };
     parser["FlexDirection"] = [](SemanticValues& vs)
     {
-        return (YGFlexDirection)vs.choice();
+        // 'column-reverse' / 'column' / 'row-reverse'/ 'row' 
+        switch(vs.choice())
+        {
+            case 0: return YGFlexDirectionColumnReverse;
+            case 1: return YGFlexDirectionColumn;
+            case 2: return YGFlexDirectionRowReverse;
+            case 3: return YGFlexDirectionRow;
+        }
+        return YGFlexDirectionRow;
     };
     parser["FlexJustify"] = [](SemanticValues& vs)
     {
@@ -109,7 +117,14 @@ void OGUI::LayoutValueParser::SetupAction(peg::parser &parser)
     };
     parser["FlexWrap"] = [](SemanticValues& vs)
     {
-        return (YGWrap)vs.choice();
+        //'no-wrap' / 'wrap-reverse' / 'wrap' 
+        switch(vs.choice())
+        {
+            case 0: return YGWrapNoWrap;
+            case 1: return YGWrapWrapReverse;
+            case 2: return YGWrapWrap;
+        }
+        return YGWrapNoWrap;
     };
     parser["FlexDisplay"] = [](SemanticValues& vs)
     {

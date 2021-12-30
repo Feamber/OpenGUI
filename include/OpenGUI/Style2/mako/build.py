@@ -220,7 +220,7 @@ class Enum(object):
         self.name = name
         self.short_name = str.rsplit(name, "::", 1)[-1]
         self.raw_name = self.short_name[1:]
-        self.enumerators = enumerators
+        self.enumerators = sorted(enumerators, key=lambda e:e.short_name, reverse=True)
 
 
 class DB(object):
