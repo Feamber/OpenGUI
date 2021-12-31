@@ -9,6 +9,18 @@
 #include "OpenGUI/Style2/ComputedStyle.h"
 #include "position_shorthands.h"
 
+size_t StylePositionEntry = 0;
+
+size_t OGUI::StylePosition::GetEntry()
+{
+    return StylePositionEntry;
+}
+
+void OGUI::StylePosition::SetEntry(size_t e)
+{
+    StylePositionEntry = e;
+}
+
 const OGUI::StylePosition& OGUI::StylePosition::GetDefault()
 {
     struct Helper
@@ -35,37 +47,27 @@ const OGUI::StylePosition& OGUI::StylePosition::Get(const ComputedStyle& style)
 
 OGUI::StylePosition* OGUI::StylePosition::TryGet(const ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
-    {
-        return nullptr;
-    }
-    else 
-    {
-        return (OGUI::StylePosition*)iter->second.ptr.get();
-    }
+    auto& s = style.structs[StylePositionEntry];
+    return (StylePosition*)s.ptr.get();
 }
 
 OGUI::StylePosition& OGUI::StylePosition::GetOrAdd(ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
+    auto& s = style.structs[StylePositionEntry];
+    if(!s.ptr)
     {
         auto value = std::make_shared<OGUI::StylePosition>();
         value->Initialize();
-        style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+        s.ptr = std::static_pointer_cast<void>(value);
         return *value.get();
     }
     else 
-    {
-        return *(OGUI::StylePosition*)iter->second.ptr.get();
-    }
-
+        return *(StylePosition*)s.ptr.get();
 }
 
 void OGUI::StylePosition::Dispose(ComputedStyle& style)
 {
-    style.structs.erase(hash);
+    style.structs[StylePositionEntry].ptr.reset();
 }
 
 void OGUI::StylePosition::Initialize()
@@ -109,13 +111,12 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::StylePosition* st = nullptr;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[StylePositionEntry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::StylePosition*)value.ptr.get();
-        owned = value.owned;
+        st = (StylePosition*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -123,14 +124,14 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
         {
             auto value = std::make_shared<OGUI::StylePosition>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StylePosition>(*st);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
@@ -668,13 +669,12 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
 {
     OGUI::StylePosition* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[StylePositionEntry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::StylePosition*)value.ptr.get();
-        owned = value.owned;
+        st = (StylePosition*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -682,15 +682,14 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
         {
             auto value = std::make_shared<OGUI::StylePosition>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StylePosition>(*st);
-            style.structs.erase(iter);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }

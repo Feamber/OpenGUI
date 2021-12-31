@@ -16,6 +16,8 @@ namespace OGUI
     {
         constexpr static std::string_view name = "effects"sv;
         constexpr static size_t hash = OGUI::hash(name);
+        static void SetEntry(size_t e);
+        static size_t GetEntry();
         constexpr static bool inherited = false;
         struct Ids
         {

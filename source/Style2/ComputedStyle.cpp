@@ -25,6 +25,12 @@ void OGUI::RegisterStyleStruct(const StyleDesc& desc)
     registry.descriptions.push_back(desc);
 }
 
+OGUI_API size_t OGUI::NewStyleStructEntry()
+{
+    static size_t i = 0;
+    return i++;
+}
+
 namespace OGUI::CSSParser
 {
     void SetupEnumParser();
@@ -50,15 +56,16 @@ void OGUI::RegisterBuiltinStructs()
 
 OGUI::ComputedStyle::ComputedStyle(const ComputedStyle& other)
 {
-    for(auto& pair : other.structs)
-        structs.insert({pair.first, {pair.second.ptr, false}});
+    structs = other.structs;
+    for(auto& s : structs)
+        s.owned = false;
 }
 
 OGUI::ComputedStyle& OGUI::ComputedStyle::operator=(const ComputedStyle& other)
 {
-    structs.clear();
-    for(auto& pair : other.structs)
-        structs.insert({pair.first, {pair.second.ptr, false}});
+    structs = other.structs;
+    for(auto& s : structs)
+        s.owned = false;
     return *this;
 }
 
@@ -72,11 +79,9 @@ OGUI::ComputedStyle OGUI::ComputedStyle::Create(const ComputedStyle *parent)
         {
             if(desc.inherited)
             {
-                auto iter = parent->structs.find(desc.hash); 
-                if(iter != parent->structs.end())
-                {
-                    result.structs.insert({desc.hash, {iter->second.ptr, false}});
-                }
+                auto& s = parent->structs[desc.entry]; 
+                if(s.ptr)
+                    result.structs[desc.entry] = {s.ptr, false};
             }
         }
     }
