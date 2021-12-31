@@ -369,8 +369,8 @@ namespace OGUI::CSSParser
 			stream << "\n" << GetStyleRuleGrammar();
 			stream << "\n" << GetKeyframeGrammar();
 			stream << "\n" << GetFontfaceGrammar();
-			for(auto& grammar : grammars)
-				stream  << "\n" << grammar .grammar;
+			for(auto& grammar2 : grammars)
+				stream  << "\n" << grammar2.grammar;
 			return stream.str();
 		}
 

@@ -119,7 +119,14 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
         else
             return false;
     }
-    percent = iteration - int(iteration);
+    if (iteration > 1.f)
+    {
+        percent = iteration - int(iteration);
+        if (percent == 0.f)
+            percent = 1.f;
+    }
+    else
+        percent = iteration;
     percent = reversed ? 1 - percent : percent;
     return true;
 }
