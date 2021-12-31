@@ -140,6 +140,7 @@ namespace OGUI reflect
 
 		void OnActivateWindow(const WindowHandle window);
 			
+		attr("script":true)
 		static Context& Get();
 		WindowHandle _windowUnderCursor = nullptr;
 		VisualElement* _elementUnderCursor = nullptr;
