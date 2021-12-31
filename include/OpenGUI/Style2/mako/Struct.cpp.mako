@@ -13,6 +13,18 @@
 #include "${struct.name}_shorthands.h"
 %endif
 
+size_t Style${struct.ident}Entry = 0;
+
+size_t OGUI::Style${struct.ident}::GetEntry()
+{
+    return Style${struct.ident}Entry;
+}
+
+void OGUI::Style${struct.ident}::SetEntry(size_t e)
+{
+    Style${struct.ident}Entry = e;
+}
+
 const OGUI::Style${struct.ident}& OGUI::Style${struct.ident}::GetDefault()
 {
     struct Helper
@@ -39,37 +51,27 @@ const OGUI::Style${struct.ident}& OGUI::Style${struct.ident}::Get(const Computed
 
 OGUI::Style${struct.ident}* OGUI::Style${struct.ident}::TryGet(const ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
-    {
-        return nullptr;
-    }
-    else 
-    {
-        return (OGUI::Style${struct.ident}*)iter->second.ptr.get();
-    }
+    auto& s = style.structs[Style${struct.ident}Entry];
+    return (Style${struct.ident}*)s.ptr.get();
 }
 
 OGUI::Style${struct.ident}& OGUI::Style${struct.ident}::GetOrAdd(ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
+    auto& s = style.structs[Style${struct.ident}Entry];
+    if(!s.ptr)
     {
         auto value = std::make_shared<OGUI::Style${struct.ident}>();
         value->Initialize();
-        style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+        s.ptr = std::static_pointer_cast<void>(value);
         return *value.get();
     }
     else 
-    {
-        return *(OGUI::Style${struct.ident}*)iter->second.ptr.get();
-    }
-
+        return *(Style${struct.ident}*)s.ptr.get();
 }
 
 void OGUI::Style${struct.ident}::Dispose(ComputedStyle& style)
 {
-    style.structs.erase(hash);
+    style.structs[Style${struct.ident}Entry].ptr.reset();
 }
 
 void OGUI::Style${struct.ident}::Initialize()
@@ -83,13 +85,12 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::Style${struct.ident}* st = nullptr;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[Style${struct.ident}Entry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::Style${struct.ident}*)value.ptr.get();
-        owned = value.owned;
+        st = (Style${struct.ident}*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -97,14 +98,14 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
         {
             auto value = std::make_shared<OGUI::Style${struct.ident}>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::Style${struct.ident}>(*st);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
@@ -174,13 +175,12 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
 {
     OGUI::Style${struct.ident}* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[Style${struct.ident}Entry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::Style${struct.ident}*)value.ptr.get();
-        owned = value.owned;
+        st = (Style${struct.ident}*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -188,15 +188,14 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
         {
             auto value = std::make_shared<OGUI::Style${struct.ident}>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::Style${struct.ident}>(*st);
-            style.structs.erase(iter);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }

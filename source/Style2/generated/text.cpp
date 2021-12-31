@@ -8,6 +8,18 @@
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
 
+size_t StyleTextEntry = 0;
+
+size_t OGUI::StyleText::GetEntry()
+{
+    return StyleTextEntry;
+}
+
+void OGUI::StyleText::SetEntry(size_t e)
+{
+    StyleTextEntry = e;
+}
+
 const OGUI::StyleText& OGUI::StyleText::GetDefault()
 {
     struct Helper
@@ -34,37 +46,27 @@ const OGUI::StyleText& OGUI::StyleText::Get(const ComputedStyle& style)
 
 OGUI::StyleText* OGUI::StyleText::TryGet(const ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
-    {
-        return nullptr;
-    }
-    else 
-    {
-        return (OGUI::StyleText*)iter->second.ptr.get();
-    }
+    auto& s = style.structs[StyleTextEntry];
+    return (StyleText*)s.ptr.get();
 }
 
 OGUI::StyleText& OGUI::StyleText::GetOrAdd(ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
+    auto& s = style.structs[StyleTextEntry];
+    if(!s.ptr)
     {
         auto value = std::make_shared<OGUI::StyleText>();
         value->Initialize();
-        style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+        s.ptr = std::static_pointer_cast<void>(value);
         return *value.get();
     }
     else 
-    {
-        return *(OGUI::StyleText*)iter->second.ptr.get();
-    }
-
+        return *(StyleText*)s.ptr.get();
 }
 
 void OGUI::StyleText::Dispose(ComputedStyle& style)
 {
-    style.structs.erase(hash);
+    style.structs[StyleTextEntry].ptr.reset();
 }
 
 void OGUI::StyleText::Initialize()
@@ -83,13 +85,12 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::StyleText* st = nullptr;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[StyleTextEntry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::StyleText*)value.ptr.get();
-        owned = value.owned;
+        st = (StyleText*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -97,14 +98,14 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
         {
             auto value = std::make_shared<OGUI::StyleText>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StyleText>(*st);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
@@ -266,13 +267,12 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
 {
     OGUI::StyleText* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[StyleTextEntry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::StyleText*)value.ptr.get();
-        owned = value.owned;
+        st = (StyleText*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -280,15 +280,14 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
         {
             auto value = std::make_shared<OGUI::StyleText>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StyleText>(*st);
-            style.structs.erase(iter);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }

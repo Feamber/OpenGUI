@@ -8,6 +8,18 @@
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
 
+size_t StyleBackgroundEntry = 0;
+
+size_t OGUI::StyleBackground::GetEntry()
+{
+    return StyleBackgroundEntry;
+}
+
+void OGUI::StyleBackground::SetEntry(size_t e)
+{
+    StyleBackgroundEntry = e;
+}
+
 const OGUI::StyleBackground& OGUI::StyleBackground::GetDefault()
 {
     struct Helper
@@ -34,37 +46,27 @@ const OGUI::StyleBackground& OGUI::StyleBackground::Get(const ComputedStyle& sty
 
 OGUI::StyleBackground* OGUI::StyleBackground::TryGet(const ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
-    {
-        return nullptr;
-    }
-    else 
-    {
-        return (OGUI::StyleBackground*)iter->second.ptr.get();
-    }
+    auto& s = style.structs[StyleBackgroundEntry];
+    return (StyleBackground*)s.ptr.get();
 }
 
 OGUI::StyleBackground& OGUI::StyleBackground::GetOrAdd(ComputedStyle& style)
 {
-    auto iter = style.structs.find(hash);
-    if(iter == style.structs.end())
+    auto& s = style.structs[StyleBackgroundEntry];
+    if(!s.ptr)
     {
         auto value = std::make_shared<OGUI::StyleBackground>();
         value->Initialize();
-        style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+        s.ptr = std::static_pointer_cast<void>(value);
         return *value.get();
     }
     else 
-    {
-        return *(OGUI::StyleBackground*)iter->second.ptr.get();
-    }
-
+        return *(StyleBackground*)s.ptr.get();
 }
 
 void OGUI::StyleBackground::Dispose(ComputedStyle& style)
 {
-    style.structs.erase(hash);
+    style.structs[StyleBackgroundEntry].ptr.reset();
 }
 
 void OGUI::StyleBackground::Initialize()
@@ -77,13 +79,12 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::StyleBackground* st = nullptr;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[StyleBackgroundEntry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::StyleBackground*)value.ptr.get();
-        owned = value.owned;
+        st = (StyleBackground*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -91,14 +92,14 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
         {
             auto value = std::make_shared<OGUI::StyleBackground>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StyleBackground>(*st);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
@@ -171,13 +172,12 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
 {
     OGUI::StyleBackground* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto iter = style.structs.find(hash);
+    auto& s = style.structs[StyleBackgroundEntry];
     bool owned = false;
-    if(iter != style.structs.end())
+    if(s.ptr)
     {
-        auto value = iter->second;
-        st = (OGUI::StyleBackground*)value.ptr.get();
-        owned = value.owned;
+        st = (StyleBackground*)s.ptr.get();
+        owned = s.owned;
     }
     auto fget = [&]
     {
@@ -185,15 +185,14 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
         {
             auto value = std::make_shared<OGUI::StyleBackground>();
             value->Initialize();
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StyleBackground>(*st);
-            style.structs.erase(iter);
-            style.structs.insert({hash, {std::static_pointer_cast<void>(value)}});
+            s.ptr = std::static_pointer_cast<void>(value);
             owned = true;
             st = value.get();
         }

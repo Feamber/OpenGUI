@@ -14,6 +14,7 @@ namespace OGUI
     {
 		std::string_view name;
 		size_t hash;
+		size_t entry;
 		bool inherited;
         void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
 		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
@@ -26,6 +27,7 @@ namespace OGUI
 	};
 
 	OGUI_API void RegisterStyleStruct(const StyleDesc& Registry);
+	OGUI_API size_t NewStyleStructEntry();
 	
 	//helper
 	template<class T>
@@ -37,7 +39,9 @@ namespace OGUI
 		desc.name = T::name;
 		desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
 		desc.ApplyProperties = &T::ApplyProperties;
+		desc.entry = NewStyleStructEntry();
         RegisterStyleStruct(desc);
+		T::SetEntry(desc.entry);
         T::SetupParser();
 		return desc;
 	}
@@ -51,7 +55,7 @@ namespace OGUI
 			std::shared_ptr<void> ptr;
 			bool owned = true;
 		};
-		std::unordered_map<size_t, ComputedStruct> structs;
+		std::array<ComputedStruct, 8> structs;
 		ComputedStyle() = default;
 		ComputedStyle(const ComputedStyle& other);
 		ComputedStyle(ComputedStyle&& other) = default;
