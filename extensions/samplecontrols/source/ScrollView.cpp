@@ -14,6 +14,7 @@ namespace SampleControls
 SampleControls::ScrollView::ScrollView()
 {
 	_eventHandler.Register<PointerScrollEvent, &ScrollView::_OnMouseScroll>(this);
+    _eventHandler.Register<GotFocusEvent, &ScrollView::OnGotFocusEvent>(this);
 }
 
 void SampleControls::ScrollView::InitializeChildren()
@@ -156,6 +157,14 @@ bool SampleControls::ScrollView::OnMouseUp(struct PointerUpEvent& event)
     _dragging = false;
     Context::Get().ReleasePointer(event.pointerId);
     return true;
+}
+
+bool SampleControls::ScrollView::OnGotFocusEvent(GotFocusEvent& event)
+{
+    if(event.cause != FocusChangeCause::FocusNavigation || event.currentPhase != EventRoutePhase::TrickleDown)
+        return false;
+    ScrollIntoView(event.currentFocusedPath->back());
+    return false;
 }
 
 const OGUI::Name& SampleControls::ScrollViewXmlFactory::GetFullName()

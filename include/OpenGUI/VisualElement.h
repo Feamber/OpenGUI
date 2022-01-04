@@ -268,6 +268,7 @@ namespace OGUI reflect
 		bool ScrollOnRow() const;
 		void AddScroll(Vector2f delta);
 		virtual void SetScroll(Vector2f offset);
+		void ScrollIntoView(VisualElement* child);
 		bool _scrollSizeDirty = true;
 		Vector2f GetScrollPos();
         Vector2f _scrollOffset;

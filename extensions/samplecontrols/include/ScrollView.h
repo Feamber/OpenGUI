@@ -22,6 +22,7 @@ namespace SampleControls
         bool OnMouseDown(struct PointerDownEvent& event);
         bool OnMouseMove(struct PointerMoveEvent& event);
         bool OnMouseUp(struct PointerUpEvent& event);
+        bool OnGotFocusEvent(struct GotFocusEvent& event);
         VisualElement* scrollbar;
         VisualElement* slider;
 

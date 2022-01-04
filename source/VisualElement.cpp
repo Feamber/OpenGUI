@@ -26,7 +26,6 @@
 #include "OpenGUI/Context.h"
 #include <gsl/span>
 
-
 namespace OGUI
 {
 	struct Quad
@@ -1341,6 +1340,53 @@ void OGUI::VisualElement::SetScroll(Vector2f offset)
 		{
 			child->_transformDirty = true;
 		});
+}
+
+void OGUI::VisualElement::ScrollIntoView(VisualElement* child)
+{
+	if (!(child && child->IsParent(this) && child->_scrollable))
+		return;
+	float axisY = GetScrollingAxisY();
+	float axisX = GetScrollingAxisX();
+	Rect clientRect =  {Vector2f::vector_zero(), GetSize() };
+	{
+		float minY = clientRect.max.y * (axisY * 0.5f - 0.5f) + clientRect.min.y * (axisY * 0.5f + 0.5f);
+		float maxY = clientRect.max.y * (axisY * 0.5f + 0.5f) + clientRect.min.y * (axisY * 0.5f - 0.5f);
+		float minX = clientRect.max.x * (axisX * 0.5f - 0.5f) + clientRect.min.x * (axisX * 0.5f + 0.5f);
+		float maxX = clientRect.max.x * (axisX * 0.5f + 0.5f) + clientRect.min.x * (axisX * 0.5f - 0.5f);
+		clientRect = {{minX, minY}, {maxX, maxY}};
+	}
+	auto& pos = StylePosition::Get(child->_style);
+	if(pos.position != YGPositionTypeRelative)
+		return;
+	auto baseLayout = child->GetLayout();
+	auto rect = child->GetRect();
+	auto offset = (baseLayout.max + baseLayout.min)/2 - _scrollOffset;
+	auto styleTransform = child->GetStyleTransform();
+	auto quad = Quad(rect, styleTransform.to_3D());
+	quad.RU += offset;
+	quad.RB += offset;
+	quad.LU += offset;
+	quad.LB += offset;
+	auto relativeRect = quad.ToBoundingBox();
+	
+	float offsetUp = relativeRect.max.y - clientRect.max.y;
+	float offsetDown = clientRect.min.y - relativeRect.min.y;
+	float offsetLeft = clientRect.min.x - relativeRect.min.x;
+	float offsetRight = relativeRect.max.x - clientRect.max.x;
+	Vector2f newOffset;
+    if(offsetUp > 0)
+        newOffset.Y = offsetUp;
+	else if(offsetDown > 0)
+		newOffset.Y = -offsetDown;
+
+	if(offsetLeft > 0)
+		newOffset.X = -offsetLeft;
+	else if(offsetDown > 0)
+		newOffset.X = offsetRight;
+	if(newOffset.is_nearly_zero())
+		return;
+	AddScroll(newOffset);
 }
 
 OGUI::Vector2f OGUI::VisualElement::GetScrollPos()
