@@ -795,7 +795,7 @@ bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& lo
 	{
 		if(!localXmlFilters.count(filterTag) && !HasFilterTag_Global(filterTag))
 		{
-			if(element->Visible())
+			if(element->_visible)
 			{
 				_layoutDirty = true;
 				InvalidateCssCache();
@@ -804,7 +804,7 @@ bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& lo
 			return false;
 		}
 	}
-	if(!element->Visible())
+	if(!element->_visible)
 	{
 		_layoutDirty = true;
 		InvalidateCssCache();
