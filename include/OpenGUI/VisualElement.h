@@ -44,6 +44,7 @@ namespace OGUI reflect
 		virtual ~VisualElement();
 		VisualElement* GetParent();
 		VisualElement* GetHierachyParent();
+		bool IsSibling(VisualElement*);
 		bool IsParent(VisualElement*);
 		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 

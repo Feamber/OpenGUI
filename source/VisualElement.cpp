@@ -321,6 +321,16 @@ OGUI::VisualElement* OGUI::VisualElement::GetHierachyParent()
 	return _physicalParent;
 }
 
+bool OGUI::VisualElement::IsSibling(OGUI::VisualElement* e)
+{
+	if(auto hierachyParent = GetHierachyParent())
+	{
+		const auto& children = hierachyParent->_children;
+		return std::find(children.begin(), children.end(), e) != children.end();
+	}
+	return false;
+}
+
 bool OGUI::VisualElement::IsParent(OGUI::VisualElement* e)
 {
 	if(!e || !_physicalParent || e == this)
@@ -999,7 +1009,7 @@ OGUI::VisualElement* OGUI::VisualElement::FindNextNavTarget(ENavDirection direct
 				currentOrigin->navDebugRect = navCollisionBox.ToRect();
 				currentOrigin->FocusNavDebugState = CollisionBox;
 			}
-			if(element == currentOrigin || !element->Visible() || !navCollisionBox.Intersect(elementQuad)) continue;
+			if(element == currentOrigin || (!IsSibling(element) && !element->Visible()) || !navCollisionBox.Intersect(elementQuad)) continue;
 
 			float distance = (element->_worldPosition - currentWorldPosition).length();
 			const float near = 10.f;
