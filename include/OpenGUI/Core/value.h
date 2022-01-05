@@ -1,9 +1,7 @@
 #pragma once
 #include <memory>
-#include <new>
 #include <string_view>
 #include <type_traits>
-#include <variant>
 #include <string>
 #include <cstdint>
 #include "OpenGUI/Core/open_string.h"
@@ -36,27 +34,55 @@ namespace OGUI::Meta
         void (*move)(void* self, void* other);
         size_t (*Hash)(const void* self, size_t base);
     };
+    
+    template<class T>
+    auto GetCopyCtor()
+    {
+        void(*copy)(void* self, const void* other) = nullptr;
+        if constexpr(std::is_copy_constructible_v<T>)
+            copy = +[](void* self, const void* other) { new(self) T(*(const T*)other); };
+        return copy;
+    }
+
+    template<class T>
+    auto GetMoveCtor()
+    {
+        void (*move)(void* self, void* other) = nullptr;
+        if constexpr(std::is_move_constructible_v<T>)
+            move = +[](void* self, void* other) { new(self) T(std::move(*(T*)other)); };
+        return move;
+    }
+
     namespace EType
     {
-        enum TypeEnum{_b, _i32, _i64, _u32, _u64, _f32, _f64, _s, _sv, _a, _da, _av, _o, _r};
+        enum TypeEnum{_b, _i32, _i64, _u32, _u64, _f32, _f64, _s, _sv, _a, _da, _av, _o, _e, _r};
     };
 
-    struct Type
+    OGUI_API size_t Hash(bool value, size_t base);
+    OGUI_API size_t Hash(int32_t value, size_t base);
+    OGUI_API size_t Hash(int64_t value, size_t base);
+    OGUI_API size_t Hash(uint32_t value, size_t base);
+    OGUI_API size_t Hash(uint64_t value, size_t base);
+    OGUI_API size_t Hash(float value, size_t base);
+    OGUI_API size_t Hash(double value, size_t base);
+    OGUI_API size_t Hash(void* value, size_t base);
+
+    struct OGUI_API Type
     {
         EType::TypeEnum type;
         size_t Size() const;
         size_t Align()  const;
         const char* Name() const;
         bool Same(const Type* srcType) const;
-        bool Convertible(const Type* srcType, bool format) const;
+        bool Convertible(const Type* srcType, bool format = false) const;
         void Convert(void* dst, const void* src, const Type* srcType, struct ValueSerializePolicy* policy = nullptr) const;
         ostr::string ToString(const void* dst, struct ValueSerializePolicy* policy = nullptr) const;
         size_t Hash(const void* dst, size_t base) const;
         //lifetime operator
         void Destruct(void* dst) const;
-        void Construct(void* dst, struct Value* args, size_t nargs) const;;
-        void Copy(void* dst, const void* src) const;;
-        void Move(void* dst, void* src) const;;
+        void Construct(void* dst, struct Value* args, size_t nargs) const;
+        void Copy(void* dst, const void* src) const;
+        void Move(void* dst, void* src) const;
     };
     // bool
     struct BoolType : Type 
@@ -136,21 +162,38 @@ namespace OGUI::Meta
             : Type{EType::_av}, elementType(elementType) {}
     };
     // struct/class T
-    struct RecordType  : Type
+    struct RecordType : Type
     {
         size_t size;
         size_t align;
-        const std::string_view name;
+        const ostr::string_view name;
         const RecordType* base;
         ObjectMethodTable nativeMethods;
         const gsl::span<struct Field> fields;
         const gsl::span<struct Method> methods; 
         bool IsBaseOf(const RecordType& other) const;
-        RecordType(size_t size, size_t align, std::string_view name, const RecordType* base, ObjectMethodTable nativeMethods, 
+        RecordType(size_t size, size_t align, ostr::string_view name, const RecordType* base, ObjectMethodTable nativeMethods, 
             const gsl::span<struct Field> fields, const gsl::span<struct Method> methods)
             : Type{EType::_o}, size(size), align(align), name(name), base(base), nativeMethods(nativeMethods), 
                 fields(fields), methods(methods)
         {}
+    };
+    // enum T
+    struct EnumType : Type
+    {
+        const Type* underlyingType;
+        const ostr::string_view name;
+        void (*FromString)(void* self, ostr::string_view str);
+        ostr::string (*ToString)(const void* self);
+        struct Enumerator
+        {
+            const ostr::string_view name;
+            int64_t value;
+        };
+        const gsl::span<Enumerator> enumerators;
+        EnumType(const Type* underlyingType, const ostr::string_view name, void (*FromString)(void* self, ostr::string_view str),
+            ostr::string (*ToString)(const void* self), const gsl::span<Enumerator> enumerators)
+            : Type{EType::_e}, underlyingType(underlyingType), name(name), FromString(FromString), ToString(ToString), enumerators(enumerators) {}
     };
     // T*, T&, std::unique_ptr<T>, std::shared_ptr<T>
     struct ReferenceType  : Type
@@ -166,15 +209,39 @@ namespace OGUI::Meta
     };
 
     template<class T>
-    struct OGUI_API TypeOf
-    {
-        static const Type* Get();
-    };
+    struct TypeOf;
+
+    template<>
+    struct OGUI_API TypeOf<bool> { static const Type* Get(); };
+    
+    template<>
+    struct OGUI_API TypeOf<int32_t> { static const Type* Get(); };
+    
+    template<>
+    struct OGUI_API TypeOf<int64_t> { static const Type* Get(); };
+    
+    template<>
+    struct OGUI_API TypeOf<uint32_t> { static const Type* Get(); };
+    
+    template<>
+    struct OGUI_API TypeOf<uint64_t> { static const Type* Get(); };
+    
+    template<>
+    struct OGUI_API TypeOf<float> { static const Type* Get(); };
+    
+    template<>
+    struct OGUI_API TypeOf<double> { static const Type* Get(); };
+
+    template<>
+    struct OGUI_API TypeOf<ostr::string> { static const Type* Get(); };
+    
+    template<>
+    struct OGUI_API TypeOf<ostr::string_view> { static const Type* Get(); };
 
     template<class T>
     struct TypeOf<T*>
     {
-        const Type* GetType() 
+        static const Type* Get() 
         { 
             static ReferenceType type{ 
                 ReferenceType::Observed, 
@@ -188,7 +255,7 @@ namespace OGUI::Meta
     template<class T>
     struct TypeOf<T&>
     {
-        const Type* GetType() 
+        static const Type* Get() 
         { 
             static ReferenceType type{
                 ReferenceType::Observed, 
@@ -202,7 +269,7 @@ namespace OGUI::Meta
     template<class T>
     struct TypeOf<std::unique_ptr<T>>
     {
-        const Type* GetType() 
+        static const Type* Get() 
         { 
             static ReferenceType type{
                 ReferenceType::Owned, 
@@ -216,7 +283,7 @@ namespace OGUI::Meta
     template<class T>
     struct TypeOf<std::shared_ptr<T>>
     {
-        const Type* GetType() 
+        static const Type* Get() 
         { 
             static ReferenceType type{
                 ReferenceType::Shared, 
@@ -231,7 +298,7 @@ namespace OGUI::Meta
     struct TypeOf<std::vector<T>>
     {
         using V = std::vector<T>;
-        const Type* GetType() 
+        static const Type* Get() 
         { 
             static DynArrayType type{
                 TypeOf<T>::Get(),
@@ -256,7 +323,7 @@ namespace OGUI::Meta
     template<class T, size_t num>
     struct TypeOf<T[num]>
     {
-        const Type* GetType() 
+        static const Type* Get() 
         { 
             static ArrayType type{ 
                 TypeOf<T>::Get(),
@@ -270,7 +337,7 @@ namespace OGUI::Meta
     template<class T, size_t size>
     struct TypeOf<gsl::span<T, size>>
     {
-        const Type* GetType() 
+        static const Type* Get() 
         { 
             static_assert(size == -1, "only dynamic extent is supported.");
             static ArrayViewType type{ 
@@ -280,7 +347,7 @@ namespace OGUI::Meta
         }
     };
 
-    struct Value
+    struct OGUI_API Value
     {
         const Type* type;
         union
@@ -319,17 +386,17 @@ namespace OGUI::Meta
         }
 
         template<class T>
+        T& As()
+        {
+            return *(T*)Ptr();
+        }
+
+        template<class T>
         bool Convertible() const
         {
             if(!type)
                 return false;
             return TypeOf<T>::Get()->Convertible(type);
-        }
-
-        template<class T>
-        T& As()
-        {
-            return *(T*)Ptr();
         }
 
         template<class T>
@@ -358,16 +425,17 @@ namespace OGUI::Meta
 
     struct Field
     {
+        ostr::string_view name;
         const Type* type;
-        std::string_view name;
         size_t offset;
     };
 
     struct Method
     {
+        ostr::string_view name;
         const Type* retType;
         const Field* parameters;
-        Value (*execute)(void* self, struct Value* args, size_t nargs);
+        Value (*execute)(void* self, Value* args, size_t nargs);
     };
 
     struct ValueSerializePolicy
@@ -382,8 +450,9 @@ namespace OGUI::Meta
     {
         void BeginSerialize();
         ostr::string EndSerialize();
-        void BeginDeserialize(std::string_view str);
+        void BeginDeserialize(ostr::string_view str);
         void EndDeserialize();
+        void Raw(ostr::string_view);
         void Bool(bool&);
         void Int32(int32_t&);
         ....
@@ -492,9 +561,8 @@ namespace OGUI::Meta
                     else
                     {
                         ctx.BeginObject(obj);
-                        auto& obj = (const RecordType&)(*type);
                         auto d = (char*)data;
-                        for(const auto& field : obj.fields)
+                        for(const auto& field : obj->fields)
                         {
                             ctx.BeginField(field);
                             formatImpl(&ctx, d + field.offset, field.type);
@@ -502,6 +570,11 @@ namespace OGUI::Meta
                         }
                         ctx.EndObject();
                     }
+                }
+                case _e:
+                {
+                    auto enm = (const EnumType*)type;
+                    ctx.Raw(enm->ToString(data));
                 }
                 case _r: 
                 {

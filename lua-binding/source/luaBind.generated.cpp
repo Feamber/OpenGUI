@@ -1,13 +1,13 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Context.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Event/EventBase.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -16,7 +16,7 @@ void BindLua_generated(lua_State* L)
         sol::usertype<OGUI::Context> type = lua.new_usertype<OGUI::Context>("Context");
         type["IsElementValid"] = (bool(OGUI::Context::*)(OGUI::VisualElement *)const)&OGUI::Context::IsElementValid;
         type["ActivateWindow"] = (bool(OGUI::Context::*)(OGUI::VisualWindow *))&OGUI::Context::ActivateWindow;
-        type["SetFocus"] = (bool(OGUI::Context::*)(OGUI::VisualElement *, OGUI::FocusChangeCause, std::basic_string<char>))&OGUI::Context::SetFocus;
+        type["SetFocus"] = (bool(OGUI::Context::*)(OGUI::VisualElement *, OGUI::FocusChangeCause, ostr::string))&OGUI::Context::SetFocus;
         type["SetXmlFilter_Global"] = (void(OGUI::Context::*)(const char *, const char *))&OGUI::Context::SetXmlFilter_Global;
         type["CleanXmlFilter_Global"] = (void(OGUI::Context::*)(const char *))&OGUI::Context::CleanXmlFilter_Global;
         type["UpdataXmlFilterCache_Global"] = (void(OGUI::Context::*)())&OGUI::Context::UpdataXmlFilterCache_Global;
@@ -24,7 +24,7 @@ void BindLua_generated(lua_State* L)
     }
     {
         sol::usertype<OGUI::IEventArg> type = lua.new_usertype<OGUI::IEventArg>("IEventArg");
-        type["TryGet"] = (OGUI::any_detail::any(OGUI::IEventArg::*)(std::basic_string_view<char>))&OGUI::IEventArg::TryGet;
+        type["TryGet"] = (OGUI::Meta::Value(OGUI::IEventArg::*)(ostr::string_view))&OGUI::IEventArg::TryGet;
     }
     {
         sol::usertype<OGUI::Bindable> type = lua.new_usertype<OGUI::Bindable>("Bindable");
@@ -35,8 +35,8 @@ void BindLua_generated(lua_State* L)
         sol::usertype<OGUI::VisualElement> type = 
             lua.new_usertype<OGUI::VisualElement>("VisualElement", sol::base_classes, sol::bases<OGUI::Bindable>());
         type["Visible"] = (bool(OGUI::VisualElement::*)()const)&OGUI::VisualElement::Visible;
-        type["GetName"] = (const char *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetName;
-        type["SetName"] = (void(OGUI::VisualElement::*)(const char *))&OGUI::VisualElement::SetName;
+        type["GetName"] = (const ostr::string &(OGUI::VisualElement::*)())&OGUI::VisualElement::GetName;
+        type["SetName"] = (void(OGUI::VisualElement::*)(ostr::string_view))&OGUI::VisualElement::SetName;
         type["SetVisibility"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetVisibility;
         type["IsClippingChildren"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::IsClippingChildren;
         type["PushChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::PushChild;
@@ -44,14 +44,14 @@ void BindLua_generated(lua_State* L)
         type["RemoveChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetRoot;
         type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetLayoutRoot;
-        type["AddStyleClass"] = (void(OGUI::VisualElement::*)(std::basic_string_view<char>))&OGUI::VisualElement::AddStyleClass;
-        type["RemoveStyleClass"] = (void(OGUI::VisualElement::*)(std::basic_string_view<char>))&OGUI::VisualElement::RemoveStyleClass;
+        type["AddStyleClass"] = (void(OGUI::VisualElement::*)(ostr::string_view))&OGUI::VisualElement::AddStyleClass;
+        type["RemoveStyleClass"] = (void(OGUI::VisualElement::*)(ostr::string_view))&OGUI::VisualElement::RemoveStyleClass;
         type["SetPseudoClass"] = (void(OGUI::VisualElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
         type["Bind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Bind;
         type["Unbind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Unbind;
     }
-    lua["QueryFirst"] = (OGUI::VisualElement *(*)(OGUI::VisualElement *, std::basic_string_view<char>))&OGUI::QueryFirst;
-    lua["QueryAll"] = (void(*)(OGUI::VisualElement *, std::basic_string_view<char>, std::vector<OGUI::VisualElement *> &))&OGUI::QueryAll;
+    lua["QueryFirst"] = (OGUI::VisualElement *(*)(OGUI::VisualElement *, ostr::string_view))&OGUI::QueryFirst;
+    lua["QueryAll"] = (void(*)(OGUI::VisualElement *, ostr::string_view, std::vector<OGUI::VisualElement *> &))&OGUI::QueryAll;
     lua["BindTree"] = (void(*)(OGUI::VisualElement *, OGUI::Bindable &))&OGUI::BindTree;
     lua.new_enum<int>("ENavMode", {
         {"None", 0},
@@ -337,6 +337,7 @@ void BindLua_generated(lua_State* L)
     OGUI::add_any_pusher<ostr::string>();
     OGUI::add_any_pusher<OGUI::EventRoutePhase>();
     OGUI::add_any_pusher<OGUI::FocusChangeCause>();
+    OGUI::add_any_pusher<ostr::string_view>();
     OGUI::add_any_pusher<const std::vector<OGUI::VisualElement *> *>();
     OGUI::add_any_pusher<OGUI::VisualElement *>();
     OGUI::add_any_pusher<OGUI::Context*>();

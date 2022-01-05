@@ -2,6 +2,7 @@
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/Containers/vector.hpp"
+#include "OpenGUI/meta.h"
 #include <algorithm>
 
 namespace OGUI reflect
@@ -32,7 +33,7 @@ namespace OGUI reflect
         PF_Count
     };
 
-	enum class attr("script":true) 
+	enum class push_attr("script":true, "rtti":true) 
 	ENavMode : uint32
 	{
 		None,
@@ -41,7 +42,7 @@ namespace OGUI reflect
 		Automatic,
 	};
 
-	enum class attr("script":true) 
+	enum class 
 	ENavCycleMode : uint32
 	{
 		None,
@@ -50,7 +51,7 @@ namespace OGUI reflect
 		Automatic,
 	};
 
-	enum class attr("script":true) 
+	enum class
 	ENavDirection : uint32
 	{
 		Up,
@@ -59,7 +60,7 @@ namespace OGUI reflect
 		Right,
 	};
 
-    enum class attr("script":true) 
+    enum class
 	EKeyCode : uint32
 	{
 		/// means not supported keycode
@@ -229,7 +230,7 @@ namespace OGUI reflect
 		Gamepad_RightStick_Left = 256,
 	};
 
-	enum class attr("script":true, "style-enum":true)
+	enum class attr("style-enum":true)
 	EInlineAlign : uint32
 	{
 		Baseline,
@@ -237,7 +238,7 @@ namespace OGUI reflect
 		Middle
 	};
 
-	enum class attr("script":true) 
+	enum class 
 	EMouseKey : uint32
 	{
 		None = 0x00,
@@ -249,7 +250,7 @@ namespace OGUI reflect
 	};
 
 
-	enum class attr("script":true) 
+	enum class 
 	EControllerAxis : uint32
 	{
 		LX = 0,	// Left thumb pad X axis.
@@ -260,7 +261,7 @@ namespace OGUI reflect
 		RT = 5,	// Right trigger.
 	};
 
-	enum class attr("script":true) 
+	enum class 
 	EControllerButton : uint32
 	{
 		LThumb = 0,	// Left thumb button.
@@ -282,14 +283,14 @@ namespace OGUI reflect
 	};
 
 	//! Identify the vibration motor to set in `set_vibration`.
-	enum class attr("script":true) 
+	enum class 
 	EControllerVibrationMotor : uint32
 	{
 		Left = 1,
 		Right = 2,
 	};
 
-	enum class attr("script":true) 
+	enum class 
 	EMouseCursor
 	{
 		Hide,
@@ -304,8 +305,8 @@ namespace OGUI reflect
 		NotAllowed
 	};
 
-	enum class attr("script":true) 
-	EGestureEvent : uint8
+	enum class 
+	EGestureEvent : uint32_t
 	{
 		None,
 		Scroll,
@@ -315,7 +316,8 @@ namespace OGUI reflect
 		LongPress,
 	};
 
-	struct MemoryResource
+	struct pop_attr()
+	MemoryResource 
 	{
 		uint8_t* bytes = nullptr;
 		size_t size_in_bytes = 0;

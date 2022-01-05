@@ -5,13 +5,13 @@
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
 %for record in db.records:
-bool OGUI::TryGet(const ${record.name}& event, std::string_view name, OGUI::any& out)
+bool OGUI::TryGet(const ${record.name}& event, ostr::string_view name, OGUI::Meta::Value& out)
 {
 %if record.isEvent:
-    static Name eventName = "${record.event_name}";
-    if(name == "eventName")
+    static ostr::string_view eventName = u"${record.event_name}";
+    if(name == ostr::string_view(u"eventName"))
     {
-        out = eventName;
+        out.Emplace<ostr::string_view>(eventName);
         return true;
     }
 %endif
@@ -23,7 +23,7 @@ bool OGUI::TryGet(const ${record.name}& event, std::string_view name, OGUI::any&
     switchstr(name)
     {
     %for field in record.fields:
-        casestr("${field.name}") out = event.${field.name}; break;
+        casestr("${field.name}") out.Emplace<std::add_const_t<${field.type}>&>(event.${field.name}); break;
     %endfor
         default:
             return false;

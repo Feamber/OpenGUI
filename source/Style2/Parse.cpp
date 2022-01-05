@@ -1,4 +1,5 @@
 #include <cstddef>
+#include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Core/Utilities/any_move.hpp"
 #include "OpenGUI/Style2/Properties.h"
@@ -126,7 +127,7 @@ namespace OGUI::CSSParser
 		{
 			std::string value;
 			if(vs.tokens.size() != 0) value = {vs.tokens[0].begin(), vs.tokens[0].end()};
-			return StyleSelector::Part{(StyleSelector::Kind)vs.choice(), value};
+			return StyleSelector::Part{(StyleSelector::Kind)vs.choice(), ostr::string::decode_from_utf8(value)};
 		};
 		parser["Selector"] = [](SemanticValues& vs)
 		{
@@ -241,7 +242,7 @@ namespace OGUI::CSSParser
 			auto ctx = GetContext<StyleSheetContext&>(dt);
 			StyleKeyframes keyframes;
 			auto name = vs.token();
-			keyframes.name = {name.begin(), name.end()};
+			keyframes.name = ostr::string::decode_from_utf8(name);
 			for (auto& p : vs)
 			{
 				auto pair = any_move<std::pair<AnimationCurve, size_t>>(p);
@@ -288,7 +289,7 @@ namespace OGUI::CSSParser
 		{
 			{
 				auto ctx = GetContext<FontfaceContext&>(dt);
-				if(ctx.font->fontFamily.empty())
+				if(ctx.font->fontFamily.is_empty())
 					throw peg::parse_error("Fontface family is not set!");
 			}
 			PopContext(dt);
@@ -316,7 +317,7 @@ namespace OGUI::CSSParser
 		parser["FontPropFace"] = [](SemanticValues& vs, std::any& dt)
 		{
 			auto ctx = GetContext<FontfaceContext&>(dt);
-			ctx.font->fontFamily = std::any_cast<std::string_view>(vs[0]);
+			ctx.font->fontFamily.decode_from_utf8(std::any_cast<std::string_view>(vs[0]));
 		};
 	}
 

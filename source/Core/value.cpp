@@ -9,63 +9,54 @@
 
 namespace OGUI::Meta
 {
-    template<>
     const Type* TypeOf<bool>::Get()
     {
         static BoolType type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<int32_t>::Get()
     {
         static Int32Type type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<int64_t>::Get()
     {
         static Int64Type type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<uint32_t>::Get()
     {
         static UInt32Type type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<uint64_t>::Get()
     {
         static UInt64Type type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<float>::Get()
     {
         static Float32Type type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<double>::Get()
     {
         static Float64Type type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<ostr::string>::Get()
     {
         static StringType type;
         return &type;
     }
     
-    template<>
     const Type* TypeOf<ostr::string_view>::Get()
     {
         static StringViewType type;
@@ -90,18 +81,20 @@ namespace OGUI::Meta
             case _da: return sizeof(std::vector<char>);
             case _av: return sizeof(gsl::span<char>);
             case _o: return ((RecordType*)this)->size;
+            case _e: return ((EnumType*)this)->underlyingType->Size();
             case _r: 
             {
                 switch (((ReferenceType*)this)->ownership) {
                     case ReferenceType::Observed:
                         return sizeof(void*);
                     case ReferenceType::Owned:
-                        return sizeof(std::unique_ptr<void>);
+                        return sizeof(std::unique_ptr<char>);
                     case ReferenceType::Shared:
                         return sizeof(std::shared_ptr<void>);
                 }
             }
         }
+        return 0;
     }
 
     size_t Type::Align() const
@@ -122,18 +115,20 @@ namespace OGUI::Meta
             case _da: return alignof(std::vector<char>);
             case _av: return alignof(gsl::span<char>);
             case _o: return ((RecordType*)this)->size;
+            case _e: return ((EnumType*)this)->underlyingType->Align();
             case _r: 
             {
                 switch (((ReferenceType*)this)->ownership) {
                     case ReferenceType::Observed:
                         return alignof(void*);
                     case ReferenceType::Owned:
-                        return alignof(std::unique_ptr<void>);
+                        return alignof(std::unique_ptr<char>);
                     case ReferenceType::Shared:
                         return alignof(std::shared_ptr<void>);
                 }
             }
         }
+        return 0;
     }
 
     bool Type::Same(const Type* srcType) const
@@ -153,7 +148,7 @@ namespace OGUI::Meta
                 return ((DynArrayType*)this)->elementType->Same(((DynArrayType*)srcType)->elementType);
             case _av: 
                 return ((ArrayViewType*)this)->elementType->Same(((ArrayViewType*)srcType)->elementType);
-            case _o: 
+            case _o: case _e:
                 return this == srcType; //对象类型直接比较地址
             case _r: 
             {
@@ -162,6 +157,7 @@ namespace OGUI::Meta
                     && ((ReferenceType*)this)->pointee->Same(((ReferenceType*)srcType)->pointee);
             }
         }
+        return false;
     } 
 
     bool Type::Convertible(const Type *srcType, bool format) const
@@ -169,6 +165,14 @@ namespace OGUI::Meta
         using namespace EType;
         auto stype = srcType->type;
         gsl::span<size_t> acceptIndices;
+        if(srcType->type == _r)
+        {
+            auto& sptr = (const ReferenceType&)(*srcType);
+            if(!sptr.nullable && Convertible(sptr.pointee))
+            {
+                return true;
+            }
+        }
         switch(type)
         {
             case _b:
@@ -185,8 +189,15 @@ namespace OGUI::Meta
                 }
                 break;
             }
-            case _i32: case _i64: case _u32: case _u64: case _f32: case _f64:
-            {
+            case _i32: case _i64: case _u32: case _u64: 
+                if(srcType->type == _e)
+                {
+                    if(srcType->Size() > Size())
+                        return false;
+                    else
+                        return true;
+                }
+            case _f32: case _f64:
                 if(format)
                 {
                     static size_t accept[] = {_b, _i32, _i64, _u32, _u64, _f32, _f64, _s, _sv};
@@ -198,7 +209,6 @@ namespace OGUI::Meta
                     acceptIndices = accept;
                 }
                 break;
-            }
             case _sv:
             {
                 static size_t accept[] = {_s, _sv};
@@ -210,6 +220,8 @@ namespace OGUI::Meta
                 if(format)
                     return true;
                 static size_t accept[] = {_s, _sv};
+                acceptIndices = accept;
+                break;
             }
             case _a:
             {
@@ -259,15 +271,39 @@ namespace OGUI::Meta
             {
                 return false;
             }
+            case _e:
+            {
+                switch(srcType->type)
+                {
+                    case _i32: case _i64: case _u32: case _u64: 
+                        return srcType->Size() >= Size();
+                    case _s: case _sv:
+                        return format;
+                    default:
+                        return false;
+                }
+            }
             case _r:
             {
                 auto& ptr = (const ReferenceType&)(*this);
                 if(stype == _r)
                 {
                     auto& sptr = (const ReferenceType&)(*srcType);
+                    if(sptr.nullable > ptr.nullable)
+                        return false;
                     if((sptr.ownership != ptr.ownership ||  ptr.ownership == ReferenceType::Owned) && ptr.ownership != ReferenceType::Observed)
                         return false;
-                    if(ptr.pointee->type == _o && sptr.pointee->type == _o)
+                    if(ptr.pointee->Same(sptr.pointee))
+                    {
+                        return true;
+                    }
+                    else if(ptr.pointee->type == _e || sptr.pointee->type == _e)
+                    {
+                        auto type1 = ptr.pointee->type == _e ? ((EnumType*)ptr.pointee)->underlyingType : ptr.pointee;
+                        auto type2 = sptr.pointee->type == _e ? ((EnumType*)sptr.pointee)->underlyingType : sptr.pointee;
+                        return type1->type == type2->type;
+                    }
+                    else if(ptr.pointee->type == _o && sptr.pointee->type == _o)
                     {
                         auto& sobj = (const RecordType&)(*sptr.pointee);
                         auto& obj = (const RecordType&)(*ptr.pointee);
@@ -295,6 +331,13 @@ namespace OGUI::Meta
         using namespace EType;
         if(!Convertible(srcType, policy != nullptr))
             return;
+
+        if(srcType->type == _r)
+        {
+            auto& sptr = (const ReferenceType&)(*srcType);
+            if(!sptr.nullable && Convertible(sptr.pointee)) 
+                Convert(dst, *(void**)src, srcType, policy); //dereference and convert
+        }
         
         #define BASE_CONVERT \
                 case _b: \
@@ -310,11 +353,24 @@ namespace OGUI::Meta
                 case _f32: \
                     dstV = (T)*(float*)src; break; \
                 case _f64: \
-                    dstV = (T)*(double*)src; break; \
-                case _s:  \
+                    dstV = (T)*(double*)src; break; 
+        #define STR_CONVERT \
+                case _s: \
                     policy->parse(policy, ostr::string_view(*(ostr::string*)src), dst, this); \
                 case _sv: \
                     policy->parse(policy, *(ostr::string_view*)src, dst, this);
+        #define ENUM_CONVERT \
+                case _e: \
+                { \
+                    auto& enm = (const EnumType&)(*this); \
+                    switch(enm.underlyingType->type) \
+                    { \
+                        BASE_CONVERT \
+                        default: \
+                            break; \
+                    } \
+                }
+        
                     
         switch(type)
         {
@@ -325,6 +381,10 @@ namespace OGUI::Meta
                 switch(srcType->type)
                 {
                     BASE_CONVERT
+                    case _s:  
+                        policy->parse(policy, ostr::string_view(*(ostr::string*)src), dst, this); 
+                    case _sv: 
+                        policy->parse(policy, *(ostr::string_view*)src, dst, this);
                     case _r:
                     {
                         auto& ref = (const ReferenceType&)type;
@@ -338,7 +398,7 @@ namespace OGUI::Meta
                             }
                             case ReferenceType::Owned:
                             {
-                                auto& srcV = *(std::unique_ptr<void>*)src;
+                                auto& srcV = *(std::unique_ptr<char>*)src;
                                 dstV = (bool)srcV;
                                 break;
                             }
@@ -362,6 +422,8 @@ namespace OGUI::Meta
                 switch(srcType->type)
                 {
                     BASE_CONVERT
+                    STR_CONVERT
+                    ENUM_CONVERT
                     default:
                         break;
                 }
@@ -374,6 +436,8 @@ namespace OGUI::Meta
                 switch(srcType->type)
                 {
                     BASE_CONVERT
+                    STR_CONVERT
+                    ENUM_CONVERT
                     default:
                         break;
                 }
@@ -386,6 +450,8 @@ namespace OGUI::Meta
                 switch(srcType->type)
                 {
                     BASE_CONVERT
+                    STR_CONVERT
+                    ENUM_CONVERT
                     default:
                         break;
                 }
@@ -398,6 +464,8 @@ namespace OGUI::Meta
                 switch(srcType->type)
                 {
                     BASE_CONVERT
+                    STR_CONVERT
+                    ENUM_CONVERT
                     default:
                         break;
                 }
@@ -410,6 +478,7 @@ namespace OGUI::Meta
                 switch(srcType->type)
                 {
                     BASE_CONVERT
+                    STR_CONVERT
                     default:
                         break;
                 }
@@ -422,6 +491,7 @@ namespace OGUI::Meta
                 switch(srcType->type)
                 {
                     BASE_CONVERT
+                    STR_CONVERT
                     default:
                         break;
                 }
@@ -535,11 +605,73 @@ namespace OGUI::Meta
                 }
                 break;
             }
+            case _e:
+            {
+                auto& enm = (const EnumType&)(*this);
+                switch(enm.underlyingType->type)
+                {
+                    case _i32:
+                    {
+                        using T = int32_t;
+                        auto& dstV = *(T*)dst;
+                        switch(srcType->type)
+                        {
+                            BASE_CONVERT
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    case _i64:
+                    {
+                        using T = int64_t;
+                        auto& dstV = *(T*)dst;
+                        switch(srcType->type)
+                        {
+                            BASE_CONVERT
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    case _u32:
+                    {
+                        using T = uint32_t;
+                        auto& dstV = *(T*)dst;
+                        switch(srcType->type)
+                        {
+                            BASE_CONVERT
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    case _u64:
+                    {
+                        using T = uint64_t;
+                        auto& dstV = *(T*)dst;
+                        switch(srcType->type)
+                        {
+                            BASE_CONVERT
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                if(srcType->type == _s)
+                    enm.FromString(dst, *(ostr::string*)src);
+                else if(srcType->type == _sv)
+                    enm.FromString(dst, *(ostr::string_view*)src);
+                break;
+            }
             case _r:
             {
+                auto& ptr = (const ReferenceType&)(*this);
                 if(srcType->type == _r)
                 {
-                    auto& ptr = (const ReferenceType&)(*this);
                     auto& sptr = (const ReferenceType&)(*srcType);
                     if(sptr.ownership == ReferenceType::Observed)
                     {
@@ -547,9 +679,9 @@ namespace OGUI::Meta
                         auto& dstV = *(void**)dst;
                         dstV = srcV;
                     }
-                    else if(ptr.ownership == ReferenceType::Owned)
+                    else if(sptr.ownership == ReferenceType::Owned)
                     {
-                        auto& srcV = *(std::unique_ptr<void>*)src;
+                        auto& srcV = *(std::unique_ptr<char>*)src;
                         auto& dstV = *(void**)dst;
                         dstV = srcV.get();
                     }
@@ -568,7 +700,7 @@ namespace OGUI::Meta
                         }
                     }
                 }
-                else
+                else if(ptr.ownership == ReferenceType::Observed)
                 {
                     auto& dstV = *(void**)dst;
                     dstV = (void*)src;
@@ -585,17 +717,43 @@ namespace OGUI::Meta
         return policy->format(policy, dst, this);
     }
 
-    size_t HashAppend(size_t base, size_t hash)
+    size_t Hash(bool value, size_t base)
     {
-        base ^= hash;
-        base *= FNV_prime;
-        return base;
+        return Fnv1a_append_value(base, value);
+    }
+    size_t Hash(int32_t value, size_t base)
+    {
+        return Fnv1a_append_value(base, value);
+    }
+    size_t Hash(int64_t value, size_t base)
+    {
+        return Fnv1a_append_value(base, value);
+    }
+    size_t Hash(uint32_t value, size_t base)
+    {
+        return Fnv1a_append_value(base, value);
+    }
+    size_t Hash(uint64_t value, size_t base)
+    {
+        return Fnv1a_append_value(base, value);
+    }
+    size_t Hash(float value, size_t base)
+    {
+        return Fnv1a_append_value(base, value);
+    }
+    size_t Hash(double value, size_t base)
+    {
+        return Fnv1a_append_value(base, value);
+    }
+    size_t Hash(void* value, size_t base)
+    {
+        return Fnv1a_append_value(base, value);
     }
 
     template<class T>
     size_t HashImpl(const void* dst, size_t base)
     {
-        return HashAppend(base, std::hash<T>{}(*(T*)dst));
+        return Hash(*(T*)dst, base);
     }
 
     size_t Type::Hash(const void* dst, size_t base) const
@@ -621,7 +779,25 @@ namespace OGUI::Meta
                 return (*(ostr::string*)dst).get_hash();
             case _sv: 
                 return (*(ostr::string_view*)dst).get_hash();
-             case _a:  
+            case _e:
+            {
+                auto& enm = (const EnumType&)(*this);
+                switch(enm.underlyingType->type)
+                {
+                    case _i32: 
+                        return HashImpl<int32_t>(dst, base);
+                    case _i64: 
+                        return HashImpl<int64_t>(dst, base);
+                    case _u32: 
+                        return HashImpl<uint32_t>(dst, base);
+                    case _u64: 
+                        return HashImpl<uint64_t>(dst, base);
+                    default:
+                        return 0;
+                }
+                return 0;
+            }
+            case _a:  
             {
                 auto& arr = (const ArrayType&)(*this);
                 auto element = arr.elementType;
@@ -657,7 +833,10 @@ namespace OGUI::Meta
             case _o: 
             {
                 auto& obj = (const RecordType&)(*this);
-                return obj.nativeMethods.Hash(dst, base);
+                if(obj.nativeMethods.Hash)
+                    return obj.nativeMethods.Hash(dst, base);
+                else
+                    return 0;
             }
             case _r: 
             {
@@ -665,12 +844,13 @@ namespace OGUI::Meta
                         case ReferenceType::Observed:
                             return HashImpl<void*>(*(void**)dst, base); break;
                         case ReferenceType::Owned:
-                            return HashImpl<void*>((*(std::unique_ptr<void>*)dst).get(), base); break;
+                            return HashImpl<void*>((*(std::unique_ptr<char>*)dst).get(), base); break;
                         case ReferenceType::Shared:
                             return HashImpl<void*>((*(std::shared_ptr<void>*)dst).get(), base); break;
                 }
             }
         }
+        return 0;
     }
 
     void Type::Destruct(void* address) const
@@ -768,6 +948,20 @@ namespace OGUI::Meta
                 obj.nativeMethods.copy(dst, src);
                 break;
             }
+            case _e:
+            {
+                auto& enm = (const EnumType&)(*this);
+                switch(enm.underlyingType->type)
+                {
+                    case _i32: CopyImpl<int32_t>(dst, src); break;
+                    case _i64: CopyImpl<int64_t>(dst, src); break;
+                    case _u32: CopyImpl<uint32_t>(dst, src); break;
+                    case _u64: CopyImpl<uint64_t>(dst, src); break;
+                    default:
+                        break;
+                }
+                break;
+            }
             case _r: 
             {
                 switch (((ReferenceType*)this)->ownership) {
@@ -830,6 +1024,20 @@ namespace OGUI::Meta
                 obj.nativeMethods.move(dst, src);
                 break;
             }
+            case _e:
+            {
+                auto& enm = (const EnumType&)(*this);
+                switch(enm.underlyingType->type)
+                {
+                    case _i32: MoveImpl<int32_t>(dst, src); break;
+                    case _i64: MoveImpl<int64_t>(dst, src); break;
+                    case _u32: MoveImpl<uint32_t>(dst, src); break;
+                    case _u64: MoveImpl<uint64_t>(dst, src); break;
+                    default:
+                        break;
+                }
+                break;
+            }
             case _r: 
             {
                 switch (((ReferenceType*)this)->ownership) {
@@ -837,7 +1045,7 @@ namespace OGUI::Meta
                         MoveImpl<void*>(dst, src);
                         break;
                     case ReferenceType::Owned:
-                        MoveImpl<std::unique_ptr<void>>(dst, src);
+                        MoveImpl<std::unique_ptr<char>>(dst, src);
                         break;
                     case ReferenceType::Shared:
                         MoveImpl<std::shared_ptr<void>>(dst, src);
@@ -846,6 +1054,15 @@ namespace OGUI::Meta
                 break;
             }
         }
+    }
+
+    bool RecordType::IsBaseOf(const RecordType &other) const
+    {
+        
+        for(auto base = other.base;base;base = base->base)
+            if(base == this)
+                return true;
+        return false;
     }
 
     Value::Value()

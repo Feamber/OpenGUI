@@ -235,14 +235,14 @@ void OGUI::Context::UpdateHover(VisualElement* picked)
 	if (picked && _elementUnderCursor != picked)
 	{
 		PointerEnterEvent enterEvent;
-		enterEvent.pointerType = "mouse";
+		enterEvent.pointerType = u"mouse";
 		enterEvent.gestureType = EGestureEvent::None;
 		RouteEvent(picked, enterEvent);
 	}
 	if(_elementUnderCursor != nullptr && IsElementValid(_elementUnderCursor))
 	{
 		PointerLeaveEvent leaveEvent;
-		leaveEvent.pointerType = "mouse";
+		leaveEvent.pointerType = u"mouse";
 		leaveEvent.gestureType = EGestureEvent::None;
 		RouteEvent(_elementUnderCursor, leaveEvent);
 	}
@@ -262,7 +262,7 @@ OGUI::VisualElement*  OGUI::Context::PickElement(const WindowHandle window, Vect
 void OGUI::Context::CapturePointer(int id, VisualElement* element)
 {
 	auto root = element->GetRoot();
-	if(!root->IsA("VisualWindow"))
+	if(!root->IsA(u"VisualWindow"))
 		return;
 	auto window = (VisualWindow*)root;
 	inputImpl->CapturePointer(window->handle, true);
@@ -274,7 +274,7 @@ void OGUI::Context::ReleasePointer(int id)
 {
 	auto root = _elementCapturingCursor->GetRoot();
 	_elementCapturingCursor = nullptr;
-	if(!root->IsA("VisualWindow"))
+	if(!root->IsA(u"VisualWindow"))
 		return;
 	auto window = (VisualWindow*)root;
 	inputImpl->CapturePointer(window->handle, false);
@@ -303,7 +303,7 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 	YGNodeLayoutGetHadOverflow(picked->_ygnode); 
 	PointerDownEvent event;
 	pointerDownCount++;
-	event.pointerType = "mouse";
+	event.pointerType = u"mouse";
 	event.button = button;
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
@@ -322,7 +322,7 @@ bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button,
 	if (!picked)
 		return false;
 	PointerUpEvent event;
-	event.pointerType = "mouse";
+	event.pointerType = u"mouse";
 	event.button = button;
 	event.gestureType = EGestureEvent::None;
 	event.position = point;
@@ -349,7 +349,7 @@ bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, float x, float 
 	if (!picked)
 		return false;
 	PointerMoveEvent event;
-	event.pointerType = "mouse";
+	event.pointerType = u"mouse";
 	event.gestureType = EGestureEvent::None;
 	event.position = point;
 	RouteEvent(picked, event);
@@ -369,7 +369,7 @@ bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
 	if (!picked)
 		return false;
 	PointerScrollEvent event;
-	event.pointerType = "mouse";
+	event.pointerType = u"mouse";
 	event.button = EMouseKey::MB;
 	event.gestureType = EGestureEvent::None;
 	event.wheelOrGestureDelta.y = delta;
@@ -512,7 +512,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		{
 			PreLostKeyboardFocusEvent preLostKeyboardFocusEvent;
 			preLostKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
-			preLostKeyboardFocusEvent.causeDescribe = "";
+			preLostKeyboardFocusEvent.causeDescribe = u"";
 			preLostKeyboardFocusEvent.currentFocused = _keyboardFocused;
 			preLostKeyboardFocusEvent.newFocused = newKeyboardFocused;
 			if(RouteEvent(_keyboardFocused, preLostKeyboardFocusEvent)) return false;
@@ -520,7 +520,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 
 		PreGotKeyboardFocusEvent preGotKeyboardFocusEvent;
 		preGotKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
-		preGotKeyboardFocusEvent.causeDescribe = "";
+		preGotKeyboardFocusEvent.causeDescribe = u"";
 		preGotKeyboardFocusEvent.currentFocused = _keyboardFocused;
 		preGotKeyboardFocusEvent.newFocused = newKeyboardFocused;
 		if(RouteEvent(newKeyboardFocused, preGotKeyboardFocusEvent)) return false;
@@ -532,7 +532,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		{
 			LostKeyboardFocusEvent lostKeyboardFocusEvent;
 			lostKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
-			lostKeyboardFocusEvent.causeDescribe = "";
+			lostKeyboardFocusEvent.causeDescribe = u"";
 			lostKeyboardFocusEvent.currentFocused = _keyboardFocused;
 			lostKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
 			RouteEvent(oldKeyboardFocused, lostKeyboardFocusEvent);
@@ -540,7 +540,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 
 		GotKeyboardFocusEvent gotKeyboardFocusEvent;
 		gotKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
-		gotKeyboardFocusEvent.causeDescribe = "";
+		gotKeyboardFocusEvent.causeDescribe = u"";
 		gotKeyboardFocusEvent.currentFocused = _keyboardFocused;
 		gotKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
 		RouteEvent(_keyboardFocused, gotKeyboardFocusEvent);
@@ -550,7 +550,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 	return false;
 }
 
-bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause cause, std::string describe)
+bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause cause, ostr::string describe)
 {
 	if(!element->focusable) return false;
 

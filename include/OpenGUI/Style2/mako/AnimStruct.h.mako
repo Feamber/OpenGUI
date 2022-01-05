@@ -11,13 +11,13 @@
 %endfor
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct OGUI_API AnimStyle
     {
         struct Ids
         {
         %for prop in struct.longhands:
-            static constexpr size_t ${prop.ident} = OGUI::hash("${prop.name}"sv);
+            static constexpr size_t ${prop.ident} = OGUI::hash(u"${prop.name}"_o);
         %endfor
         };
     %for prop in struct.longhands:

@@ -227,7 +227,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     }
                 case Ids::fontFamily:{
                     auto v = fget();
-                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<std::string>>(prop.value));
+                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.value));
                     break;
                     }
                 case Ids::fontStyle:{
@@ -337,13 +337,13 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<std::string>>(prop.from));
+                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<std::string>>(prop.to));
+                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->fontFamily = OGUI::Lerp(v->fontFamily, sheet.Get<const gsl::span<std::string>>(prop.to), prop.alpha);
+                    v->fontFamily = OGUI::Lerp(v->fontFamily, sheet.Get<const gsl::span<ostr::string>>(prop.to), prop.alpha);
                 else
-                    v->fontFamily = OGUI::Lerp(sheet.Get<const gsl::span<std::string>>(prop.from), sheet.Get<const gsl::span<std::string>>(prop.to), prop.alpha);
+                    v->fontFamily = OGUI::Lerp(sheet.Get<const gsl::span<ostr::string>>(prop.from), sheet.Get<const gsl::span<ostr::string>>(prop.to), prop.alpha);
                 
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
@@ -485,10 +485,10 @@ void OGUI::StyleText::SetupParser()
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
                 {
-                    std::vector<std::string> value;
+                    std::vector<ostr::string> value;
                     for(auto& e : vs)
-                        value.emplace_back(any_move<const std::string_view>(e));
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<std::string>>(value)});
+                        value.emplace_back(any_move<const ostr::string_view>(e));
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<ostr::string>>(value)});
                 }
             };
         });

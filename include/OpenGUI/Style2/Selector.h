@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGUI/Configure.h"
+#include "OpenGUI/Core/open_string.h"
 #include <string>
 #include <vector>
 #include <cinttypes>
@@ -7,7 +8,7 @@
 
 namespace OGUI reflect
 {
-	enum class reflect attr("script":true) 
+	enum class reflect attr("script":true, "rtti":true) 
 	PseudoStates : uint32_t
 	{
 		None = 0,
@@ -49,14 +50,14 @@ namespace OGUI reflect
 		struct Part
 		{
 			Kind type;
-			std::string value;
+			ostr::string value;
 		};
 		std::vector<Part> parts;
 		PseudoStates pseudoMask = PseudoStates::None;
 		PseudoStates reversedPseudoMask = PseudoStates::None; 
 		StyleSelectorRelationship relationship = StyleSelectorRelationship::None;
 
-		void AddPseudoClass(std::string_view name);
+		void AddPseudoClass(ostr::string_view name);
 	};
 
 
@@ -75,9 +76,9 @@ namespace OGUI reflect
 
 	OGUI_API bool Match(VisualElement* current, StyleComplexSelector& complexSel);
 	attr("script":true)
-	OGUI_API VisualElement* QueryFirst(VisualElement* root, std::string_view str);
+	OGUI_API VisualElement* QueryFirst(VisualElement* root, ostr::string_view str);
 	OGUI_API VisualElement* QueryFirst(VisualElement* root, StyleComplexSelector& complexSel);
 	attr("script":true)
-	OGUI_API void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result);
+	OGUI_API void QueryAll(VisualElement* root, ostr::string_view str, std::vector<VisualElement*>& result);
 	OGUI_API void QueryAll(VisualElement* root, StyleComplexSelector& complexSel, std::vector<VisualElement*>& result);
 }

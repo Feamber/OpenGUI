@@ -68,7 +68,7 @@ void OGUI::AnimStyle::ApplyProperties(const StyleSheetStorage& sheet, const gsl:
             switch(prop.id)
             {
                 case Ids::animationName:
-                    animationName = sheet.Get<const std::string_view>(prop.value);
+                    animationName = sheet.Get<const ostr::string_view>(prop.value);
                     break;
                 case Ids::animationDuration:
                     animationDuration = sheet.Get<float>(prop.value);

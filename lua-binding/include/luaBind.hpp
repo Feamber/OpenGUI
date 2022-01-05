@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGUI/Core/olog.h"
+#include "lua.h"
 #include "sol/sol.hpp"
 #include <any>
 #include <functional>
@@ -17,9 +18,7 @@ namespace sol::stack
     {
         static int push(lua_State* L, const OGUI::Name& name) {
             auto sv = name.ToStringView();
-            std::string utf8;
-            sv.encode_to_utf8(utf8);
-            int amount = sol::stack::push(L, utf8);
+            int amount = sol::stack::push(L, sv.encode_to_utf8());
             return amount;
         }
     };
@@ -42,15 +41,85 @@ namespace sol::stack
     struct unqualified_pusher<ostr::string>
     {
         static int push(lua_State* L, const ostr::string& str) {
-            std::string utf8;
-            str.to_sv().encode_to_utf8(utf8);
-            int amount = sol::stack::push(L, utf8.c_str());
+            int amount = sol::stack::push(L, str.to_sv().encode_to_utf8().c_str());
             return amount;
         }
     };
 
     template<>
     struct unqualified_getter<ostr::string>
+    {
+		static ostr::string get(lua_State* L, int index, record& tracking) {
+			tracking.use(1);
+			size_t sz;
+			const char* luastr = lua_tolstring(L, index, &sz);
+            return ostr::string::decode_from_utf8(luastr);
+		}
+    };
+}
+
+using MetatableMap = std::unordered_map<const OGUI::Meta::Type*, const std::string&>;
+extern MetatableMap Metatables;
+
+template<class T>
+size_t PushImpl(const void* dst, lua_State* L)
+{
+    return sol::stack::push(L, *(T*)dst);
+}
+
+namespace sol::stack
+{
+    template<>
+    struct unqualified_pusher<OGUI::Meta::Value>
+    {
+        static int push(lua_State* L, const OGUI::Meta::Value& any) {
+            using namespace OGUI::Meta::EType;
+            using namespace ostr::literal;
+            auto dst = any.Ptr();
+            switch(any.type->type)
+            {
+                case _b : 
+                    return PushImpl<bool>(dst, L);
+                case _i32: 
+                    return PushImpl<int32_t>(dst, L);
+                case _i64: 
+                    return PushImpl<int64_t>(dst, L);
+                case _u32: 
+                    return PushImpl<uint32_t>(dst, L);
+                case _u64: 
+                    return PushImpl<uint64_t>(dst, L);
+                case _f32: 
+                    return PushImpl<float>(dst, L);
+                case _f64: 
+                    return PushImpl<double>(dst, L);
+                case _s: 
+                    return PushImpl<ostr::string>(dst, L);
+                case _sv: 
+                    return PushImpl<ostr::string_view>(dst, L);
+                case _a: 
+                    OGUI::olog::Warn(u"static array is not supported in lua!"_o);
+                    return 0;
+                case _da:
+                    OGUI::olog::Warn(u"vector is not supported in lua!"_o);
+                    return 0;
+                case _av:
+                    OGUI::olog::Warn(u"span is not supported in lua!"_o);
+                    return 0;
+                case _o: case _e:
+                {
+                    
+                }
+                case _r:
+                {
+
+                }
+            }
+            return 0;
+        }
+    };
+
+    template<>
+    struct unqualified_getter<OGUI::Meta::Value>
     {
 		static ostr::string get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
@@ -63,39 +132,8 @@ namespace sol::stack
     };
 }
 
-using AnyPusherMap = std::unordered_map<std::type_index, int(*)(lua_State* L, const OGUI::any& any)>;
-extern AnyPusherMap any_pusher;
-
-namespace sol::stack
-{
-    template<>
-    struct unqualified_pusher<OGUI::any>
-    {
-        static int push(lua_State* L, const OGUI::any& any) {
-            auto iter = any_pusher.find(any.type());
-            if(iter == any_pusher.end())
-            {
-                using namespace ostr::literal;
-                OGUI::olog::Warn(u"type {} is not registered to any_pusher!"_o.format(any.type().name()));
-                sol::stack::push(L, sol::nil);
-                return 1;
-            }
-            return (iter->second)(L, any);
-        }
-    };
-}
-
 namespace OGUI
 {
-    template<class T>
-    void add_any_pusher()
-    {
-        any_pusher.emplace(typeid(T), +[](lua_State* L, const OGUI::any& any)
-        {
-            return sol::stack::push(L, OGUI::any_cast<T>(any));
-        });
-    }
-
     LUABIND_API void BindLua(lua_State* L);
 
     struct SubLuaBindable

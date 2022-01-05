@@ -16,26 +16,26 @@
 
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct OGUI_API StyleText
     {
-        constexpr static std::string_view name = "text"sv;
+        constexpr static ostr::string_view name = u"text"_o;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = true;
         struct Ids
         {
-            static constexpr size_t fontSize = OGUI::hash("font-size"sv);
-            static constexpr size_t color = OGUI::hash("color"sv);
-            static constexpr size_t fontFamily = OGUI::hash("font-family"sv);
-            static constexpr size_t fontStyle = OGUI::hash("font-style"sv);
-            static constexpr size_t fontWeight = OGUI::hash("font-weight"sv);
-            static constexpr size_t lineHeight = OGUI::hash("line-height"sv);
-            static constexpr size_t textAlign = OGUI::hash("text-align"sv);
-            static constexpr size_t textShadow = OGUI::hash("text-shadow"sv);
+            static constexpr size_t fontSize = OGUI::hash(u"font-size"_o);
+            static constexpr size_t color = OGUI::hash(u"color"_o);
+            static constexpr size_t fontFamily = OGUI::hash(u"font-family"_o);
+            static constexpr size_t fontStyle = OGUI::hash(u"font-style"_o);
+            static constexpr size_t fontWeight = OGUI::hash(u"font-weight"_o);
+            static constexpr size_t lineHeight = OGUI::hash(u"line-height"_o);
+            static constexpr size_t textAlign = OGUI::hash(u"text-align"_o);
+            static constexpr size_t textShadow = OGUI::hash(u"text-shadow"_o);
         };
         float fontSize;
         Color4f color;
-        std::vector<std::string> fontFamily;
+        std::vector<ostr::string> fontFamily;
         ETextStyle fontStyle;
         int fontWeight;
         YGValue lineHeight;

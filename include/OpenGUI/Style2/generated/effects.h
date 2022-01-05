@@ -11,15 +11,15 @@
 
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct OGUI_API StyleEffects
     {
-        constexpr static std::string_view name = "effects"sv;
+        constexpr static ostr::string_view name = u"effects"_o;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
         struct Ids
         {
-            static constexpr size_t opacity = OGUI::hash("opacity"sv);
+            static constexpr size_t opacity = OGUI::hash(u"opacity"_o);
         };
         float opacity;
         void Initialize();

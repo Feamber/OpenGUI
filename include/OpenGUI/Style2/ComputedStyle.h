@@ -12,7 +12,7 @@ namespace OGUI
 
     struct StyleDesc
     {
-		std::string_view name;
+		ostr::string_view name;
 		size_t hash;
 		bool inherited;
         void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);

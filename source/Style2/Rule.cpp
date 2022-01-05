@@ -13,10 +13,10 @@ void OGUI::StyleSheet::Initialize()
 		complexSel.priority = i;
 		auto& lastSel = complexSel.selectors.back();
 		SelectorMap* mapPtr = nullptr;
-		std::string_view key;
+		ostr::string_view key;
 		if (lastSel.parts.size() == 0)
 		{
-			key = "*";
+			key = u"*";
 			mapPtr = &typeSelectors;
 		}
 		else
@@ -32,8 +32,8 @@ void OGUI::StyleSheet::Initialize()
 					break;
 				case StyleSelector::Type:
 				case StyleSelector::Wildcard:
-					if (lastSel.parts.back().value.empty())
-						key = "*";
+					if (lastSel.parts.back().value.is_empty())
+						key = u"*";
 					mapPtr = &typeSelectors;
 					break;
 				default:

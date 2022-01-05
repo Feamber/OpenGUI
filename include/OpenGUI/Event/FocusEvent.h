@@ -8,7 +8,7 @@ namespace OGUI full_reflect
 {
     class VisualElement;
 
-	enum class attr("script":true) 
+	enum class attr("script":true, "rtti":true) 
     FocusChangeCause
     {
         UserActions,
@@ -20,7 +20,7 @@ namespace OGUI full_reflect
     FocusDataBase : public EventBase
     {
         FocusChangeCause cause;
-        std::string_view causeDescribe;
+        ostr::string_view causeDescribe;
     };
 
     struct PreFocusData : public FocusDataBase

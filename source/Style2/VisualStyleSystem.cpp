@@ -114,9 +114,9 @@ namespace OGUI
 		return false;
 	}
 
-	VisualElement* QueryFirst(VisualElement* root, std::string_view str)
+	VisualElement* QueryFirst(VisualElement* root, ostr::string_view str)
 	{
-		auto selector = CSSParser::ParseSelector(str);
+		auto selector = CSSParser::ParseSelector(str.encode_to_utf8());
 		if (!selector)
 			return nullptr;
 		return QueryFirst(root, selector.value());
@@ -152,7 +152,7 @@ namespace OGUI
 		VisualElement* current,
 		std::vector<SelectorMatchRecord>& matchedSelectors,
 		StyleSheet::SelectorMap& map,
-		std::string_view input,
+		ostr::string_view input,
 		SelectorMatchRecord& record)
 	{
 		auto range = map.equal_range(input);
@@ -182,8 +182,8 @@ void OGUI::VisualStyleSystem::FindMatches(StyleMatchingContext& context, std::ve
 		StyleSheet* sheet = context.styleSheetStack[i];
 		SelectorMatchRecord record{sheet, i, nullptr};
 		Lookup(element, matchedSelectors, sheet->typeSelectors, element->GetTypeName(), record);
-		Lookup(element, matchedSelectors, sheet->typeSelectors, "*", record);
-		if(!element->_name.empty())
+		Lookup(element, matchedSelectors, sheet->typeSelectors, u"*", record);
+		if(!element->_name.is_empty())
 			Lookup(element, matchedSelectors, sheet->nameSelectors, element->_name, record);
 		for(auto& cls : element->_styleClasses)
 			Lookup(element, matchedSelectors, sheet->classSelectors, cls, record);

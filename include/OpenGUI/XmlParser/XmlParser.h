@@ -111,7 +111,6 @@ namespace OGUI
         template<typename Enum>
         FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
         OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, std::string& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
         OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
         OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
         OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);

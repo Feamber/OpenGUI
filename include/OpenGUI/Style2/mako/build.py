@@ -130,7 +130,7 @@ def gen_text():
     add_longhand("font-size", "float", "20.f",
                  "Number", restyle_damage="TextLayout")
     add_longhand("color", "Color4f", "Color4f(0,0,0,1)", "Color")
-    add_longhand("font-family", "std::string", "{}",
+    add_longhand("font-family", "ostr::string", "{}",
                  "FontFamily", string = True, vector = True, restyle_damage="TextLayout|Font")
     add_longhand("font-style", "ETextStyle", "ETextStyle::Normal",
                  "TextStyle", restyle_damage="TextLayout|Font")
@@ -166,7 +166,7 @@ def gen_background():
         struct.add_longhand(*args, **kwargs)
     add_longhand("background-color",	"Color4f",
                  "Color4f(1.f,1.f,1.f,1.f)", "Color")
-    add_longhand("background-image",	"std::string",	"{}", "URL", string = True)
+    add_longhand("background-image",	"ostr::string",	"{}", "URL", string = True)
     struct.headers.append("OpenGUI/Core/OMath.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)
@@ -177,7 +177,7 @@ def gen_animation():
 
     def add_longhand(*args, **kwargs):
         struct.add_longhand(*args, **kwargs)
-    add_longhand("animation-name", "std::string", "{}", "Name", string = True)
+    add_longhand("animation-name", "ostr::string", "{}", "Name", string = True)
     add_longhand("animation-duration", "float", "1.f", "Time")
     add_longhand("animation-delay", "float", "0.f", "Time")
     add_longhand("animation-direction", "EAnimDirection",

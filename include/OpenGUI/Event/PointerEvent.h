@@ -9,7 +9,7 @@ namespace OGUI full_reflect
     PointerData : public EventBase
     {
         int pointerId = 0;
-        std::string_view pointerType = "unknown";
+        ostr::string_view pointerType = u"unknown";
         bool isPrimary = true;
         bool isTouch = false;
         bool isAbsolute = true;

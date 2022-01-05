@@ -66,7 +66,8 @@ namespace OGUI reflect
     using EventHandlerType = std::function<bool(IEventArg&)>;
     using EventBag = std::unordered_map<Name, Name>;
     //TODO: Separate bind descriptor and bind instance, optimize for array
-    struct OGUI_API reflect Bindable
+    struct OGUI_API reflect attr("rtti":true)
+    Bindable
     {
         std::vector<AttrBind> binds;
         std::unordered_map<Name, AttrSource> sources;

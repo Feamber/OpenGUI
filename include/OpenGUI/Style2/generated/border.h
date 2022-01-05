@@ -13,23 +13,23 @@
 
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct OGUI_API StyleBorder
     {
-        constexpr static std::string_view name = "border"sv;
+        constexpr static ostr::string_view name = u"border"_o;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
         struct Ids
         {
-            static constexpr size_t borderTopWidth = OGUI::hash("border-top-width"sv);
-            static constexpr size_t borderRightWidth = OGUI::hash("border-right-width"sv);
-            static constexpr size_t borderBottomWidth = OGUI::hash("border-bottom-width"sv);
-            static constexpr size_t borderLeftWidth = OGUI::hash("border-left-width"sv);
-            static constexpr size_t borderTopLeftRadius = OGUI::hash("border-top-left-radius"sv);
-            static constexpr size_t borderTopRightRadius = OGUI::hash("border-top-right-radius"sv);
-            static constexpr size_t borderBottomRightRadius = OGUI::hash("border-bottom-right-radius"sv);
-            static constexpr size_t borderBottomLeftRadius = OGUI::hash("border-bottom-left-radius"sv);
-            static constexpr size_t borderRadius = OGUI::hash("border-radius"sv);
+            static constexpr size_t borderTopWidth = OGUI::hash(u"border-top-width"_o);
+            static constexpr size_t borderRightWidth = OGUI::hash(u"border-right-width"_o);
+            static constexpr size_t borderBottomWidth = OGUI::hash(u"border-bottom-width"_o);
+            static constexpr size_t borderLeftWidth = OGUI::hash(u"border-left-width"_o);
+            static constexpr size_t borderTopLeftRadius = OGUI::hash(u"border-top-left-radius"_o);
+            static constexpr size_t borderTopRightRadius = OGUI::hash(u"border-top-right-radius"_o);
+            static constexpr size_t borderBottomRightRadius = OGUI::hash(u"border-bottom-right-radius"_o);
+            static constexpr size_t borderBottomLeftRadius = OGUI::hash(u"border-bottom-left-radius"_o);
+            static constexpr size_t borderRadius = OGUI::hash(u"border-radius"_o);
         };
         float borderTopWidth;
         float borderRightWidth;

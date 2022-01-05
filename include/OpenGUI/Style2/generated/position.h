@@ -16,49 +16,49 @@
 
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct OGUI_API StylePosition
     {
-        constexpr static std::string_view name = "position"sv;
+        constexpr static ostr::string_view name = u"position"_o;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
         struct Ids
         {
-            static constexpr size_t transform = OGUI::hash("transform"sv);
-            static constexpr size_t flexGrow = OGUI::hash("flex-grow"sv);
-            static constexpr size_t flexShrink = OGUI::hash("flex-shrink"sv);
-            static constexpr size_t flexBasis = OGUI::hash("flex-basis"sv);
-            static constexpr size_t top = OGUI::hash("top"sv);
-            static constexpr size_t right = OGUI::hash("right"sv);
-            static constexpr size_t bottom = OGUI::hash("bottom"sv);
-            static constexpr size_t left = OGUI::hash("left"sv);
-            static constexpr size_t marginTop = OGUI::hash("margin-top"sv);
-            static constexpr size_t marginRight = OGUI::hash("margin-right"sv);
-            static constexpr size_t marginBottom = OGUI::hash("margin-bottom"sv);
-            static constexpr size_t marginLeft = OGUI::hash("margin-left"sv);
-            static constexpr size_t paddingTop = OGUI::hash("padding-top"sv);
-            static constexpr size_t paddingRight = OGUI::hash("padding-right"sv);
-            static constexpr size_t paddingBottom = OGUI::hash("padding-bottom"sv);
-            static constexpr size_t paddingLeft = OGUI::hash("padding-left"sv);
-            static constexpr size_t width = OGUI::hash("width"sv);
-            static constexpr size_t height = OGUI::hash("height"sv);
-            static constexpr size_t position = OGUI::hash("position"sv);
-            static constexpr size_t overflow = OGUI::hash("overflow"sv);
-            static constexpr size_t alignSelf = OGUI::hash("align-self"sv);
-            static constexpr size_t maxWidth = OGUI::hash("max-width"sv);
-            static constexpr size_t maxHeight = OGUI::hash("max-height"sv);
-            static constexpr size_t minWidth = OGUI::hash("min-width"sv);
-            static constexpr size_t minHeight = OGUI::hash("min-height"sv);
-            static constexpr size_t flexDirection = OGUI::hash("flex-direction"sv);
-            static constexpr size_t alignContent = OGUI::hash("align-content"sv);
-            static constexpr size_t alignItems = OGUI::hash("align-items"sv);
-            static constexpr size_t justifyContent = OGUI::hash("justify-content"sv);
-            static constexpr size_t flexWrap = OGUI::hash("flex-wrap"sv);
-            static constexpr size_t flexDisplay = OGUI::hash("flex-display"sv);
-            static constexpr size_t verticalAlign = OGUI::hash("vertical-align"sv);
-            static constexpr size_t aspectRatio = OGUI::hash("aspect-ratio"sv);
-            static constexpr size_t margin = OGUI::hash("margin"sv);
-            static constexpr size_t padding = OGUI::hash("padding"sv);
+            static constexpr size_t transform = OGUI::hash(u"transform"_o);
+            static constexpr size_t flexGrow = OGUI::hash(u"flex-grow"_o);
+            static constexpr size_t flexShrink = OGUI::hash(u"flex-shrink"_o);
+            static constexpr size_t flexBasis = OGUI::hash(u"flex-basis"_o);
+            static constexpr size_t top = OGUI::hash(u"top"_o);
+            static constexpr size_t right = OGUI::hash(u"right"_o);
+            static constexpr size_t bottom = OGUI::hash(u"bottom"_o);
+            static constexpr size_t left = OGUI::hash(u"left"_o);
+            static constexpr size_t marginTop = OGUI::hash(u"margin-top"_o);
+            static constexpr size_t marginRight = OGUI::hash(u"margin-right"_o);
+            static constexpr size_t marginBottom = OGUI::hash(u"margin-bottom"_o);
+            static constexpr size_t marginLeft = OGUI::hash(u"margin-left"_o);
+            static constexpr size_t paddingTop = OGUI::hash(u"padding-top"_o);
+            static constexpr size_t paddingRight = OGUI::hash(u"padding-right"_o);
+            static constexpr size_t paddingBottom = OGUI::hash(u"padding-bottom"_o);
+            static constexpr size_t paddingLeft = OGUI::hash(u"padding-left"_o);
+            static constexpr size_t width = OGUI::hash(u"width"_o);
+            static constexpr size_t height = OGUI::hash(u"height"_o);
+            static constexpr size_t position = OGUI::hash(u"position"_o);
+            static constexpr size_t overflow = OGUI::hash(u"overflow"_o);
+            static constexpr size_t alignSelf = OGUI::hash(u"align-self"_o);
+            static constexpr size_t maxWidth = OGUI::hash(u"max-width"_o);
+            static constexpr size_t maxHeight = OGUI::hash(u"max-height"_o);
+            static constexpr size_t minWidth = OGUI::hash(u"min-width"_o);
+            static constexpr size_t minHeight = OGUI::hash(u"min-height"_o);
+            static constexpr size_t flexDirection = OGUI::hash(u"flex-direction"_o);
+            static constexpr size_t alignContent = OGUI::hash(u"align-content"_o);
+            static constexpr size_t alignItems = OGUI::hash(u"align-items"_o);
+            static constexpr size_t justifyContent = OGUI::hash(u"justify-content"_o);
+            static constexpr size_t flexWrap = OGUI::hash(u"flex-wrap"_o);
+            static constexpr size_t flexDisplay = OGUI::hash(u"flex-display"_o);
+            static constexpr size_t verticalAlign = OGUI::hash(u"vertical-align"_o);
+            static constexpr size_t aspectRatio = OGUI::hash(u"aspect-ratio"_o);
+            static constexpr size_t margin = OGUI::hash(u"margin"_o);
+            static constexpr size_t padding = OGUI::hash(u"padding"_o);
         };
         std::vector<TransformFunction> transform;
         float flexGrow;
