@@ -123,7 +123,7 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
         
         AddSource({*name, [this, path = *name](const AttrSync& sync)
         {
-            Meta::Value obj = table[path];
+            auto obj = table[path].get<Meta::Value>();
             if(obj)
                 sync(obj);
             else

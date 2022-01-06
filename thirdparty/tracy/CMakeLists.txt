@@ -5,7 +5,7 @@ if(OPENGUI_USE_TRACY)
     )
 
     extract_file(
-        ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${SAKURA_PLATFORM}/Common/tracy-0.7.4-app.zip
+        ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Common/tracy-0.7.4-app.zip
         ${OPEN_GUI_ROOT_DIR}/build/Binaries/Tools/
     )
     
