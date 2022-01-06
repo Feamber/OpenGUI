@@ -236,7 +236,12 @@ public:
 		return coder::convert_append(u8);
 	}
 
-	[[nodiscard]] uint32_t get_hash() const noexcept
+	std::string encode_to_utf8() const noexcept
+	{
+		return to_sv().encode_to_utf8();
+	}
+
+	[[nodiscard]] constexpr uint32_t get_hash() const noexcept
 	{
 		return to_sv().get_hash();
 	}
@@ -297,7 +302,20 @@ namespace ofmt {
 	}
 }
 
+
 _NS_OSTR_END
+
+namespace std
+{
+	template<>
+	struct hash<ostr::string>
+	{
+		size_t operator()(const ostr::string& n) const
+		{
+			return n.get_hash();
+		}
+	};
+}
 
 // template<>
 // struct fmt::formatter<ostr::string, char16_t>

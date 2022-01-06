@@ -4,7 +4,7 @@
 #include "OpenGUI/Core/olog.h"
 #include <bitset>
 
-void OGUI::StyleSelector::AddPseudoClass(std::string_view name)
+void OGUI::StyleSelector::AddPseudoClass(ostr::string_view name)
 {
 	PseudoStates state = PseudoStates::Active;
 	bool reverse = false;

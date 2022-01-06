@@ -1,10 +1,13 @@
 //DO NOT MODIFY THIS FILE
 //generated from rtti.h.mako
+#pragma once
 #include "OpenGUI/Configure.h"
-#include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Core/value.h"
 
 namespace OGUI::Meta
@@ -76,4 +79,14 @@ namespace OGUI::Meta
 {
     template<>
     struct OGUI_API TypeOf<OGUI::PseudoStates> { static const Type* Get(); };
+}
+namespace OGUI::Meta
+{
+    template<>
+    struct OGUI_API TypeOf<OGUI::EventRoutePhase> { static const Type* Get(); };
+}
+namespace OGUI::Meta
+{
+    template<>
+    struct OGUI_API TypeOf<OGUI::FocusChangeCause> { static const Type* Get(); };
 }

@@ -1109,7 +1109,7 @@ bool OGUI::VisualElement::PlayAnimation(const AnimStyle& style)
 	return true;
 }
 
-void OGUI::VisualElement::SetAnimationTime(std::string_view name, float time)
+void OGUI::VisualElement::SetAnimationTime(ostr::string_view name, float time)
 {
 	for(auto& anim : _procedureAnims)
 		if(anim.style.animationName == name)

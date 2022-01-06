@@ -10,8 +10,8 @@ namespace SampleControls
     class Button : public VisualElement
     {
     public:
-        std::string_view GetTypeName() override { return "Button"; }
-        std::string_view GetFullTypeName() override { return "SampleControls::Button"; };
+        ostr::string_view GetTypeName() override { return u"Button"; }
+        ostr::string_view GetFullTypeName() override { return u"SampleControls::Button"; };
         Button();
         bool Active();
         bool OnPointerDown(PointerDownEvent& event);

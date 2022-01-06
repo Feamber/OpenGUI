@@ -26,11 +26,11 @@ void BindLua_generated(lua_State* L)
         %if len(method.descs) > 1:
         type["${method.short_name}"] = sol::overload(
         %for desc in method.descs:
-            (${desc.getSignature(record)})&${method.name}
+            ${desc.getReference(record, method)}
         %endfor
         );
         %else:
-        type["${method.short_name}"] = (${method.descs[0].getSignature(record)})&${method.name};
+        type["${method.short_name}"] = ${method.descs[0].getReference(record, method)};
         %endif
     %endfor
     }
@@ -39,11 +39,11 @@ void BindLua_generated(lua_State* L)
     %if len(function.descs) > 1:
     lua["${function.short_name}"] = sol::overload(
     %for desc in function.descs:
-        (%{desc.getSignature(None)})&${function.name}
+        ${desc.getReference(None, function)}
     %endfor
     );
     %else:
-    lua["${function.short_name}"] = (${function.descs[0].getSignature(None)})&${function.name};
+    lua["${function.short_name}"] = ${function.descs[0].getReference(None, function)};
     %endif
 %endfor
 %for enum in db.enums:
@@ -53,8 +53,5 @@ void BindLua_generated(lua_State* L)
 %endfor
         {"${enum.enumerators[-1].short_name}", ${enum.enumerators[-1].value}}
     });
-%endfor
-%for type in db.event_arg_types:
-    OGUI::add_any_pusher<${type}>();
 %endfor
 }

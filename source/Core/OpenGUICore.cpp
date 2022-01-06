@@ -242,9 +242,7 @@ void StdOutputLog::Log(olog::Level l, ostr::string_view msg)
         return "Unknown";
     }();
 
-    std::string str;
-    msg.encode_to_utf8(str);
-    std::cout << "<" << verbosity << "> " << str << std::endl;
+    std::cout << "<" << verbosity << "> " << msg.encode_to_utf8() << std::endl;
 }
 
 }

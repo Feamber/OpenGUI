@@ -52,7 +52,7 @@ namespace OGUI::Meta
     %if record.methods:
         static Field ${method.short_name}Params[] = {
         %for field in method.descs[0].fields:
-            { u"${field.name}", TypeOf<${field.type}>::Get(), ${field.offset}},
+            { u"${field.name}", TypeOf<${field.type}>::Get(), offsetof(${record.name}, ${field.name})},
         %endfor
         };
     %else:

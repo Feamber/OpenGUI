@@ -2,16 +2,17 @@
 //generated from EventArgWrapper.cpp.mako
 
 #include "OpenGUI/Bind/EventArgWrapper.h"
+#include "OpenGUI/rtti.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
 %for record in db.records:
-bool OGUI::TryGet(const ${record.name}& event, ostr::string_view name, OGUI::Meta::Value& out)
+bool OGUI::TryGet(const ${record.name}& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
 %if record.isEvent:
     static ostr::string_view eventName = u"${record.event_name}";
     if(name == ostr::string_view(u"eventName"))
     {
-        out.Emplace<ostr::string_view>(eventName);
+        out = eventName;
         return true;
     }
 %endif
@@ -23,7 +24,7 @@ bool OGUI::TryGet(const ${record.name}& event, ostr::string_view name, OGUI::Met
     switchstr(name)
     {
     %for field in record.fields:
-        casestr("${field.name}") out.Emplace<std::add_const_t<${field.type}>&>(event.${field.name}); break;
+        casestr("${field.name}") out = event.${field.name}; break;
     %endfor
         default:
             return false;

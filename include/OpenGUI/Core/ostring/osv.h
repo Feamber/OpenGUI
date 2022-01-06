@@ -284,3 +284,14 @@ namespace ofmt {
 
 _NS_OSTR_END 
 
+namespace std
+{
+	template<>
+	struct hash<ostr::string_view>
+	{
+		size_t operator()(const ostr::string_view& n) const
+		{
+			return n.get_hash();
+		}
+	};
+}

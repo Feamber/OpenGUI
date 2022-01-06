@@ -1,5 +1,6 @@
 //DO NOT MODIFY THIS FILE
 //generated from rtti.h.mako
+#pragma once
 #include "OpenGUI/Configure.h"
 %for header in db.headers:
 #include "${header}"

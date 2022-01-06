@@ -70,8 +70,9 @@ namespace OGUI reflect
 		ostr::string _name;
 		attr("script":true)
 		const ostr::string& GetName();
-		attr("script":true)
 		void SetName(ostr::string_view name);
+		attr("script":true)
+		void SetName(ostr::string name) { SetName(ostr::string_view{name}); }
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 		attr("script":true)
@@ -175,7 +176,7 @@ namespace OGUI reflect
 		std::vector<ComputedAnim> _procedureAnims;
 		bool _prevEvaluating = false;
 		bool PlayAnimation(const AnimStyle& style);
-		void SetAnimationTime(std::string_view name, float time);
+		void SetAnimationTime(ostr::string_view name, float time);
 #pragma endregion
 
 #pragma region PseudoElement

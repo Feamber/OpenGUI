@@ -55,7 +55,7 @@ namespace OGUI::Meta
 
     namespace EType
     {
-        enum TypeEnum{_b, _i32, _i64, _u32, _u64, _f32, _f64, _s, _sv, _a, _da, _av, _o, _e, _r};
+        enum TypeEnum : uint8_t {_b, _i32, _i64, _u32, _u64, _f32, _f64, _s, _sv, _a, _da, _av, _o, _e, _r};
     };
 
     OGUI_API size_t Hash(bool value, size_t base);
@@ -69,10 +69,11 @@ namespace OGUI::Meta
 
     struct OGUI_API Type
     {
-        EType::TypeEnum type;
+        EType::TypeEnum type : 7;
+        uint8_t temp : 1; //TODO: wtf
         size_t Size() const;
         size_t Align()  const;
-        const char* Name() const;
+        ostr::string Name() const;
         bool Same(const Type* srcType) const;
         bool Convertible(const Type* srcType, bool format = false) const;
         void Convert(void* dst, const void* src, const Type* srcType, struct ValueSerializePolicy* policy = nullptr) const;
@@ -83,6 +84,9 @@ namespace OGUI::Meta
         void Construct(void* dst, struct Value* args, size_t nargs) const;
         void Copy(void* dst, const void* src) const;
         void Move(void* dst, void* src) const;
+        Type(EType::TypeEnum type)
+            :type(type), temp(false) {}
+        void Delete();
     };
     // bool
     struct BoolType : Type 
@@ -147,18 +151,19 @@ namespace OGUI::Meta
         ArrayType(const struct Type* elementType, size_t num, size_t size)
             : Type{EType::_a}, elementType(elementType), num(num), size(size) {}
     }; 
+    // std::vector<T>
     struct DynArrayType : Type
     {
         const struct Type* elementType;
         DynArrayMethodTable operations;
-        DynArrayType(const struct Type* elementType, DynArrayMethodTable operations)
+        DynArrayType(const Type* elementType, DynArrayMethodTable operations)
             : Type{EType::_da}, elementType(elementType), operations(operations) {}
     };
     // gsl::span<T>
     struct ArrayViewType : Type
     {
         const struct Type* elementType;
-        ArrayViewType(const struct Type* elementType)
+        ArrayViewType(const Type* elementType)
             : Type{EType::_av}, elementType(elementType) {}
     };
     // struct/class T
@@ -199,7 +204,7 @@ namespace OGUI::Meta
     struct ReferenceType  : Type
     {
         enum Ownership{
-            Observed, Shared, Owned
+            Observed, Shared
         } ownership;
         bool nullable;
         const struct Type* pointee;
@@ -239,6 +244,24 @@ namespace OGUI::Meta
     struct OGUI_API TypeOf<ostr::string_view> { static const Type* Get(); };
 
     template<class T>
+    struct TypeOf<const T>
+    {
+        static const Type* Get()
+        {
+            return TypeOf<T>::Get();
+        }
+    };
+
+    template<class T>
+    struct TypeOf<volatile T>
+    {
+        static const Type* Get()
+        {
+            return TypeOf<T>::Get();
+        }
+    };
+
+    template<class T>
     struct TypeOf<T*>
     {
         static const Type* Get() 
@@ -267,20 +290,6 @@ namespace OGUI::Meta
     };
 
     template<class T>
-    struct TypeOf<std::unique_ptr<T>>
-    {
-        static const Type* Get() 
-        { 
-            static ReferenceType type{
-                ReferenceType::Owned, 
-                true, 
-                TypeOf<T>::Get()
-            };
-            return &type;
-        }
-    };
-
-    template<class T>
     struct TypeOf<std::shared_ptr<T>>
     {
         static const Type* Get() 
@@ -302,7 +311,7 @@ namespace OGUI::Meta
         { 
             static DynArrayType type{
                 TypeOf<T>::Get(),
-                {
+                DynArrayMethodTable{
                     +[](void* self) { ((V*)(self))->~vector(); }, //dtor
                     +[](void* self) { new(self) V(); }, //ctor
                     +[](void* self, const void* other) { new(self) V(*((const V*)(other))); }, //copy
@@ -311,9 +320,9 @@ namespace OGUI::Meta
                     +[](void* self, const void* data, size_t index) { ((V*)(self))->insert(((V*)(self))->begin() + index, *(const T*)data); }, //insert
                     +[](void* self, size_t index) { ((V*)(self))->erase(((V*)(self))->begin() + index); }, //erase
                     +[](void* self, size_t size) { ((V*)(self))->resize(size); }, //resize
-                    +[](void* self) {  return ((V*)(self))->size(); }, //size
-                    +[](void* self, size_t index) { return (void*)&((V*)(self))[index]; }, //get
-                    +[](void* self) { return (void*)((V*)(self))->data(); }, //data
+                    +[](const void* self) {  return ((V*)(self))->size(); }, //size
+                    +[](const void* self, size_t index) { return (void*)&((V*)(self))[index]; }, //get
+                    +[](const void* self) { return (void*)((V*)(self))->data(); }, //data
                 }
             };
             return &type;
@@ -347,7 +356,7 @@ namespace OGUI::Meta
         }
     };
 
-    struct OGUI_API Value
+    struct OGUI_API alignas(16) Value
     {
         const Type* type;
         union
@@ -365,18 +374,28 @@ namespace OGUI::Meta
         Value& operator=(Value&& other);
         Value& operator=(const Value& other);
 
-        operator bool() { return HasValue(); }
+        operator bool() const { return HasValue(); }
 
-        bool HasValue() { return type != nullptr; }
+        bool HasValue() const { return type != nullptr; }
 
         template<class T, class... Args>
-        std::enable_if_t<std::is_constructible_v<T, Args...>, void>
+        std::enable_if_t<!std::is_reference_v<T> && std::is_constructible_v<T, Args...>, void>
         Emplace(Args&&... args)
         {
             Reset();
             type = TypeOf<T>::Get();
             void* ptr = _Alloc();
             new (ptr) T(std::forward<Args>(args)...);
+        }
+
+        template<class T, class V>
+        std::enable_if_t<std::is_reference_v<T>, void>
+        Emplace(const V& v)
+        {
+            Reset();
+            type = TypeOf<T>::Get();
+            void* ptr = _Alloc();
+            *(std::remove_reference_t<T>**)ptr = &(V&)v;
         }
 
         template<class T>
@@ -421,6 +440,82 @@ namespace OGUI::Meta
         void* _Alloc();
         void _Copy(const Value& other);
         void _Move(Value&& other);
+    };
+
+    struct OGUI_API ValueRef
+    {
+        void* ptr = nullptr;
+        const Type* type = nullptr;
+        ValueRef() = default;
+        template<class T>
+        ValueRef(T& t)
+            :ptr(&t), type(TypeOf<T>::Get())
+        {}
+        ValueRef(Value& v)
+            :ptr(v.Ptr()), type(v.type) 
+        {}
+        ValueRef(ValueRef&& other) = default;
+        ValueRef(ValueRef& other) 
+            :ptr(other.ptr), type(other.type) {}
+        ValueRef(const ValueRef& other) 
+            :ptr(other.ptr), type(other.type) {}
+        ValueRef& operator=(const ValueRef& other)
+        {
+            ptr = other.ptr; type = other.type;
+            return *this;
+        }
+        ValueRef& operator=(ValueRef& other)
+        {
+            ptr = other.ptr; type = other.type;
+            return *this;
+        }
+        ValueRef& operator=(ValueRef&& other) = default;
+        template<class T>
+        ValueRef& operator=(T& t) 
+        { 
+            ptr = (void*)&t; type = TypeOf<T>::Get();
+            return *this; 
+        }
+        bool operator==(const ValueRef& other)
+        {
+            return ptr == other.ptr && type == other.type;
+        }
+        bool operator!=(const ValueRef& other)
+        {
+            return !((*this) == other);
+        }
+        operator bool() const { return HasValue(); }
+        bool HasValue() const { return type != nullptr; }
+        template<class T>
+        bool Is() const
+        {
+            return TypeOf<T>::Get() == type;
+        }
+        template<class T>
+        T& As()
+        {
+            return *(T*)ptr;
+        }
+        template<class T>
+        bool Convertible() const
+        {
+            if(!type)
+                return false;
+            return TypeOf<T>::Get()->Convertible(type);
+        }
+
+        template<class T>
+        T Convert()
+        {
+            std::aligned_storage_t<sizeof(T), alignof(T)> storage;
+            TypeOf<T>::Get()->Convert(&storage, ptr, type);
+            return std::move(*std::launder(reinterpret_cast<T*>(&storage)));
+        }
+
+        size_t Hash() const;
+        ostr::string ToString() const;
+        void Reset();
+        ~ValueRef() { Reset(); }
     };
 
     struct Field
@@ -582,8 +677,6 @@ namespace OGUI::Meta
                     switch (((const ReferenceType*)type)->ownership) {
                         case ReferenceType::Observed:
                             address = *(void**)data; break;
-                        case ReferenceType::Owned:
-                            address = (*(std::unique_ptr<void>*)data).get(); break;
                         case ReferenceType::Shared:
                             address = (*(std::shared_ptr<void>*)data).get(); break;
                     }

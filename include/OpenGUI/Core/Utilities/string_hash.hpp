@@ -30,26 +30,26 @@ namespace OGUI
         static_assert(std::is_trivial_v<_Ty>, "Only trivial types can be directly hashed.");
         const auto _Firstb = reinterpret_cast<const unsigned char*>(_First);
         const auto _Lastb  = reinterpret_cast<const unsigned char*>(_Last);
-        return _Fnv1a_append_bytes(_Val, _Firstb, static_cast<size_t>(_Lastb - _Firstb));
+        return Fnv1a_append_bytes(_Val, _Firstb, static_cast<size_t>(_Lastb - _Firstb));
     }
 
     template <class _Kty>
     _NODISCARD size_t Fnv1a_append_value(
         const size_t _Val, const _Kty& _Keyval) noexcept { // accumulate _Keyval into partial FNV-1a hash _Val
         static_assert(std::is_trivial_v<_Kty>, "Only trivial types can be directly hashed.");
-        return _Fnv1a_append_bytes(_Val, &reinterpret_cast<const unsigned char&>(_Keyval), sizeof(_Kty));
+        return Fnv1a_append_bytes(_Val, &reinterpret_cast<const unsigned char&>(_Keyval), sizeof(_Kty));
     }
 
     template <class _Kty>
     _NODISCARD size_t Hash_representation(const _Kty& _Keyval) noexcept { // bitwise hashes the representation of a key
-        return _Fnv1a_append_value(FNV_offset_basis, _Keyval);
+        return Fnv1a_append_value(FNV_offset_basis, _Keyval);
     }
 
     template <class _Kty>
     _NODISCARD size_t Hash_array_representation(
         const _Kty* const _First, const size_t _Count) noexcept { // bitwise hashes the representation of an array
         static_assert(std::is_trivial_v<_Kty>, "Only trivial types can be directly hashed.");
-        return _Fnv1a_append_bytes(
+        return Fnv1a_append_bytes(
             FNV_offset_basis, reinterpret_cast<const unsigned char*>(_First), _Count * sizeof(_Kty));
     }
 

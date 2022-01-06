@@ -1,7 +1,6 @@
 #pragma once
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/OName.h"
-#include "OpenGUI/Core/OName.h"
 #include "OpenGUI/Bind/EventArg.h"
 #include <functional>
 #include <memory>
@@ -12,14 +11,13 @@
 
 namespace OGUI reflect
 {
-    using AttrSync = std::function<void(std::type_index type, void*)>;
+    using AttrSync = std::function<void(Meta::ValueRef ref)>;
 
     struct OGUI_API AttrSource
     {
         using AccessFunc = std::function<void(const AttrSync&)>;
         Name name;
-        std::type_index type;
-        const void* data;
+        Meta::ValueRef ref;
         AccessFunc accessFun;
         std::vector<struct AttrBind*> binds;
         mutable bool _guard = false;
@@ -27,39 +25,28 @@ namespace OGUI reflect
         void DataChange(bool force = false) const;
         void PushData(struct AttrBind* target) const;
 
-        AttrSource(Name name, std::type_index type, const void* data);
+        AttrSource(Name name, Meta::ValueRef ref);
         AttrSource(Name name, AccessFunc accessor);
-        template<typename T>
-        AttrSource(Name name, const T* data) :AttrSource(name, std::type_index(typeid(T)), (void*)data) {};
         ~AttrSource();
     };
 
     struct OGUI_API AttrBind
     {
-        using OnChange = std::function<void(const void*)>;
+        using OnChange = std::function<void(Meta::ValueRef ref)>;
         using OnChangePost = std::function<void(bool /*是否应用成功（没找到AttrConverter就会false）*/)>;
         using AssignFunc = std::function<void(void* /*dst*/, const void* /*src*/)>;
 
-        AttrBind(Name name, std::type_index type, size_t size, OnChange changeFun);
-        AttrBind(Name name, std::type_index type, size_t size, void* data, OnChangePost changePostFun, AssignFunc assignFunc);
-        template<typename T>
-        AttrBind(Name name, T* data, OnChangePost changePostFun = {})
-            : AttrBind(name, std::type_index(typeid(T)), sizeof(T), (void*)data, changePostFun, [](void* dst, const void* src){ *(T*)dst = *(const T*)src; })
-        {
-            
-        };
+        AttrBind(Name name, OnChange changeFun);
+        AttrBind(Name name, Meta::ValueRef ref, OnChangePost changePostFun = {});
         ~AttrBind();
 
-        void Sync(std::type_index type, const void* data, bool force = false);
+        void Sync(Meta::ValueRef ref, bool force = false);
         void Sync();
 
         Name name;
+        Meta::ValueRef ref;
         OnChange changeFun;
         OnChangePost changePostFun;
-        AssignFunc assignFunc;
-        std::type_index type;
-        size_t size;
-        void* data;
         AttrSource* source = nullptr;
         AttrSource* bdBind = nullptr;
     };
@@ -106,25 +93,5 @@ namespace OGUI reflect
         for(auto binding : bindable.bindingBy)
             handled |= SendEventTo(*binding, eventName, std::forward<Args>(args)...);
         return handled;
-    };
-
-    using AttrConverterFun = std::function<bool(const void* source, void* target)>;
-    OGUI_API bool RegisterAttrConverter(std::type_index source, std::type_index target, AttrConverterFun converter);
-    OGUI_API bool AttrConverter(std::type_index sourceType, const void* source, std::type_index targetType, void* target);
-    OGUI_API void RegisterBaseAttrConverter();
-
-    template<typename sourceType, typename targetType, class F>
-    bool RegisterAttrConverter(F converter)
-    {
-        return RegisterAttrConverter(typeid(sourceType), typeid(targetType), [converter](const void* source, void* out)
-        {
-            return converter(*(const sourceType*)source, *(targetType*)out);
-        });
-    };
-
-    template<typename sourceType, typename targetType>
-    bool AttrConverter(const sourceType& source, targetType& target)
-    {
-        return AttrConverter(typeid(sourceType), (const void*)&source, typeid(targetType), (void*)&target);
     };
 }

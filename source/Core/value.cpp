@@ -87,8 +87,6 @@ namespace OGUI::Meta
                 switch (((ReferenceType*)this)->ownership) {
                     case ReferenceType::Observed:
                         return sizeof(void*);
-                    case ReferenceType::Owned:
-                        return sizeof(std::unique_ptr<char>);
                     case ReferenceType::Shared:
                         return sizeof(std::shared_ptr<void>);
                 }
@@ -121,14 +119,58 @@ namespace OGUI::Meta
                 switch (((ReferenceType*)this)->ownership) {
                     case ReferenceType::Observed:
                         return alignof(void*);
-                    case ReferenceType::Owned:
-                        return alignof(std::unique_ptr<char>);
                     case ReferenceType::Shared:
                         return alignof(std::shared_ptr<void>);
                 }
             }
         }
         return 0;
+    }
+
+    ostr::string Type::Name() const
+    {
+        using namespace EType;
+        using namespace ostr::literal;
+        switch(type)
+        {
+            case _b : return u"bool";
+            case _i32: return u"int32_t";
+            case _i64: return u"int64_t";
+            case _u32: return u"uint32_t";
+            case _u64: return u"uint64_t";
+            case _f32: return u"float";
+            case _f64: return u"double";
+            case _s: return u"ostr::string";
+            case _sv: return u"ostr::string_view";
+            case _a:  
+            {
+                auto& arr = (ArrayType&)(*this);
+                return  u"{}[{}]"_o.format(arr.elementType->Name(), (int)arr.num);
+            }
+            case _da: 
+            {
+                auto& arr = (DynArrayType&)(*this);
+                return  u"std::vector<{}>"_o.format(arr.elementType->Name());
+            }
+            case _av: 
+            {
+                auto& arr = (ArrayViewType&)(*this);
+                return  u"gsl::span<{}>"_o.format(arr.elementType->Name());
+            }
+            case _o: return ((RecordType*)this)->name;
+            case _e: return ((EnumType*)this)->name;
+            case _r: 
+            {
+                auto& ref = (ReferenceType&)(*this);
+                switch (ref.ownership) {
+                    case ReferenceType::Observed:
+                        return  u"std::shared_ptr<{}>"_o.format(ref.pointee->Name());
+                    case ReferenceType::Shared:
+                        return ref.pointee->Name() + u" *";
+                }
+            }
+        }
+        return u"";
     }
 
     bool Type::Same(const Type* srcType) const
@@ -291,7 +333,7 @@ namespace OGUI::Meta
                     auto& sptr = (const ReferenceType&)(*srcType);
                     if(sptr.nullable > ptr.nullable)
                         return false;
-                    if((sptr.ownership != ptr.ownership ||  ptr.ownership == ReferenceType::Owned) && ptr.ownership != ReferenceType::Observed)
+                    if(sptr.ownership != ptr.ownership && ptr.ownership != ReferenceType::Observed)
                         return false;
                     if(ptr.pointee->Same(sptr.pointee))
                     {
@@ -387,18 +429,12 @@ namespace OGUI::Meta
                         policy->parse(policy, *(ostr::string_view*)src, dst, this);
                     case _r:
                     {
-                        auto& ref = (const ReferenceType&)type;
+                        auto& ref = (const ReferenceType&)(*srcType);
                         switch(ref.ownership)
                         {
                             case ReferenceType::Observed:
                             {
                                 auto& srcV = *(void**)src;
-                                dstV = (bool)srcV;
-                                break;
-                            }
-                            case ReferenceType::Owned:
-                            {
-                                auto& srcV = *(std::unique_ptr<char>*)src;
                                 dstV = (bool)srcV;
                                 break;
                             }
@@ -679,12 +715,6 @@ namespace OGUI::Meta
                         auto& dstV = *(void**)dst;
                         dstV = srcV;
                     }
-                    else if(sptr.ownership == ReferenceType::Owned)
-                    {
-                        auto& srcV = *(std::unique_ptr<char>*)src;
-                        auto& dstV = *(void**)dst;
-                        dstV = srcV.get();
-                    }
                     else 
                     {
                         auto& srcV = *(std::shared_ptr<void>*)src;
@@ -843,8 +873,6 @@ namespace OGUI::Meta
                 switch (((ReferenceType*)this)->ownership) {
                         case ReferenceType::Observed:
                             return HashImpl<void*>(*(void**)dst, base); break;
-                        case ReferenceType::Owned:
-                            return HashImpl<void*>((*(std::unique_ptr<char>*)dst).get(), base); break;
                         case ReferenceType::Shared:
                             return HashImpl<void*>((*(std::shared_ptr<void>*)dst).get(), base); break;
                 }
@@ -887,13 +915,7 @@ namespace OGUI::Meta
             case _r:
             {
                 auto& ptr = (const ReferenceType&)(*this);
-                if(ptr.ownership == ReferenceType::Owned)
-                {
-                    void* pointee = (void**)address;
-                    ptr.pointee->Destruct(pointee);
-                    free(pointee);
-                }
-                else if(ptr.ownership == ReferenceType::Shared)
+                if(ptr.ownership == ReferenceType::Shared)
                 {
                     ((std::shared_ptr<void>*)address)->~shared_ptr();
                 }
@@ -968,9 +990,6 @@ namespace OGUI::Meta
                     case ReferenceType::Observed:
                         CopyImpl<void*>(dst, src);
                         break;
-                    case ReferenceType::Owned:
-                        //TODO throw
-                        break;
                     case ReferenceType::Shared:
                         CopyImpl<std::shared_ptr<void>>(dst, src);
                         break;
@@ -1044,15 +1063,35 @@ namespace OGUI::Meta
                     case ReferenceType::Observed:
                         MoveImpl<void*>(dst, src);
                         break;
-                    case ReferenceType::Owned:
-                        MoveImpl<std::unique_ptr<char>>(dst, src);
-                        break;
                     case ReferenceType::Shared:
                         MoveImpl<std::shared_ptr<void>>(dst, src);
                         break;
                 }
                 break;
             }
+        }
+    }
+
+    void Type::Delete()
+    {
+        using namespace EType;
+        switch(type)
+        {
+            case _b : delete (BoolType*)this;
+            case _i32: delete (Int32Type*)this;
+            case _i64: delete (Int64Type*)this;
+            case _u32: delete (UInt32Type*)this;
+            case _u64: delete (UInt64Type*)this;
+            case _f32: delete (Float32Type*)this;
+            case _f64: delete (Float64Type*)this;
+            case _s: delete (StringType*)this;
+            case _sv: delete (StringViewType*)this;
+            case _a: delete (ArrayType*)this;
+            case _da: delete (DynArrayType*)this;
+            case _av: delete (ArrayViewType*)this;
+            case _o: delete (RecordType*)this;
+            case _e: delete (EnumType*)this;
+            case _r: delete (ReferenceType*)this;
         }
     }
 
@@ -1117,12 +1156,15 @@ namespace OGUI::Meta
     {
         if(!type)
             return;
-        void* ptr;
         if(type->Size() < smallSize)
-            ptr = &_smallObj[0];
+            type->Destruct(&_smallObj[0]);
         else
-            ptr = _ptr;
-        type->Destruct(ptr);
+        {
+            type->Destruct(_ptr);
+            free(_ptr);
+        }
+        if(type->temp)
+            ((Type*)type)->Delete();
         type = nullptr;
     }
 
@@ -1162,5 +1204,24 @@ namespace OGUI::Meta
         auto ptr = _Alloc();
         type->Move(ptr, other.Ptr());
         other.Reset();
+    }
+
+    
+    void ValueRef::Reset()
+    {
+        type = nullptr;
+        ptr = nullptr;
+    }
+
+    size_t ValueRef::Hash() const{
+      if (!type)
+        return 0;
+      return type->Hash(ptr, FNV_offset_basis);
+    }
+
+    ostr::string ValueRef::ToString() const{
+      if (!type)
+        return {};
+      return type->ToString(ptr);
     }
 } // namespace OGUI::Meta

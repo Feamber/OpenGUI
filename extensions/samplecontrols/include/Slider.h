@@ -24,8 +24,8 @@ namespace SampleControls
         float _value = 0.f;
         SliderDirection _direction;
 
-        std::string_view GetTypeName() override { return "Slider"; }
-        std::string_view GetFullTypeName() override { return "SampleControls::Slider"; };
+        ostr::string_view GetTypeName() override { return u"Slider"; }
+        ostr::string_view GetFullTypeName() override { return u"SampleControls::Slider"; };
         Slider();
         bool OnMouseDown(struct PointerDownEvent& event);
         bool OnMouseMove(struct PointerMoveEvent& event);

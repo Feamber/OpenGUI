@@ -238,7 +238,7 @@ namespace OGUI
         std::shared_ptr<BindText> newBind(new BindText());
         newBind->text = ostr::string("${") + attrName.ToStringView();
         newBind->text += '}';
-        AddBind({attrName, &newBind->text, [this, newBind](bool isApply)
+        AddBind({attrName, newBind->text, [this, newBind](bool isApply)
         {
             //olog::Info(u"Text binding updated, value:{}"_o.format(newBind->text));
             if(isApply)

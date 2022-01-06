@@ -17,11 +17,11 @@ namespace OGUI reflect
     };
 
     template<class T>
-    bool TryGet(NamedEventArg<T>& v, ostr::string_view name, OGUI::Meta::Value& a)
+    bool TryGet(NamedEventArg<T>& v, ostr::string_view name, OGUI::Meta::ValueRef& a)
     {
         if(v.name == name)
         {
-            a.Emplace<T>(v.data);
+            a = v.data;
             return true;
         }
         return false;
@@ -32,7 +32,7 @@ namespace OGUI reflect
     {
         virtual ~IEventArg() {}
         attr("script":true) 
-        virtual OGUI::Meta::Value TryGet(ostr::string_view name) = 0;
+        virtual OGUI::Meta::ValueRef TryGet(ostr::string_view name) = 0;
         
         template<class T>
         std::optional<T> TryGet(ostr::string_view name)
@@ -46,18 +46,18 @@ namespace OGUI reflect
     
     struct OGUI_API EventArgs : public IEventArg
     {
-        std::function<OGUI::Meta::Value(ostr::string_view)> impl;
+        std::function<OGUI::Meta::ValueRef(ostr::string_view)> impl;
         template<class... Ts>
         EventArgs(Ts&&... args)
         {
             impl = [&](ostr::string_view name) mutable
             {
-                OGUI::Meta::Value r;
+                OGUI::Meta::ValueRef r;
                 (OGUI::TryGet(args, name, r)||...);
                 return r;
             };
         }
-        OGUI::Meta::Value TryGet(ostr::string_view name) override
+        OGUI::Meta::ValueRef TryGet(ostr::string_view name) override
         {
             return impl(name);
         }

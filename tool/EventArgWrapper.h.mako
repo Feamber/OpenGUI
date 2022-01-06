@@ -8,6 +8,6 @@
 namespace OGUI
 {
 %for record in db.records:
-    OGUI_API bool TryGet(const ${record.name}& event, ostr::string_view name, OGUI::Meta::Value& out);
+    OGUI_API bool TryGet(const ${record.name}& event, ostr::string_view name, OGUI::Meta::ValueRef& out);
 %endfor
 }

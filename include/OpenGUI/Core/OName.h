@@ -76,7 +76,7 @@ namespace OGUI
 
 		template<typename T>
 		Name(std::basic_string_view<T> sv)
-			: Name(ostr::string(sv))
+			: Name(ostr::string::decode_from_utf8(sv))
 		{}
 
 		template<>

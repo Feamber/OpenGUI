@@ -19,8 +19,8 @@ namespace OGUI
     }
 
     
-    std::vector<std::string> Lerp(gsl::span<const std::string> a, gsl::span<const std::string> b, float alpha)
+    std::vector<ostr::string> Lerp(gsl::span<const ostr::string> a, gsl::span<const ostr::string> b, float alpha)
     {
-        return LerpArray<std::string>(a, b, alpha);
+        return LerpArray<ostr::string>(a, b, alpha);
     }
 }

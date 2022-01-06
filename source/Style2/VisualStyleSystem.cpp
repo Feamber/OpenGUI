@@ -122,9 +122,9 @@ namespace OGUI
 		return QueryFirst(root, selector.value());
 	}
 
-	void QueryAll(VisualElement* root, std::string_view str, std::vector<VisualElement*>& result)
+	void QueryAll(VisualElement* root, ostr::string_view str, std::vector<VisualElement*>& result)
 	{
-		auto selector = CSSParser::ParseSelector(str);
+		auto selector = CSSParser::ParseSelector(str.encode_to_utf8());
 		if (!selector)
 			return;
 		return QueryAll(root, selector.value(), result);

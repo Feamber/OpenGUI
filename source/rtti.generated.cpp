@@ -1144,3 +1144,99 @@ namespace OGUI::Meta
         return &type;
     }
 }
+namespace OGUI::Meta
+{
+    const Type* TypeOf<OGUI::EventRoutePhase>::Get()
+    {
+        static EnumType::Enumerator enumerators[] = 
+        {
+            {u"None", 0},
+            {u"TrickleDown", 1},
+            {u"Reach", 2},
+            {u"Broadcast", 4},
+            {u"BubbleUp", 8},
+            {u"All", 15},
+            {u"NoBroadcast", 11},
+        };
+        static EnumType type{
+            TypeOf<std::underlying_type_t<OGUI::EventRoutePhase>>::Get(),
+            u"OGUI::EventRoutePhase", 
+            +[](void* self, ostr::string_view str)
+            {
+                auto& This = *((OGUI::EventRoutePhase*)self);
+                switchstr(str)
+                {
+                    casestr("None") This = OGUI::EventRoutePhase::None; break;
+                    casestr("TrickleDown") This = OGUI::EventRoutePhase::TrickleDown; break;
+                    casestr("Reach") This = OGUI::EventRoutePhase::Reach; break;
+                    casestr("Broadcast") This = OGUI::EventRoutePhase::Broadcast; break;
+                    casestr("BubbleUp") This = OGUI::EventRoutePhase::BubbleUp; break;
+                    casestr("All") This = OGUI::EventRoutePhase::All; break;
+                    casestr("NoBroadcast") This = OGUI::EventRoutePhase::NoBroadcast; break;
+                    default:
+                        olog::Error(u"fail to parse OGUI::EventRoutePhase. input: {}"_o.format(str));
+                        break;
+                }
+            },
+            +[](const void* self)
+            {
+                auto& This = *((const OGUI::EventRoutePhase*)self);
+                switch(This)
+                {
+                    case OGUI::EventRoutePhase::None: return ostr::string(u"None");
+                    case OGUI::EventRoutePhase::TrickleDown: return ostr::string(u"TrickleDown");
+                    case OGUI::EventRoutePhase::Reach: return ostr::string(u"Reach");
+                    case OGUI::EventRoutePhase::Broadcast: return ostr::string(u"Broadcast");
+                    case OGUI::EventRoutePhase::BubbleUp: return ostr::string(u"BubbleUp");
+                    case OGUI::EventRoutePhase::All: return ostr::string(u"All");
+                    case OGUI::EventRoutePhase::NoBroadcast: return ostr::string(u"NoBroadcast");
+                }
+                return ostr::string(u"OGUI::EventRoutePhase::Unknown");
+            },
+            enumerators
+        };
+        return &type;
+    }
+}
+namespace OGUI::Meta
+{
+    const Type* TypeOf<OGUI::FocusChangeCause>::Get()
+    {
+        static EnumType::Enumerator enumerators[] = 
+        {
+            {u"UserActions", 0},
+            {u"FocusNavigation", 1},
+            {u"ActivateWindow", 2},
+        };
+        static EnumType type{
+            TypeOf<std::underlying_type_t<OGUI::FocusChangeCause>>::Get(),
+            u"OGUI::FocusChangeCause", 
+            +[](void* self, ostr::string_view str)
+            {
+                auto& This = *((OGUI::FocusChangeCause*)self);
+                switchstr(str)
+                {
+                    casestr("UserActions") This = OGUI::FocusChangeCause::UserActions; break;
+                    casestr("FocusNavigation") This = OGUI::FocusChangeCause::FocusNavigation; break;
+                    casestr("ActivateWindow") This = OGUI::FocusChangeCause::ActivateWindow; break;
+                    default:
+                        olog::Error(u"fail to parse OGUI::FocusChangeCause. input: {}"_o.format(str));
+                        break;
+                }
+            },
+            +[](const void* self)
+            {
+                auto& This = *((const OGUI::FocusChangeCause*)self);
+                switch(This)
+                {
+                    case OGUI::FocusChangeCause::UserActions: return ostr::string(u"UserActions");
+                    case OGUI::FocusChangeCause::FocusNavigation: return ostr::string(u"FocusNavigation");
+                    case OGUI::FocusChangeCause::ActivateWindow: return ostr::string(u"ActivateWindow");
+                }
+                return ostr::string(u"OGUI::FocusChangeCause::Unknown");
+            },
+            enumerators
+        };
+        return &type;
+    }
+}

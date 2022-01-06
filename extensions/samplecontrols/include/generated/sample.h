@@ -11,15 +11,15 @@
 
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct SAMPLECONTROLS_API StyleSample
     {
-        constexpr static std::string_view name = "sample"sv;
+        constexpr static ostr::string_view name = u"sample"_o;
         constexpr static size_t hash = OGUI::hash(name);
         constexpr static bool inherited = false;
         struct Ids
         {
-            static constexpr size_t someValue = OGUI::hash("some-value"sv);
+            static constexpr size_t someValue = OGUI::hash(u"some-value"_o);
         };
         float someValue;
         void Initialize();

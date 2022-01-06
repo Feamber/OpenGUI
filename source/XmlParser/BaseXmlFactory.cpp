@@ -89,9 +89,9 @@ namespace OGUI
         // !元素类别（同类别元素类型不一定一样）
         FindAttribute(xe, Attr_Class(), u","_o, element->_styleClasses);
         // !内联css样式
-        std::string style;
+        ostr::string style;
         if(FindAttribute(xe, Attr_Style(), style) == FindResult::OK)
-            element->InitInlineStyle(style);
+            element->InitInlineStyle(style.encode_to_utf8());
 
         //------------------------------------------------------XML
         for(auto& attr : xe.attributes)

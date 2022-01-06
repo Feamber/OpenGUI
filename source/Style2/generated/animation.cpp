@@ -120,7 +120,7 @@ void OGUI::AnimStyle::SetupParser()
                     throw peg::parse_error("animation-name dose not match animation properties count.");
                 anim.resize(vs.size());
                 for(int i=0; i<vs.size(); ++i)
-                    anim[i].name = std::any_cast<std::string_view&>(vs[i]);
+                    anim[i].name = std::any_cast<ostr::string_view&>(vs[i]);
             };
         });
     }
@@ -134,7 +134,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-durationValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-duration dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -157,7 +157,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-delayValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-delay dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -180,7 +180,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-directionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-direction dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -203,7 +203,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-iteration-countValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-iteration-count dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -226,7 +226,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-play-stateValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-play-state dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -249,7 +249,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-timing-functionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-timing-function dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -272,7 +272,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-fill-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-fill-mode dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -295,7 +295,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-yield-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-yield-mode dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -318,7 +318,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-resume-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("animation-resume-mode dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 

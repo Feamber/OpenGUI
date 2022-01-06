@@ -53,7 +53,7 @@ void SampleControls::Slider::OnValueChanged()
     float percentage = (_value - _minValue) / (_maxValue - _minValue);
     for(auto& child : _animatedChildren)
     {
-        std::string name =  child->_name + "-slide";
+        ostr::string name =  child->_name + ostr::string_view(u"-slide");
         child->SetAnimationTime(name, percentage);
     }
 }
@@ -124,10 +124,10 @@ bool SampleControls::SliderXmlFactory::OnInitElement(InstantiateXmlState& state,
     if(!VisualElementXmlFactory::OnInitElement(state, xe, element, p))
         return false;
     auto ve = (Slider*)element;
-    FindAttribute(xe, "min-value", ve->_minValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
+    FindAttribute(xe, "min-value", ve->_minValue, ve, false, [ve](bool valid){ve->OnMinMaxChanged();});
     ve->_value = ve->_minValue;
-    FindAttribute(xe, "max-value", ve->_maxValue, ve, [ve](bool valid){ve->OnMinMaxChanged();});
-    FindAttribute(xe, "value", ve->_value, ve, [ve](bool valid){ve->OnValueChanged();}, true) ;
+    FindAttribute(xe, "max-value", ve->_maxValue, ve, false, [ve](bool valid){ve->OnMinMaxChanged();});
+    FindAttribute(xe, "value", ve->_value, ve, true, [ve](bool valid){ve->OnValueChanged();}) ;
     
     static const std::map<ostr::string, SliderDirection> Directions = 
     {

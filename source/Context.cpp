@@ -453,7 +453,6 @@ OGUI::Context::Context()
 	ioThread = std::make_unique<IOThread>();
 	logImpl = std::make_unique<StdOutputLog>();
 	RegisterOGUIXmlParser();
-	RegisterBaseAttrConverter();
 }
 
 OGUI::Context::~Context()
