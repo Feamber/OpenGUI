@@ -79,9 +79,7 @@ namespace OGUI
         {
             if(tinyxml2::XMLText* xml_Text = node->ToText())
             {
-                ostr::string v;
-                v.decode_from_utf8(xml_Text->Value());
-                return std::make_shared<XmlElement>(true, v);
+                return std::make_shared<XmlElement>(true, ostr::string::decode_from_utf8(xml_Text->Value()));
             }
             return nullptr;
         };

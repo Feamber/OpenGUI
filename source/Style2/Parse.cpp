@@ -317,7 +317,7 @@ namespace OGUI::CSSParser
 		parser["FontPropFace"] = [](SemanticValues& vs, std::any& dt)
 		{
 			auto ctx = GetContext<FontfaceContext&>(dt);
-			ctx.font->fontFamily.decode_from_utf8(std::any_cast<std::string_view>(vs[0]));
+			ctx.font->fontFamily = ostr::string::decode_from_utf8(std::any_cast<std::string_view>(vs[0]));
 		};
 	}
 

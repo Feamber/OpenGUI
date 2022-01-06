@@ -270,7 +270,7 @@ void OGUI::StyleBackground::SetupParser()
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const ostr::string_view>(std::any_cast<const ostr::string_view&>(vs[0]))});
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const ostr::string_view>(ostr::string::decode_from_utf8(std::any_cast<const std::string_view&>(vs[0])))});
             };
         });
     }

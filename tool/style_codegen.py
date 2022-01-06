@@ -165,7 +165,7 @@ class Longhand(Property):
         self.valueRule = valueRule
         self.is_string = arg_to_bool(string)
         if self.is_string:
-            self.parsed_type = "const ostr::string_view"
+            self.parsed_type = "const std::string_view"
         else:
             self.parsed_type = type
         if self.is_vector:

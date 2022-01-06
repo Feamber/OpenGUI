@@ -70,7 +70,7 @@ void OGUI::AnimStyle::SetupParser()
                     throw peg::parse_error("animation-name dose not match animation properties count.");
                 anim.resize(vs.size());
                 for(int i=0; i<vs.size(); ++i)
-                    anim[i].name = std::any_cast<ostr::string_view&>(vs[i]);
+                    anim[i].name = ostr::string::decode_from_utf8(std::any_cast<const std::string_view&>(vs[i]));
             };
         });
     }
@@ -95,7 +95,11 @@ void OGUI::AnimStyle::SetupParser()
                         anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
                     for(int i=0; i<vs.size(); ++i)
+                    %if prop.is_string:
+                        anim[i].properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(ostr::string::decode_from_utf8(std::any_cast<${prop.parsed_type}&>(vs[0])))});
+                    %else:
                         anim[i].properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(std::any_cast<${prop.parsed_type}&>(vs[0]))});
+                    %endif
             };
         });
     }

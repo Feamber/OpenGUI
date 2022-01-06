@@ -51,13 +51,13 @@ void OGUI::StyleSheet::Initialize()
 
 	i=0;	
 	for (auto& font : styleFonts)
-		namedStyleFamilies.emplace(font.fontFamily, i++);\
+		namedStyleFamilies.emplace(font.fontFamily, i++);
 	
 	auto&& ctx = Context::Get();
 	for(auto& rule : styleRules)
 		for(auto& prop : rule.properties)
 		{
 			if(prop.id == StyleBackground::Ids::backgroundImage && !prop.keyword)
-				preloaded.push_back(ctx.textureManager->RequireFromFileSystem(std::string(storage.Get<const std::string_view>(prop.value))));
+				preloaded.push_back(ctx.textureManager->RequireFromFileSystem(storage.Get<const ostr::string_view>(prop.value).encode_to_utf8()));
 		}
 }

@@ -536,7 +536,14 @@ namespace OGUI::Meta
             case _s:
             {
                 auto& dstV = *(ostr::string*)dst;
-                dstV = srcType->ToString(src);
+                switch (srcType->type) {
+                    case _s:
+                        dstV = *(ostr::string*)src; break;
+                    case _sv:
+                        dstV = *(ostr::string_view*)src; break;
+                    default: 
+                        dstV = srcType->ToString(src); break;
+                }
                 break;
             }
             case _sv:

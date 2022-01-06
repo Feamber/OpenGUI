@@ -487,7 +487,7 @@ void OGUI::StyleText::SetupParser()
                 {
                     std::vector<ostr::string> value;
                     for(auto& e : vs)
-                        value.emplace_back(any_move<const ostr::string_view>(e));
+                        value.emplace_back(ostr::string::decode_from_utf8(any_move<const std::string_view>(e)));
                     ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<ostr::string>>(value)});
                 }
             };

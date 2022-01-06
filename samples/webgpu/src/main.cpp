@@ -712,23 +712,23 @@ int main(int , char* []) {
 
 	std::vector<AppWindow*> windows;
 	SampleControls::Install();
-	ExternalControlSample sample;
-	windows.push_back(sample.MakeWindow());
-	LuaSample lsample;
-	windows.push_back(lsample.MakeWindow());
+	//ExternalControlSample sample;
+	//windows.push_back(sample.MakeWindow());
+	//LuaSample lsample;
+	//windows.push_back(lsample.MakeWindow());
 	DataBindSample sample2;
 	windows.push_back(sample2.MakeWindow());
-	windows.push_back(CreateNavigationTestWindow());
-	windows.push_back(CreateCssTestWindow());
-	windows.push_back(CreatePercentageMarginWindow());
-	XmlFiltersSample sample3;
-	windows.push_back(sample3.MakeWindow());
+	// windows.push_back(CreateNavigationTestWindow());
+	//windows.push_back(CreateCssTestWindow());
+	// windows.push_back(CreatePercentageMarginWindow());
+	// XmlFiltersSample sample3;
+	// windows.push_back(sample3.MakeWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())
 	{
 		sample2.Update();
-		sample3.Update();
+		//sample3.Update();
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");
