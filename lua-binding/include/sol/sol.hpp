@@ -54,6 +54,10 @@
 #define SOL_DEFAULT_ON  +
 #define SOL_DEFAULT_OFF -
 
+#if defined(_MSC_VER) && defined(__clang__)
+	#define SOL_COMPILER_CLANG_CL_I_ SOL_ON
+#endif
+
 #if defined(_MSC_VER)
 	#define SOL_COMPILER_CLANG_I_ SOL_OFF
 	#define SOL_COMPILER_GCC_I_   SOL_OFF
@@ -8115,7 +8119,7 @@ namespace sol { namespace detail {
 		"`anonymous-namespace'",
 		"`anonymous namespace'" } };
 
-#if SOL_IS_ON(SOL_COMPILER_GCC_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_I_)
+#if SOL_IS_ON(SOL_COMPILER_GCC_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_CL_I_)
 	inline std::string ctti_get_type_name_from_sig(std::string name) {
 		// cardinal sins from MINGW
 		using namespace std;

@@ -601,7 +601,7 @@ struct LuaSample
 			OGUI::Meta::ValueRef element = arg.TryGet(u"element");
 			if(element.Convertible<VisualElement*>())
 				olog::Info(u"cpp event:{}"_o.format(element.Convert<VisualElement*>()->GetTypeName()));
-			else
+			else if(element)
 			 	olog::Info(u"cpp event: invalid argument(\"element\") type{}"_o.format(element.type->Name()));
 			return false;
 		});
@@ -714,10 +714,10 @@ int main(int , char* []) {
 	SampleControls::Install();
 	//ExternalControlSample sample;
 	//windows.push_back(sample.MakeWindow());
-	//LuaSample lsample;
-	//windows.push_back(lsample.MakeWindow());
-	DataBindSample sample2;
-	windows.push_back(sample2.MakeWindow());
+	LuaSample lsample;
+	windows.push_back(lsample.MakeWindow());
+	//DataBindSample sample2;
+	//windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
 	//windows.push_back(CreateCssTestWindow());
 	// windows.push_back(CreatePercentageMarginWindow());
@@ -727,7 +727,7 @@ int main(int , char* []) {
 	reloader.Watch();
 	while(!windows.empty())
 	{
-		sample2.Update();
+		//sample2.Update();
 		//sample3.Update();
 		using namespace ostr::literal;
 		

@@ -38,11 +38,9 @@ Button:active{
 .Text{
     background-color:transparent;
     color: aliceblue;
-    font-family: TestFont;
 }
 
 .InfoText{
     height:30px; 
     width:150px;
-    font-family: TestFont;
 }

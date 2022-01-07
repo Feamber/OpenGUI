@@ -6,6 +6,7 @@
 #include "OpenGUI/Core/ostring/osv.h"
 #include "OpenGUI/Core/Utilities/overload.hpp"
 #include <memory>
+#include <string>
 
 namespace OGUI::Meta
 {
@@ -207,6 +208,8 @@ namespace OGUI::Meta
         using namespace EType;
         auto stype = srcType->type;
         gsl::span<size_t> acceptIndices;
+        if(Same(srcType))
+            return true;
         if(srcType->type == _r)
         {
             auto& sptr = (const ReferenceType&)(*srcType);
@@ -261,7 +264,7 @@ namespace OGUI::Meta
             {
                 if(format)
                     return true;
-                static size_t accept[] = {_s, _sv};
+                static size_t accept[] = {_b, _i32, _i64, _u32, _u64, _f32, _f64, _e, _s, _sv};
                 acceptIndices = accept;
                 break;
             }
@@ -320,7 +323,7 @@ namespace OGUI::Meta
                     case _i32: case _i64: case _u32: case _u64: 
                         return srcType->Size() >= Size();
                     case _s: case _sv:
-                        return format;
+                        return true;
                     default:
                         return false;
                 }
@@ -371,6 +374,11 @@ namespace OGUI::Meta
     void Type::Convert(void *dst, const void *src, const Type *srcType, struct ValueSerializePolicy* policy) const
     {
         using namespace EType;
+        if(Same(srcType))
+        {
+            Copy(dst, src);
+            return;
+        }
         if(!Convertible(srcType, policy != nullptr))
             return;
 
@@ -398,9 +406,9 @@ namespace OGUI::Meta
                     dstV = (T)*(double*)src; break; 
         #define STR_CONVERT \
                 case _s: \
-                    policy->parse(policy, ostr::string_view(*(ostr::string*)src), dst, this); \
+                    FromString(dst, ostr::string_view(*(ostr::string*)src), policy); \
                 case _sv: \
-                    policy->parse(policy, *(ostr::string_view*)src, dst, this);
+                    FromString(dst, ostr::string_view(*(ostr::string_view*)src), policy);
         #define ENUM_CONVERT \
                 case _e: \
                 { \
@@ -537,8 +545,6 @@ namespace OGUI::Meta
             {
                 auto& dstV = *(ostr::string*)dst;
                 switch (srcType->type) {
-                    case _s:
-                        dstV = *(ostr::string*)src; break;
                     case _sv:
                         dstV = *(ostr::string_view*)src; break;
                     default: 
@@ -552,8 +558,6 @@ namespace OGUI::Meta
                 switch (srcType->type) {
                     case _s:
                         dstV = *(ostr::string*)src; break;
-                    case _sv:
-                        dstV = *(ostr::string_view*)src; break;
                     default: 
                         break;
                 }
@@ -751,7 +755,49 @@ namespace OGUI::Meta
     ostr::string Type::ToString(const void* dst, ValueSerializePolicy* policy) const
     {
         using namespace EType;
-        return policy->format(policy, dst, this);
+        if(policy)
+            return policy->format(policy, dst, this);
+        else
+        { 
+            std::u16string string;
+            switch(type)
+            {
+                case _b : ostr::ofmt::to_string((int)*(bool*)dst, u"", string); return string;
+                case _i32: ostr::ofmt::to_string((int)*(int32_t*)dst, u"", string); return string;
+                case _i64: ostr::ofmt::to_string((int)*(int64_t*)dst, u"", string); return string;
+                case _u32: ostr::ofmt::to_string((int)*(uint32_t*)dst, u"", string); return string;
+                case _u64: ostr::ofmt::to_string((int)*(uint64_t*)dst, u"", string); return string;
+                case _f32: ostr::ofmt::to_string(*(float*)dst, u"", string); return string;
+                case _f64: ostr::ofmt::to_string((float)*(double*)dst, u"", string); return string;
+                case _e: return ((const EnumType*)this)->ToString(dst);
+                default:
+                    break;
+            }
+            return u"";
+        }
+    }
+
+    void Type::FromString(void *dst, ostr::string_view str, ValueSerializePolicy* policy) const
+    {
+        using namespace EType;
+        if(policy)
+            policy->parse(policy, str, dst, this);
+        else
+        {
+            switch(type)
+            {
+                case _b : *(bool*)dst = str.to_bool();
+                case _i32: *(int32_t*)dst = str.to_int();
+                case _i64: *(int64_t*)dst = str.to_int();
+                case _u32: *(uint32_t*)dst = str.to_int();
+                case _u64: *(uint64_t*)dst = str.to_int();
+                case _f32: *(float*)dst = str.to_float();
+                case _f64: *(double*)dst = str.to_float();
+                case _e: ((const EnumType*)this)->FromString(dst, str);
+                default:
+                    break;
+            }
+        }
     }
 
     size_t Hash(bool value, size_t base)

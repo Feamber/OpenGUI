@@ -74,9 +74,7 @@ OGUI::ComputedStyle OGUI::ComputedStyle::Create(const ComputedStyle *parent)
             {
                 auto iter = parent->structs.find(desc.hash); 
                 if(iter != parent->structs.end())
-                {
                     result.structs.insert({desc.hash, {iter->second.ptr, false}});
-                }
             }
         }
     }

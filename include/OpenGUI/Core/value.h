@@ -78,6 +78,7 @@ namespace OGUI::Meta
         bool Convertible(const Type* srcType, bool format = false) const;
         void Convert(void* dst, const void* src, const Type* srcType, struct ValueSerializePolicy* policy = nullptr) const;
         ostr::string ToString(const void* dst, struct ValueSerializePolicy* policy = nullptr) const;
+        void FromString(void* dst, ostr::string_view str, struct ValueSerializePolicy* policy = nullptr) const;
         size_t Hash(const void* dst, size_t base) const;
         //lifetime operator
         void Destruct(void* dst) const;

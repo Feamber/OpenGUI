@@ -25,6 +25,7 @@ namespace OGUI full_reflect
 
     struct PreFocusData : public FocusDataBase
     {
+        //TODO: 当前 lua 绑定不支持类型擦除的数组，考虑套一个结构体
         const std::vector<VisualElement*>* currentFocusedPath;
         const std::vector<VisualElement*>* newFocusedPath;
     };

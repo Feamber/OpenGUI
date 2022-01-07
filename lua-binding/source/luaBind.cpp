@@ -14,23 +14,6 @@ std::string OGUI::Meta::Lua::GetMetatable(const OGUI::Meta::Type* type)
     return std::string("sol.").append(type->Name().encode_to_utf8());
 }
 
-std::type_index GetCppType(sol::type type, size_t& size)
-{
-	switch(type)
-	{
-		case sol::type::boolean:
-			size = sizeof(bool);
-			return typeid(bool);
-		case sol::type::string:
-			size = sizeof(std::string);
-			return typeid(std::string);
-		case sol::type::number:
-			size = sizeof(double);
-			return typeid(double);
-		default:
-			return typeid(nullptr_t);
-	}
-}
 namespace OGUI
 {
 
@@ -78,9 +61,9 @@ bool OGUI::LuaBindable::HandleEvent(Name eventName, IEventArg &args)
     {
         sol::optional<bool> result;
         if(eventHandler==table)
-            result = (*function)(this, args);
+            result = (*function)(this, args).get<sol::optional<bool>>();
         else
-            result = (*function)(eventHandler, args);
+            result = (*function)(eventHandler, args).get<sol::optional<bool>>();
         if(result)
             handled |= *result;
     }
@@ -377,6 +360,7 @@ namespace OGUI::Meta::Lua
                     obj.nativeMethods.move(luaObj, dst);
                 else
                     obj.nativeMethods.copy(luaObj, dst);
+                return 1;
             }
             case _r:
             {
@@ -427,7 +411,6 @@ namespace OGUI::Meta::Lua
                         new(mem) std::shared_ptr<void>(std::move(obj));
                     else
                         new(mem) std::shared_ptr<void>(obj);
-                    return 1;
                 }
                 else 
                 {
@@ -436,6 +419,7 @@ namespace OGUI::Meta::Lua
                     *ref = (void*)dst;
                     lua_setmetatable(L, -2);
                 }
+                return 1;
             }
         }
         return 0;

@@ -7,11 +7,11 @@
  * 
  * TODO: are we doing GL?
  */
- #include "vulkan/vulkan.h"
-#if __has_include("vulkan/vulkan.h") && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
-#define DAWN_ENABLE_BACKEND_VULKAN
-#elif __has_include("d3d12.h") || (_MSC_VER >= 1900)
+#if __has_include("d3d12.h") || (_MSC_VER >= 1900)
 #define DAWN_ENABLE_BACKEND_D3D12
+#elif __has_include("vulkan/vulkan.h") && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
+ #include "vulkan/vulkan.h"
+#define DAWN_ENABLE_BACKEND_VULKAN
 #endif
 
 //****************************************************************************/

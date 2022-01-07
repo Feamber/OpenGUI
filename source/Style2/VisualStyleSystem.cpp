@@ -327,7 +327,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors, bool refresh)
 {
 	element->_styleDirty = true;
-	auto parent = element->_logicalParent ? &element->_logicalParent->_style : nullptr;
+	auto parent = element->_physicalParent ? &element->_physicalParent->_style : nullptr;
 	ComputedStyle resolvedStyle = ComputedStyle::Create(parent);
 	std::vector<AnimStyle> anims;
 	for (auto& record : matchedSelectors)

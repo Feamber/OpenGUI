@@ -86,7 +86,7 @@ namespace OGUI
         {
             if(ref.type->Convertible(inRef.type))
             {
-                ref.type->Destruct(ref.ptr);
+                //ref.type->Destruct(ref.ptr);
                 ref.type->Convert(ref.ptr, inRef.ptr, inRef.type);
                 changePostFun(true);
             }
