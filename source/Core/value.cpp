@@ -942,7 +942,9 @@ namespace OGUI::Meta
         {
             case _o:
             {
-                ((const RecordType&)(*this)).nativeMethods.dtor(address);
+                auto& obj = ((const RecordType&)(*this));
+                if(obj.nativeMethods.dtor)
+                    obj.nativeMethods.dtor(address);
             }
             case _s:
             {
@@ -1277,4 +1279,6 @@ namespace OGUI::Meta
         return {};
       return type->ToString(ptr);
     }
+
+    void EmptyDtor(void*){}
 } // namespace OGUI::Meta

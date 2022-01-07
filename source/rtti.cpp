@@ -3,6 +3,13 @@
 
 namespace OGUI::Meta
 {
+    size_t Hash(const OGUI::Vector2f& value, size_t base)
+    {
+        base = Hash(value.x, base);
+        base = Hash(value.y, base);
+        return base;
+    }
+
     const Type* TypeOf<Vector2f>::Get()
     {
         static std::aligned_storage_t<sizeof(Vector2f), alignof(Vector2f)> storage;
@@ -15,11 +22,11 @@ namespace OGUI::Meta
         ostr::string_view name = u"OGUI::Vector<float, 2>";
         auto base = (const RecordType*)nullptr;
         ObjectMethodTable nativeMethods {
-            +[](void* self) {}, //dtor
-            +[](void* self, struct Value* param, size_t nparam) {}, //ctor
+            nullptr, //dtor
+            nullptr, //ctor
             GetCopyCtor<Vector2f>(),
             GetMoveCtor<Vector2f>(),
-            nullptr, //hash
+            +[](const void* self, size_t base) { return Hash(*(const Vector2f*)self, base); }, //hash
         };
         static Field fields[] = 
         {

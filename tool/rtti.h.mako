@@ -15,6 +15,15 @@ namespace OGUI::Meta
 %if record.hashable:
     OGUI_API size_t Hash(const ${record.name}& value, size_t base = FNV_offset_basis);
 %endif
+    template<class Serializer>
+    void Serialize(const ${record.name}& value, Serializer& s)
+    {
+        s.BeginObject((const RecordType*)TypeOf<${record.name}>::Get());
+    %for field in record.allFields():
+        SerializeField(${record.name}, ${field.name})
+    %endfor
+        s.EndObject();
+    }
 }
 %if record.hashable:
 namespace std

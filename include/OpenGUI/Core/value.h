@@ -688,4 +688,49 @@ namespace OGUI::Meta
             }
         }
     };
+
+    template<class T, class Serializer>
+    void Serialize(const std::vector<T>& value, Serializer& s)
+    {
+        s.BeginArray();
+        for(auto& e : value)
+            Serialize(e, s);
+        s.EndArray();
+    }
+
+    template<class T, size_t N, class Serializer>
+    void Serialize(T value[N], Serializer& s)
+    {
+        s.BeginArray();
+        for(int i=0; i<N; ++i)
+            Serialize(value[i], s);
+        s.EndArray();
+    }
+
+    template<class T, class Serializer>
+    void Serialize(const gsl::span<T>& value, Serializer& s)
+    {
+        s.BeginArray();
+        for(auto& e : value)
+            Serialize(e, s);
+        s.EndArray();
+    }
+
+    template<class T, class Serializer>
+    void Serialize(T* value, Serializer& s)
+    {
+        s.Reference(value);
+    }
+    
+    #define SerializeField(type, field) \
+        { \
+            Field f{ \
+                u###field, \
+                TypeOf<decltype(type::field)>::Get(), \
+                offsetof(type, field) \
+            }; \
+            s.BeginField(&f); \
+            Serialize(value.field); \
+            s.EndField(); \
+        }
 }

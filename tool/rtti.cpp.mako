@@ -9,7 +9,10 @@ namespace OGUI::Meta
 %if record.hashable:
     size_t Hash(const ${record.name}& value, size_t base)
     {
-
+    %for field in record.allFields():
+        base = Hash(value.${field.name}, base);
+    %endfor
+        return base;
     }
 %endif
 
