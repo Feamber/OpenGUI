@@ -23,8 +23,8 @@ namespace OGUI
     public:
         TextElement();
         ~TextElement();
-		std::string_view GetTypeName() override { return "TextElement"; }
-		std::string_view GetFullTypeName() override { return "OGUI::TextElement"; }
+		ostr::string_view GetTypeName() override { return u"TextElement"; }
+		ostr::string_view GetFullTypeName() override { return u"OGUI::TextElement"; }
 
         using InlineType = std::variant<ostr::string, VisualElement*, TextElement*, std::shared_ptr<BindText>>;
         std::vector<InlineType> _inlines;

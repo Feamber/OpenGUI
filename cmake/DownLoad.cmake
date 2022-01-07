@@ -17,14 +17,10 @@
 endfunction(download_file)
 
 function(extract_file file dir)
-  if(EXISTS "${dir}")
-    message(STATUS "${dir} already valid!")
-  else()
-    message(STATUS "extracting ${dir}!")
-    file(ARCHIVE_EXTRACT 
-      INPUT ${file} DESTINATION ${dir}
-    )
-  endif()
+  message(STATUS "extracting ${dir}!")
+  file(ARCHIVE_EXTRACT 
+    INPUT ${file} DESTINATION ${dir}
+  )
   #execute_process(COMMAND 7z x DESTINATION ${dir})
 endfunction()
 

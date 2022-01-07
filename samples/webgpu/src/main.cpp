@@ -478,7 +478,7 @@ SampleWindow* CreateCssTestWindow()
 		ve->_pseudoMask |= PseudoStates::Root;
 		{
 			std::vector<VisualElement*> tests;
-			QueryAll(ve, ".Test", tests);
+			QueryAll(ve, u".Test", tests);
 			for (auto [i, test] : ipair(tests))
 				if (i % 2 == 0)
 					test->_styleClasses.push_back("Bigger");
@@ -499,14 +499,14 @@ struct DataBindSample : public Bindable
 	int count = 0;
 	DataBindSample()
 	{
-		AddSource({hour_, &hour});
-		AddSource({minute_, &minute});
-		AddSource({second_, &second});
-		AddSource({count_, &count});
+		AddSource({hour_, hour});
+		AddSource({minute_, minute});
+		AddSource({second_, second});
+		AddSource({count_, count});
 		AddEventBind("Add", 
 		[&](IEventArg& arg)
 		{
-			auto phase = arg.TryGet<EventRoutePhase>("currentPhase");
+			auto phase = arg.TryGet<EventRoutePhase>(u"currentPhase");
 			if(!phase.has_value())
 				return false;
 			if(*phase == EventRoutePhase::Reach || *phase == EventRoutePhase::BubbleUp)
@@ -524,11 +524,11 @@ struct DataBindSample : public Bindable
 		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "DataBindTest", &reloader, "res/DataBind.xml", [&](OGUI::VisualElement* ve)
 		{
 			ve->_pseudoMask |= PseudoStates::Root;
-			VisualElement* test = QueryFirst(ve, "#AddButton");
+			VisualElement* test = QueryFirst(ve, u"#AddButton");
 			Bind(*test);
 			//所有文字绑定到数据源上
 			std::vector<VisualElement*> Texts;
-			QueryAll(ve, "TextElement", Texts);
+			QueryAll(ve, u"TextElement", Texts);
 			for(auto Text : Texts)
 				((TextElement*)Text)->Bind(*this);
 		});
@@ -559,8 +559,8 @@ struct ExternalControlSample : public Bindable
 	float value = 0.f;
 	ExternalControlSample()
 	{
-		AddSource({value_, &value});
-		AddBind({value_, &value, [&](bool valid)
+		AddSource({value_, value});
+		AddBind({value_, value, [&](bool valid)
 		{
 			olog::Info(u"value updated: {}"_o.format(value));
 		}});
@@ -571,10 +571,10 @@ struct ExternalControlSample : public Bindable
 		return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "ExternalControlTest", &reloader, "res/sample.xml", [&](OGUI::VisualElement* ve)
 		{
 			ve->_pseudoMask |= PseudoStates::Root;
-			VisualElement* test = QueryFirst(ve, "#TestSlider");
+			VisualElement* test = QueryFirst(ve, u"#TestSlider");
 			Bind(*test);
 			std::vector<VisualElement*> allElement;
-			QueryAll(ve, "*",  allElement);
+			QueryAll(ve, u"*",  allElement);
 			for(auto element : allElement)
 				element->Bind(*this);
 		});
@@ -598,11 +598,11 @@ struct LuaSample
 		});
 		cppDataModel.AddEventBind("Test", [](IEventArg& arg)
 		{
-			OGUI::any element = arg.TryGet("element");
-			if(element.type() == typeid(VisualElement*))
-				olog::Info(u"cpp event:{}"_o.format(OGUI::any_cast<VisualElement*>(element)->GetTypeName()));
-			else
-			 	olog::Info(u"cpp event: invalid argument(\"element\") type{}"_o.format(element.type().name()));
+			OGUI::Meta::ValueRef element = arg.TryGet(u"element");
+			if(element.Convertible<VisualElement*>())
+				olog::Info(u"cpp event:{}"_o.format(element.Convert<VisualElement*>()->GetTypeName()));
+			else if(element)
+			 	olog::Info(u"cpp event: invalid argument(\"element\") type{}"_o.format(element.type->Name()));
 			return false;
 		});
 	}
@@ -640,8 +640,8 @@ struct XmlFiltersSample : public Bindable
 		{
 			ve->_pseudoMask |= PseudoStates::Root;
 
-			localFiltersTest = QueryFirst(ve, "#local-filters-test");
-			localFiltersTest2 = QueryFirst(ve, "#local-filters-test2");
+			localFiltersTest = QueryFirst(ve, u"#local-filters-test");
+			localFiltersTest2 = QueryFirst(ve, u"#local-filters-test2");
 			// auto& context = Context::Get();
 			// context.SetXmlFilter_Local(ve, "local-filters-test", "local-filters-test-1");
 		});
@@ -712,23 +712,23 @@ int main(int , char* []) {
 
 	std::vector<AppWindow*> windows;
 	SampleControls::Install();
-	ExternalControlSample sample;
-	windows.push_back(sample.MakeWindow());
+	//ExternalControlSample sample;
+	//windows.push_back(sample.MakeWindow());
 	LuaSample lsample;
 	windows.push_back(lsample.MakeWindow());
-	DataBindSample sample2;
-	windows.push_back(sample2.MakeWindow());
-	windows.push_back(CreateNavigationTestWindow());
-	windows.push_back(CreateCssTestWindow());
-	windows.push_back(CreatePercentageMarginWindow());
-	XmlFiltersSample sample3;
-	windows.push_back(sample3.MakeWindow());
+	//DataBindSample sample2;
+	//windows.push_back(sample2.MakeWindow());
+	// windows.push_back(CreateNavigationTestWindow());
+	//windows.push_back(CreateCssTestWindow());
+	// windows.push_back(CreatePercentageMarginWindow());
+	// XmlFiltersSample sample3;
+	// windows.push_back(sample3.MakeWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())
 	{
-		sample2.Update();
-		sample3.Update();
+		//sample2.Update();
+		//sample3.Update();
 		using namespace ostr::literal;
 		
 		ZoneScopedN("LoopBody");

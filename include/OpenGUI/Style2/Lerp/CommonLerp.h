@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <gsl/span>
+#include "OpenGUI/Core/open_string.h"
 
 namespace OGUI
 {
@@ -38,5 +39,5 @@ namespace OGUI
         return result;
     }
     
-    OGUI_API std::string Lerp(std::string_view a, std::string_view b, float alpha);
+    OGUI_API ostr::string Lerp(ostr::string_view a, ostr::string_view b, float alpha);
 }

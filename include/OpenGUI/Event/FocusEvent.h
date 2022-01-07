@@ -8,7 +8,7 @@ namespace OGUI full_reflect
 {
     class VisualElement;
 
-	enum class attr("script":true) 
+	enum class attr("script":true, "rtti":true) 
     FocusChangeCause
     {
         UserActions,
@@ -20,11 +20,12 @@ namespace OGUI full_reflect
     FocusDataBase : public EventBase
     {
         FocusChangeCause cause;
-        std::string_view causeDescribe;
+        ostr::string_view causeDescribe;
     };
 
     struct PreFocusData : public FocusDataBase
     {
+        //TODO: 当前 lua 绑定不支持类型擦除的数组，考虑套一个结构体
         const std::vector<VisualElement*>* currentFocusedPath;
         const std::vector<VisualElement*>* newFocusedPath;
     };

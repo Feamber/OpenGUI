@@ -54,6 +54,10 @@ class Field(object):
         self.setter = None
         self.comment = comment
 
+def converted(str):
+    if str == "ostr::string_view":
+        return "ostr::string"
+    return str
 class FunctionDesc(object):
     def __init__(self, retType, rawRetType, fields, isConst, comment):
         self.retType = retType
@@ -61,8 +65,15 @@ class FunctionDesc(object):
         self.fields = fields
         self.isConst = isConst
         self.comment = comment
-    def getSignature(self, record):
-        return self.retType +"("+ (record.name + "::" if record else "") + "*)("+ str.join(", ",  [x.type for x in self.fields])  + ")" + ("const" if self.isConst else "")
+    def getReference(self, record, function):
+        if "ostr::string_view" in [x.type for x in self.fields]:
+            if record:
+                return "+[]({}* self, {}) {{ return self->{}({}); }}".format(record.name, str.join(", ",  [converted(x.type) + " _" + str(i) for i, x in enumerate(self.fields)]), function.short_name, str.join(", ",  ["_" + str(i) for i, x in enumerate(self.fields)]))
+            else:
+                return "+[]({}) {{ return {}({}); }}".format(str.join(", ",  [converted(x.type) + " _" + str(i) for i, x in enumerate(self.fields)]), function.name, str.join(", ",  ["_" + str(i) for i, x in enumerate(self.fields)]))
+        else:
+            return "({}({}*)({}){})&{}".format(self.retType, record.name + "::" if record else "", str.join(", ",  [x.type for x in self.fields]), "const" if self.isConst else "", function.name)
+
 
 class Function(object):
     def __init__(self, name):
@@ -129,12 +140,6 @@ def main():
     meta = json.load(open(os.path.join(BASE, "../../build/meta.json")))
     function_by_file = {}
     db = Binding()
-    for v in [  
-                "float", "double", 
-                "bool", "int", "int32_t", "uint32_t", "size_t", "int64_t", "uint64_t",
-                "char", "OGUI::Name", "std::basic_string_view<char>", "std::basic_string<char>", "ostr::string"
-            ]:
-        db.event_arg_types[v] = True
     for key, value in meta["records"].items():
         file = value["fileName"]
         isEvent = "event" in value["attrs"] or "event-data" in value["attrs"]

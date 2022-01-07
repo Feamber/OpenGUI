@@ -12,21 +12,21 @@
 
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct OGUI_API StyleBackground
     {
-        constexpr static std::string_view name = "background"sv;
+        constexpr static ostr::string_view name = u"background"_o;
         constexpr static size_t hash = OGUI::hash(name);
         static void SetEntry(size_t e);
         static size_t GetEntry();
         constexpr static bool inherited = false;
         struct Ids
         {
-            static constexpr size_t backgroundColor = OGUI::hash("background-color"sv);
-            static constexpr size_t backgroundImage = OGUI::hash("background-image"sv);
+            static constexpr size_t backgroundColor = OGUI::hash(u"background-color"_o);
+            static constexpr size_t backgroundImage = OGUI::hash(u"background-image"_o);
         };
         Color4f backgroundColor;
-        std::string backgroundImage;
+        ostr::string backgroundImage;
         void Initialize();
         static const StyleBackground& GetDefault();
         static const StyleBackground& Get(const ComputedStyle& style);

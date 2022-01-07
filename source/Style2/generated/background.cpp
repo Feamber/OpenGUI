@@ -158,7 +158,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     }
                 case Ids::backgroundImage:{
                     auto v = fget();
-                    v->backgroundImage = sheet.Get<const std::string_view>(prop.value);
+                    v->backgroundImage = sheet.Get<const ostr::string_view>(prop.value);
                     break;
                     }
                 default: break;
@@ -223,13 +223,13 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->backgroundImage = sheet.Get<const std::string_view>(prop.from);
+                    v->backgroundImage = sheet.Get<const ostr::string_view>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->backgroundImage = sheet.Get<const std::string_view>(prop.to);
+                    v->backgroundImage = sheet.Get<const ostr::string_view>(prop.to);
                 else if(prop.from == prop.to)
-                    v->backgroundImage = OGUI::Lerp(v->backgroundImage, sheet.Get<const std::string_view>(prop.to), prop.alpha);
+                    v->backgroundImage = OGUI::Lerp(v->backgroundImage, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 else
-                    v->backgroundImage = OGUI::Lerp(sheet.Get<const std::string_view>(prop.from), sheet.Get<const std::string_view>(prop.to), prop.alpha);
+                    v->backgroundImage = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -269,7 +269,7 @@ void OGUI::StyleBackground::SetupParser()
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const std::string_view>(std::any_cast<const std::string_view&>(vs[0]))});
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const ostr::string_view>(ostr::string::decode_from_utf8(std::any_cast<const std::string_view&>(vs[0])))});
             };
         });
     }

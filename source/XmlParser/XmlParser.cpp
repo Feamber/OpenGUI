@@ -79,9 +79,7 @@ namespace OGUI
         {
             if(tinyxml2::XMLText* xml_Text = node->ToText())
             {
-                ostr::string v;
-                v.decode_from_utf8(xml_Text->Value());
-                return std::make_shared<XmlElement>(true, v);
+                return std::make_shared<XmlElement>(true, ostr::string::decode_from_utf8(xml_Text->Value()));
             }
             return nullptr;
         };
@@ -402,7 +400,7 @@ namespace OGUI
         return state.root;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string& out, VisualElement* owner, bool bidirectional, AttrBind::OnChangePost changePostFun)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
@@ -415,21 +413,7 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, std::string& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
-    {
-        auto search = e.attributes.find(name);
-        if(search != e.attributes.end())
-        {
-            if(IsDataBind(search->second))
-                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
-            auto sv = search->second.to_sv();
-            out = {sv.begin(), sv.end()};
-            return FindResult::OK;
-        }
-        return FindResult::NotExist;
-    };
-
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, bool& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, bool& out, VisualElement* owner, bool bidirectional, AttrBind::OnChangePost changePostFun)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
@@ -447,7 +431,7 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, int& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, int& out, VisualElement* owner, bool bidirectional, AttrBind::OnChangePost changePostFun)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
@@ -465,7 +449,7 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner, bool bidirectional, AttrBind::OnChangePost changePostFun)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
@@ -483,7 +467,7 @@ namespace OGUI
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, VisualElement* owner, bool bidirectional, AttrBind::OnChangePost changePostFun)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
@@ -500,35 +484,100 @@ namespace OGUI
         }
         return FindResult::NotExist;
     };
+    
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string& out)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
-            std::vector<ostr::string_view> array;
-            if(search->second.split(splitter, array))
-                for(const auto& str : array)
-                    out.push_back({str.begin(), str.end()});
-            else if(search->second.length())
-            {
-                auto sv = search->second.to_sv();
-                out.push_back({sv.begin(), sv.end()});
-            }
+                return XmlParserHelper::FindResult::InvalidBind;
+            out = search->second;
             return FindResult::OK;
         }
         return FindResult::NotExist;
     };
 
-    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::set<Name>& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, bool& out)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
-                return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
+                return XmlParserHelper::FindResult::InvalidBind;
+            if(!search->second.to_sv().is_bool())
+            {
+                olog::Warn(u"XmlParserHelper::FindAttribute bool ErrorType! XmlElementFullName:{} AttributeName:{} AttributeValue:{}"_o, e.fullName, name.ToStringView(), search->second);
+                return FindResult::ErrorType;
+            }
+            out = search->second.to_sv().to_bool();
+            return FindResult::OK;
+        }
+        return FindResult::NotExist;
+    };
+
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, int& out)
+    {
+        auto search = e.attributes.find(name);
+        if(search != e.attributes.end())
+        {
+            if(IsDataBind(search->second))
+                return XmlParserHelper::FindResult::InvalidBind;
+            if(!search->second.to_sv().is_integer())
+            {
+                olog::Warn(u"XmlParserHelper::FindAttribute int ErrorType! XmlElementFullName:{} AttributeName:{} AttributeValue:{}"_o, e.fullName, name.ToStringView(), search->second);
+                return FindResult::ErrorType;
+            }
+            out = search->second.to_sv().to_int();
+            return FindResult::OK;
+        }
+        return FindResult::NotExist;
+    };
+
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, float& out)
+    {
+        auto search = e.attributes.find(name);
+        if(search != e.attributes.end())
+        {
+            if(IsDataBind(search->second))
+                return XmlParserHelper::FindResult::InvalidBind;
+            if(!search->second.to_sv().is_number())
+            {
+                olog::Warn(u"XmlParserHelper::FindAttribute float ErrorType! XmlElementFullName:{} AttributeName:{} AttributeValue:{}"_o, e.fullName, name.ToStringView(), search->second);
+                return FindResult::ErrorType;
+            }
+            out = search->second.to_sv().to_float();
+            return FindResult::OK;
+        }
+        return FindResult::NotExist;
+    };
+
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out)
+    {
+        auto search = e.attributes.find(name);
+        if(search != e.attributes.end())
+        {
+            if(IsDataBind(search->second))
+                return XmlParserHelper::FindResult::InvalidBind;
+            std::vector<ostr::string_view> array;
+            if(search->second.split(splitter, array))
+                for(const auto& str : array)
+                    out.push_back(str);
+            else if(search->second.length())
+                out.push_back(search->second);
+            return FindResult::OK;
+        }
+        return FindResult::NotExist;
+    };
+
+    XmlParserHelper::FindResult XmlParserHelper::FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::set<Name>& out)
+    {
+        auto search = e.attributes.find(name);
+        if(search != e.attributes.end())
+        {
+            if(IsDataBind(search->second))
+                return XmlParserHelper::FindResult::InvalidBind;
             std::vector<ostr::string_view> array;
             if(search->second.split(splitter, array))
                 for(const auto& str : array)

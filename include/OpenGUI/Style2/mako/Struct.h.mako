@@ -12,10 +12,10 @@
 
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct ${linkage} Style${struct.ident}
     {
-        constexpr static std::string_view name = "${struct.name}"sv;
+        constexpr static ostr::string_view name = u"${struct.name}"_o;
         constexpr static size_t hash = OGUI::hash(name);
         static void SetEntry(size_t e);
         static size_t GetEntry();
@@ -23,10 +23,10 @@ namespace OGUI
         struct Ids
         {
         %for prop in struct.longhands:
-            static constexpr size_t ${prop.ident} = OGUI::hash("${prop.name}"sv);
+            static constexpr size_t ${prop.ident} = OGUI::hash(u"${prop.name}"_o);
         %endfor
         %for prop in struct.shorthands:
-            static constexpr size_t ${prop.ident} = OGUI::hash("${prop.name}"sv);
+            static constexpr size_t ${prop.ident} = OGUI::hash(u"${prop.name}"_o);
         %endfor
         };
     %for prop in struct.longhands:

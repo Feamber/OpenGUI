@@ -9,19 +9,19 @@ if(${Vulkan_FOUND})
 endif()
 	
 extract_file(
-    ${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Release/dawn_0.0.2.zip
+    ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Release/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
 extract_file(
-    ${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Release/SDL2.zip
+    ${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Release/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Release/
 )
 extract_file(
-	${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Debug/dawn_0.0.2.zip
+	${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Debug/dawn_0.0.2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
 extract_file(
-	${OPEN_GUI_ROOT_DIR}/resources/pre-build/${OPENGUI_PLATFORM}/Debug/SDL2.zip
+	${OPEN_GUI_ROOT_DIR}/resources/pre-built/${OPENGUI_PLATFORM}/Debug/SDL2.zip
     ${OPEN_GUI_ROOT_DIR}/build/Binaries/Debug/
 )
 

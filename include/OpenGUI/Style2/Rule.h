@@ -23,21 +23,21 @@ namespace OGUI
     struct StyleSheetStorage
     {
         std::vector<char> bulkData;
-        std::vector<std::string> stringData;
+        std::vector<ostr::string> stringData;
         std::unordered_map<size_t, size_t> stringArrSize;
 
         template<class T>
         T Get(VariantHandle handle) const
         {
             using st = span_trait<T>;
-            if constexpr(std::is_same_v<T, const std::string_view>)
+            if constexpr(std::is_same_v<T, const ostr::string_view>)
             {
                 return stringData[handle.index];
             }
-            else if constexpr(std::is_same_v<T, const gsl::span<std::string>>)
+            else if constexpr(std::is_same_v<T, const gsl::span<ostr::string>>)
             {
                 size_t size = stringArrSize.find(handle.index)->second;
-                auto begin = (std::string*)stringData.data()+handle.index;
+                auto begin = (ostr::string*)stringData.data()+handle.index;
                 return {begin, begin+size};
             }
             else if constexpr(st::value)
@@ -58,12 +58,12 @@ namespace OGUI
         VariantHandle Push(const T& value)
         {
             using st = span_trait<T>;
-            if constexpr(std::is_same_v<T, const std::string_view>)
+            if constexpr(std::is_same_v<T, const ostr::string_view>)
             {
-                stringData.push_back(std::string{value});
+                stringData.push_back(ostr::string{value});
                 return {(int)stringData.size()-1};
             }
-            else if constexpr(std::is_same_v<T, const gsl::span<std::string>>)
+            else if constexpr(std::is_same_v<T, const gsl::span<ostr::string>>)
             {
                 size_t begin = stringData.size();
                 stringArrSize.insert({begin, value.size()});
@@ -102,7 +102,7 @@ namespace OGUI
 		std::vector<StyleProperty> properties;
         struct AnimRule
         {
-            std::string name;
+            ostr::string name;
             std::vector<StyleProperty> properties;
         };
         std::vector<AnimRule> animation;
@@ -115,13 +115,13 @@ namespace OGUI
 			float percentage;
 			int frameIndex;
 		};
-		std::string name;
+		ostr::string name;
 		std::vector<Key> keys;
     };
 
     struct StyleFont
     {
-        std::string fontFamily;
+        ostr::string fontFamily;
         std::vector<std::shared_ptr<godot::FontData>> datas;
     };
 
@@ -135,15 +135,15 @@ namespace OGUI
 		std::vector<StyleKeyframes> styleKeyframes;
         std::vector<StyleFont> styleFonts;
 
-        using FontMap = std::unordered_map<std::string_view, int>;
+        using FontMap = std::unordered_map<ostr::string_view, int>;
         FontMap namedStyleFamilies;
 
-		using SelectorMap = std::multimap<std::string_view, int>;
+		using SelectorMap = std::multimap<ostr::string_view, int>;
 		SelectorMap classSelectors;
 		SelectorMap nameSelectors;
 		SelectorMap typeSelectors;
 
-		using KeyframesMap = std::map<std::string_view, int>;
+		using KeyframesMap = std::map<ostr::string_view, int>;
 		KeyframesMap namedKeyframes;
 
 		OGUI_API void Initialize();

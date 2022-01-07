@@ -9,8 +9,8 @@ namespace SampleControls
     class CheckBox : public Button
     {
     public:
-        std::string_view GetTypeName() override { return "CheckBox"; }
-        std::string_view GetFullTypeName() override { return "SampleControls::CheckBox"; };
+        ostr::string_view GetTypeName() override { return u"CheckBox"; }
+        ostr::string_view GetFullTypeName() override { return u"SampleControls::CheckBox"; };
         CheckBox();
         void OnClicked() override;
         bool _checked;

@@ -23,12 +23,8 @@
 #include "godot/text_server_adv.h"
 #include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Style2/ParseUtils.hpp"
+#include "OpenGUI/Core/Utilities/overload.hpp"
 
-
-// helper type for the visitor #4
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 namespace OGUI
 {
 
@@ -242,7 +238,7 @@ namespace OGUI
         std::shared_ptr<BindText> newBind(new BindText());
         newBind->text = ostr::string("${") + attrName.ToStringView();
         newBind->text += '}';
-        AddBind({attrName, &newBind->text, [this, newBind](bool isApply)
+        AddBind({attrName, newBind->text, [this, newBind](bool isApply)
         {
             //olog::Info(u"Text binding updated, value:{}"_o.format(newBind->text));
             if(isApply)

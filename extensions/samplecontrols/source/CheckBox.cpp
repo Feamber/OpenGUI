@@ -8,7 +8,7 @@ static OGUI::Name checkField = "check";
 
 SampleControls::CheckBox::CheckBox()
 {
-    AddSource({checkField, &_checked});
+    AddSource({checkField, _checked});
 }
 
 void SampleControls::CheckBox::OnClicked()

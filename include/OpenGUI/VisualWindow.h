@@ -11,7 +11,7 @@ namespace OGUI
 
         WindowHandle handle;
 
-        virtual std::string_view GetTypeName() override { return "VisualWindow"; }
-        virtual std::string_view GetFullTypeName() override { return "OGUI::VisualWindow"; }
+        virtual ostr::string_view GetTypeName() override { return u"VisualWindow"; }
+        virtual ostr::string_view GetFullTypeName() override { return u"OGUI::VisualWindow"; }
     };
 }

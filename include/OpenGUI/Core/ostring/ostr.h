@@ -65,24 +65,6 @@ public:
 		_str.resize(count, c);
 	}
 
-	template<typename T>
-	string(const std::basic_string<T>& str)
-	{
-		using ut = std::make_unsigned_t< T >;
-		_str.reserve(str.size());
-		_str.assign((const ut*)str.data(), (const ut*)(str.data() + str.size()));
-		calculate_surrogate();
-	}
-
-	template<typename T>
-	string(std::basic_string_view<T> str)
-	{
-		using ut = std::make_unsigned_t< T >;
-		_str.reserve(str.size());
-		_str.assign((const ut*)str.data(), (const ut*)(str.data() + str.size()));
-		calculate_surrogate();
-	}
-
 	string(const std::u16string& str)
 		: _str(str)
 	{
@@ -249,12 +231,17 @@ public:
 		return std::u16string_view( _str );
 	}
 
-	void decode_from_utf8(std::string_view u8) noexcept
+	static ostr::string decode_from_utf8(std::string_view u8) noexcept
 	{
-		coder::convert_append(u8, _str);
+		return coder::convert_append(u8);
 	}
 
-	[[nodiscard]] uint32_t get_hash() const noexcept
+	std::string encode_to_utf8() const noexcept
+	{
+		return to_sv().encode_to_utf8();
+	}
+
+	[[nodiscard]] constexpr uint32_t get_hash() const noexcept
 	{
 		return to_sv().get_hash();
 	}
@@ -315,7 +302,20 @@ namespace ofmt {
 	}
 }
 
+
 _NS_OSTR_END
+
+namespace std
+{
+	template<>
+	struct hash<ostr::string>
+	{
+		size_t operator()(const ostr::string& n) const
+		{
+			return n.get_hash();
+		}
+	};
+}
 
 // template<>
 // struct fmt::formatter<ostr::string, char16_t>

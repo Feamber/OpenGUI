@@ -13,10 +13,10 @@ void OGUI::StyleSheet::Initialize()
 		complexSel.priority = i;
 		auto& lastSel = complexSel.selectors.back();
 		SelectorMap* mapPtr = nullptr;
-		std::string_view key;
+		ostr::string_view key;
 		if (lastSel.parts.size() == 0)
 		{
-			key = "*";
+			key = u"*";
 			mapPtr = &typeSelectors;
 		}
 		else
@@ -32,8 +32,8 @@ void OGUI::StyleSheet::Initialize()
 					break;
 				case StyleSelector::Type:
 				case StyleSelector::Wildcard:
-					if (lastSel.parts.back().value.empty())
-						key = "*";
+					if (lastSel.parts.back().value.is_empty())
+						key = u"*";
 					mapPtr = &typeSelectors;
 					break;
 				default:
@@ -51,13 +51,13 @@ void OGUI::StyleSheet::Initialize()
 
 	i=0;	
 	for (auto& font : styleFonts)
-		namedStyleFamilies.emplace(font.fontFamily, i++);\
+		namedStyleFamilies.emplace(font.fontFamily, i++);
 	
 	auto&& ctx = Context::Get();
 	for(auto& rule : styleRules)
 		for(auto& prop : rule.properties)
 		{
 			if(prop.id == StyleBackground::Ids::backgroundImage && !prop.keyword)
-				preloaded.push_back(ctx.textureManager->RequireFromFileSystem(std::string(storage.Get<const std::string_view>(prop.value))));
+				preloaded.push_back(ctx.textureManager->RequireFromFileSystem(storage.Get<const ostr::string_view>(prop.value).encode_to_utf8()));
 		}
 }

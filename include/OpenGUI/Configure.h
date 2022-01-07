@@ -406,6 +406,7 @@ extern "C"
 
     #pragma warning(disable: 4244)
     #pragma warning(disable: 4267)
+    #define _ENABLE_EXTENDED_ALIGNED_STORAGE
 #endif
 
 namespace OGUI

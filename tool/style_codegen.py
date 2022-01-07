@@ -173,7 +173,7 @@ class Longhand(Property):
             self.storage_type = "std::vector<{}>".format(type)
         else:
             if self.is_string:
-                self.view_type = "const std::string_view"
+                self.view_type = "const ostr::string_view"
             else:
                 self.view_type = type
             self.storage_type = type

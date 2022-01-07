@@ -2,14 +2,15 @@
 //generated from EventArgWrapper.cpp.mako
 
 #include "OpenGUI/Bind/EventArgWrapper.h"
+#include "OpenGUI/rtti.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
 %for record in db.records:
-bool OGUI::TryGet(const ${record.name}& event, std::string_view name, OGUI::any& out)
+bool OGUI::TryGet(const ${record.name}& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
 %if record.isEvent:
-    static Name eventName = "${record.event_name}";
-    if(name == "eventName")
+    static ostr::string_view eventName = u"${record.event_name}";
+    if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
         return true;

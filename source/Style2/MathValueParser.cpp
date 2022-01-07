@@ -30,7 +30,7 @@ namespace OGUI
 {
 Color4f ParseColorName(std::string_view str)
 {
-    std::string lower(str);
+    ostr::string lower = ostr::string::decode_from_utf8(str);
     switchstr(lower)
     {
         casestr("aliceblue") return Color4f(240.f / 255,248.f / 255,255.f / 255, 1.f); 

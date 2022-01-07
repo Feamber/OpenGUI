@@ -37,7 +37,8 @@ namespace OGUI reflect
 		Inline
 	};
 
-	class OGUI_API reflect VisualElement : public Bindable
+	class OGUI_API reflect attr("rtti":true)
+	VisualElement : public Bindable
 	{
 	public:
 		VisualElement();
@@ -48,9 +49,9 @@ namespace OGUI reflect
 		bool IsParent(VisualElement*);
 		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 
-		virtual bool IsA(std::string_view type) { return GetTypeName() == type; }
-		virtual std::string_view GetTypeName() { return "VisualElement"; }
-		virtual std::string_view GetFullTypeName() { return "OGUI::VisualElement"; }
+		virtual bool IsA(ostr::string_view type) { return GetTypeName() == type; }
+		virtual ostr::string_view GetTypeName() { return u"VisualElement"; }
+		virtual ostr::string_view GetFullTypeName() { return u"OGUI::VisualElement"; }
 
 	public:
 #pragma region Rendering
@@ -67,11 +68,12 @@ namespace OGUI reflect
 #pragma endregion
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
-		std::string _name;
+		ostr::string _name;
 		attr("script":true)
-		const char* GetName();
+		const ostr::string& GetName();
+		void SetName(ostr::string_view name);
 		attr("script":true)
-		void SetName(const char* name);
+		void SetName(ostr::string name) { SetName(ostr::string_view{name}); }
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 		attr("script":true)
@@ -134,7 +136,7 @@ namespace OGUI reflect
 		std::unique_ptr<InlineStyle> _procedureStyle;
 		std::shared_ptr<class AsyncRenderTexture> backgroundImageResource;
 		
-		std::string backgroundImageUrl;
+		ostr::string backgroundImageUrl;
 
 		bool _depended = false;
 		bool _selectorDirty = true;
@@ -145,12 +147,12 @@ namespace OGUI reflect
 		ComputedStyle _style;
 		ComputedStyle _preAnimatedStyle;
 		std::vector<StyleSheet*> _styleSheets;
-		std::vector<std::string> _styleClasses;
+		std::vector<ostr::string> _styleClasses;
 
 		attr("script":true)
-		void AddStyleClass(std::string_view styleClass);
+		void AddStyleClass(ostr::string_view styleClass);
 		attr("script":true)
-		void RemoveStyleClass(std::string_view styleClass);
+		void RemoveStyleClass(ostr::string_view styleClass);
 		void MarkTransformDirty();
 		void MarkStyleTransformDirty();
 		virtual void MarkLayoutDirty(bool visibility);
@@ -164,7 +166,7 @@ namespace OGUI reflect
 		RestyleDamage ApplyProcedureStyle();
 		using StyleOverridingFunc = std::function<RestyleDamage()>;
 		std::vector<StyleOverridingFunc> _styleOverriding;
-		bool ContainClass(std::string_view c);
+		bool ContainClass(ostr::string_view c);
 		void _ResetStyles();
 		void ResetStyles();
 #pragma endregion
@@ -175,7 +177,7 @@ namespace OGUI reflect
 		std::vector<ComputedAnim> _procedureAnims;
 		bool _prevEvaluating = false;
 		bool PlayAnimation(const AnimStyle& style);
-		void SetAnimationTime(std::string_view name, float time);
+		void SetAnimationTime(ostr::string_view name, float time);
 #pragma endregion
 
 #pragma region PseudoElement
@@ -206,10 +208,10 @@ namespace OGUI reflect
 
 		// 当有效时会覆盖正常的方向性导航
 		// 使用的是选择器语法，参考 StyleSelector.h -> QueryFirst()
-		std::string navExplicitUp = "";
-		std::string navExplicitDown = "";
-		std::string navExplicitLeft = "";
-		std::string navExplicitRight = "";
+		ostr::string navExplicitUp = u"";
+		ostr::string navExplicitDown = u"";
+		ostr::string navExplicitLeft = u"";
+		ostr::string navExplicitRight = u"";
 
 		void RegisterFocusedEvent();
 

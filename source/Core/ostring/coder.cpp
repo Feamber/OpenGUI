@@ -5,8 +5,9 @@
 
 _NS_OSTR_BEGIN
 
-void coder::convert_append(std::string_view sv8, std::u16string& out_u16)
+std::u16string coder::convert_append(std::string_view sv8)
 {
+	std::u16string out_u16;
 	out_u16.reserve(out_u16.size() + sv8.size());
 	small_size_t utf8_length;
 	small_size_t utf16_length;
@@ -18,10 +19,12 @@ void coder::convert_append(std::string_view sv8, std::u16string& out_u16)
 		it += utf8_length;
 	}
 	out_u16.shrink_to_fit();
+	return out_u16;
 }
 
-void coder::convert_append(std::u16string_view sv16, std::string& out_u8)
+std::string coder::convert_append(std::u16string_view sv16)
 {
+	std::string out_u8;
 	constexpr size_t CHAR_IN_SURROGATE_PAIR = 2;
 	out_u8.reserve(out_u8.size() + sv16.size() * CHAR_IN_SURROGATE_PAIR);
 	small_size_t utf16_length;
@@ -33,7 +36,7 @@ void coder::convert_append(std::u16string_view sv16, std::string& out_u8)
 		out_u8.append(&seq[0], &seq[utf8_length]);
 		it += utf16_length;
 	}
-	out_u8.shrink_to_fit();
+	return out_u8;
 }
 
 _NS_OSTR_END

@@ -54,6 +54,10 @@
 #define SOL_DEFAULT_ON  +
 #define SOL_DEFAULT_OFF -
 
+#if defined(_MSC_VER) && defined(__clang__)
+	#define SOL_COMPILER_CLANG_CL_I_ SOL_ON
+#endif
+
 #if defined(_MSC_VER)
 	#define SOL_COMPILER_CLANG_I_ SOL_OFF
 	#define SOL_COMPILER_GCC_I_   SOL_OFF
@@ -616,6 +620,7 @@
 #include <utility>
 #include <type_traits>
 #include <string_view>
+#include "OpenGUI/Core/value.h"
 
 #if SOL_IS_ON(SOL_USE_CXX_LUA_I_) || SOL_IS_ON(SOL_USE_CXX_LUAJIT_I_)
 struct lua_State;
@@ -862,7 +867,6 @@ namespace sol {
 // beginning of sol/base_traits.hpp
 
 #include <type_traits>
-
 namespace sol {
 	namespace detail {
 		struct unchecked_t {};
@@ -8115,7 +8119,7 @@ namespace sol { namespace detail {
 		"`anonymous-namespace'",
 		"`anonymous namespace'" } };
 
-#if SOL_IS_ON(SOL_COMPILER_GCC_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_I_)
+#if SOL_IS_ON(SOL_COMPILER_GCC_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_CL_I_)
 	inline std::string ctti_get_type_name_from_sig(std::string name) {
 		// cardinal sins from MINGW
 		using namespace std;
@@ -21674,6 +21678,18 @@ namespace sol {
 	} // namespace detail
 
 	namespace stack { namespace stack_detail {
+		template <class T, class = void>
+		struct rtti_helper
+		{
+			static const ::OGUI::Meta::Type* get() { return nullptr; }
+		};
+
+		template <class T>
+		struct rtti_helper<T, std::void_t<decltype(sizeof(::OGUI::Meta::TypeOf<T>))>>
+		{
+			static const ::OGUI::Meta::Type* get() { return ::OGUI::Meta::TypeOf<T>::Get(); }
+		};
+
 		template <typename X>
 		void set_undefined_methods_on(stack_reference t) {
 			using T = std::remove_pointer_t<X>;
@@ -21699,8 +21715,8 @@ namespace sol {
 			lua_CFunction is_func = &detail::is_check<T>;
 			lua_pushcclosure(L, is_func, 0);
 			lua_setfield(L, -2, "is");
-			lua_pushlightuserdata(L, (void*)&typeid(std::add_pointer_t<T>));
-			lua_setfield(L, -2, "typeid");
+			lua_pushlightuserdata(L, (void*)rtti_helper<T>::get());
+			lua_setfield(L, -2, "meta");
 			lua_setfield(L, t.stack_index(), to_string(meta_function::type).c_str());
 
 			t.pop();

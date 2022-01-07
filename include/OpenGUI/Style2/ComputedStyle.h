@@ -12,7 +12,7 @@ namespace OGUI
 
     struct StyleDesc
     {
-		std::string_view name;
+		ostr::string_view name;
 		size_t hash;
 		size_t entry;
 		bool inherited;

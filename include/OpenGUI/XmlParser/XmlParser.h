@@ -109,15 +109,21 @@ namespace OGUI
         };
 
         template<typename Enum>
-        FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, std::string& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<std::string>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
-        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::set<Name>& out, VisualElement* owner = nullptr, AttrBind::OnChangePost changePostFun = {}, bool bidirectional = false);
+        FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, VisualElement* owner, bool bidirectional = false, AttrBind::OnChangePost changePostFun = {});
+        template<typename Enum>
+        FindResult FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out, VisualElement* owner, bool bidirectional = false, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out, VisualElement* owner, bool bidirectional = false, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out, VisualElement* owner, bool bidirectional = false, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out, VisualElement* owner, bool bidirectional = false, AttrBind::OnChangePost changePostFun = {});
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out, VisualElement* owner, bool bidirectional = false, AttrBind::OnChangePost changePostFun = {});
+
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string& out);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, bool& out);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, int& out);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, float& out);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::vector<ostr::string>& out);
+        OGUI_API FindResult FindAttribute(XmlElement& e, Name name, ostr::string_view splitter, std::set<Name>& out);
         
         OGUI_API bool IsDataBind(ostr::string_view value);
 
@@ -130,24 +136,49 @@ namespace OGUI
         {
             if(!owner)
                 return FindResult::InvalidBind;
-            owner->AddBind({bindName, &out, std::move(changePostFun)});
+            owner->AddBind({bindName, out, std::move(changePostFun)});
             if(bidirectional)
             {
                 owner->_bindBag.emplace(name, bindName);
-                owner->AddSource({bindName, &out});
+                owner->AddSource({bindName, out});
             }
             return FindResult::OK;
         }
+
     }
 
     template<typename Enum>
-    XmlParserHelper::FindResult XmlParserHelper::FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, VisualElement* owner, AttrBind::OnChangePost changePostFun, bool bidirectional)
+    XmlParserHelper::FindResult XmlParserHelper::FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out, VisualElement* owner, bool bidirectional, AttrBind::OnChangePost changePostFun)
     {
         auto search = e.attributes.find(name);
         if(search != e.attributes.end())
         {
             if(IsDataBind(search->second))
                 return AddBind(name, search->second.substring(1), out, owner, changePostFun, bidirectional);
+
+            auto find = allEnumValue.find(search->second);
+            if(find != allEnumValue.end())
+            {
+                out = find->second;
+                return FindResult::OK;
+            }
+            else 
+            {
+                olog::Warn(u"XmlParserHelper::FindAttributeEnum ErrorType! XmlElementFullName:{} AttributeName:{} AttributeValue:{}"_o, e.fullName, name.ToStringView(), search->second);
+                return FindResult::ErrorType;
+            }
+        }
+        return FindResult::NotExist;
+    };
+
+    template<typename Enum>
+    XmlParserHelper::FindResult XmlParserHelper::FindAttributeEnum(XmlElement& e, Name name, std::map<ostr::string, Enum> allEnumValue, Enum& out)
+    {
+        auto search = e.attributes.find(name);
+        if(search != e.attributes.end())
+        {
+            if(IsDataBind(search->second))
+                return XmlParserHelper::FindResult::InvalidBind;
 
             auto find = allEnumValue.find(search->second);
             if(find != allEnumValue.end())

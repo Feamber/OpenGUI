@@ -70,7 +70,7 @@ void OGUI::AnimStyle::SetupParser()
                     throw peg::parse_error("animation-name dose not match animation properties count.");
                 anim.resize(vs.size());
                 for(int i=0; i<vs.size(); ++i)
-                    anim[i].name = std::any_cast<std::string_view&>(vs[i]);
+                    anim[i].name = ostr::string::decode_from_utf8(std::any_cast<const std::string_view&>(vs[i]));
             };
         });
     }
@@ -86,7 +86,7 @@ void OGUI::AnimStyle::SetupParser()
             parser["${prop.name}Value"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.empty() && vs.size() > anim.size())
+                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
                     throw peg::parse_error("${prop.name} dose not match animation-name count.");
                 anim.resize(std::max(anim.size(), vs.size()));
                 
@@ -95,7 +95,11 @@ void OGUI::AnimStyle::SetupParser()
                         anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
                     for(int i=0; i<vs.size(); ++i)
+                    %if prop.is_string:
+                        anim[i].properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(ostr::string::decode_from_utf8(std::any_cast<${prop.parsed_type}&>(vs[0])))});
+                    %else:
                         anim[i].properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(std::any_cast<${prop.parsed_type}&>(vs[0]))});
+                    %endif
             };
         });
     }

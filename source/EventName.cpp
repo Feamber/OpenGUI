@@ -1,10 +1,10 @@
 //DO NOT MODIFY THIS FILE
 //generated from EventArgWrapper.h.mako
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Event/AttachEvent.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Event/PointerEvent.h"
+#include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Event/KeyEvent.h"
+#include "OpenGUI/Event/AttachEvent.h"
 
 namespace OGUI
 {

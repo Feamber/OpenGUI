@@ -274,9 +274,15 @@ void OGUI::Style${struct.ident}::SetupParser()
                 {
                     ${prop.storage_type} value;
                     for(auto& e : vs)
+                    %if prop.is_string:
+                        value.emplace_back(ostr::string::decode_from_utf8(any_move<${prop.parsed_type}>(e)));
+                    %else:
                         value.emplace_back(any_move<${prop.parsed_type}>(e));
+                    %endif
                     ctx.rule->properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(value)});
                 }
+                %elif prop.is_string:
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(ostr::string::decode_from_utf8(std::any_cast<${prop.parsed_type}&>(vs[0])))});
                 %else:
                     ctx.rule->properties.push_back({hash, ctx.storage->Push<${prop.view_type}>(std::any_cast<${prop.parsed_type}&>(vs[0]))});
                 %endif

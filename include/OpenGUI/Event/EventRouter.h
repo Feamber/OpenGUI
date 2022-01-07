@@ -2,6 +2,7 @@
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Bind/EventArgWrapper.h"
 #include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/rtti.h"
 namespace OGUI
 {
     template<class T>

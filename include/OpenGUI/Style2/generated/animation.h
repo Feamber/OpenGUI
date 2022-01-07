@@ -9,23 +9,23 @@
 #include "OpenGUI/Style2/AnimTypes.h"
 namespace OGUI
 {
-    using namespace std::literals::string_view_literals;
+    using namespace ostr::literal;
     struct OGUI_API AnimStyle
     {
         struct Ids
         {
-            static constexpr size_t animationName = OGUI::hash("animation-name"sv);
-            static constexpr size_t animationDuration = OGUI::hash("animation-duration"sv);
-            static constexpr size_t animationDelay = OGUI::hash("animation-delay"sv);
-            static constexpr size_t animationDirection = OGUI::hash("animation-direction"sv);
-            static constexpr size_t animationIterationCount = OGUI::hash("animation-iteration-count"sv);
-            static constexpr size_t animationPlayState = OGUI::hash("animation-play-state"sv);
-            static constexpr size_t animationTimingFunction = OGUI::hash("animation-timing-function"sv);
-            static constexpr size_t animationFillMode = OGUI::hash("animation-fill-mode"sv);
-            static constexpr size_t animationYieldMode = OGUI::hash("animation-yield-mode"sv);
-            static constexpr size_t animationResumeMode = OGUI::hash("animation-resume-mode"sv);
+            static constexpr size_t animationName = OGUI::hash(u"animation-name"_o);
+            static constexpr size_t animationDuration = OGUI::hash(u"animation-duration"_o);
+            static constexpr size_t animationDelay = OGUI::hash(u"animation-delay"_o);
+            static constexpr size_t animationDirection = OGUI::hash(u"animation-direction"_o);
+            static constexpr size_t animationIterationCount = OGUI::hash(u"animation-iteration-count"_o);
+            static constexpr size_t animationPlayState = OGUI::hash(u"animation-play-state"_o);
+            static constexpr size_t animationTimingFunction = OGUI::hash(u"animation-timing-function"_o);
+            static constexpr size_t animationFillMode = OGUI::hash(u"animation-fill-mode"_o);
+            static constexpr size_t animationYieldMode = OGUI::hash(u"animation-yield-mode"_o);
+            static constexpr size_t animationResumeMode = OGUI::hash(u"animation-resume-mode"_o);
         };
-        std::string animationName;
+        ostr::string animationName;
         float animationDuration;
         float animationDelay;
         EAnimDirection animationDirection;

@@ -12,8 +12,8 @@ namespace SampleControls
     class SAMPLECONTROLS_API ScrollView : public VisualElement
     {
     public:
-        std::string_view GetTypeName() override { return "ScrollView"; }
-        std::string_view GetFullTypeName() override { return "SampleControls::ScrollView"; }
+        ostr::string_view GetTypeName() override { return u"ScrollView"; }
+        ostr::string_view GetFullTypeName() override { return u"SampleControls::ScrollView"; }
         ScrollView();
         void InitializeChildren();
 		bool _OnMouseScroll(struct PointerScrollEvent& event);

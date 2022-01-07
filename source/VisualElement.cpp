@@ -1,5 +1,6 @@
 
 
+#include "OpenGUI/Core/ostring/osv.h"
 #include "OpenGUI/Event/AttachEvent.h"
 #include "OpenGUI/Core/nanovg.h"
 #include "OpenGUI/Event/EventBase.h"
@@ -161,12 +162,12 @@ OGUI::Rect rectPixelPosToScreenPos(const OGUI::Rect& rect, const OGUI::Vector2f 
 OGUI::TextureInterface* OGUI::VisualElement::GetBackgroundImage(const StyleBackground& bg)
 {
 	auto& ctx = Context::Get();
-	if (!bg.backgroundImage.empty())
+	if (!bg.backgroundImage.is_empty())
 	{
 		//start new load
 		if (!backgroundImageResource || backgroundImageUrl != bg.backgroundImage)
 		{
-			backgroundImageResource = ctx.textureManager->RequireFromFileSystem(bg.backgroundImage);
+			backgroundImageResource = ctx.textureManager->RequireFromFileSystem(bg.backgroundImage.to_sv().encode_to_utf8());
 			backgroundImageUrl = bg.backgroundImage;
 		}
 	}
@@ -344,12 +345,12 @@ void OGUI::VisualElement::MarkDirty(DirtyReason reason)
 	Context::Get().MarkDirty(this, reason);
 }
 
-const char* OGUI::VisualElement::GetName()
+const ostr::string& OGUI::VisualElement::GetName()
 {
-	return _name.c_str();
+	return _name;
 }
 
-void OGUI::VisualElement::SetName(const char* name)
+void OGUI::VisualElement::SetName(ostr::string_view name)
 {
 	_name = name;
 }
@@ -540,7 +541,7 @@ OGUI::Vector2f OGUI::VisualElement::GetSize() const
 	return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
 }
 
-void OGUI::VisualElement::AddStyleClass(std::string_view styleClass)
+void OGUI::VisualElement::AddStyleClass(ostr::string_view styleClass)
 {
 	if(std::find(_styleClasses.begin(), _styleClasses.end(), styleClass) == _styleClasses.end())
 	{
@@ -549,7 +550,7 @@ void OGUI::VisualElement::AddStyleClass(std::string_view styleClass)
 	}
 }
 
-void OGUI::VisualElement::RemoveStyleClass(std::string_view styleClass)
+void OGUI::VisualElement::RemoveStyleClass(ostr::string_view styleClass)
 {
 	auto find =  std::find(_styleClasses.begin(), _styleClasses.end(), styleClass);
 	if(find != _styleClasses.end())
@@ -699,7 +700,7 @@ OGUI::RestyleDamage OGUI::VisualElement::ApplyProcedureStyle()
 	return damage;
 }
 
-bool OGUI::VisualElement::ContainClass(std::string_view cls)
+bool OGUI::VisualElement::ContainClass(ostr::string_view cls)
 {
 	return std::find(_styleClasses.begin(), _styleClasses.end(), cls) != _styleClasses.end();
 }
@@ -1117,7 +1118,7 @@ bool OGUI::VisualElement::PlayAnimation(const AnimStyle& style)
 	return true;
 }
 
-void OGUI::VisualElement::SetAnimationTime(std::string_view name, float time)
+void OGUI::VisualElement::SetAnimationTime(ostr::string_view name, float time)
 {
 	for(auto& anim : _procedureAnims)
 		if(anim.style.animationName == name)

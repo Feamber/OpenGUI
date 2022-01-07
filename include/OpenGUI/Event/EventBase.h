@@ -4,7 +4,8 @@
 
 namespace OGUI full_reflect
 {
-    enum class attr("script":true) EventRoutePhase : int
+    enum class attr("script":true, "rtti":true) 
+    EventRoutePhase : int
     {
         None = 0,
         TrickleDown = 1,
