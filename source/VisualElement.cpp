@@ -1376,8 +1376,9 @@ void OGUI::VisualElement::ScrollIntoView(VisualElement* child)
 	float offsetLeft = clientRect.min.x - relativeRect.min.x;
 	float offsetRight = relativeRect.max.x - clientRect.max.x;
 	Vector2f newOffset;
-    if(offsetUp > 0)
-        newOffset.Y = offsetUp;
+	
+	if(offsetUp > 0)
+        newOffset.Y = offsetUp;  
 	else if(offsetDown > 0)
 		newOffset.Y = -offsetDown;
 
