@@ -49,44 +49,12 @@ namespace OGUI full_reflect
     };
 
     struct OGUI_API pop_attr() push_attr("event":true) 
-    PreGotKeyboardFocusEvent : PreKeyboardFocusData
-    {
-        static const Name& GetEventName();
-    };
-
-    struct OGUI_API PreLostKeyboardFocusEvent : PreKeyboardFocusData
-    {
-        static const Name& GetEventName();
-    };
-
-    struct OGUI_API PreGotFocusEvent : PreFocusData
-    {
-        static const Name& GetEventName();
-    };
-
-    struct OGUI_API PreLostFocusEvent : PreFocusData
-    {
-        static const Name& GetEventName();
-    };
-
-    struct OGUI_API GotKeyboardFocusEvent : KeyboardFocusData
-    {
-        static const Name& GetEventName();
-    };
-
-    struct OGUI_API LostKeyboardFocusEvent : KeyboardFocusData
-    {
-        static const Name& GetEventName();
-    };
-
-    struct OGUI_API GotFocusEvent : FocusData
-    {
-        static const Name& GetEventName();
-    };
-
-    struct OGUI_API LostFocusEvent : FocusData
-    {
-        static const Name& GetEventName();
-    };
-
+    PreGotKeyboardFocusEvent : PreKeyboardFocusData{};
+    struct OGUI_API PreLostKeyboardFocusEvent : PreKeyboardFocusData{};
+    struct OGUI_API PreGotFocusEvent : PreFocusData{};
+    struct OGUI_API PreLostFocusEvent : PreFocusData {};
+    struct OGUI_API GotKeyboardFocusEvent : KeyboardFocusData{};
+    struct OGUI_API LostKeyboardFocusEvent : KeyboardFocusData {};
+    struct OGUI_API GotFocusEvent : FocusData {};
+    struct OGUI_API LostFocusEvent : FocusData {};
 }

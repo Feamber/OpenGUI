@@ -505,3 +505,6 @@ bool HasFlag(const T& a, const T& b)
 {
     return (a&b) == b;
 }
+
+template<class T>
+struct type_t {};

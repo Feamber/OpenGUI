@@ -1,5 +1,4 @@
 #pragma once
-#include "OpenGUI/Context.h"
 #include "OpenGUI/Core/Containers/vector.hpp"
 #include "OpenGUI/Core/AsyncFile.h"
 #include "OpenGUI/Core/OName.h"

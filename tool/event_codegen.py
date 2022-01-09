@@ -60,6 +60,10 @@ def main():
     content = render(template, db = db)
     output = os.path.join(BASE, "../source/EventName.cpp")
     write(output, content)
+    template = os.path.join(BASE, "EventName.h.mako")
+    content = render(template, db = db)
+    output = os.path.join(BASE, "../include/OpenGUI/Event/EventName.h")
+    write(output, content)
 
 def render(filename, **context):
     try:

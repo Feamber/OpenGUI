@@ -1,13 +1,11 @@
 //DO NOT MODIFY THIS FILE
-//generated from EventArgWrapper.h.mako
-%for header in db.headers:
-#include "${header}"
-%endfor
+//generated from EventName.cpp.mako
+#include "OpenGUI/Event/EventName.h"
 
 namespace OGUI
 {
 %for record in db.events:
-    const Name& ${record.name}::GetEventName() 
+    const Name& GetEventName(type_t<${record.name}>) 
     {
         static Name name = "${record.event_name}";
         return name;

@@ -87,7 +87,6 @@ size_t PushImpl(const void* dst, lua_State* L)
 
 namespace OGUI::Meta::Lua
 {
-    LUABIND_API std::string GetMetatable(const OGUI::Meta::Type* type);
     void SharedPtrDtor(void* memory);
     std::size_t aligned_space_for(gsl::span<std::pair<size_t, size_t>> types, void* alignment = nullptr);
     void* allocate_lua_obj(lua_State* L, const Type* type);

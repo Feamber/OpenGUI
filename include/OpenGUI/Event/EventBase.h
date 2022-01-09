@@ -22,4 +22,10 @@ namespace OGUI full_reflect
         static constexpr EventRoutePhase PhaseMask = EventRoutePhase::NoBroadcast;
         EventRoutePhase currentPhase = EventRoutePhase::None;
     };
+    
+    template<class T>
+    const OGUI::Name& GetEventName()
+    {
+        return GetEventName(type_t<std::remove_cv_t<T>>{});
+    }
 }

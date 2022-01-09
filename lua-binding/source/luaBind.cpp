@@ -9,11 +9,6 @@
 #include <typeindex>
 #include "OpenGUI/Event/EventRouter.h"
 
-std::string OGUI::Meta::Lua::GetMetatable(const OGUI::Meta::Type* type)
-{
-    return std::string("sol.").append(type->Name().encode_to_utf8());
-}
-
 namespace OGUI
 {
 
@@ -22,14 +17,12 @@ namespace OGUI
 		sol::table table;
 		LuaEvent(sol::table table)
 			:table(table) {}
-
-		static const OGUI::Name& GetEventName()
-		{
-			static OGUI::Name name = "script";
-			return name;
-		}
 	};
-
+    const OGUI::Name& GetEventName(type_t<LuaEvent>)
+    {
+        static OGUI::Name name = "script";
+        return name;
+    }
 
 	bool TryGet(const LuaEvent& event, ostr::string_view name, OGUI::Meta::Value& out)
 	{
@@ -117,7 +110,7 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
 
 namespace OGUI::Meta::Lua
 {
-    
+
     void SharedPtrDtor(void* memory)
     {
         memory = sol::detail::align_usertype_unique<std::shared_ptr<void>, true>(memory);
@@ -345,7 +338,7 @@ namespace OGUI::Meta::Lua
                     return 0;
                 }
                 using namespace sol;
-                auto key = GetMetatable(type);
+                auto key = std::string("sol.").append(type->Name().encode_to_utf8());
                 if(!luaL_getmetatable(L, key.c_str()))
                 {
                     lua_pop(L, 1);
@@ -382,16 +375,16 @@ namespace OGUI::Meta::Lua
                         return push_ref(L, ptr.pointee, obj, move);
                     }
                 }
-                auto key = GetMetatable(ptr.pointee);
-                if(!luaL_getmetatable(L, key.c_str()))
-                {
-                    lua_pop(L, 1);
-                    OGUI::olog::Error(u"type \"{}\" is not registered to lua!"_o.format(ptr.pointee->Name()));
-                    return 0;
-                }
-                lua_pop(L, 1);
                 if(ptr.ownership == ReferenceType::Shared)
                 {
+                    auto key = std::string("sol.sol::detail::unique_usertype<").append(ptr.pointee->Name().encode_to_utf8()).append(">");
+                    if(!luaL_getmetatable(L, key.c_str()))
+                    {
+                        lua_pop(L, 1);
+                        OGUI::olog::Error(u"type \"{}\" is not registered to lua!"_o.format(ptr.pointee->Name()));
+                        return 0;
+                    }
+                    lua_pop(L, 1);
                     void** pref = nullptr;
                     detail::unique_destructor* fx = nullptr;
                     detail::unique_tag* id = nullptr;
@@ -414,6 +407,14 @@ namespace OGUI::Meta::Lua
                 }
                 else 
                 {
+                    auto key = std::string("sol.").append(ptr.pointee->Name().encode_to_utf8()).append(" *");
+                    if(!luaL_getmetatable(L, key.c_str()))
+                    {
+                        lua_pop(L, 1);
+                        OGUI::olog::Error(u"type \"{}\" is not registered to lua!"_o.format(ptr.pointee->Name()));
+                        return 0;
+                    }
+                    lua_pop(L, 1);
                     void** ref = Lua::allocate_lua_pointer(L, type);
                     luaL_getmetatable(L, key.c_str());
                     *ref = (void*)dst;
@@ -429,10 +430,18 @@ namespace OGUI::Meta::Lua
 void BindLua_generated(lua_State* state);
 void OGUI::BindLua(lua_State* state)
 {
-    BindLua_generated(state);
     sol::state_view lua(state);
+    BindLua_generated(state);
+    {
+        sol::usertype<VisualElement> type = lua["VisualElement"];
+        type["GetChildren"] = +[](VisualElement* self)
+        {
+            std::vector<VisualElement *> children;
+            self->GetChildren(children);
+            return sol::as_table(children);
+        };
+    }
     lua["GetOguiContext"] = &OGUI::Context::Get;
-
     auto type = lua.new_usertype<LuaBindable>("LuaBindable", sol::base_classes, sol::bases<Bindable>());
     type[sol::meta_function::index] = &LuaBindable::index;
     type[sol::meta_function::new_index] = &LuaBindable::new_index;

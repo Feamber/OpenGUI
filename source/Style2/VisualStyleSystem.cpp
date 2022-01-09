@@ -1,6 +1,8 @@
 
 
 #include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Event/AnimEvent.h"
+#include "OpenGUI/Event/EventRouter.h"
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Style2/Properties.h"
 #include <algorithm>
@@ -443,8 +445,14 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 			{
 				ComputedAnim newAnim;
 				newAnim.style = anims[i];
+				
 				if(newAnim.Init(matchingContext.styleSheetStack))
-					element->_anims.push_back(std::move(newAnim));
+				{
+					auto& anim = element->_anims.emplace_back(std::move(newAnim));
+					AnimStartEvent event;
+					event.animName = anim.style.animationName;
+					RouteEvent(element,  event);
+				}
 			}
 		}
 	}
@@ -452,7 +460,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 
 namespace OGUI
 {
-	void UpdateAnimTime(std::vector<ComputedAnim>& anims)
+	void UpdateAnimTime(std::vector<ComputedAnim>& anims, VisualElement* element)
 	{
 		auto& ctx = Context::Get();
 		auto iter = std::remove_if(anims.begin(), anims.end(), [&](ComputedAnim& anim)
@@ -461,7 +469,12 @@ namespace OGUI
 			bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
 			bool infinite = anim.style.animationIterationCount <= 0.f;
 			if (paused || (!infinite && anim.time >= maxTime))
+			{
 				anim.evaluating = false;
+				AnimEndEvent event;
+				event.animName = anim.style.animationName;
+				RouteEvent(element,  event);
+			}
 			else
 				anim.evaluating = true;
 			if (!paused || anim.yielding)
@@ -481,7 +494,12 @@ namespace OGUI
 				else if(anim.goingback && anim.time <= anim.style.animationDelay)
 					shouldStop = true;
 				if (shouldStop)
+				{
+					AnimStopEvent event;
+					event.animName = anim.style.animationName;
+					RouteEvent(element,  event);
 					return true;
+				}
 			}
 			return false;
 		});
@@ -514,8 +532,8 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	}
 	element->_prevEvaluating = animationEvaling;
 	
-	UpdateAnimTime(element->_anims);
-	UpdateAnimTime(element->_procedureAnims);
+	UpdateAnimTime(element->_anims, element);
+	UpdateAnimTime(element->_procedureAnims, element);
 	return damage;
 }
 

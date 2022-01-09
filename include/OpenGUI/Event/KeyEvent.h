@@ -13,17 +13,7 @@ namespace OGUI full_reflect
     };
 
     struct OGUI_API push_attr("event":true) 
-    KeyDownEvent : KeyData
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API KeyUpEvent : KeyData
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API KeyHoldEvent : KeyData
-    {
-        static const Name& GetEventName();
-    };
-
+    KeyDownEvent : KeyData {};
+    struct OGUI_API KeyUpEvent : KeyData {};
+    struct OGUI_API KeyHoldEvent : KeyData {};
 }

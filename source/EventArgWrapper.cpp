@@ -250,6 +250,55 @@ bool OGUI::TryGet(const OGUI::PostAttachEvent& event, ostr::string_view name, OG
     }
     return true;
 }
+bool OGUI::TryGet(const OGUI::KeyData& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    if(TryGet((const OGUI::EventBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("gestureType") out = event.gestureType; break;
+        casestr("key") out = event.key; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::KeyDownEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"key-down";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::KeyData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::KeyUpEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"key-up";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::KeyData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::KeyHoldEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"key-hold";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::KeyData&)event, name, out))
+        return true;
+    return false;
+}
 bool OGUI::TryGet(const OGUI::PointerData& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
     if(TryGet((const OGUI::EventBase&)event, name, out))
@@ -407,52 +456,51 @@ bool OGUI::TryGet(const OGUI::TouchPressureChangeEvent& event, ostr::string_view
         return true;
     return false;
 }
-bool OGUI::TryGet(const OGUI::KeyData& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::AnimEventData& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
     if(TryGet((const OGUI::EventBase&)event, name, out))
         return true;
     switchstr(name)
     {
-        casestr("gestureType") out = event.gestureType; break;
-        casestr("key") out = event.key; break;
+        casestr("animName") out = event.animName; break;
         default:
             return false;
     }
     return true;
 }
-bool OGUI::TryGet(const OGUI::KeyDownEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::AnimStartEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
-    static ostr::string_view eventName = u"key-down";
+    static ostr::string_view eventName = u"anim-start";
     if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
         return true;
     }
-    if(TryGet((const OGUI::KeyData&)event, name, out))
+    if(TryGet((const OGUI::AnimEventData&)event, name, out))
         return true;
     return false;
 }
-bool OGUI::TryGet(const OGUI::KeyUpEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::AnimEndEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
-    static ostr::string_view eventName = u"key-up";
+    static ostr::string_view eventName = u"anim-end";
     if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
         return true;
     }
-    if(TryGet((const OGUI::KeyData&)event, name, out))
+    if(TryGet((const OGUI::AnimEventData&)event, name, out))
         return true;
     return false;
 }
-bool OGUI::TryGet(const OGUI::KeyHoldEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::AnimStopEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
-    static ostr::string_view eventName = u"key-hold";
+    static ostr::string_view eventName = u"anim-stop";
     if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
         return true;
     }
-    if(TryGet((const OGUI::KeyData&)event, name, out))
+    if(TryGet((const OGUI::AnimEventData&)event, name, out))
         return true;
     return false;
 }

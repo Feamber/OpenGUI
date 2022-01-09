@@ -25,48 +25,15 @@ namespace OGUI full_reflect
     };
     
     struct OGUI_API push_attr("event":true) 
-    PointerDownEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API PointerMoveEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API PointerUpEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API PointerClickEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API PointerDoubleClickEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API PointerEnterEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API PointerLeaveEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API PointerScrollEvent : PointerData
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API TouchGestureEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API TouchFirstMoveEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
-    struct OGUI_API TouchPressureChangeEvent : PointerData 
-    {
-        static const Name& GetEventName();
-    };
+    PointerDownEvent : PointerData {};
+    struct OGUI_API PointerMoveEvent : PointerData {};
+    struct OGUI_API PointerUpEvent : PointerData {};
+    struct OGUI_API PointerClickEvent : PointerData {};
+    struct OGUI_API PointerDoubleClickEvent : PointerData {};
+    struct OGUI_API PointerEnterEvent : PointerData {};
+    struct OGUI_API PointerLeaveEvent : PointerData {};
+    struct OGUI_API PointerScrollEvent : PointerData{};
+    struct OGUI_API TouchGestureEvent : PointerData {};
+    struct OGUI_API TouchFirstMoveEvent : PointerData {};
+    struct OGUI_API TouchPressureChangeEvent : PointerData {};
 }
