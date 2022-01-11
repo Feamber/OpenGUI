@@ -1,42 +1,44 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Event/EventBase.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/Bind/EventArg.h"
 #include "OpenGUI/Context.h"
+#include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
     sol::state_view lua(L);
+    sol::table OGUI = lua["OGUI"];
     {
-        sol::usertype<OGUI::Context> type = lua.new_usertype<OGUI::Context>("Context");
+        sol::usertype<OGUI::Context> type = OGUI.new_usertype<OGUI::Context>("Context");
         type["IsElementValid"] = (bool(OGUI::Context::*)(OGUI::VisualElement *)const)&OGUI::Context::IsElementValid;
         type["ActivateWindow"] = (bool(OGUI::Context::*)(OGUI::VisualWindow *))&OGUI::Context::ActivateWindow;
-        type["SetFocus"] = (bool(OGUI::Context::*)(OGUI::VisualElement *, OGUI::FocusChangeCause, ostr::string))&OGUI::Context::SetFocus;
+        type["SetFocus"] = (bool(OGUI::Context::*)(OGUI::VisualElement *, OGUI::EFocusChangeCause, ostr::string))&OGUI::Context::SetFocus;
         type["SetXmlFilter_Global"] = (void(OGUI::Context::*)(const char *, const char *))&OGUI::Context::SetXmlFilter_Global;
         type["CleanXmlFilter_Global"] = (void(OGUI::Context::*)(const char *))&OGUI::Context::CleanXmlFilter_Global;
         type["UpdataXmlFilterCache_Global"] = (void(OGUI::Context::*)())&OGUI::Context::UpdataXmlFilterCache_Global;
         type["HasFilterTag_Global"] = (bool(OGUI::Context::*)(const char *)const)&OGUI::Context::HasFilterTag_Global;
+        type["Get"] = (OGUI::Context &(*)())&OGUI::Context::Get;
     }
     {
-        sol::usertype<OGUI::IEventArg> type = lua.new_usertype<OGUI::IEventArg>("IEventArg");
+        sol::usertype<OGUI::IEventArg> type = OGUI.new_usertype<OGUI::IEventArg>("IEventArg");
         type["TryGet"] = +[](OGUI::IEventArg* self, ostr::string _0) { return self->TryGet(_0); };
     }
     {
-        sol::usertype<OGUI::Bindable> type = lua.new_usertype<OGUI::Bindable>("Bindable");
+        sol::usertype<OGUI::Bindable> type = OGUI.new_usertype<OGUI::Bindable>("Bindable");
         type["Bind"] = (void(OGUI::Bindable::*)(OGUI::Bindable &))&OGUI::Bindable::Bind;
         type["Unbind"] = (void(OGUI::Bindable::*)(OGUI::Bindable &))&OGUI::Bindable::Unbind;
     }
     {
         sol::usertype<OGUI::VisualElement> type = 
-            lua.new_usertype<OGUI::VisualElement>("VisualElement", sol::base_classes, sol::bases<OGUI::Bindable>());
+            OGUI.new_usertype<OGUI::VisualElement>("VisualElement", sol::base_classes, sol::bases<OGUI::Bindable>());
         type["Visible"] = (bool(OGUI::VisualElement::*)()const)&OGUI::VisualElement::Visible;
         type["GetName"] = (const ostr::string &(OGUI::VisualElement::*)())&OGUI::VisualElement::GetName;
-        type["SetName"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->SetName(_0); };
+        type["SetName"] = (void(OGUI::VisualElement::*)(ostr::string))&OGUI::VisualElement::SetName;
         type["SetVisibility"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetVisibility;
         type["IsClippingChildren"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::IsClippingChildren;
         type["PushChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::PushChild;
@@ -50,28 +52,28 @@ void BindLua_generated(lua_State* L)
         type["Bind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Bind;
         type["Unbind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Unbind;
     }
-    lua["QueryFirst"] = +[](OGUI::VisualElement * _0, ostr::string _1) { return OGUI::QueryFirst(_0, _1); };
-    lua["QueryAll"] = +[](OGUI::VisualElement * _0, ostr::string _1, std::vector<OGUI::VisualElement *> & _2) { return OGUI::QueryAll(_0, _1, _2); };
-    lua["BindTree"] = (void(*)(OGUI::VisualElement *, OGUI::Bindable &))&OGUI::BindTree;
-    lua.new_enum<int>("ENavMode", {
+    OGUI["QueryFirst"] = +[](OGUI::VisualElement * _0, ostr::string _1) { return OGUI::QueryFirst(_0, _1); };
+    OGUI["QueryAll"] = +[](OGUI::VisualElement * _0, ostr::string _1, std::vector<OGUI::VisualElement *> & _2) { return OGUI::QueryAll(_0, _1, _2); };
+    OGUI["BindTree"] = (void(*)(OGUI::VisualElement *, OGUI::Bindable &))&OGUI::BindTree;
+    OGUI.new_enum<int>("ENavMode", {
         {"None", 0},
         {"Horizontal", 1},
         {"Vertical", 2},
         {"Automatic", 3}
     });
-    lua.new_enum<int>("ENavCycleMode", {
+    OGUI.new_enum<int>("ENavCycleMode", {
         {"None", 0},
         {"Horizontal", 1},
         {"Vertical", 2},
         {"Automatic", 3}
     });
-    lua.new_enum<int>("ENavDirection", {
+    OGUI.new_enum<int>("ENavDirection", {
         {"Up", 0},
         {"Down", 1},
         {"Left", 2},
         {"Right", 3}
     });
-    lua.new_enum<int>("EKeyCode", {
+    OGUI.new_enum<int>("EKeyCode", {
         {"Invalid", 0},
         {"Backspace", 8},
         {"Tab", 9},
@@ -233,12 +235,12 @@ void BindLua_generated(lua_State* L)
         {"Gamepad_RightStick_Right", 255},
         {"Gamepad_RightStick_Left", 256}
     });
-    lua.new_enum<int>("EInlineAlign", {
+    OGUI.new_enum<int>("EInlineAlign", {
         {"Baseline", 0},
         {"Top", 1},
         {"Middle", 2}
     });
-    lua.new_enum<int>("EMouseKey", {
+    OGUI.new_enum<int>("EMouseKey", {
         {"None", 0},
         {"LB", 1},
         {"RB", 2},
@@ -246,7 +248,7 @@ void BindLua_generated(lua_State* L)
         {"X1B", 8},
         {"X2B", 16}
     });
-    lua.new_enum<int>("EControllerAxis", {
+    OGUI.new_enum<int>("EControllerAxis", {
         {"LX", 0},
         {"LY", 1},
         {"RX", 2},
@@ -254,7 +256,7 @@ void BindLua_generated(lua_State* L)
         {"LT", 4},
         {"RT", 5}
     });
-    lua.new_enum<int>("EControllerButton", {
+    OGUI.new_enum<int>("EControllerButton", {
         {"LThumb", 0},
         {"RThumb", 1},
         {"LUp", 2},
@@ -272,11 +274,11 @@ void BindLua_generated(lua_State* L)
         {"LSpecial", 14},
         {"RSpecial", 15}
     });
-    lua.new_enum<int>("EControllerVibrationMotor", {
+    OGUI.new_enum<int>("EControllerVibrationMotor", {
         {"Left", 1},
         {"Right", 2}
     });
-    lua.new_enum<int>("EMouseCursor", {
+    OGUI.new_enum<int>("EMouseCursor", {
         {"Hide", 0},
         {"Arrow", 1},
         {"TextInput", 2},
@@ -288,7 +290,7 @@ void BindLua_generated(lua_State* L)
         {"Hand", 8},
         {"NotAllowed", 9}
     });
-    lua.new_enum<int>("EGestureEvent", {
+    OGUI.new_enum<int>("EGestureEvent", {
         {"None", 0},
         {"Scroll", 1},
         {"Magnify", 2},
@@ -296,7 +298,7 @@ void BindLua_generated(lua_State* L)
         {"Rotate", 4},
         {"LongPress", 5}
     });
-    lua.new_enum<int>("PseudoStates", {
+    OGUI.new_enum<int>("PseudoStates", {
         {"None", 0},
         {"Active", 1},
         {"Hover", 2},
@@ -307,7 +309,7 @@ void BindLua_generated(lua_State* L)
         {"Scroll", 64},
         {"Root", 128}
     });
-    lua.new_enum<int>("EventRoutePhase", {
+    OGUI.new_enum<int>("EventRoutePhase", {
         {"None", 0},
         {"TrickleDown", 1},
         {"Reach", 2},
@@ -316,7 +318,7 @@ void BindLua_generated(lua_State* L)
         {"All", 15},
         {"NoBroadcast", 11}
     });
-    lua.new_enum<int>("FocusChangeCause", {
+    OGUI.new_enum<int>("EFocusChangeCause", {
         {"UserActions", 0},
         {"FocusNavigation", 1},
         {"ActivateWindow", 2}

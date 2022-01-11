@@ -37,7 +37,7 @@ def lua_type_name(name : str):
     if name == "int" or  name == "size_t" or name == "uint32_t" \
         or name == "int32_t" or name == "uint":
         return "integer"
-    if name.startswith("std::string") or name == "ostr::string" or name == "char":
+    if name.startswith("ostr::string") or name == "char":
         return "string"
     name = name.replace("::", ".")
     i = name.find("<")
@@ -59,20 +59,21 @@ def converted(str):
         return "ostr::string"
     return str
 class FunctionDesc(object):
-    def __init__(self, retType, rawRetType, fields, isConst, comment):
+    def __init__(self, retType, rawRetType, fields, isConst, isStatic, comment):
         self.retType = retType
         self.luaRetType = lua_type_name(rawRetType)
         self.fields = fields
         self.isConst = isConst
+        self.isStatic = isStatic
         self.comment = comment
     def getReference(self, record, function):
         if "ostr::string_view" in [x.type for x in self.fields]:
-            if record:
+            if record and not self.isStatic:
                 return "+[]({}* self, {}) {{ return self->{}({}); }}".format(record.name, str.join(", ",  [converted(x.type) + " _" + str(i) for i, x in enumerate(self.fields)]), function.short_name, str.join(", ",  ["_" + str(i) for i, x in enumerate(self.fields)]))
             else:
                 return "+[]({}) {{ return {}({}); }}".format(str.join(", ",  [converted(x.type) + " _" + str(i) for i, x in enumerate(self.fields)]), function.name, str.join(", ",  ["_" + str(i) for i, x in enumerate(self.fields)]))
         else:
-            return "({}({}*)({}){})&{}".format(self.retType, record.name + "::" if record else "", str.join(", ",  [x.type for x in self.fields]), "const" if self.isConst else "", function.name)
+            return "({}({}*)({}){})&{}".format(self.retType, record.name + "::" if record and not self.isStatic else "", str.join(", ",  [x.type for x in self.fields]), "const" if self.isConst else "", function.name)
 
 
 class Function(object):
@@ -138,7 +139,6 @@ def GetInclude(path):
 
 def main():
     meta = json.load(open(os.path.join(BASE, "../../build/meta.json")))
-    function_by_file = {}
     db = Binding()
     for key, value in meta["records"].items():
         file = value["fileName"]
@@ -179,7 +179,7 @@ def main():
         db.event_arg_types[key]=True
         db.enums.append(Enum(key, enumerators, value["comment"]))
         
-    db.functions = parseFunctions(meta["functions"], headers=db.headers, function_by_file=function_by_file)
+    db.functions = parseFunctions(meta["functions"], headers=db.headers)
     template = os.path.join(BASE, "luaBind.cpp.mako")
     content = render(template, db = db)
     output = os.path.join(BASE, "../source/luaBind.generated.cpp")
@@ -195,11 +195,10 @@ def main():
         content = render(template, enum = enum)
         output = os.path.join(BASE, "../IntelliSense/%s.lua"%enum.name.replace("::", "_"))
         write(output, content)
-    for file, functions in function_by_file.items():
-        template = os.path.join(BASE, "FunctionIntelliSense.lua.mako")
-        content = render(template, functions = functions)
-        output = os.path.join(BASE, "../IntelliSense/%s.lua"%(file.replace("\\", "_")))
-        write(output, content)
+    template = os.path.join(BASE, "OGUI.lua.mako")
+    content = render(template, db = db)
+    output = os.path.join(BASE, "../IntelliSense/OGUI.lua")
+    write(output, content)
 
 
 
@@ -232,7 +231,7 @@ def abort(message):
         print(message, file=sys.stderr)
         sys.exit(1)
 
-def parseFunctions(dict, headers = None, function_by_file = None):
+def parseFunctions(dict, headers = None):
     functionsDict = {}
     for value in dict:
         attr = value["attrs"]
@@ -250,12 +249,8 @@ def parseFunctions(dict, headers = None, function_by_file = None):
         for key2, value2 in value["parameters"].items():
             field = Field(key2, value2["type"], value2["rawType"], value2["comment"])
             fields.append(field)
-        f = FunctionDesc(value["retType"], value["rawRetType"], fields, value["isConst"], value["comment"])
+        f = FunctionDesc(value["retType"], value["rawRetType"], fields, value["isConst"], value["isStatic"], value["comment"])
         function.descs.append(f)
-        if not (function_by_file is None):
-            path = GetInclude(file)
-            function_by_file.setdefault(path, set())
-            function_by_file[path].add(function)
     return functionsDict
 
 if __name__ == "__main__":

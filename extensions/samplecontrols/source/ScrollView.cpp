@@ -161,7 +161,7 @@ bool SampleControls::ScrollView::OnMouseUp(struct PointerUpEvent& event)
 
 bool SampleControls::ScrollView::OnGotFocusEvent(GotFocusEvent& event)
 {
-    if(event.cause != FocusChangeCause::FocusNavigation || event.currentPhase != EventRoutePhase::TrickleDown)
+    if(event.cause != EFocusChangeCause::FocusNavigation || event.currentPhase != EventRoutePhase::TrickleDown)
         return false;
     ScrollIntoView(event.currentFocusedPath->back());
     return false;

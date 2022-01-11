@@ -8,7 +8,7 @@ namespace OGUI::Meta
 
     const Type* TypeOf<OGUI::Bindable>::Get()
     {
-        static std::aligned_storage_t<sizeof(OGUI::Bindable), alignof(OGUI::Bindable)> storage;
+        static std::aligned_storage_t<sizeof(RecordType), alignof(RecordType)> storage;
         static bool entry = false;
         if(entry)
             return std::launder(reinterpret_cast<const Type*>(&storage));
@@ -29,13 +29,14 @@ namespace OGUI::Meta
         new(&storage) RecordType(size, align, name, base, nativeMethods, fields, methods);
         return std::launder(reinterpret_cast<const Type*>(&storage));
     }
+    RecordRegister<OGUI::Bindable> __RegisterBindable;
 }
 namespace OGUI::Meta
 {
 
     const Type* TypeOf<OGUI::VisualElement>::Get()
     {
-        static std::aligned_storage_t<sizeof(OGUI::VisualElement), alignof(OGUI::VisualElement)> storage;
+        static std::aligned_storage_t<sizeof(RecordType), alignof(RecordType)> storage;
         static bool entry = false;
         if(entry)
             return std::launder(reinterpret_cast<const Type*>(&storage));
@@ -56,6 +57,7 @@ namespace OGUI::Meta
         new(&storage) RecordType(size, align, name, base, nativeMethods, fields, methods);
         return std::launder(reinterpret_cast<const Type*>(&storage));
     }
+    RecordRegister<OGUI::VisualElement> __RegisterVisualElement;
 }
 
 namespace OGUI::Meta
@@ -102,6 +104,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::ENavMode> __RegisterENavMode;
 }
 namespace OGUI::Meta
 {
@@ -147,6 +150,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::ENavCycleMode> __RegisterENavCycleMode;
 }
 namespace OGUI::Meta
 {
@@ -192,6 +196,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::ENavDirection> __RegisterENavDirection;
 }
 namespace OGUI::Meta
 {
@@ -705,6 +710,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EKeyCode> __RegisterEKeyCode;
 }
 namespace OGUI::Meta
 {
@@ -747,6 +753,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EInlineAlign> __RegisterEInlineAlign;
 }
 namespace OGUI::Meta
 {
@@ -798,6 +805,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EMouseKey> __RegisterEMouseKey;
 }
 namespace OGUI::Meta
 {
@@ -849,6 +857,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EControllerAxis> __RegisterEControllerAxis;
 }
 namespace OGUI::Meta
 {
@@ -930,6 +939,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EControllerButton> __RegisterEControllerButton;
 }
 namespace OGUI::Meta
 {
@@ -969,6 +979,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EControllerVibrationMotor> __RegisterEControllerVibrationMotor;
 }
 namespace OGUI::Meta
 {
@@ -1032,6 +1043,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EMouseCursor> __RegisterEMouseCursor;
 }
 namespace OGUI::Meta
 {
@@ -1083,6 +1095,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EGestureEvent> __RegisterEGestureEvent;
 }
 namespace OGUI::Meta
 {
@@ -1143,6 +1156,7 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::PseudoStates> __RegisterPseudoStates;
 }
 namespace OGUI::Meta
 {
@@ -1197,10 +1211,11 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<OGUI::EventRoutePhase> __RegisterEventRoutePhase;
 }
 namespace OGUI::Meta
 {
-    const Type* TypeOf<OGUI::FocusChangeCause>::Get()
+    const Type* TypeOf<OGUI::EFocusChangeCause>::Get()
     {
         static EnumType::Enumerator enumerators[] = 
         {
@@ -1209,34 +1224,35 @@ namespace OGUI::Meta
             {u"ActivateWindow", 2},
         };
         static EnumType type{
-            TypeOf<std::underlying_type_t<OGUI::FocusChangeCause>>::Get(),
-            u"OGUI::FocusChangeCause", 
+            TypeOf<std::underlying_type_t<OGUI::EFocusChangeCause>>::Get(),
+            u"OGUI::EFocusChangeCause", 
             +[](void* self, ostr::string_view str)
             {
-                auto& This = *((OGUI::FocusChangeCause*)self);
+                auto& This = *((OGUI::EFocusChangeCause*)self);
                 switchstr(str)
                 {
-                    casestr("UserActions") This = OGUI::FocusChangeCause::UserActions; break;
-                    casestr("FocusNavigation") This = OGUI::FocusChangeCause::FocusNavigation; break;
-                    casestr("ActivateWindow") This = OGUI::FocusChangeCause::ActivateWindow; break;
+                    casestr("UserActions") This = OGUI::EFocusChangeCause::UserActions; break;
+                    casestr("FocusNavigation") This = OGUI::EFocusChangeCause::FocusNavigation; break;
+                    casestr("ActivateWindow") This = OGUI::EFocusChangeCause::ActivateWindow; break;
                     default:
-                        olog::Error(u"fail to parse OGUI::FocusChangeCause. input: {}"_o.format(str));
+                        olog::Error(u"fail to parse OGUI::EFocusChangeCause. input: {}"_o.format(str));
                         break;
                 }
             },
             +[](const void* self)
             {
-                auto& This = *((const OGUI::FocusChangeCause*)self);
+                auto& This = *((const OGUI::EFocusChangeCause*)self);
                 switch(This)
                 {
-                    case OGUI::FocusChangeCause::UserActions: return ostr::string(u"UserActions");
-                    case OGUI::FocusChangeCause::FocusNavigation: return ostr::string(u"FocusNavigation");
-                    case OGUI::FocusChangeCause::ActivateWindow: return ostr::string(u"ActivateWindow");
+                    case OGUI::EFocusChangeCause::UserActions: return ostr::string(u"UserActions");
+                    case OGUI::EFocusChangeCause::FocusNavigation: return ostr::string(u"FocusNavigation");
+                    case OGUI::EFocusChangeCause::ActivateWindow: return ostr::string(u"ActivateWindow");
                 }
-                return ostr::string(u"OGUI::FocusChangeCause::Unknown");
+                return ostr::string(u"OGUI::EFocusChangeCause::Unknown");
             },
             enumerators
         };
         return &type;
     }
+    EnumRegister<OGUI::EFocusChangeCause> __RegisterEFocusChangeCause;
 }

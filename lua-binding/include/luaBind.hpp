@@ -105,6 +105,15 @@ namespace sol::stack
             return OGUI::Meta::Lua::push_ref(L, any.type, (void*)any.ptr, false);
         }
     };
+
+    template<>
+    struct unqualified_pusher<sol::detail::as_pointer_tag<OGUI::Meta::ValueRef>>
+    {
+        static int push(lua_State* L, const OGUI::Meta::ValueRef* any) 
+        {
+            return OGUI::Meta::Lua::push_ref(L, any->type, (void*)any->ptr, false);
+        }
+    };
         
     template<>
     struct unqualified_pusher<OGUI::Meta::Value>
@@ -117,6 +126,15 @@ namespace sol::stack
         static int push(lua_State* L, const OGUI::Meta::Value& any) 
         {
             return OGUI::Meta::Lua::push_ref(L, any.type, (void*)any.Ptr(), false);
+        }
+    };
+
+    template<>
+    struct unqualified_pusher<sol::detail::as_pointer_tag<OGUI::Meta::Value>>
+    {
+        static int push(lua_State* L, const OGUI::Meta::Value* any) 
+        {
+            return OGUI::Meta::Lua::push_ref(L, any->type, (void*)any->Ptr(), false);
         }
     };
 

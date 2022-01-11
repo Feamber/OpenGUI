@@ -1159,6 +1159,38 @@ namespace OGUI::Meta
         return false;
     }
 
+    static std::unordered_map<ostr::string, const RecordType*> RecordMap;
+
+    const RecordType* RecordType::FromName(ostr::string_view name)
+    {
+        auto iter = RecordMap.find(name);
+        if(iter != RecordMap.end())
+            return iter->second;
+        else 
+            return nullptr;
+    }
+
+    void RecordType::Register(const RecordType *type)
+    {
+        RecordMap.insert(std::make_pair(ostr::string(type->name), type));
+    } 
+    
+    static std::unordered_map<ostr::string, const EnumType*> EnumMap;
+
+    const EnumType* EnumType::FromName(ostr::string_view name)
+    {
+        auto iter = EnumMap.find(name);
+        if(iter != EnumMap.end())
+            return iter->second;
+        else 
+            return nullptr;
+    }
+
+    void EnumType::Register(const EnumType *type)
+    {
+        EnumMap.insert(std::make_pair(ostr::string(type->name), type));
+    }
+
     Value::Value()
         :type(nullptr)
     {}
@@ -1249,6 +1281,8 @@ namespace OGUI::Meta
     void Value::_Copy(const Value& other)
     {
         type = other.type;
+        if(!type)
+            return;
         auto ptr = _Alloc();
         type->Copy(ptr, other.Ptr());
     }
@@ -1256,6 +1290,8 @@ namespace OGUI::Meta
     void Value::_Move(Value&& other)
     {
         type = other.type;
+        if(!type)
+            return;
         auto ptr = _Alloc();
         type->Move(ptr, other.Ptr());
         other.Reset();

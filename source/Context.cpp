@@ -493,7 +493,7 @@ bool OGUI::Context::OnKeyNavigation(OGUI::VisualElement* element, ENavDirection 
 	auto nextNavTarget = element->FindNextNavTarget(direction);
 	if(nextNavTarget)
 	{
-		SetFocus(nextNavTarget, FocusChangeCause::FocusNavigation);
+		SetFocus(nextNavTarget, EFocusChangeCause::FocusNavigation);
 		return true;
 	}
 	return false;
@@ -510,7 +510,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		if(_keyboardFocused)
 		{
 			PreLostKeyboardFocusEvent preLostKeyboardFocusEvent;
-			preLostKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+			preLostKeyboardFocusEvent.cause = EFocusChangeCause::ActivateWindow;
 			preLostKeyboardFocusEvent.causeDescribe = u"";
 			preLostKeyboardFocusEvent.currentFocused = _keyboardFocused;
 			preLostKeyboardFocusEvent.newFocused = newKeyboardFocused;
@@ -518,7 +518,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		}
 
 		PreGotKeyboardFocusEvent preGotKeyboardFocusEvent;
-		preGotKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+		preGotKeyboardFocusEvent.cause = EFocusChangeCause::ActivateWindow;
 		preGotKeyboardFocusEvent.causeDescribe = u"";
 		preGotKeyboardFocusEvent.currentFocused = _keyboardFocused;
 		preGotKeyboardFocusEvent.newFocused = newKeyboardFocused;
@@ -530,7 +530,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		if(oldKeyboardFocused)
 		{
 			LostKeyboardFocusEvent lostKeyboardFocusEvent;
-			lostKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+			lostKeyboardFocusEvent.cause = EFocusChangeCause::ActivateWindow;
 			lostKeyboardFocusEvent.causeDescribe = u"";
 			lostKeyboardFocusEvent.currentFocused = _keyboardFocused;
 			lostKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
@@ -538,7 +538,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 		}
 
 		GotKeyboardFocusEvent gotKeyboardFocusEvent;
-		gotKeyboardFocusEvent.cause = FocusChangeCause::ActivateWindow;
+		gotKeyboardFocusEvent.cause = EFocusChangeCause::ActivateWindow;
 		gotKeyboardFocusEvent.causeDescribe = u"";
 		gotKeyboardFocusEvent.currentFocused = _keyboardFocused;
 		gotKeyboardFocusEvent.oldFocused = oldKeyboardFocused;
@@ -549,7 +549,7 @@ bool OGUI::Context::ActivateWindow(OGUI::VisualWindow* newWindow)
 	return false;
 }
 
-bool OGUI::Context::SetFocus(OGUI::VisualElement* element, FocusChangeCause cause, ostr::string describe)
+bool OGUI::Context::SetFocus(OGUI::VisualElement* element, EFocusChangeCause cause, ostr::string describe)
 {
 	if(!element->focusable) return false;
 

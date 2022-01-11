@@ -75,7 +75,7 @@ namespace OGUI reflect
 		attr("script":true)
 		bool ActivateWindow(VisualWindow* newWindow);
 		attr("script":true)
-		bool SetFocus(VisualElement* element, FocusChangeCause cause = FocusChangeCause::UserActions, ostr::string describe = u"");
+		bool SetFocus(VisualElement* element, EFocusChangeCause cause = EFocusChangeCause::UserActions, ostr::string describe = u"");
 #pragma endregion
 
 #pragma region XmlFilter

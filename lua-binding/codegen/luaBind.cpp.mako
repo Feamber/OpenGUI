@@ -7,13 +7,14 @@
 void BindLua_generated(lua_State* L)
 {
     sol::state_view lua(L);
+    sol::table OGUI = lua["OGUI"];
 %for record in db.records:
     {
     %if record.bases:
         sol::usertype<${record.name}> type = 
-            lua.new_usertype<${record.name}>("${record.short_name}", sol::base_classes, sol::bases<${str.join(", ", [base.name for base in record.bases])}>());
+            OGUI.new_usertype<${record.name}>("${record.short_name}", sol::base_classes, sol::bases<${str.join(", ", [base.name for base in record.bases])}>());
     %else:
-        sol::usertype<${record.name}> type = lua.new_usertype<${record.name}>("${record.short_name}");
+        sol::usertype<${record.name}> type = OGUI.new_usertype<${record.name}>("${record.short_name}");
     %endif
     %for field in record.allFields():
     %if field.getter or field.setter:
@@ -37,17 +38,17 @@ void BindLua_generated(lua_State* L)
 %endfor
 %for function in db.functions.values():
     %if len(function.descs) > 1:
-    lua["${function.short_name}"] = sol::overload(
+    OGUI["${function.short_name}"] = sol::overload(
     %for desc in function.descs:
         ${desc.getReference(None, function)}
     %endfor
     );
     %else:
-    lua["${function.short_name}"] = ${function.descs[0].getReference(None, function)};
+    OGUI["${function.short_name}"] = ${function.descs[0].getReference(None, function)};
     %endif
 %endfor
 %for enum in db.enums:
-    lua.new_enum<int>("${enum.short_name}", {
+    OGUI.new_enum<int>("${enum.short_name}", {
 %for enumerator in enum.enumerators[:-1]:
         {"${enumerator.short_name}", ${enumerator.value}},
 %endfor

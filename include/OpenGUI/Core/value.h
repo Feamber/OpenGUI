@@ -178,6 +178,8 @@ namespace OGUI::Meta
         const gsl::span<struct Field> fields;
         const gsl::span<struct Method> methods; 
         bool IsBaseOf(const RecordType& other) const;
+        static const RecordType* FromName(ostr::string_view name);
+        static void Register(const RecordType* type);
         RecordType(size_t size, size_t align, ostr::string_view name, const RecordType* base, ObjectMethodTable nativeMethods, 
             const gsl::span<struct Field> fields, const gsl::span<struct Method> methods)
             : Type{EType::_o}, size(size), align(align), name(name), base(base), nativeMethods(nativeMethods), 
@@ -197,6 +199,8 @@ namespace OGUI::Meta
             int64_t value;
         };
         const gsl::span<Enumerator> enumerators;
+        static const EnumType* FromName(ostr::string_view name);
+        static void Register(const EnumType* type);
         EnumType(const Type* underlyingType, const ostr::string_view name, void (*FromString)(void* self, ostr::string_view str),
             ostr::string (*ToString)(const void* self), const gsl::span<Enumerator> enumerators)
             : Type{EType::_e}, underlyingType(underlyingType), name(name), FromString(FromString), ToString(ToString), enumerators(enumerators) {}
@@ -357,6 +361,11 @@ namespace OGUI::Meta
         }
     };
 
+    template<class T>
+    struct RecordRegister { RecordRegister(){ RecordType::Register((const RecordType *)TypeOf<T>::Get()); } };
+    template<class T>
+    struct EnumRegister { EnumRegister(){ EnumType::Register((const EnumType *)TypeOf<T>::Get()); } };
+    
     struct OGUI_API alignas(16) Value
     {
         const Type* type;

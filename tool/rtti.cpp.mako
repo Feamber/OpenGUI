@@ -18,7 +18,7 @@ namespace OGUI::Meta
 
     const Type* TypeOf<${record.name}>::Get()
     {
-        static std::aligned_storage_t<sizeof(${record.name}), alignof(${record.name})> storage;
+        static std::aligned_storage_t<sizeof(RecordType), alignof(RecordType)> storage;
         static bool entry = false;
         if(entry)
             return std::launder(reinterpret_cast<const Type*>(&storage));
@@ -104,6 +104,7 @@ namespace OGUI::Meta
         new(&storage) RecordType(size, align, name, base, nativeMethods, fields, methods);
         return std::launder(reinterpret_cast<const Type*>(&storage));
     }
+    RecordRegister<${record.name}> __Register${record.short_name};
 }
 %endfor
 
@@ -149,5 +150,6 @@ namespace OGUI::Meta
         };
         return &type;
     }
+    EnumRegister<${enum.name}> __Register${enum.short_name};
 }
 %endfor

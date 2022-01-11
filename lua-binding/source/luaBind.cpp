@@ -2,6 +2,7 @@
 #include "OpenGUI/Core/value.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Style2/ParseUtils.hpp"
 #include "OpenGUI/VisualElement.h"
 #include "sol/sol.hpp"
 #include "luaBind.hpp"
@@ -37,11 +38,32 @@ sol::object OGUI::LuaBindable::index(sol::string_view key)
 {
     if(key == "__raw")
         return table;
-    return table[key];
+    sol::object obj = table[key];
+    if(obj.is<sol::table>())
+    {
+        auto prop = obj.as<sol::table>();
+        sol::optional<sol::function> getter = prop["get"];
+        if(getter)
+            return getter->call(eventHandler);
+        return sol::nil;
+    }
+    return obj;
 }
 
 void OGUI::LuaBindable::new_index(sol::string_view key, sol::object value)
 {
+    sol::object obj = table[key];
+    if(obj.is<sol::table>())
+    {
+        auto prop = obj.as<sol::table>();
+        sol::optional<sol::function> setter = prop["set"];
+        if(setter)
+        {
+            setter->call(eventHandler, value);
+            Notify(key);
+        }
+        return;
+    }
     table[key] = value;
     Notify(key);
 }
@@ -53,10 +75,7 @@ bool OGUI::LuaBindable::HandleEvent(Name eventName, IEventArg &args)
     if(function)
     {
         sol::optional<bool> result;
-        if(eventHandler==table)
-            result = (*function)(this, args).get<sol::optional<bool>>();
-        else
-            result = (*function)(eventHandler, args).get<sol::optional<bool>>();
+        result = (*function)(eventHandler, args).get<sol::optional<bool>>();
         if(result)
             handled |= *result;
     }
@@ -74,11 +93,71 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
             olog::Warn(u"invalid binding path founded, must be string!"_o);
             continue;
         }
+        if(std::starts_with(*name, "__")) //skip
+            continue;
         auto value = kv.second;
         size_t size;
 
         if(value.is<sol::function>())
             continue;
+        if(value.is<sol::table>())
+        {
+            sol::table property = value.as<sol::table>();
+            sol::object getter = property["get"];
+            if(getter.is<sol::function>())
+            {
+                AddSource({*name, [this, path = *name](const AttrSync& sync)
+                {
+                    sol::optional<sol::table> prop = table[path];
+                    if(!prop)
+                    {
+                        olog::Warn(u"binding path {} is not valid anymore!"_o.format(path));
+                        return;
+                    }
+                    sol::optional<sol::function> getter = (*prop)["get"];
+                    if(!getter)
+                    {
+                        olog::Warn(u"binding path {} is not valid anymore!"_o.format(path));
+                        return;
+                    }
+                    auto obj = getter->call(eventHandler).get<Meta::Value>();
+                    if(!obj)
+                    {
+                        olog::Warn(u"binding path {} is not valid anymore!"_o.format(path));
+                        return;
+                    }
+                    sync(obj);
+                }});
+            }
+            else 
+                olog::Warn(u"invalid property getter founded, must be function!"_o);
+
+            
+            sol::object setter = property["set"];
+            if(setter.is<sol::function>())
+            {
+                AddBind({*name, [this, path = *name](Meta::ValueRef inRef)
+                {
+                    sol::optional<sol::table> prop = table[path];
+                    if(!prop)
+                    {
+                        olog::Warn(u"binding path {} is not valid anymore!"_o.format(path));
+                        return;
+                    }
+                    sol::optional<sol::function> setter = (*prop)["set"];
+                    if(!setter)
+                    {
+                        olog::Warn(u"binding path {} is not valid anymore!"_o.format(path));
+                        return;
+                    }
+                    setter->call(eventHandler, inRef);
+                }});
+            }
+            else 
+                olog::Warn(u"invalid property setter founded, must be function!"_o);
+
+            continue;
+        }
 
         AddBind({
             *name, [this, path = *name](Meta::ValueRef inRef)
@@ -89,10 +168,7 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
                 sol::optional<sol::function> onChange = eventHandler[cbPath];
                 if(onChange)
                 {
-                    if(eventHandler==table)
-                        (*onChange)(this);
-                    else
-                        (*onChange)(eventHandler, this);
+                    (*onChange)(eventHandler, this);
                 }
             }
         });
@@ -431,9 +507,10 @@ void BindLua_generated(lua_State* state);
 void OGUI::BindLua(lua_State* state)
 {
     sol::state_view lua(state);
+    sol::table OGUI = lua.create_named_table("OGUI");
     BindLua_generated(state);
     {
-        sol::usertype<VisualElement> type = lua["VisualElement"];
+        sol::usertype<VisualElement> type = OGUI["VisualElement"];
         type["GetChildren"] = +[](VisualElement* self)
         {
             std::vector<VisualElement *> children;
@@ -441,24 +518,23 @@ void OGUI::BindLua(lua_State* state)
             return sol::as_table(children);
         };
     }
-    lua["GetOguiContext"] = &OGUI::Context::Get;
-    auto type = lua.new_usertype<LuaBindable>("LuaBindable", sol::base_classes, sol::bases<Bindable>());
+    auto type = OGUI.new_usertype<LuaBindable>("LuaBindable", sol::base_classes, sol::bases<Bindable>());
     type[sol::meta_function::index] = &LuaBindable::index;
     type[sol::meta_function::new_index] = &LuaBindable::new_index;
-    lua["MakeDataModel"] = +[](sol::table table, sol::table eventHandler)
+    OGUI["MakeDataModel"] = +[](sol::table table, sol::table eventHandler)
     {
         return std::make_unique<LuaBindable>(table, eventHandler);
     };
-	lua["ReleaseDataModel"] = +[](std::unique_ptr<Bindable>& dm)
+	OGUI["ReleaseDataModel"] = +[](std::unique_ptr<Bindable>& dm)
 	{
 		dm.reset();
 	};
-    lua["RouteEvent"] = +[](VisualElement* target, sol::table table)
+    OGUI["RouteEvent"] = +[](VisualElement* target, sol::table table)
     {
         LuaEvent event{table};
         RouteEvent(target, event);
     };
-    lua["SendEventTo"] = +[](Bindable& target, std::string_view eventName, sol::table table)
+    OGUI["SendEventTo"] = +[](Bindable& target, std::string_view eventName, sol::table table)
     {
         LuaEvent event{table};
         SendEventTo(target, eventName, event);
