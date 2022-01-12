@@ -16,6 +16,7 @@ function view:GetValue()
 end
 
 function view:ReloadXml(ve)
+    print(ve)
     ve:SetPseudoClass(OGUI.PseudoStates.Root, true)
     print(self.datamodel)
     OGUI.BindTree(ve, self.datamodel)

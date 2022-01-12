@@ -470,13 +470,24 @@ namespace OGUI
 			bool infinite = anim.style.animationIterationCount <= 0.f;
 			if (paused || (!infinite && anim.time >= maxTime))
 			{
+				if(anim.evaluating)
+				{
+					AnimEndEvent event;
+					event.animName = anim.style.animationName;
+					RouteEvent(element,  event);
+				}
 				anim.evaluating = false;
-				AnimEndEvent event;
-				event.animName = anim.style.animationName;
-				RouteEvent(element,  event);
 			}
 			else
+			{
+				if(!anim.evaluating)
+				{
+					AnimStartEvent event;
+					event.animName = anim.style.animationName;
+					RouteEvent(element,  event);
+				}
 				anim.evaluating = true;
+			}
 			if (!paused || anim.yielding)
 			{
 				if (anim.goingback)

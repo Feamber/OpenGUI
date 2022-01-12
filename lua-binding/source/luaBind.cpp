@@ -483,7 +483,7 @@ namespace OGUI::Meta::Lua
                 }
                 else 
                 {
-                    auto key = std::string("sol.").append(ptr.pointee->Name().encode_to_utf8()).append(" *");
+                    auto key = std::string("sol.").append(ptr.pointee->Name().encode_to_utf8()).append("*");
                     if(!luaL_getmetatable(L, key.c_str()))
                     {
                         lua_pop(L, 1);
@@ -493,7 +493,7 @@ namespace OGUI::Meta::Lua
                     lua_pop(L, 1);
                     void** ref = Lua::allocate_lua_pointer(L, type);
                     luaL_getmetatable(L, key.c_str());
-                    *ref = (void*)dst;
+                    *ref = *(void**)dst;
                     lua_setmetatable(L, -2);
                 }
                 return 1;

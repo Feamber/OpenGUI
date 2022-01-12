@@ -56,6 +56,8 @@
 
 #if defined(_MSC_VER) && defined(__clang__)
 	#define SOL_COMPILER_CLANG_CL_I_ SOL_ON
+#else
+	#define SOL_COMPILER_CLANG_CL_I_ SOL_OFF
 #endif
 
 #if defined(_MSC_VER)
@@ -8109,7 +8111,7 @@ extern "C" {
 #include <locale>
 
 namespace sol { namespace detail {
-	inline constexpr std::array<string_view, 9> removals { { "{anonymous}",
+	inline constexpr std::array<string_view, 10> removals { { "{anonymous}",
 		"(anonymous namespace)",
 		"public:",
 		"private:",
@@ -8117,7 +8119,8 @@ namespace sol { namespace detail {
 		"struct ",
 		"class ",
 		"`anonymous-namespace'",
-		"`anonymous namespace'" } };
+		"`anonymous namespace'",
+		" " } };
 
 #if SOL_IS_ON(SOL_COMPILER_GCC_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_I_) || SOL_IS_ON(SOL_COMPILER_CLANG_CL_I_)
 	inline std::string ctti_get_type_name_from_sig(std::string name) {
