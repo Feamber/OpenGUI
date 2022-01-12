@@ -167,7 +167,7 @@ namespace sol::stack
             using namespace EType;
             using namespace ostr::literal;
             tracking.use(1);
-            Value any;
+            OGUI::Meta::Value any;
             switch(type_of(L, index))
             {
                 case type::boolean:

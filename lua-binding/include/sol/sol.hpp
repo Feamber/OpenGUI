@@ -56,6 +56,8 @@
 
 #if defined(_MSC_VER) && defined(__clang__)
 	#define SOL_COMPILER_CLANG_CL_I_ SOL_ON
+#else
+	#define SOL_COMPILER_CLANG_CL_I_ SOL_OFF
 #endif
 
 #if defined(_MSC_VER)

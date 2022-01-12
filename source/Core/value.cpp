@@ -1153,8 +1153,8 @@ namespace OGUI::Meta
     bool RecordType::IsBaseOf(const RecordType &other) const
     {
         
-        for(auto base = other.base;base;base = base->base)
-            if(base == this)
+        for(auto ptr = other.base;ptr;ptr = base->base)
+            if(ptr == this)
                 return true;
         return false;
     }
