@@ -96,7 +96,6 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
         if(std::starts_with(*name, "__")) //skip
             continue;
         auto value = kv.second;
-        size_t size;
 
         if(value.is<sol::function>())
             continue;
