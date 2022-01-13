@@ -983,7 +983,7 @@ namespace OGUI::Meta
     template<class T>
     void CopyImpl(void* dst, const void* src)
     {
-        new(dst)  T(*(const T*)src);
+        new(dst) T(*(const T*)src);
     }
 
     void Type::Copy(void* dst, const void* src) const
@@ -1014,14 +1014,12 @@ namespace OGUI::Meta
             case _da:
             {
                 auto& arr = (const DynArrayType&)(*this);
-                arr.operations.dtor(dst);
                 arr.operations.copy(dst, src);
             }
             case _av: CopyImpl<gsl::span<char>>(dst, src); break;
             case _o: 
             {
                 auto& obj = (const RecordType&)(*this);
-                obj.nativeMethods.dtor(dst);
                 obj.nativeMethods.copy(dst, src);
                 break;
             }
@@ -1088,7 +1086,6 @@ namespace OGUI::Meta
             case _da:
             {
                 auto& arr = (const DynArrayType&)(*this);
-                arr.operations.dtor(dst);
                 arr.operations.move(dst, src);
                 break;
             }
@@ -1096,7 +1093,6 @@ namespace OGUI::Meta
             case _o: 
             {
                 auto& obj = (const RecordType&)(*this);
-                obj.nativeMethods.dtor(dst);
                 obj.nativeMethods.move(dst, src);
                 break;
             }

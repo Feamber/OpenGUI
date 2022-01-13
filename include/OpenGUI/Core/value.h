@@ -83,7 +83,9 @@ namespace OGUI::Meta
         //lifetime operator
         void Destruct(void* dst) const;
         void Construct(void* dst, struct Value* args, size_t nargs) const;
+        //copy construct
         void Copy(void* dst, const void* src) const;
+        //move construct
         void Move(void* dst, void* src) const;
         Type(EType::TypeEnum type)
             :type(type), temp(false) {}
@@ -365,7 +367,7 @@ namespace OGUI::Meta
     struct RecordRegister { RecordRegister(){ RecordType::Register((const RecordType *)TypeOf<T>::Get()); } };
     template<class T>
     struct EnumRegister { EnumRegister(){ EnumType::Register((const EnumType *)TypeOf<T>::Get()); } };
-    
+
     struct OGUI_API alignas(16) Value
     {
         const Type* type;
