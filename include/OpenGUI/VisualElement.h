@@ -288,7 +288,9 @@ namespace OGUI reflect
 		std::map<Name, Name> _localXmlFiltersMap;
 		std::set<Name> _localXmlFiltersCache;
 
+		attr("script":true)
 		void SetXmlFilter(const char* key, const char* filterTag);
+		attr("script":true)
 		void CleanXmlFilter(const char* key);
 		void UpdataXmlFilterCache();
 		bool HasFilterTag(const char* filterTag) const;
