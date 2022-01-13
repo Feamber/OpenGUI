@@ -17,6 +17,9 @@ local ${record.short_name} = {}
 %for field in desc.fields:
 ---@param ${field.name} ${field.luaType} ${("@" + field.comment) if field.comment else ""}
 %endfor
+%if desc.luaRetType != "void":
+---@return ${desc.luaRetType}
+%endif
 function ${record.short_name}:${method.short_name}(${str.join(", ",  [x.name or ("anonymous%d"%i) for i, x in enumerate(desc.fields)])}) end
 %endfor
 %endfor
