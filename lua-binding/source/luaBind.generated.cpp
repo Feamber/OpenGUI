@@ -1,5 +1,8 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/VisualElement.h"
@@ -8,6 +11,7 @@
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Bind/EventArg.h"
 #include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Bind/Bind.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -49,6 +53,8 @@ void BindLua_generated(lua_State* L)
         type["AddStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->AddStyleClass(_0); };
         type["RemoveStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->RemoveStyleClass(_0); };
         type["SetPseudoClass"] = (void(OGUI::VisualElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
+        type["SetXmlFilter"] = (void(OGUI::VisualElement::*)(const char *, const char *))&OGUI::VisualElement::SetXmlFilter;
+        type["CleanXmlFilter"] = (void(OGUI::VisualElement::*)(const char *))&OGUI::VisualElement::CleanXmlFilter;
         type["Bind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Bind;
         type["Unbind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Unbind;
     }

@@ -1415,8 +1415,12 @@ void OGUI::VisualElement::SetXmlFilter(const char* key, const char* filterTag)
 
 void OGUI::VisualElement::CleanXmlFilter(const char* key)
 {
-	_localXmlFiltersMap.erase(key);
-	UpdataXmlFilterCache();
+	if(_localXmlFiltersMap.erase(key) > 0)
+	{
+		UpdataXmlFilterCache();
+		std::map<Name, int> localXmlFilters;
+		Context::Get().RecursionUpdataFilter(this, localXmlFilters);
+	}
 }
 
 void OGUI::VisualElement::UpdataXmlFilterCache()

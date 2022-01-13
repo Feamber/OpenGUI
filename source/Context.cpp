@@ -767,8 +767,16 @@ void OGUI::Context::SetXmlFilter_Global(const char* key, const char* filterTag)
 
 void OGUI::Context::CleanXmlFilter_Global(const char* key)
 {
-	_globalXmlFiltersMap.erase(key);
-	UpdataXmlFilterCache_Global();
+	if(_globalXmlFiltersMap.erase(key) > 0)
+	{
+		UpdataXmlFilterCache_Global();
+		std::map<Name, int> localXmlFilters;
+		for(auto& winContext : windowContexts)
+		{
+			localXmlFilters.clear();
+			RecursionUpdataFilter(winContext->ui, localXmlFilters);
+		}
+	}
 }
 
 void OGUI::Context::UpdataXmlFilterCache_Global()
