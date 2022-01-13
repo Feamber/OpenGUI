@@ -353,6 +353,8 @@ namespace OGUI::Meta::Lua
         using namespace EType;
         using namespace ostr::literal;
         using namespace sol;
+        if(type == nullptr)
+            return 0;
         switch(type->type)
         {
             case _b : 
