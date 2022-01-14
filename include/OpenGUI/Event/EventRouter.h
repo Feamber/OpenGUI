@@ -16,7 +16,7 @@ namespace OGUI
                 return;
             bool handled = false;
             if(auto eventBind = next->GetEventBind(GetEventName<T>()))
-				handled |= SendEvent(*next, *eventBind, event, MakeEventArg("element", next));
+				handled |= SendEvent(*next, *eventBind, event, MakeEventArg("element", next), MakeEventArg("target", element));
             handled |= next->_eventHandler.Handle(event);
             ghandled |= handled;
             if(handled)
@@ -59,7 +59,7 @@ namespace OGUI
                 auto& element = routePath[i];
                 bool handled = false;
                 if(auto eventBind = element->GetEventBind(GetEventName<T>()))
-					handled |= SendEvent(*element, *eventBind, event, MakeEventArg("element", element));
+					handled |= SendEvent(*element, *eventBind, event, MakeEventArg("element", element), MakeEventArg("target", target));
                 handled |= element->_eventHandler.Handle(event);
                 if(handled)
                     return true;
@@ -70,13 +70,13 @@ namespace OGUI
         {
             bool handled = false;
             if(auto eventBind = target->GetEventBind(GetEventName<T>()))
-				handled |= SendEvent(*target, *eventBind, event, MakeEventArg("element", target));
+				handled |= SendEvent(*target, *eventBind, event, MakeEventArg("element", target), MakeEventArg("target", target));
             handled |= target->_eventHandler.Handle(event);
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
                 {
                     if(auto eventBind = parent->GetEventBind(GetEventName<T>()))
-					    handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
+					    handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent), MakeEventArg("target", target));
                     handled |= parent->_eventHandler.Handle(event);
                 }
             if(handled)
@@ -95,7 +95,7 @@ namespace OGUI
             {
                 bool handled = false;
                 if(auto eventBind = parent->GetEventBind(GetEventName<T>()))
-					handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent));
+					handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent), MakeEventArg("target", target));
                 handled |= parent->_eventHandler.Handle(event);
                 if(handled)
                         return true;
