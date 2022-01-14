@@ -1,4 +1,5 @@
 #pragma once
+#include <tuple>
 template<class T>
 class IndexedWrapper
 {

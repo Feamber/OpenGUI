@@ -300,6 +300,8 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		}
 		else if(element->_inlineStyle)
 			ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>{}, refresh);
+		else
+			element->_style = ComputedStyle::Create(element->_physicalParent ? &element->_physicalParent->_style : nullptr);
 		matchingContext.currentElement = nullptr;
 	}
 	else 

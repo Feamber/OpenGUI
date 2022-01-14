@@ -471,6 +471,15 @@ SampleWindow* CreatePercentageMarginWindow()
 	});
 }
 
+
+SampleWindow* CreateOpacityTestWindow()
+{
+	return  new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "OpacityTest", &reloader, "res/OpacityTest.xml", [](OGUI::VisualElement* ve)
+	{
+		ve->_pseudoMask |= PseudoStates::Root;
+	});
+}
+
 SampleWindow* CreateCssTestWindow()
 {
 	return new SampleWindow(WINDOW_WIN_W, WINDOW_WIN_H, "CssTest", &reloader, "res/test.xml", [](OGUI::VisualElement* ve)
@@ -714,8 +723,8 @@ int main(int , char* []) {
 	SampleControls::Install();
 	//ExternalControlSample sample;
 	//windows.push_back(sample.MakeWindow());
-	LuaSample lsample;
-	windows.push_back(lsample.MakeWindow());
+	//LuaSample lsample;
+	//windows.push_back(lsample.MakeWindow());
 	//DataBindSample sample2;
 	//windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
@@ -723,6 +732,7 @@ int main(int , char* []) {
 	// windows.push_back(CreatePercentageMarginWindow());
 	// XmlFiltersSample sample3;
 	// windows.push_back(sample3.MakeWindow());
+	windows.push_back(CreateOpacityTestWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())

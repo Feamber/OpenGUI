@@ -1,0 +1,14 @@
+<VisualElement name="background">
+    <Style path = "res/OpacityTest.css"/>
+    <VisualElement name="foreground0" class="foreground"> <Text>0.0</Text> </VisualElement>
+    <VisualElement name="foreground1" class="foreground"> <Text>0.1</Text> </VisualElement>
+    <VisualElement name="foreground2" class="foreground"> <Text>0.2</Text> </VisualElement>
+    <VisualElement name="foreground3" class="foreground"> <Text>0.3</Text> </VisualElement>
+    <VisualElement name="foreground4" class="foreground"> <Text>0.4</Text> </VisualElement>
+    <VisualElement name="foreground5" class="foreground"> <Text>0.5</Text> </VisualElement>
+    <VisualElement name="foreground6" class="foreground"> <Text>0.6</Text> </VisualElement>
+    <VisualElement name="foreground7" class="foreground"> <Text>0.7</Text> </VisualElement>
+    <VisualElement name="foreground8" class="foreground"> <Text>0.8</Text> </VisualElement>
+    <VisualElement name="foreground9" class="foreground"> <Text>0.9</Text> </VisualElement>
+    <VisualElement name="foreground10" class="foreground"> <Text>1.0</Text> </VisualElement>
+</VisualElement>

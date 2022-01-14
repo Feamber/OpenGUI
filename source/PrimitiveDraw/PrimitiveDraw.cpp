@@ -230,7 +230,7 @@ static void nvg__renderFill(void* uptr, NVGpaint* paint, NVGcompositeOperationSt
         auto& command = dc->prims.GetCommand(resource);
         auto begin = dc->prims.indices.size();
         for(int i=0; i<npaths; ++i)
-            nvg__renderPath(dc, paths[i], paint, invTransform, fringe);
+            nvg__renderPath(dc, paths[i], paint, invTransform, 1.f);
         command.element_count += dc->prims.indices.size()-begin;
     }
     //slow path

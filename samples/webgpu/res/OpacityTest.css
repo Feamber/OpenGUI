@@ -1,0 +1,58 @@
+@font-face {
+    font-family: TestFont;
+    src: url(res/arial.ttf);
+}
+#background {
+    height: 100%;
+    width: 100%;
+    background-color: white;
+    font-family: TestFont;
+}
+.foreground {
+    height: 100%;
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+}
+
+#foreground0 {
+    background-color: rgb(0, 0, 0, 0.0);
+}
+#foreground1 {
+    background-color: rgb(0, 0, 0, 0.1);
+}
+#foreground2 {
+    background-color: rgb(0, 0, 0, 0.2);
+}
+#foreground3 {
+    background-color: rgb(0, 0, 0, 0.3);
+}
+#foreground4 {
+    background-color: rgb(0, 0, 0, 0.4);
+    color: white;
+}
+#foreground5 {
+    background-color: rgb(0, 0, 0, 0.5);
+    color: white;
+}
+#foreground6 {
+    background-color: rgb(0, 0, 0, 0.6);
+    color: white;
+}
+#foreground7 {
+    background-color: rgb(0, 0, 0, 0.7);
+    color: white;
+}
+#foreground8 {
+    background-color: rgb(0, 0, 0, 0.8);
+    color: white;
+}
+#foreground9 {
+    background-color: rgb(0, 0, 0, 0.9);
+    color: white;
+}
+#foreground10 {
+    background-color: rgb(0, 0, 0, 1.0);
+    color: white;
+}

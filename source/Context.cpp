@@ -211,7 +211,7 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
 	wctx.currentDrawCtx = std::make_shared<PrimDrawContext>(wctx);
-	nvgBeginFrame(wctx.currentDrawCtx->nvg, 0.5f); 
+	nvgBeginFrame(wctx.currentDrawCtx->nvg, 1.0f); 
 	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }

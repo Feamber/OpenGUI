@@ -63,6 +63,7 @@ OGUI::Style${struct.ident}& OGUI::Style${struct.ident}::GetOrAdd(ComputedStyle& 
         auto value = std::make_shared<OGUI::Style${struct.ident}>();
         value->Initialize();
         s.ptr = std::static_pointer_cast<void>(value);
+        s.owned = true;
         return *value.get();
     }
     else 
@@ -99,14 +100,14 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
             auto value = std::make_shared<OGUI::Style${struct.ident}>();
             value->Initialize();
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::Style${struct.ident}>(*st);
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         return st;
@@ -189,14 +190,14 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
             auto value = std::make_shared<OGUI::Style${struct.ident}>();
             value->Initialize();
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::Style${struct.ident}>(*st);
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         return st;

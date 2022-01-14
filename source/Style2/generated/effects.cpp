@@ -58,6 +58,7 @@ OGUI::StyleEffects& OGUI::StyleEffects::GetOrAdd(ComputedStyle& style)
         auto value = std::make_shared<OGUI::StyleEffects>();
         value->Initialize();
         s.ptr = std::static_pointer_cast<void>(value);
+        s.owned = true;
         return *value.get();
     }
     else 
@@ -92,14 +93,14 @@ void OGUI::StyleEffects::ApplyProperties(ComputedStyle& style, const StyleSheetS
             auto value = std::make_shared<OGUI::StyleEffects>();
             value->Initialize();
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StyleEffects>(*st);
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         return st;
@@ -170,14 +171,14 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
             auto value = std::make_shared<OGUI::StyleEffects>();
             value->Initialize();
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         else if(!owned)
         {
             auto value = std::make_shared<OGUI::StyleEffects>(*st);
             s.ptr = std::static_pointer_cast<void>(value);
-            owned = true;
+            s.owned = owned = true;
             st = value.get();
         }
         return st;

@@ -50,7 +50,7 @@ static char const triangle_frag_wgsl[] = R"(
 		var visible : f32;
 		visible = f32(all(input.vCUV == clamp(input.vCUV, vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, 1.0))));
 		var edge : f32;
-		edge = min(1.0, (1.0-abs((input.vAA.x * 2.0) - 1.0))) * input.vAA.y;
+		edge = min(1.0, (1.0-abs((input.vAA.x * 2.0) - 1.0)) * input.vAA.y) ;
 		var color : vec4<f32> = visible * input.vCol * textureSample(myTexture, mySampler, input.vUV);
 		color.w = color.w * edge;
 		return color;
