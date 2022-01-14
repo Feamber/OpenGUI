@@ -21,6 +21,7 @@
 #include "OpenGUI/Core/StdLog.h"
 #include "OpenGUI/Bind/Bind.h"
 #include "Text/godot/text_server_adv.h"
+#include <deque>
 
 OGUI::WindowContext::WindowContext(WindowHandle window)
 	: window(window)
@@ -55,19 +56,6 @@ public:
 
 namespace OGUI
 {
-	void RenderRec(VisualElement* element, PrimDrawContext& ctx, float opacity = 1.f)
-	{
-		if(!element->Visible())
-			return;
-		auto clippingChild = element->IsClippingChildren();
-		if(clippingChild)
-			ctx.prims.clipStack.push_back(element->ApplyClipping());
-		element->_opacity = StyleEffects::Get(element->_style).opacity * opacity;
-		element->DrawPrimitive(ctx);
-		element->Traverse([&](VisualElement* next) { RenderRec(next, ctx, element->_opacity); });
-		if(clippingChild)
-			ctx.prims.clipStack.pop_back();
-	}
 	void TransformRec(VisualElement* element, bool dirty = false)
 	{
 		dirty |= element->_transformDirty;
@@ -212,7 +200,38 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	auto root = wctx.GetWindowUI();
 	wctx.currentDrawCtx = std::make_shared<PrimDrawContext>(wctx);
 	nvgBeginFrame(wctx.currentDrawCtx->nvg, 1.0f); 
-	root->Traverse([&](VisualElement* next) { RenderRec(next, *wctx.currentDrawCtx); });
+	struct DrawElement
+	{
+		VisualElement* element;
+		Matrix4x4 clip;
+		bool hasClip;
+	};
+	std::deque<DrawElement> queue;
+	auto& ctx = *wctx.currentDrawCtx;
+	queue.push_back({root, {}, false});
+	while(!queue.empty())
+	{
+		auto next = queue.front();
+		queue.pop_front();
+		if(next.hasClip)
+			ctx.prims.clipStack.push_back(next.clip);
+		next.element->DrawPrimitive(ctx);
+		if(next.hasClip)
+			ctx.prims.clipStack.pop_back();
+		auto clippingChild = next.element->IsClippingChildren();
+		next.element->Traverse([&](VisualElement* child)
+		{
+			DrawElement newDraw;
+			newDraw.element = child;
+			newDraw.hasClip = clippingChild | next.hasClip;
+			if(clippingChild)
+				newDraw.clip = next.element->ApplyClipping();
+			else 
+				newDraw.clip = next.clip;
+			child->_opacity = StyleEffects::Get(child->_style).opacity * next.element->_opacity;
+			queue.push_back(newDraw);
+		});
+	}
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }
 

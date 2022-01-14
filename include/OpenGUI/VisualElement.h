@@ -64,7 +64,7 @@ namespace OGUI reflect
 		virtual void DrawDebugPrimitive(PrimDrawContext& Ctx);
 		Matrix4x4 ApplyClipping();
 		bool CheckClip(const Matrix4x4& rect);
-		float _opacity;
+		float _opacity = 1.f;
 #pragma endregion
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
