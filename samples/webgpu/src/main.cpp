@@ -58,9 +58,9 @@ public:
 		sampDesc.addressModeU = WGPUAddressMode_ClampToEdge;
 		sampDesc.addressModeV = WGPUAddressMode_ClampToEdge;
 		sampDesc.addressModeW = WGPUAddressMode_ClampToEdge;
-		sampDesc.magFilter = WGPUFilterMode_Nearest;
-		sampDesc.minFilter = WGPUFilterMode_Nearest;
-		sampDesc.mipmapFilter = WGPUFilterMode_Nearest;
+		sampDesc.magFilter = WGPUFilterMode_Linear;
+		sampDesc.minFilter = WGPUFilterMode_Linear;
+		sampDesc.mipmapFilter = WGPUFilterMode_Linear;
 		sampDesc.lodMinClamp = 0;
 		sampDesc.lodMaxClamp = 1000.f;
 		sampDesc.maxAnisotropy = 1.f;

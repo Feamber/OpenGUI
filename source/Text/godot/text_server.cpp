@@ -1054,11 +1054,9 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 {
 	using namespace OGUI;
 	auto dstRect = p_rect;
-	dstRect.position.y = - p_rect.position.y;
-	dstRect.size.y = - p_rect.size.y;
+	dstRect.position.y = - p_rect.position.y - p_rect.size.y;
 	auto srcRect = p_src_rect;
-	srcRect.position.y = 1 - p_src_rect.position.y ;
-	srcRect.size.y = - p_src_rect.size.y;
+	srcRect.position.y = 1 - p_src_rect.position.y - p_src_rect.size.y ;
 	if(policy)
 		policy->draw(list, math_cast(dstRect), p_texture, math_cast(srcRect), math_cast(p_modulate));
 	else

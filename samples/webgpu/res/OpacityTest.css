@@ -1,12 +1,13 @@
 @font-face {
     font-family: TestFont;
-    src: url(res/arial.ttf);
+    src: url(res/fireflysung.ttf);
 }
 #background {
     height: 100%;
     width: 100%;
     background-color: white;
     font-family: TestFont;
+    font-size: 30;
 }
 .foreground {
     height: 100%;
