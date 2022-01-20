@@ -327,8 +327,7 @@ bool OGUI::Context::OnMouseDown(const OGUI::WindowHandle window, EMouseKey butto
 	event.isPrimary = pointerDownCount == 1;
 	event.gestureType = EGestureEvent::None;
 	event.position = point;
-	RouteEvent(picked, event);
-	return true;
+	return RouteEvent(picked, event);
 }
 
 bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
@@ -345,8 +344,7 @@ bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button,
 	event.button = button;
 	event.gestureType = EGestureEvent::None;
 	event.position = point;
-	RouteEvent(picked, event);
-	return true;
+	return RouteEvent(picked, event);
 }
 
 bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
@@ -371,8 +369,7 @@ bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, float x, float 
 	event.pointerType = u"mouse";
 	event.gestureType = EGestureEvent::None;
 	event.position = point;
-	RouteEvent(picked, event);
-	return false;
+	return RouteEvent(picked, event);
 }
 
 bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative, float x, float y)
@@ -392,8 +389,7 @@ bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
 	event.button = EMouseKey::MB;
 	event.gestureType = EGestureEvent::None;
 	event.wheelOrGestureDelta.y = delta;
-	RouteEvent(picked, event);
-	return false;
+	return RouteEvent(picked, event);
 }
 
 bool  OGUI::Context::OnMouseEnter(const WindowHandle window)
@@ -441,6 +437,7 @@ bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 				return OnKeyNavigation(_keyboardFocused, ENavDirection::Right);
 			}
 		}
+		return result;
 	}
 
 	return false;
@@ -456,7 +453,7 @@ bool OGUI::Context::OnKeyUp(const OGUI::WindowHandle window, EKeyCode keyCode)
 	e.key = keyCode;
 
 	if (_keyboardFocused)
-		RouteEvent(_keyboardFocused, e);
+		return RouteEvent(_keyboardFocused, e);
 
 	return false;
 }
