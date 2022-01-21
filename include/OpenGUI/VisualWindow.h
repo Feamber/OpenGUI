@@ -8,6 +8,7 @@ namespace OGUI
     {
     public:
         VisualWindow();
+        void DrawPrimitive(PrimDrawContext &Ctx) override {}
 
         WindowHandle handle;
 
