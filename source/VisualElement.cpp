@@ -183,6 +183,8 @@ OGUI::TextureInterface* OGUI::VisualElement::GetBackgroundImage(const StyleBackg
 void OGUI::VisualElement::DrawBackgroundPrimitive(PrimDrawContext& Ctx)
 {
 	Rect rect = GetRect();
+	if(rect.max == rect.min)
+		return;
 	auto& bg = StyleBackground::Get(_style);
 	auto& bd = StyleBorder::Get(_style);
 	auto transform = _worldTransform;

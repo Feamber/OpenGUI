@@ -221,6 +221,8 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 		auto clippingChild = next.element->IsClippingChildren();
 		next.element->Traverse([&](VisualElement* child)
 		{
+			if(!child->Visible())
+				return;
 			DrawElement newDraw;
 			newDraw.element = child;
 			newDraw.hasClip = clippingChild | next.hasClip;

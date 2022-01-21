@@ -325,19 +325,13 @@ namespace OGUI
         {
             std::visit(overloaded
             {
-                [&](ostr::string& text) 
-                { 
-                },
-                [&](VisualElement*& child) 
-                { 
-                },
                 [&](TextElement*& child) 
                 { 
                     if(!child->Visible())
                         return;
                     child->GetShadowPassRec(pass);
                 },
-                [&](std::shared_ptr<BindText>& Bind) 
+                [](auto& Bind) 
                 { 
                 }
             }, inl);
@@ -443,8 +437,6 @@ namespace OGUI
         {
             std::visit(overloaded
             {
-                [](ostr::string& ) {},
-                [](std::shared_ptr<BindText>& ) {},
                 [&](VisualElement*& child) 
                 { 
                     children.push_back(child); 
@@ -452,7 +444,8 @@ namespace OGUI
                 [&](TextElement*& child) 
                 { 
                     children.push_back(child); 
-                }
+                },
+                [](auto&) {},
             }, inl);
         }
     }
