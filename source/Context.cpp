@@ -798,6 +798,18 @@ void OGUI::Context::CleanXmlFilter_Global(const char* key)
 	}
 }
 
+void OGUI::Context::ResetXmlFilter_Global()
+{
+	_globalXmlFiltersMap.clear();
+	UpdataXmlFilterCache_Global();
+	std::map<Name, int> localXmlFilters;
+	for(auto& winContext : windowContexts)
+	{
+		localXmlFilters.clear();
+		RecursionUpdataFilter(winContext->ui, localXmlFilters);
+	}
+}
+
 void OGUI::Context::UpdataXmlFilterCache_Global()
 {
 	_globalXmlFiltersCache.clear();

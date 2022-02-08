@@ -87,6 +87,8 @@ namespace OGUI reflect
 		attr("script":true)
 		void CleanXmlFilter_Global(const char* key);
 		attr("script":true)
+		void ResetXmlFilter_Global();
+		attr("script":true)
 		void UpdataXmlFilterCache_Global();
 		attr("script":true)
 		bool HasFilterTag_Global(const char* filterTag) const;
