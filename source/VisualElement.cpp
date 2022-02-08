@@ -189,14 +189,39 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimDrawContext& Ctx)
 	auto& bd = StyleBorder::Get(_style);
 	auto transform = _worldTransform;
 	auto bgcolor = bg.backgroundColor;
-	auto tex = GetBackgroundImage(bg);
-	if (backgroundImageResource && !tex) //如果图片没加载好，透明
-		bgcolor.w = 0;
+	auto& ctx = Context::Get();
+	NVGpaint image;
+	if(!bg.backgroundMaterial.is_empty())
+	{
+		if(!backgroundMaterial || backgroundMaterialUrl != bg.backgroundMaterial)
+		{
+			backgroundMaterial = ctx.renderImpl->RegisterMaterial(bg.backgroundMaterial);
+			backgroundMaterialUrl = bg.backgroundMaterial;
+		}
+	}
+	else if(backgroundMaterial)
+	{
+		ctx.renderImpl->ReleaseMaterial(backgroundMaterial);
+		backgroundMaterial = nullptr;
+	}
 	bgcolor.w *= _opacity;
+	if(!backgroundMaterial)
+	{
+		auto tex = GetBackgroundImage(bg);
+		if (backgroundImageResource && !tex) //如果图片没加载好，透明
+			bgcolor.w = 0;
+			
+		image = nvgImagePattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, tex, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
+	}
+	else 
+	{
+		image = nvgMaterialPattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, backgroundMaterial, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
+	}
+
 	BeginDraw(Ctx.prims);
 	nvgBeginPath(Ctx.nvg);
 	nvgRoundedRectVarying(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, bd.borderTopLeftRadius.value, bd.borderTopRightRadius.value, bd.borderBottomRightRadius.value, bd.borderBottomLeftRadius.value);
-	auto image = nvgImagePattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, tex, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
+	
 	nvgFillPaint(Ctx.nvg, image);
 	nvgFill(Ctx.nvg);
 	EndDraw(Ctx.prims, transform);

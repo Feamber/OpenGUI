@@ -121,7 +121,7 @@ inline static uint32_t size_in_bytes(OGUI::PixelFormat format)
     }
 }
 
-struct WGPU_OGUI_Texture : public OGUI::TextureInterface
+struct WGPU_OGUI_Texture
 {
     WGPUTexture texture;
     WGPUTextureView texture_view;

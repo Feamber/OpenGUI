@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "OpenGUI/Core/OMath.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/Types.h"
@@ -135,8 +136,10 @@ namespace OGUI reflect
 		std::unique_ptr<InlineStyle> _inlineStyle;
 		std::unique_ptr<InlineStyle> _procedureStyle;
 		std::shared_ptr<class AsyncRenderTexture> backgroundImageResource;
+		MaterialHandle backgroundMaterial = nullptr;
 		
 		ostr::string backgroundImageUrl;
+		ostr::string backgroundMaterialUrl;
 
 		bool _depended = false;
 		bool _selectorDirty = true;

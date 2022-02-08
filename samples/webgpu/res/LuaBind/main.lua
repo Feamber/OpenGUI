@@ -2,6 +2,8 @@ local view = {value = 20}
 
 function view:Add(args)
     print("lua event: " .. args:TryGet("element"):GetName())
+    local x, y = args:TryGet("position")
+    print("asd " .. tostring(x) .. ", " .. tostring(y))
     self.datamodel.value = self.datamodel.value + 1
     OGUI.RouteEvent(self.slider, {element = self.slider})
 end

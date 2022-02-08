@@ -815,6 +815,28 @@ NVGpaint nvgImagePattern(NVGcontext* ctx,
 	return p;
 }
 
+NVGpaint nvgMaterialPattern(NVGcontext* ctx,
+								float cx, float cy, float w, float h, float angle,
+								void* material, NVGcolor ocol)
+{
+	NVGpaint p;
+	NVG_NOTUSED(ctx);
+	memset(&p, 0, sizeof(p));
+
+	nvgTransformRotate(p.xform, angle);
+	p.xform[4] = cx;
+	p.xform[5] = cy;
+
+	p.extent[0] = w;
+	p.extent[1] = h;
+
+	p.material = material;
+
+	p.innerColor = p.outerColor = ocol;
+
+	return p;
+}
+
 NVGpaint nvgImagePatternEx(NVGcontext* ctx, float cx, float cy, float w, float h,
 						 float angle, void* image, NVGcolor ocol, float px, float py, NVGbox box)
 {
