@@ -371,6 +371,7 @@ bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, float x, float 
 	event.pointerType = u"mouse";
 	event.gestureType = EGestureEvent::None;
 	event.position = point;
+	event.deltaPosition = Vector2f(relativeMotionX, relativeMotionY);
 	return RouteEvent(picked, event);
 }
 
