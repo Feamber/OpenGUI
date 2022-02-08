@@ -89,7 +89,7 @@ public:
 		bitmap.width = 1024; bitmap.height = 1024;
 		bitmap.format = PF_R8G8B8A8;
 		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
-		ogui_textures[t] = *t;
+		ogui_textures[(TextureHandle)t] = *t;
 		default_ogui_texture = t;
 
 		createPipelineAndBuffers();
@@ -248,7 +248,7 @@ public:
 					if(!texture)
 						texture = default_ogui_texture;
 					if(texture != default_ogui_texture && 
-						ogui_textures.find(texture) == ogui_textures.end())
+						ogui_textures.find((TextureHandle)texture) == ogui_textures.end())
 					{
 						olog::Error(u"WTF?"_o);
 						continue;
@@ -315,8 +315,8 @@ public:
 	TextureHandle RegisterTexture(const Bitmap& bitmap) override
 	{
 		WGPU_OGUI_Texture* t = createTexture(device, queue, bitmap);
-		ogui_textures[t] = *t;
-		return t;
+		ogui_textures[(TextureHandle)t] = *t;
+		return (TextureHandle)t;
 	}
 
 	void UpdateTexture(TextureHandle t, const Bitmap& bitmap) override
@@ -351,6 +351,16 @@ public:
 	void ReleaseRenderTargetView(RenderTargetViewHandle) override
 	{
 
+	}
+
+	MaterialHandle RegisterMaterial(const ostr::string &url) override
+	{
+		return nullptr;
+	}
+
+	void ReleaseMaterial(MaterialHandle) override
+	{
+		
 	}
 
 	Vector2f GetSize(RenderTargetViewHandle) override
@@ -723,8 +733,8 @@ int main(int , char* []) {
 	SampleControls::Install();
 	//ExternalControlSample sample;
 	//windows.push_back(sample.MakeWindow());
-	//LuaSample lsample;
-	//windows.push_back(lsample.MakeWindow());
+	LuaSample lsample;
+	windows.push_back(lsample.MakeWindow());
 	//DataBindSample sample2;
 	//windows.push_back(sample2.MakeWindow());
 	// windows.push_back(CreateNavigationTestWindow());
@@ -732,7 +742,7 @@ int main(int , char* []) {
 	// windows.push_back(CreatePercentageMarginWindow());
 	// XmlFiltersSample sample3;
 	// windows.push_back(sample3.MakeWindow());
-	windows.push_back(CreateOpacityTestWindow());
+	//windows.push_back(CreateOpacityTestWindow());
 	// main loop
 	reloader.Watch();
 	while(!windows.empty())

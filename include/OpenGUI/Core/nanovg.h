@@ -61,6 +61,7 @@ struct NVGpaint {
 	NVGcolor outerColor;
 	NVGbox box;
 	void* image;
+	void* material;
 };
 typedef struct NVGpaint NVGpaint;
 
@@ -378,6 +379,12 @@ OGUI_API NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float i
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 OGUI_API NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
 						 float angle, void* image, NVGcolor ocol);
+
+// Creates and returns an material pattern. Parameters (ox,oy) specify the left-top location of the material pattern,
+// (ex,ey) the size of one material, angle rotation around the top-left corner, material is handle to the material to render.
+// The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
+OGUI_API NVGpaint nvgMaterialPattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
+						 float angle, void* material, NVGcolor ocol);
 
 						 // Creates and returns an image pattern. Parameters (ox,oy) specify the left-top location of the image pattern,
 // (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.

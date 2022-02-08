@@ -24,9 +24,11 @@ namespace OGUI
         {
             static constexpr size_t backgroundColor = OGUI::hash(u"background-color"_o);
             static constexpr size_t backgroundImage = OGUI::hash(u"background-image"_o);
+            static constexpr size_t backgroundMaterial = OGUI::hash(u"background-material"_o);
         };
         Color4f backgroundColor;
         ostr::string backgroundImage;
+        ostr::string backgroundMaterial;
         void Initialize();
         static const StyleBackground& GetDefault();
         static const StyleBackground& Get(const ComputedStyle& style);

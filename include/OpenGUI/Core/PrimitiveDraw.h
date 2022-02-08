@@ -9,7 +9,8 @@ namespace OGUI
 {
 	struct PrimDrawResource
 	{
-		TextureHandle texture;
+		TextureHandle texture = nullptr;
+		MaterialHandle material = nullptr;
 		NVGcompositeOperationState compositeOperation;
 	};
 
