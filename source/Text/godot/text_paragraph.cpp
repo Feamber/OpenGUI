@@ -110,7 +110,7 @@ void TextParagraph::_shape_lines() {
 			}
 			float h = ((TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x) * line_height_scale + spacing_top + spacing_bottom;
 			h_total += h;
-			if(h_total > max_height && lines_rid.size() > 0)
+			if(max_height > 0 && h_total > max_height && lines_rid.size() > 0)
 			{
 				TS->free(line);
 				TS->free(lines_rid.back());

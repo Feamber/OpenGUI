@@ -241,17 +241,8 @@ OGUI::Matrix4x4 OGUI::VisualElement::ApplyClipping()
 bool OGUI::VisualElement::CheckClip(const Matrix4x4& rect)
 {
 	auto transform = math::multiply(_worldTransform, rect);
-	auto quad = Quad(GetRect(), transform);
-	if(
-		(quad.LB.x == std::clamp(quad.LB.x, -1.f, 1.f)&&
-		quad.LB.y == std::clamp(quad.LB.y, -1.f, 1.f))||
-		(quad.RB.x == std::clamp(quad.RB.x, -1.f, 1.f)&&
-		quad.RB.y == std::clamp(quad.RB.y, -1.f, 1.f))||
-		(quad.LU.x == std::clamp(quad.LU.x, -1.f, 1.f)&&
-		quad.LU.y == std::clamp(quad.LU.y, -1.f, 1.f))||
-		(quad.RU.x == std::clamp(quad.RU.x, -1.f, 1.f)&&
-		quad.RU.y == std::clamp(quad.RU.y, -1.f, 1.f))
-	)
+	auto r = Quad(GetRect(), transform).ToBoundingBox();
+	if(r.min.x <= 1 && r.min.y <= 1 &&  r.max.x >= -1 &&  r.max.y >= -1)
 		return false;
 	return true;
 }
