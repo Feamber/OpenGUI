@@ -62,12 +62,11 @@ namespace OGUI
 		virtual void Free(Bitmap bm) = 0;
 	};
 
-	struct OGUI_API TextureInterface 
-	{
-
-	};
-	struct OGUI_API PersistantPrimitiveInterface {};
+	struct OGUI_API TextureInterface;
+	struct OGUI_API MaterialInterface;
+	struct OGUI_API PersistantPrimitiveInterface;
     using TextureHandle = TextureInterface*;
+    using MaterialHandle = MaterialInterface*;
     using RenderTargetViewHandle = struct RenderTargetView*;
     using PersistantPrimitiveHandle = PersistantPrimitiveInterface*;
 	struct OGUI_API RenderInterface
@@ -88,6 +87,9 @@ namespace OGUI
         virtual TextureHandle RegisterTexture(const Bitmap&) = 0;
 		virtual void UpdateTexture(TextureHandle, const Bitmap&) = 0;
         virtual void ReleaseTexture(TextureHandle) = 0;
+
+		virtual MaterialHandle RegisterMaterial(const ostr::string& url) = 0;
+		virtual void ReleaseMaterial(MaterialHandle) = 0;
 
 		virtual Vector2f GetSize(RenderTargetViewHandle) = 0;
 

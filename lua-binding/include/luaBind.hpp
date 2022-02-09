@@ -1,4 +1,5 @@
 #pragma once
+#include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/Core/value.h"
@@ -20,11 +21,12 @@ namespace sol::detail
     struct lua_type_of<ostr::string> : std::integral_constant<type, type::string> { };
     template <>
     struct lua_type_of<OGUI::Meta::Value> : std::integral_constant<type, type::poly> { };
+    template <>
+    struct lua_type_of<OGUI::Vector2f> : std::integral_constant<type, type::table> { };
 }
 
 namespace sol::stack
 {   
-
     template<>
     struct unqualified_pusher<OGUI::Name>
     {
@@ -79,10 +81,44 @@ namespace sol::stack
     };
 }
 
-template<class T>
-size_t PushImpl(const void* dst, lua_State* L)
+namespace sol::stack
 {
-    return sol::stack::push(L, *(T*)dst);
+    template<>
+    struct unqualified_pusher<OGUI::Vector2f>
+    {
+        static int push(lua_State* L, const OGUI::Vector2f& v) 
+        {
+            int amount = sol::stack::push(L, v.x);
+            amount += sol::stack::push(L, v.y);
+            return amount;
+        }
+    };
+
+    template<>
+    struct unqualified_checker<OGUI::Vector2f, type::table>
+    {
+        template <typename Handler>
+		static bool check(lua_State* L, int index, Handler&& handler, record& tracking) 
+        {
+            int absolute_index = lua_absindex(L, index);
+            bool success = sol::stack::check<float>(L, absolute_index, handler) && sol::stack::check<float>(L, absolute_index + 1, handler);
+            tracking.use(2);
+	        return success;
+        }
+    };
+
+    template<>
+    struct unqualified_getter<OGUI::Vector2f>
+    {
+		static OGUI::Vector2f get(lua_State* L, int index, record& tracking) 
+        {
+            int absolute_index = lua_absindex(L, index);
+            auto a = sol::stack::get<float>(L, absolute_index);
+            auto b = sol::stack::get<float>(L, absolute_index + 1);
+            tracking.use(2);
+            return OGUI::Vector2f { a, b };
+        }
+    };
 }
 
 namespace OGUI::Meta::Lua

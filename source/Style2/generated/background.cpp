@@ -74,6 +74,7 @@ void OGUI::StyleBackground::Initialize()
 {
     backgroundColor = Color4f(1.f,1.f,1.f,1.f);
     backgroundImage = {};
+    backgroundMaterial = {};
 }
 
 void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
@@ -127,6 +128,11 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     v->backgroundImage = {};
                     break;
                     }
+                case Ids::backgroundMaterial:{
+                    auto v = fget();
+                    v->backgroundMaterial = {};
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -142,6 +148,11 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                 case Ids::backgroundImage:{
                     auto v = fget();
                     v->backgroundImage = pst->backgroundImage;
+                    break;
+                    }
+                case Ids::backgroundMaterial:{
+                    auto v = fget();
+                    v->backgroundMaterial = pst->backgroundMaterial;
                     break;
                     }
                 default: break;
@@ -160,6 +171,11 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                 case Ids::backgroundImage:{
                     auto v = fget();
                     v->backgroundImage = sheet.Get<const ostr::string_view>(prop.value);
+                    break;
+                    }
+                case Ids::backgroundMaterial:{
+                    auto v = fget();
+                    v->backgroundMaterial = sheet.Get<const ostr::string_view>(prop.value);
                     break;
                     }
                 default: break;
@@ -234,6 +250,21 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                 
                 break;
                 }
+            case Ids::backgroundMaterial:{
+                auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->backgroundMaterial = sheet.Get<const ostr::string_view>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->backgroundMaterial = sheet.Get<const ostr::string_view>(prop.to);
+                else if(prop.from == prop.to)
+                    v->backgroundMaterial = OGUI::Lerp(v->backgroundMaterial, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                else
+                    v->backgroundMaterial = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                
+                break;
+                }
             default: break;
         }
     }
@@ -266,6 +297,22 @@ void OGUI::StyleBackground::SetupParser()
         {
             static size_t hash = Ids::backgroundImage;
             parser["background-imageValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const ostr::string_view>(ostr::string::decode_from_utf8(std::any_cast<const std::string_view&>(vs[0])))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "background-materialValue <- GlobalValue / URL \nbackground-material <- 'background-material' _ ':' _ background-materialValue";
+        RegisterProperty("background-material");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::backgroundMaterial;
+            parser["background-materialValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 if(vs.choice() == 0)
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});

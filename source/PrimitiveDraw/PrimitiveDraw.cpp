@@ -3,6 +3,7 @@
 #include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
 #include "OpenGUI/Core/nanovg.h"
+#include "OpenGUI/Interface/Interfaces.h"
 #include "OpenGUI/Style2/Transform.h"
 
 uint32_t ToColor32ABGR(NVGcolor color)
@@ -222,6 +223,7 @@ static void nvg__renderFill(void* uptr, NVGpaint* paint, NVGcompositeOperationSt
     auto dc = (PrimDrawContext*)uptr;
     PrimDrawResource resource;
     resource.texture = (TextureHandle)paint->image;
+    resource.material = (MaterialHandle)paint->material;
     resource.compositeOperation = compositeOperation;
     auto invTransform = nvg__getMatrix(paint);
     //fast path
@@ -247,6 +249,7 @@ static void nvg__renderStroke(void* uptr, NVGpaint* paint, NVGcompositeOperation
     auto dc = (PrimDrawContext*)uptr;
     PrimDrawResource resource;
     resource.texture = (TextureHandle)paint->image;
+    resource.material = (MaterialHandle)paint->material;
     resource.compositeOperation = compositeOperation;
     auto invTransform = nvg__getMatrix(paint);
     //fast path
@@ -301,7 +304,7 @@ namespace OGUI
         if(!command_list.empty()) 
         {
             auto& res = command_list.back().resource;
-            if(res.texture == resource.texture && 
+            if(res.texture == resource.texture && res.material == resource.material &&
             res.compositeOperation.dstAlpha == resource.compositeOperation.dstAlpha &&
             res.compositeOperation.dstRGB == resource.compositeOperation.dstRGB &&
             res.compositeOperation.srcAlpha == resource.compositeOperation.srcAlpha &&

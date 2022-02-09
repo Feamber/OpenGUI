@@ -1,4 +1,5 @@
 #include "OpenGUI/Context.h"
+#include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/value.h"
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Bind/Bind.h"
@@ -185,6 +186,12 @@ OGUI::LuaBindable::LuaBindable(sol::table inTable, sol::table inHandler)
 
 namespace OGUI::Meta::Lua
 {
+
+    template<class T>
+    size_t PushImpl(const void* dst, lua_State* L)
+    {
+        return sol::stack::push(L, *(T*)dst);
+    }
 
     void SharedPtrDtor(void* memory)
     {
@@ -401,8 +408,15 @@ namespace OGUI::Meta::Lua
                 }
                 return 0;
             }
-            case _o: 
+            case _o:                                                                                         
             {
+                if(type == TypeOf<OGUI::Vector2f>::Get())
+                {
+                    auto& v = *(OGUI::Vector2f*)dst;
+                    sol::stack::push(L, v.x);
+                    sol::stack::push(L, v.y);
+                    return 2;
+                }
                 auto& obj = (const RecordType&)(*type);
                 if(move && !obj.nativeMethods.move)
                 {

@@ -371,6 +371,7 @@ bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, float x, float 
 	event.pointerType = u"mouse";
 	event.gestureType = EGestureEvent::None;
 	event.position = point;
+	event.deltaPosition = Vector2f(relativeMotionX, relativeMotionY);
 	return RouteEvent(picked, event);
 }
 
@@ -794,6 +795,18 @@ void OGUI::Context::CleanXmlFilter_Global(const char* key)
 			localXmlFilters.clear();
 			RecursionUpdataFilter(winContext->ui, localXmlFilters);
 		}
+	}
+}
+
+void OGUI::Context::ResetXmlFilter_Global()
+{
+	_globalXmlFiltersMap.clear();
+	UpdataXmlFilterCache_Global();
+	std::map<Name, int> localXmlFilters;
+	for(auto& winContext : windowContexts)
+	{
+		localXmlFilters.clear();
+		RecursionUpdataFilter(winContext->ui, localXmlFilters);
 	}
 }
 
