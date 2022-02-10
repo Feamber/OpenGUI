@@ -103,7 +103,7 @@ namespace OGUI
 	void CheckLayoutRec(VisualElement* element)
 	{
 		if (element->_prevLayout != element->GetLayout())
-			element->_transformDirty = true;
+			element->MarkTransformDirty();
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
 	}

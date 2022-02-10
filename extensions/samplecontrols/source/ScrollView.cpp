@@ -41,7 +41,8 @@ void SampleControls::ScrollView::InitializeChildren()
             _autoSliderHeight = true;
         if(_autoSliderHeight)
         {
-            float ratio = GetSize().y / (_scrollMax.y - _scrollMin.y);
+            float clientHeight = GetSize().y;
+            float ratio =  clientHeight / (_scrollMax.y - _scrollMin.y + clientHeight);
             pos.height = YGValue{ratio * 100.f, YGUnitPercent};
             pos.top = YGValue{(1-ratio) * _sliderProgress * 100.f, YGUnitPercent};
         }
