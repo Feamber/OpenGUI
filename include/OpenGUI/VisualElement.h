@@ -271,7 +271,9 @@ namespace OGUI reflect
 		float GetScrollingAxisX() const;
 		float GetScrollingAxisY() const;
 		bool ScrollOnRow() const;
+		attr("script":true)
 		void AddScroll(Vector2f delta);
+		attr("script":true)
 		virtual void SetScroll(Vector2f offset);
 		void ScrollIntoView(VisualElement* child);
 		bool _scrollSizeDirty = true;
