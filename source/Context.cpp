@@ -66,7 +66,7 @@ namespace OGUI
 
 	VisualElement* PickRecursive(VisualElement* element, Vector2f point)
 	{
-		if(!element->Visible())
+		if(!element->Visible() || !element->IsPick())
 			return nullptr;
 		std::vector<VisualElement*> children;
 		element->GetChildren(children);

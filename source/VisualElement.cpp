@@ -278,6 +278,16 @@ bool OGUI::VisualElement::IsClippingChildren()
 	return pos.overflow != EFlexOverflow::Visible;
 }
 
+bool OGUI::VisualElement::IsPick()
+{
+	return _pick;
+}
+
+void OGUI::VisualElement::SetIsPick(bool newIsPick)
+{
+	_pick = newIsPick;
+}
+
 void OGUI::VisualElement::CreateYogaNode()
 {
 	auto config = YGConfigGetDefault();
@@ -955,6 +965,11 @@ OGUI::VisualElement* OGUI::VisualElement::GetPrevFocusScope()
 		current = current->_physicalParent;
 	}
 	return nullptr;
+}
+
+OGUI::VisualElement* OGUI::VisualElement::GetFocusScopeFocused()
+{
+	return currentFocused;
 }
 
 void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, std::vector<OGUI::VisualElement*>& out)

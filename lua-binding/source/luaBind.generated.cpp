@@ -1,13 +1,13 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
 #include "OpenGUI/Context.h"
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Event/EventBase.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Bind/EventArg.h"
 #include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Event/FocusEvent.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -42,6 +42,8 @@ void BindLua_generated(lua_State* L)
         type["SetName"] = (void(OGUI::VisualElement::*)(ostr::string))&OGUI::VisualElement::SetName;
         type["SetVisibility"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetVisibility;
         type["IsClippingChildren"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::IsClippingChildren;
+        type["IsPick"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::IsPick;
+        type["SetIsPick"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetIsPick;
         type["PushChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::PushChild;
         type["InsertChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *, int))&OGUI::VisualElement::InsertChild;
         type["RemoveChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
@@ -50,6 +52,7 @@ void BindLua_generated(lua_State* L)
         type["AddStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->AddStyleClass(_0); };
         type["RemoveStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->RemoveStyleClass(_0); };
         type["SetPseudoClass"] = (void(OGUI::VisualElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
+        type["GetFocusScopeFocused"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetFocusScopeFocused;
         type["AddScroll"] = (void(OGUI::VisualElement::*)(OGUI::Vector<float, 2>))&OGUI::VisualElement::AddScroll;
         type["SetScroll"] = (void(OGUI::VisualElement::*)(OGUI::Vector<float, 2>))&OGUI::VisualElement::SetScroll;
         type["SetXmlFilter"] = (void(OGUI::VisualElement::*)(const char *, const char *))&OGUI::VisualElement::SetXmlFilter;
