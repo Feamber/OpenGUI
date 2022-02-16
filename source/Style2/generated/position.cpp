@@ -1630,7 +1630,7 @@ void OGUI::StylePosition::SetupParser()
     }
 	{
         using namespace CSSParser;
-        static const auto grammar = "align-selfValue <- GlobalValue / Width \nalign-self <- 'align-self' _ ':' _ align-selfValue";
+        static const auto grammar = "align-selfValue <- GlobalValue / FlexAlign \nalign-self <- 'align-self' _ ':' _ align-selfValue";
         RegisterProperty("align-self");
         RegisterGrammar(grammar, [](peg::parser& parser)
         {

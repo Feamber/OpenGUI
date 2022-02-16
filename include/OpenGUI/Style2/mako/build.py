@@ -72,7 +72,7 @@ def gen_position():
     add_longhand("overflow",		"EFlexOverflow",
                  "EFlexOverflow::Visible", "FlexOverflow", restyle_damage="Layout")
     add_longhand("align-self",		"YGAlign",			"YGAlignAuto",
-                 "Width", restyle_damage="Layout")
+                 "FlexAlign", restyle_damage="Layout")
     for size in PHYSICAL_SIZES:
         add_longhand("max-{0}".format(size), "YGValue", "YGValueUndefined",
                      "LengthPercentage", restyle_damage="Layout")

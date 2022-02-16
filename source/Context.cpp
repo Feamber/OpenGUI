@@ -192,6 +192,16 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	UpdateScrollSize(root);
 	TransformRec(root);
 	UpdateVisibility(root);
+	std::deque<VisualElement*> queue;
+	auto& ctx = *wctx.currentDrawCtx;
+	queue.push_back(root);
+	while(!queue.empty())
+	{
+		auto next = queue.front();
+		queue.pop_front();
+		next->Update(dt);
+		next->Traverse([&](VisualElement* child) {queue.push_back(child);});
+	}
 }
 
 void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)

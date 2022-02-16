@@ -164,6 +164,13 @@ OGUI::TextureInterface* OGUI::VisualElement::GetBackgroundImage(const StyleBackg
 	auto& ctx = Context::Get();
 	if (!bg.backgroundImage.is_empty())
 	{
+		if(bg.backgroundImage.substring(0,1)=="$")
+		{
+			auto iter = textures.find(bg.backgroundImage.substring(1));
+			if(iter == textures.end())
+				return nullptr;
+			return iter->second;
+		}
 		//start new load
 		if (!backgroundImageResource || backgroundImageUrl != bg.backgroundImage)
 		{
@@ -704,6 +711,7 @@ void OGUI::VisualElement::SyncYogaStyle()
 
 void OGUI::VisualElement::UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss)
 {
+	damage |= ApplyProcedureStyle();
 	if(HasFlag(damage, RestyleDamage::Layout))
 		SyncYogaStyle();
 	if(HasFlag(damage, RestyleDamage::Transform))
@@ -772,9 +780,8 @@ void OGUI::VisualElement::SetVisibility(bool visible)
 
 bool OGUI::VisualElement::Intersect(Vector2f point)
 {
-	auto invTransform = math::inverse(_worldTransform);
 	Vector4f dummy = {point.X, point.Y, 0.f, 1.f};
-	const Vector4f result = math::multiply(dummy, invTransform);
+	const Vector4f result = math::multiply(dummy, _invTransform);
 	Vector2f localPoint = {result.X, result.Y};
 	auto rect = GetRect();
 	return rect.IntersectPoint(localPoint);

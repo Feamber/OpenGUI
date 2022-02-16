@@ -7,7 +7,7 @@
 
 namespace OGUI
 {
-    struct ComputedTransform
+    struct OGUI_API ComputedTransform
     {
         Matrix2x2 m;
         Vector2f trans;
@@ -23,7 +23,7 @@ namespace OGUI
         friend bool operator==(const ComputedTransform& a, const ComputedTransform& b);
     };
 
-    struct TransformFunction
+    struct OGUI_API TransformFunction
     {
         enum class Type
         {
@@ -52,7 +52,7 @@ namespace OGUI
         TransformFunction();
         friend bool operator==(const TransformFunction& a, const TransformFunction& b);
     };
-    ComputedTransform evaluate(gsl::span<const TransformFunction> transformList);
+    OGUI_API ComputedTransform evaluate(gsl::span<const TransformFunction> transformList);
     FORCEINLINE ComputedTransform multiply(ComputedTransform a, ComputedTransform b)
     {
         return {math::multiply(a.m, b.m), math::multiply(b.m, a.trans) + b.trans};

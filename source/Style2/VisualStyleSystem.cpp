@@ -555,6 +555,5 @@ void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element, const std::vec
 	auto _style = element->_style;
 	RestyleDamage damage = element->_selectorDirty ? RestyleDamage::All : RestyleDamage::None;
 	damage |= UpdateAnim(element);
-	damage |= element->ApplyProcedureStyle();
 	element->UpdateStyle(damage, ss);
 }

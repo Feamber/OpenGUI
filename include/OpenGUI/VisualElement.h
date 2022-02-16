@@ -48,6 +48,7 @@ namespace OGUI reflect
 		VisualElement* GetHierachyParent();
 		bool IsSibling(VisualElement*);
 		bool IsParent(VisualElement*);
+		virtual void Update(float dt) {}
 		const std::vector<StyleSheet*>& GetStyleSheets() { return _styleSheets; }
 
 		virtual bool IsA(ostr::string_view type) { return GetTypeName() == type; }
@@ -151,6 +152,7 @@ namespace OGUI reflect
 		ComputedStyle _preAnimatedStyle;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<ostr::string> _styleClasses;
+		std::unordered_map<Name, TextureHandle> textures;
 
 		attr("script":true)
 		void AddStyleClass(ostr::string_view styleClass);
@@ -165,7 +167,7 @@ namespace OGUI reflect
 		void InitInlineStyle(std::string_view str);
 		void CalculateLayout(float width = YGUndefined, float height = YGUndefined);
 		void SyncYogaStyle();
-		virtual void UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss);
+		virtual void UpdateStyle(RestyleDamage damage = RestyleDamage::None, const std::vector<StyleSheet*>& ss = {});
 		RestyleDamage ApplyProcedureStyle();
 		using StyleOverridingFunc = std::function<RestyleDamage()>;
 		std::vector<StyleOverridingFunc> _styleOverriding;
