@@ -186,8 +186,10 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	// Texture Streaming
 	textureManager->Update();
 	_deltaTime = dt;
-	styleSystem.Update(root, wctx._cssCacheInvalidated);
+	// 因为可能会在动画事件中调用到 OGUI::Context::InvalidateCssCache() 所以这里先设置false再更新
+	bool cssCacheInvalidated = wctx._cssCacheInvalidated;
 	wctx._cssCacheInvalidated = false;
+	styleSystem.Update(root, cssCacheInvalidated);
 	UpdateLayout(root, wctx.GetWidth(), wctx.GetHeight());
 	UpdateScrollSize(root);
 	TransformRec(root);
