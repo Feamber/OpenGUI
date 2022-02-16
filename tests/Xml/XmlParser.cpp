@@ -2,6 +2,7 @@
 #include "OpenGUI/Core/Types.h"
 #include "catch.hpp"
 #include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Context.h"
 
 #include <fstream>
 

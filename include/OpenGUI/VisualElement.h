@@ -23,6 +23,7 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Bind/Bind.h"
+#include <set>
 
 namespace OGUI reflect
 {
@@ -84,6 +85,11 @@ namespace OGUI reflect
 		bool IsClippingChildren();
 		bool _clipped = false;
 		bool _visible = true;
+		bool _pick = true;
+		attr("script":true)
+		bool IsPick();
+		attr("script":true)
+		void SetIsPick(bool newIsPick);
 #pragma region Hierachy
 		void UpdateRoot(VisualElement* child);
 		attr("script":true)
@@ -247,6 +253,8 @@ namespace OGUI reflect
 		// 获取当前焦点空间下的所有可聚焦元素
 		std::vector<VisualElement*> GetFocusScopeChildren();
 		VisualElement* GetPrevFocusScope();
+		attr("script":true)
+		VisualElement* GetFocusScopeFocused();
 		static void GetRelativeFocusedPath(VisualElement* element, std::vector<VisualElement*>& out);
 #pragma endregion
 
@@ -273,7 +281,9 @@ namespace OGUI reflect
 		float GetScrollingAxisX() const;
 		float GetScrollingAxisY() const;
 		bool ScrollOnRow() const;
+		attr("script":true)
 		void AddScroll(Vector2f delta);
+		attr("script":true)
 		virtual void SetScroll(Vector2f offset);
 		void ScrollIntoView(VisualElement* child);
 		bool _scrollSizeDirty = true;

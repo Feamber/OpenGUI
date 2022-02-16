@@ -285,6 +285,16 @@ bool OGUI::VisualElement::IsClippingChildren()
 	return pos.overflow != EFlexOverflow::Visible;
 }
 
+bool OGUI::VisualElement::IsPick()
+{
+	return _pick;
+}
+
+void OGUI::VisualElement::SetIsPick(bool newIsPick)
+{
+	_pick = newIsPick;
+}
+
 void OGUI::VisualElement::CreateYogaNode()
 {
 	auto config = YGConfigGetDefault();
@@ -571,7 +581,7 @@ void OGUI::VisualElement::AddStyleClass(ostr::string_view styleClass)
 	if(std::find(_styleClasses.begin(), _styleClasses.end(), styleClass) == _styleClasses.end())
 	{
 		_styleClasses.emplace_back(styleClass);
-		Context::Get().InvalidateCssCache();
+		_selectorDirty = true;
 	}
 }
 
@@ -581,7 +591,7 @@ void OGUI::VisualElement::RemoveStyleClass(ostr::string_view styleClass)
 	if(find != _styleClasses.end())
 	{
 		_styleClasses.erase(find);
-		Context::Get().InvalidateCssCache();
+		_selectorDirty = true;
 	}
 }
 
@@ -962,6 +972,11 @@ OGUI::VisualElement* OGUI::VisualElement::GetPrevFocusScope()
 		current = current->_physicalParent;
 	}
 	return nullptr;
+}
+
+OGUI::VisualElement* OGUI::VisualElement::GetFocusScopeFocused()
+{
+	return currentFocused;
 }
 
 void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, std::vector<OGUI::VisualElement*>& out)
