@@ -23,6 +23,7 @@
 #include "OpenGUI/Core/Types.h"
 #include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Bind/Bind.h"
+#include <set>
 
 namespace OGUI reflect
 {

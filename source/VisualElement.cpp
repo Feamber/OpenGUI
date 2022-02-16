@@ -574,7 +574,7 @@ void OGUI::VisualElement::AddStyleClass(ostr::string_view styleClass)
 	if(std::find(_styleClasses.begin(), _styleClasses.end(), styleClass) == _styleClasses.end())
 	{
 		_styleClasses.emplace_back(styleClass);
-		Context::Get().InvalidateCssCache();
+		_selectorDirty = true;
 	}
 }
 
@@ -584,7 +584,7 @@ void OGUI::VisualElement::RemoveStyleClass(ostr::string_view styleClass)
 	if(find != _styleClasses.end())
 	{
 		_styleClasses.erase(find);
-		Context::Get().InvalidateCssCache();
+		_selectorDirty = true;
 	}
 }
 

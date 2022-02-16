@@ -2,7 +2,6 @@
 
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Event/AnimEvent.h"
-#include "OpenGUI/Event/EventRouter.h"
 #include "OpenGUI/Style2/ComputedAnim.h"
 #include "OpenGUI/Style2/Properties.h"
 #include <algorithm>
@@ -22,6 +21,7 @@ void OGUI::VisualStyleSystem::Update(VisualElement* Tree, bool refresh)
 	Traverse(Tree, false, refresh);
 	OASSERT(matchingContext.styleSheetStack.size() == 0);
 	matchingContext.styleSheetStack.clear();
+	deferredEvents.Execute();
 }
 namespace OGUI
 {
@@ -453,72 +453,69 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 					auto& anim = element->_anims.emplace_back(std::move(newAnim));
 					AnimStartEvent event;
 					event.animName = anim.style.animationName;
-					RouteEvent(element,  event);
+					deferredEvents.AddEvent(element, event);
 				}
 			}
 		}
 	}
 }
 
-namespace OGUI
+void OGUI::VisualStyleSystem::UpdateAnimTime(std::vector<ComputedAnim>& anims, VisualElement* element)
 {
-	void UpdateAnimTime(std::vector<ComputedAnim>& anims, VisualElement* element)
+	auto& ctx = Context::Get();
+	auto iter = std::remove_if(anims.begin(), anims.end(), [&](ComputedAnim& anim)
 	{
-		auto& ctx = Context::Get();
-		auto iter = std::remove_if(anims.begin(), anims.end(), [&](ComputedAnim& anim)
+		float maxTime = anim.style.animationDuration * anim.style.animationIterationCount + anim.style.animationDelay;
+		bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
+		bool infinite = anim.style.animationIterationCount <= 0.f;
+		if (paused || (!infinite && anim.time >= maxTime))
 		{
-			float maxTime = anim.style.animationDuration * anim.style.animationIterationCount + anim.style.animationDelay;
-			bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
-			bool infinite = anim.style.animationIterationCount <= 0.f;
-			if (paused || (!infinite && anim.time >= maxTime))
+			if(anim.evaluating)
 			{
-				if(anim.evaluating)
-				{
-					AnimEndEvent event;
-					event.animName = anim.style.animationName;
-					RouteEvent(element,  event);
-				}
-				anim.evaluating = false;
+				AnimEndEvent event;
+				event.animName = anim.style.animationName;
+				deferredEvents.AddEvent(element, event);
 			}
+			anim.evaluating = false;
+		}
+		else
+		{
+			if(!anim.evaluating)
+			{
+				AnimStartEvent event;
+				event.animName = anim.style.animationName;
+				deferredEvents.AddEvent(element, event);
+			}
+			anim.evaluating = true;
+		}
+		if (!paused || anim.yielding)
+		{
+			if (anim.goingback)
+				anim.time = std::max(anim.style.animationDelay, anim.time - ctx._deltaTime);
+			else if (anim.style.animationIterationCount > 0.f)
+				anim.time = std::min(ctx._deltaTime + anim.time, maxTime);
 			else
+				anim.time += ctx._deltaTime;
+		}
+		if (anim.yielding)
+		{
+			bool shouldStop = false;
+			if (!anim.goingback && anim.style.animationIterationCount > 0 && anim.time >= maxTime)
+				shouldStop = true;
+			else if(anim.goingback && anim.time <= anim.style.animationDelay)
+				shouldStop = true;
+			if (shouldStop)
 			{
-				if(!anim.evaluating)
-				{
-					AnimStartEvent event;
-					event.animName = anim.style.animationName;
-					RouteEvent(element,  event);
-				}
-				anim.evaluating = true;
+				AnimStopEvent event;
+				event.animName = anim.style.animationName;
+				deferredEvents.AddEvent(element, event);
+				return true;
 			}
-			if (!paused || anim.yielding)
-			{
-				if (anim.goingback)
-					anim.time = std::max(anim.style.animationDelay, anim.time - ctx._deltaTime);
-				else if (anim.style.animationIterationCount > 0.f)
-					anim.time = std::min(ctx._deltaTime + anim.time, maxTime);
-				else
-					anim.time += ctx._deltaTime;
-			}
-			if (anim.yielding)
-			{
-				bool shouldStop = false;
-				if (!anim.goingback && anim.style.animationIterationCount > 0 && anim.time >= maxTime)
-					shouldStop = true;
-				else if(anim.goingback && anim.time <= anim.style.animationDelay)
-					shouldStop = true;
-				if (shouldStop)
-				{
-					AnimStopEvent event;
-					event.animName = anim.style.animationName;
-					RouteEvent(element,  event);
-					return true;
-				}
-			}
-			return false;
-		});
-		if(iter != anims.end())
-			anims.erase(iter, anims.end());
-	}
+		}
+		return false;
+	});
+	if(iter != anims.end())
+		anims.erase(iter, anims.end());
 }
 
 OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)

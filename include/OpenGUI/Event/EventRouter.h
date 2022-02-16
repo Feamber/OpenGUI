@@ -105,4 +105,41 @@ namespace OGUI
 
         return result;
     }
+
+	template<class T>
+	struct DeferredEvent
+	{
+		VisualElement* target;
+		T event;
+	};
+
+	template<class... Ts>
+	struct DeferredEvents
+	{
+		std::tuple<std::vector<DeferredEvent<Ts>>...> queue;
+		template<class T>
+		void AddEvent(VisualElement* target, T&& event)
+		{
+			std::get<std::vector<DeferredEvent<std::remove_reference_t<T>>>>(queue).push_back({target, std::move(event)});
+		}
+
+		template<class T>
+		void Execute(std::vector<T>& queue)
+		{
+			for(auto& event : queue)
+				RouteEvent(event.target, event.event);
+			queue.clear();
+		}
+
+		template<size_t ...id>
+		void Execute(std::index_sequence<id...>)
+		{
+			std::initializer_list<int> _ = {(Execute(std::get<id>(queue)), 0)...};
+		}
+
+		void Execute()
+		{
+			Execute(std::make_index_sequence<sizeof...(Ts)>());
+		}
+	};
 }
