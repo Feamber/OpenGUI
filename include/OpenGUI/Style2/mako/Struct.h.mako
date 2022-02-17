@@ -50,9 +50,7 @@ namespace OGUI reflect
     };
 
 %for prop in struct.longhands:
-    attr("script": true)
     ${linkage} void SetStyle${to_camel_case(prop.name)}(VisualElement* element, ${prop.reference_type} value);
-    attr("script": true)
     ${linkage} void ResetStyle${to_camel_case(prop.name)}(VisualElement* element);
 %endfor
 }

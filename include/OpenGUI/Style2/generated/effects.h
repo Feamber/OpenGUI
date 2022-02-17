@@ -39,8 +39,6 @@ namespace OGUI reflect
         static void SetupParser();
     };
 
-    attr("script": true)
     OGUI_API void SetStyleOpacity(VisualElement* element, const float& value);
-    attr("script": true)
     OGUI_API void ResetStyleOpacity(VisualElement* element);
 }

@@ -39,8 +39,6 @@ namespace OGUI reflect
         static void SetupParser();
     };
 
-    attr("script": true)
     SAMPLECONTROLS_API void SetStyleSomeValue(VisualElement* element, const float& value);
-    attr("script": true)
     SAMPLECONTROLS_API void ResetStyleSomeValue(VisualElement* element);
 }

@@ -668,7 +668,7 @@ void OGUI::ResetStyleColor(VisualElement* element)
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<1);
 }
 attr("script": true)
-void OGUI::SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string> value)
+void OGUI::SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string>& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<2;
     StyleText::GetOrAdd(element->_style).fontFamily = ToOwned(value);
@@ -733,7 +733,7 @@ void OGUI::ResetStyleTextAlign(VisualElement* element)
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<6);
 }
 attr("script": true)
-void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow> value)
+void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow>& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<7;
     StyleText::GetOrAdd(element->_style).textShadow = ToOwned(value);

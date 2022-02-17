@@ -2000,7 +2000,7 @@ void OGUI::StylePosition::SetupParser()
 
 
 attr("script": true)
-void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction> value)
+void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction>& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<0;
     StylePosition::GetOrAdd(element->_style).transform = ToOwned(value);
