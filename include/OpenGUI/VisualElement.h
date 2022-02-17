@@ -159,6 +159,10 @@ namespace OGUI reflect
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<ostr::string> _styleClasses;
 		std::unordered_map<Name, TextureHandle> textures;
+
+		TextureHandle BindTexture(ostr::string_view key, TextureHandle texture);
+		TextureHandle UnBindTexture(ostr::string_view key);
+
 		attr("script":true)
 		void AddStyleClass(ostr::string_view styleClass);
 		attr("script":true)

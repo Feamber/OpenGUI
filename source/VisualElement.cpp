@@ -576,6 +576,32 @@ OGUI::Vector2f OGUI::VisualElement::GetSize() const
 	return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
 }
 
+OGUI::TextureHandle OGUI::VisualElement::BindTexture(ostr::string_view key, OGUI::TextureHandle texture)
+{
+	auto find = textures.find(key);
+	if(find == textures.end())
+	{
+		textures[key] = texture;
+		return nullptr;
+	}
+	else
+	{
+		TextureHandle out = find->second;
+		textures[key] = texture;
+		return out;
+	}
+}
+
+OGUI::TextureHandle OGUI::VisualElement::UnBindTexture(ostr::string_view key)
+{
+	auto find = textures.find(key);
+	if(find != textures.end())
+	{
+		return textures.erase(find)->second;
+	}
+	return nullptr;
+}
+
 void OGUI::VisualElement::AddStyleClass(ostr::string_view styleClass)
 {
 	if(std::find(_styleClasses.begin(), _styleClasses.end(), styleClass) == _styleClasses.end())
