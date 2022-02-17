@@ -7,6 +7,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "OpenGUI/VisualElement.h"
 #include "position_shorthands.h"
 
 size_t StylePositionEntry = 0;
@@ -62,6 +63,13 @@ OGUI::StylePosition& OGUI::StylePosition::GetOrAdd(ComputedStyle& style)
         s.owned = true;
         return *value.get();
     }
+    else if(!s.owned)
+    {
+        auto value = std::make_shared<OGUI::StylePosition>(*(OGUI::StylePosition*)s.ptr.get());
+        s.ptr = std::static_pointer_cast<void>(value);
+        s.owned = true;
+        return *value.get();
+    }
     else 
         return *(StylePosition*)s.ptr.get();
 }
@@ -108,7 +116,7 @@ void OGUI::StylePosition::Initialize()
     aspectRatio = YGUndefined;
 }
 
-void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
+void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::StylePosition* st = nullptr;
@@ -138,9 +146,46 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
         }
         return st;
     };
+    auto mask = override[StylePositionEntry];
     
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::transform: if(mask & (1ull<<0)) continue; break;
+            case Ids::flexGrow: if(mask & (1ull<<1)) continue; break;
+            case Ids::flexShrink: if(mask & (1ull<<2)) continue; break;
+            case Ids::flexBasis: if(mask & (1ull<<3)) continue; break;
+            case Ids::top: if(mask & (1ull<<4)) continue; break;
+            case Ids::right: if(mask & (1ull<<5)) continue; break;
+            case Ids::bottom: if(mask & (1ull<<6)) continue; break;
+            case Ids::left: if(mask & (1ull<<7)) continue; break;
+            case Ids::marginTop: if(mask & (1ull<<8)) continue; break;
+            case Ids::marginRight: if(mask & (1ull<<9)) continue; break;
+            case Ids::marginBottom: if(mask & (1ull<<10)) continue; break;
+            case Ids::marginLeft: if(mask & (1ull<<11)) continue; break;
+            case Ids::paddingTop: if(mask & (1ull<<12)) continue; break;
+            case Ids::paddingRight: if(mask & (1ull<<13)) continue; break;
+            case Ids::paddingBottom: if(mask & (1ull<<14)) continue; break;
+            case Ids::paddingLeft: if(mask & (1ull<<15)) continue; break;
+            case Ids::width: if(mask & (1ull<<16)) continue; break;
+            case Ids::height: if(mask & (1ull<<17)) continue; break;
+            case Ids::position: if(mask & (1ull<<18)) continue; break;
+            case Ids::overflow: if(mask & (1ull<<19)) continue; break;
+            case Ids::alignSelf: if(mask & (1ull<<20)) continue; break;
+            case Ids::maxWidth: if(mask & (1ull<<21)) continue; break;
+            case Ids::maxHeight: if(mask & (1ull<<22)) continue; break;
+            case Ids::minWidth: if(mask & (1ull<<23)) continue; break;
+            case Ids::minHeight: if(mask & (1ull<<24)) continue; break;
+            case Ids::flexDirection: if(mask & (1ull<<25)) continue; break;
+            case Ids::alignContent: if(mask & (1ull<<26)) continue; break;
+            case Ids::alignItems: if(mask & (1ull<<27)) continue; break;
+            case Ids::justifyContent: if(mask & (1ull<<28)) continue; break;
+            case Ids::flexWrap: if(mask & (1ull<<29)) continue; break;
+            case Ids::flexDisplay: if(mask & (1ull<<30)) continue; break;
+            case Ids::verticalAlign: if(mask & (1ull<<31)) continue; break;
+            case Ids::aspectRatio: if(mask & (1ull<<32)) continue; break;
+        }
         if(prop.keyword)
         {
             if (prop.value.index == (int)StyleKeyword::Initial || !pst
@@ -149,167 +194,167 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             {
                 switch(prop.id)
                 {
-                case Ids::transform:{
+                case Ids::transform: {
                     auto v = fget();
                     v->transform = {};
                     break;
                     }
-                case Ids::flexGrow:{
+                case Ids::flexGrow: {
                     auto v = fget();
                     v->flexGrow = 0.f;
                     break;
                     }
-                case Ids::flexShrink:{
+                case Ids::flexShrink: {
                     auto v = fget();
                     v->flexShrink = 1.f;
                     break;
                     }
-                case Ids::flexBasis:{
+                case Ids::flexBasis: {
                     auto v = fget();
                     v->flexBasis = YGValueAuto;
                     break;
                     }
-                case Ids::top:{
+                case Ids::top: {
                     auto v = fget();
                     v->top = YGValueAuto;
                     break;
                     }
-                case Ids::right:{
+                case Ids::right: {
                     auto v = fget();
                     v->right = YGValueAuto;
                     break;
                     }
-                case Ids::bottom:{
+                case Ids::bottom: {
                     auto v = fget();
                     v->bottom = YGValueAuto;
                     break;
                     }
-                case Ids::left:{
+                case Ids::left: {
                     auto v = fget();
                     v->left = YGValueAuto;
                     break;
                     }
-                case Ids::marginTop:{
+                case Ids::marginTop: {
                     auto v = fget();
                     v->marginTop = YGValueZero;
                     break;
                     }
-                case Ids::marginRight:{
+                case Ids::marginRight: {
                     auto v = fget();
                     v->marginRight = YGValueZero;
                     break;
                     }
-                case Ids::marginBottom:{
+                case Ids::marginBottom: {
                     auto v = fget();
                     v->marginBottom = YGValueZero;
                     break;
                     }
-                case Ids::marginLeft:{
+                case Ids::marginLeft: {
                     auto v = fget();
                     v->marginLeft = YGValueZero;
                     break;
                     }
-                case Ids::paddingTop:{
+                case Ids::paddingTop: {
                     auto v = fget();
                     v->paddingTop = YGValueZero;
                     break;
                     }
-                case Ids::paddingRight:{
+                case Ids::paddingRight: {
                     auto v = fget();
                     v->paddingRight = YGValueZero;
                     break;
                     }
-                case Ids::paddingBottom:{
+                case Ids::paddingBottom: {
                     auto v = fget();
                     v->paddingBottom = YGValueZero;
                     break;
                     }
-                case Ids::paddingLeft:{
+                case Ids::paddingLeft: {
                     auto v = fget();
                     v->paddingLeft = YGValueZero;
                     break;
                     }
-                case Ids::width:{
+                case Ids::width: {
                     auto v = fget();
                     v->width = YGValueAuto;
                     break;
                     }
-                case Ids::height:{
+                case Ids::height: {
                     auto v = fget();
                     v->height = YGValueAuto;
                     break;
                     }
-                case Ids::position:{
+                case Ids::position: {
                     auto v = fget();
                     v->position = YGPositionTypeRelative;
                     break;
                     }
-                case Ids::overflow:{
+                case Ids::overflow: {
                     auto v = fget();
                     v->overflow = EFlexOverflow::Visible;
                     break;
                     }
-                case Ids::alignSelf:{
+                case Ids::alignSelf: {
                     auto v = fget();
                     v->alignSelf = YGAlignAuto;
                     break;
                     }
-                case Ids::maxWidth:{
+                case Ids::maxWidth: {
                     auto v = fget();
                     v->maxWidth = YGValueUndefined;
                     break;
                     }
-                case Ids::maxHeight:{
+                case Ids::maxHeight: {
                     auto v = fget();
                     v->maxHeight = YGValueUndefined;
                     break;
                     }
-                case Ids::minWidth:{
+                case Ids::minWidth: {
                     auto v = fget();
                     v->minWidth = YGValueAuto;
                     break;
                     }
-                case Ids::minHeight:{
+                case Ids::minHeight: {
                     auto v = fget();
                     v->minHeight = YGValueAuto;
                     break;
                     }
-                case Ids::flexDirection:{
+                case Ids::flexDirection: {
                     auto v = fget();
                     v->flexDirection = YGFlexDirectionRow;
                     break;
                     }
-                case Ids::alignContent:{
+                case Ids::alignContent: {
                     auto v = fget();
                     v->alignContent = YGAlignFlexStart;
                     break;
                     }
-                case Ids::alignItems:{
+                case Ids::alignItems: {
                     auto v = fget();
                     v->alignItems = YGAlignStretch;
                     break;
                     }
-                case Ids::justifyContent:{
+                case Ids::justifyContent: {
                     auto v = fget();
                     v->justifyContent = YGJustifyFlexStart;
                     break;
                     }
-                case Ids::flexWrap:{
+                case Ids::flexWrap: {
                     auto v = fget();
                     v->flexWrap = YGWrapNoWrap;
                     break;
                     }
-                case Ids::flexDisplay:{
+                case Ids::flexDisplay: {
                     auto v = fget();
                     v->flexDisplay = YGDisplayFlex;
                     break;
                     }
-                case Ids::verticalAlign:{
+                case Ids::verticalAlign: {
                     auto v = fget();
                     v->verticalAlign = EInlineAlign::Middle;
                     break;
                     }
-                case Ids::aspectRatio:{
+                case Ids::aspectRatio: {
                     auto v = fget();
                     v->aspectRatio = YGUndefined;
                     break;
@@ -666,7 +711,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
 }
 
 
-OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
 {
     OGUI::StylePosition* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
@@ -697,8 +742,46 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
         return st;
     };
     
+    auto mask = override[StylePositionEntry];
+    
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::transform: if(mask & (1ull<<0)) continue; break;
+            case Ids::flexGrow: if(mask & (1ull<<1)) continue; break;
+            case Ids::flexShrink: if(mask & (1ull<<2)) continue; break;
+            case Ids::flexBasis: if(mask & (1ull<<3)) continue; break;
+            case Ids::top: if(mask & (1ull<<4)) continue; break;
+            case Ids::right: if(mask & (1ull<<5)) continue; break;
+            case Ids::bottom: if(mask & (1ull<<6)) continue; break;
+            case Ids::left: if(mask & (1ull<<7)) continue; break;
+            case Ids::marginTop: if(mask & (1ull<<8)) continue; break;
+            case Ids::marginRight: if(mask & (1ull<<9)) continue; break;
+            case Ids::marginBottom: if(mask & (1ull<<10)) continue; break;
+            case Ids::marginLeft: if(mask & (1ull<<11)) continue; break;
+            case Ids::paddingTop: if(mask & (1ull<<12)) continue; break;
+            case Ids::paddingRight: if(mask & (1ull<<13)) continue; break;
+            case Ids::paddingBottom: if(mask & (1ull<<14)) continue; break;
+            case Ids::paddingLeft: if(mask & (1ull<<15)) continue; break;
+            case Ids::width: if(mask & (1ull<<16)) continue; break;
+            case Ids::height: if(mask & (1ull<<17)) continue; break;
+            case Ids::position: if(mask & (1ull<<18)) continue; break;
+            case Ids::overflow: if(mask & (1ull<<19)) continue; break;
+            case Ids::alignSelf: if(mask & (1ull<<20)) continue; break;
+            case Ids::maxWidth: if(mask & (1ull<<21)) continue; break;
+            case Ids::maxHeight: if(mask & (1ull<<22)) continue; break;
+            case Ids::minWidth: if(mask & (1ull<<23)) continue; break;
+            case Ids::minHeight: if(mask & (1ull<<24)) continue; break;
+            case Ids::flexDirection: if(mask & (1ull<<25)) continue; break;
+            case Ids::alignContent: if(mask & (1ull<<26)) continue; break;
+            case Ids::alignItems: if(mask & (1ull<<27)) continue; break;
+            case Ids::justifyContent: if(mask & (1ull<<28)) continue; break;
+            case Ids::flexWrap: if(mask & (1ull<<29)) continue; break;
+            case Ids::flexDisplay: if(mask & (1ull<<30)) continue; break;
+            case Ids::verticalAlign: if(mask & (1ull<<31)) continue; break;
+            case Ids::aspectRatio: if(mask & (1ull<<32)) continue; break;
+        }
         switch(prop.id)
         {
             case Ids::transform:{
@@ -1299,6 +1382,83 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
     return damage;
 }
 
+void OGUI::StylePosition::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    auto mask = override[StylePositionEntry];
+    if(!mask)
+        return;
+    auto& s = GetOrAdd(style);
+    if(mask & (1ull << 0))
+        s.transform = po->transform;
+    if(mask & (1ull << 1))
+        s.flexGrow = po->flexGrow;
+    if(mask & (1ull << 2))
+        s.flexShrink = po->flexShrink;
+    if(mask & (1ull << 3))
+        s.flexBasis = po->flexBasis;
+    if(mask & (1ull << 4))
+        s.top = po->top;
+    if(mask & (1ull << 5))
+        s.right = po->right;
+    if(mask & (1ull << 6))
+        s.bottom = po->bottom;
+    if(mask & (1ull << 7))
+        s.left = po->left;
+    if(mask & (1ull << 8))
+        s.marginTop = po->marginTop;
+    if(mask & (1ull << 9))
+        s.marginRight = po->marginRight;
+    if(mask & (1ull << 10))
+        s.marginBottom = po->marginBottom;
+    if(mask & (1ull << 11))
+        s.marginLeft = po->marginLeft;
+    if(mask & (1ull << 12))
+        s.paddingTop = po->paddingTop;
+    if(mask & (1ull << 13))
+        s.paddingRight = po->paddingRight;
+    if(mask & (1ull << 14))
+        s.paddingBottom = po->paddingBottom;
+    if(mask & (1ull << 15))
+        s.paddingLeft = po->paddingLeft;
+    if(mask & (1ull << 16))
+        s.width = po->width;
+    if(mask & (1ull << 17))
+        s.height = po->height;
+    if(mask & (1ull << 18))
+        s.position = po->position;
+    if(mask & (1ull << 19))
+        s.overflow = po->overflow;
+    if(mask & (1ull << 20))
+        s.alignSelf = po->alignSelf;
+    if(mask & (1ull << 21))
+        s.maxWidth = po->maxWidth;
+    if(mask & (1ull << 22))
+        s.maxHeight = po->maxHeight;
+    if(mask & (1ull << 23))
+        s.minWidth = po->minWidth;
+    if(mask & (1ull << 24))
+        s.minHeight = po->minHeight;
+    if(mask & (1ull << 25))
+        s.flexDirection = po->flexDirection;
+    if(mask & (1ull << 26))
+        s.alignContent = po->alignContent;
+    if(mask & (1ull << 27))
+        s.alignItems = po->alignItems;
+    if(mask & (1ull << 28))
+        s.justifyContent = po->justifyContent;
+    if(mask & (1ull << 29))
+        s.flexWrap = po->flexWrap;
+    if(mask & (1ull << 30))
+        s.flexDisplay = po->flexDisplay;
+    if(mask & (1ull << 31))
+        s.verticalAlign = po->verticalAlign;
+    if(mask & (1ull << 32))
+        s.aspectRatio = po->aspectRatio;
+}
+
 void OGUI::StylePosition::SetupParser()
 {
     CSSParser::RegisterMargin();
@@ -1836,4 +1996,435 @@ void OGUI::StylePosition::SetupParser()
             };
         });
     }
+}
+
+
+attr("script": true)
+void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction> value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<0;
+    StylePosition::GetOrAdd(element->_style).transform = ToOwned(value);
+    RestyleDamage damage = RestyleDamage::Transform;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleTransform(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<0);
+}
+attr("script": true)
+void OGUI::SetStyleFlexGrow(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<1;
+    StylePosition::GetOrAdd(element->_style).flexGrow = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleFlexGrow(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<1);
+}
+attr("script": true)
+void OGUI::SetStyleFlexShrink(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<2;
+    StylePosition::GetOrAdd(element->_style).flexShrink = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleFlexShrink(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<2);
+}
+attr("script": true)
+void OGUI::SetStyleFlexBasis(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<3;
+    StylePosition::GetOrAdd(element->_style).flexBasis = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleFlexBasis(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<3);
+}
+attr("script": true)
+void OGUI::SetStyleTop(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<4;
+    StylePosition::GetOrAdd(element->_style).top = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleTop(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<4);
+}
+attr("script": true)
+void OGUI::SetStyleRight(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<5;
+    StylePosition::GetOrAdd(element->_style).right = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleRight(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<5);
+}
+attr("script": true)
+void OGUI::SetStyleBottom(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<6;
+    StylePosition::GetOrAdd(element->_style).bottom = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleBottom(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<6);
+}
+attr("script": true)
+void OGUI::SetStyleLeft(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<7;
+    StylePosition::GetOrAdd(element->_style).left = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleLeft(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<7);
+}
+attr("script": true)
+void OGUI::SetStyleMarginTop(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<8;
+    StylePosition::GetOrAdd(element->_style).marginTop = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMarginTop(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<8);
+}
+attr("script": true)
+void OGUI::SetStyleMarginRight(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<9;
+    StylePosition::GetOrAdd(element->_style).marginRight = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMarginRight(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<9);
+}
+attr("script": true)
+void OGUI::SetStyleMarginBottom(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<10;
+    StylePosition::GetOrAdd(element->_style).marginBottom = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMarginBottom(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<10);
+}
+attr("script": true)
+void OGUI::SetStyleMarginLeft(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<11;
+    StylePosition::GetOrAdd(element->_style).marginLeft = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMarginLeft(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<11);
+}
+attr("script": true)
+void OGUI::SetStylePaddingTop(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<12;
+    StylePosition::GetOrAdd(element->_style).paddingTop = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStylePaddingTop(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<12);
+}
+attr("script": true)
+void OGUI::SetStylePaddingRight(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<13;
+    StylePosition::GetOrAdd(element->_style).paddingRight = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStylePaddingRight(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<13);
+}
+attr("script": true)
+void OGUI::SetStylePaddingBottom(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<14;
+    StylePosition::GetOrAdd(element->_style).paddingBottom = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStylePaddingBottom(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<14);
+}
+attr("script": true)
+void OGUI::SetStylePaddingLeft(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<15;
+    StylePosition::GetOrAdd(element->_style).paddingLeft = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStylePaddingLeft(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<15);
+}
+attr("script": true)
+void OGUI::SetStyleWidth(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<16;
+    StylePosition::GetOrAdd(element->_style).width = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleWidth(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<16);
+}
+attr("script": true)
+void OGUI::SetStyleHeight(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<17;
+    StylePosition::GetOrAdd(element->_style).height = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleHeight(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<17);
+}
+attr("script": true)
+void OGUI::SetStylePosition(VisualElement* element, const YGPositionType& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<18;
+    StylePosition::GetOrAdd(element->_style).position = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStylePosition(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<18);
+}
+attr("script": true)
+void OGUI::SetStyleOverflow(VisualElement* element, const EFlexOverflow& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<19;
+    StylePosition::GetOrAdd(element->_style).overflow = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleOverflow(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<19);
+}
+attr("script": true)
+void OGUI::SetStyleAlignSelf(VisualElement* element, const YGAlign& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<20;
+    StylePosition::GetOrAdd(element->_style).alignSelf = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleAlignSelf(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<20);
+}
+attr("script": true)
+void OGUI::SetStyleMaxWidth(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<21;
+    StylePosition::GetOrAdd(element->_style).maxWidth = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMaxWidth(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<21);
+}
+attr("script": true)
+void OGUI::SetStyleMaxHeight(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<22;
+    StylePosition::GetOrAdd(element->_style).maxHeight = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMaxHeight(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<22);
+}
+attr("script": true)
+void OGUI::SetStyleMinWidth(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<23;
+    StylePosition::GetOrAdd(element->_style).minWidth = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMinWidth(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<23);
+}
+attr("script": true)
+void OGUI::SetStyleMinHeight(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<24;
+    StylePosition::GetOrAdd(element->_style).minHeight = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleMinHeight(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<24);
+}
+attr("script": true)
+void OGUI::SetStyleFlexDirection(VisualElement* element, const YGFlexDirection& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<25;
+    StylePosition::GetOrAdd(element->_style).flexDirection = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleFlexDirection(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<25);
+}
+attr("script": true)
+void OGUI::SetStyleAlignContent(VisualElement* element, const YGAlign& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<26;
+    StylePosition::GetOrAdd(element->_style).alignContent = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleAlignContent(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<26);
+}
+attr("script": true)
+void OGUI::SetStyleAlignItems(VisualElement* element, const YGAlign& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<27;
+    StylePosition::GetOrAdd(element->_style).alignItems = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleAlignItems(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<27);
+}
+attr("script": true)
+void OGUI::SetStyleJustifyContent(VisualElement* element, const YGJustify& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<28;
+    StylePosition::GetOrAdd(element->_style).justifyContent = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleJustifyContent(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<28);
+}
+attr("script": true)
+void OGUI::SetStyleFlexWrap(VisualElement* element, const YGWrap& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<29;
+    StylePosition::GetOrAdd(element->_style).flexWrap = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleFlexWrap(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<29);
+}
+attr("script": true)
+void OGUI::SetStyleFlexDisplay(VisualElement* element, const YGDisplay& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<30;
+    StylePosition::GetOrAdd(element->_style).flexDisplay = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleFlexDisplay(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<30);
+}
+attr("script": true)
+void OGUI::SetStyleVerticalAlign(VisualElement* element, const EInlineAlign& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<31;
+    StylePosition::GetOrAdd(element->_style).verticalAlign = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleVerticalAlign(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<31);
+}
+attr("script": true)
+void OGUI::SetStyleAspectRatio(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<32;
+    StylePosition::GetOrAdd(element->_style).aspectRatio = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleAspectRatio(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<32);
 }

@@ -744,8 +744,10 @@ bool OGUI::VisualElement::ContainClass(ostr::string_view cls)
 void OGUI::VisualElement::_ResetStyles()
 {
 	_selectorDirty = true;
-	_style = ComputedStyle();
-	_preAnimatedStyle = ComputedStyle();
+	auto _reset = ComputedStyle();
+	_reset.Merge(_style, _procedureOverrides);
+	_preAnimatedStyle = std::move(_reset);
+	_style = _preAnimatedStyle;
 	//dosent clean this cause we want to inherit anim context
 	//_animContext.clear();
 	//_animStyles.clear();

@@ -7,6 +7,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "OpenGUI/VisualElement.h"
 
 size_t StyleBackgroundEntry = 0;
 
@@ -61,6 +62,13 @@ OGUI::StyleBackground& OGUI::StyleBackground::GetOrAdd(ComputedStyle& style)
         s.owned = true;
         return *value.get();
     }
+    else if(!s.owned)
+    {
+        auto value = std::make_shared<OGUI::StyleBackground>(*(OGUI::StyleBackground*)s.ptr.get());
+        s.ptr = std::static_pointer_cast<void>(value);
+        s.owned = true;
+        return *value.get();
+    }
     else 
         return *(StyleBackground*)s.ptr.get();
 }
@@ -77,7 +85,7 @@ void OGUI::StyleBackground::Initialize()
     backgroundMaterial = {};
 }
 
-void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
+void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::StyleBackground* st = nullptr;
@@ -107,9 +115,16 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
         }
         return st;
     };
+    auto mask = override[StyleBackgroundEntry];
     
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::backgroundColor: if(mask & (1ull<<0)) continue; break;
+            case Ids::backgroundImage: if(mask & (1ull<<1)) continue; break;
+            case Ids::backgroundMaterial: if(mask & (1ull<<2)) continue; break;
+        }
         if(prop.keyword)
         {
             if (prop.value.index == (int)StyleKeyword::Initial || !pst
@@ -118,17 +133,17 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
             {
                 switch(prop.id)
                 {
-                case Ids::backgroundColor:{
+                case Ids::backgroundColor: {
                     auto v = fget();
                     v->backgroundColor = Color4f(1.f,1.f,1.f,1.f);
                     break;
                     }
-                case Ids::backgroundImage:{
+                case Ids::backgroundImage: {
                     auto v = fget();
                     v->backgroundImage = {};
                     break;
                     }
-                case Ids::backgroundMaterial:{
+                case Ids::backgroundMaterial: {
                     auto v = fget();
                     v->backgroundMaterial = {};
                     break;
@@ -185,7 +200,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
 }
 
 
-OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
 {
     OGUI::StyleBackground* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
@@ -216,8 +231,16 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
         return st;
     };
     
+    auto mask = override[StyleBackgroundEntry];
+    
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::backgroundColor: if(mask & (1ull<<0)) continue; break;
+            case Ids::backgroundImage: if(mask & (1ull<<1)) continue; break;
+            case Ids::backgroundMaterial: if(mask & (1ull<<2)) continue; break;
+        }
         switch(prop.id)
         {
             case Ids::backgroundColor:{
@@ -271,6 +294,23 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
     return damage;
 }
 
+void OGUI::StyleBackground::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    auto mask = override[StyleBackgroundEntry];
+    if(!mask)
+        return;
+    auto& s = GetOrAdd(style);
+    if(mask & (1ull << 0))
+        s.backgroundColor = po->backgroundColor;
+    if(mask & (1ull << 1))
+        s.backgroundImage = po->backgroundImage;
+    if(mask & (1ull << 2))
+        s.backgroundMaterial = po->backgroundMaterial;
+}
+
 void OGUI::StyleBackground::SetupParser()
 {
 	{
@@ -321,4 +361,45 @@ void OGUI::StyleBackground::SetupParser()
             };
         });
     }
+}
+
+
+attr("script": true)
+void OGUI::SetStyleBackgroundColor(VisualElement* element, const Color4f& value)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<0;
+    StyleBackground::GetOrAdd(element->_style).backgroundColor = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleBackgroundColor(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<0);
+}
+attr("script": true)
+void OGUI::SetStyleBackgroundImage(VisualElement* element, const ostr::string_view& value)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<1;
+    StyleBackground::GetOrAdd(element->_style).backgroundImage = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleBackgroundImage(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<1);
+}
+attr("script": true)
+void OGUI::SetStyleBackgroundMaterial(VisualElement* element, const ostr::string_view& value)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<2;
+    StyleBackground::GetOrAdd(element->_style).backgroundMaterial = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+attr("script": true)
+void OGUI::ResetStyleBackgroundMaterial(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<2);
 }

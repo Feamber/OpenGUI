@@ -187,6 +187,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	textureManager->Update();
 	_deltaTime = dt;
 	styleSystem.Update(root, wctx._cssCacheInvalidated);
+	wctx._cssCacheInvalidated = false;
 	UpdateLayout(root, wctx.GetWidth(), wctx.GetHeight());
 	UpdateScrollSize(root);
 	TransformRec(root);

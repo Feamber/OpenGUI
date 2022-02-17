@@ -2,12 +2,19 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Core/olog.h"
 #include "OpenGUI/Managers/RenderTextureManager.h"
+#include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Context.h"
 
 void OGUI::StyleSheet::Initialize()
 {
     int i=0;
+	for(auto& rule : styleRules)
+		std::sort(rule.properties.begin(), rule.properties.end(), 
+		[](const StyleProperty& a, const StyleProperty& b)
+		{
+			return a.id < b.id;
+		});
 	for (auto& complexSel : styleSelectors)
 	{
 		complexSel.priority = i;

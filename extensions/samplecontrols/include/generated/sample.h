@@ -9,8 +9,9 @@
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
-namespace OGUI
+namespace OGUI reflect
 {
+    class VisualElement;
     using namespace ostr::literal;
     struct SAMPLECONTROLS_API StyleSample
     {
@@ -30,9 +31,16 @@ namespace OGUI
         static StyleSample* TryGet(const ComputedStyle& style);
         static StyleSample& GetOrAdd(ComputedStyle& style);
         static void Dispose(ComputedStyle& style);
-        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
-            const ComputedStyle* parent);
-        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, 
+            const gsl::span<size_t>& override, const ComputedStyle* parent);
+        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, 
+            const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
+        static void Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
         static void SetupParser();
     };
+
+    attr("script": true)
+    SAMPLECONTROLS_API void SetStyleSomeValue(VisualElement* element, const float& value);
+    attr("script": true)
+    SAMPLECONTROLS_API void ResetStyleSomeValue(VisualElement* element);
 }
