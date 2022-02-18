@@ -127,7 +127,7 @@ namespace OGUI reflect
 		bool OnMouseDoubleClick(const WindowHandle window, EMouseKey button, float x, float y);
 		bool OnMouseMove(const OGUI::WindowHandle window, float x, float y, float relativeMotionX, float relativeMotionY);
 		bool OnMouseMoveHP(const WindowHandle window, bool relative, float x, float y);
-		bool OnMouseWheel(const WindowHandle window, float delta);
+		bool OnMouseWheel(const WindowHandle window, float delta, float x, float y);
 		bool OnMouseEnter(const WindowHandle window);
 		bool OnMouseLeave(const WindowHandle window);
 

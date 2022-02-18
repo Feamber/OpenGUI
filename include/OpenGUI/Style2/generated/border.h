@@ -56,20 +56,52 @@ namespace OGUI reflect
         static void SetupParser();
     };
 
+    attr("script": true)
     OGUI_API void SetStyleBorderTopWidth(VisualElement* element, const float& value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderTopWidth(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBorderRightWidth(VisualElement* element, const float& value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderRightWidth(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBorderBottomWidth(VisualElement* element, const float& value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderBottomWidth(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBorderLeftWidth(VisualElement* element, const float& value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderLeftWidth(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBorderTopLeftRadius(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderTopLeftRadiusPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderTopLeftRadiusPercentage(VisualElement* element, float value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderTopLeftRadius(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBorderTopRightRadius(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderTopRightRadiusPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderTopRightRadiusPercentage(VisualElement* element, float value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderTopRightRadius(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBorderBottomRightRadius(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderBottomRightRadiusPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderBottomRightRadiusPercentage(VisualElement* element, float value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderBottomRightRadius(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBorderBottomLeftRadius(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderBottomLeftRadiusPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleBorderBottomLeftRadiusPercentage(VisualElement* element, float value);
+    attr("script": true)
     OGUI_API void ResetStyleBorderBottomLeftRadius(VisualElement* element);
 }

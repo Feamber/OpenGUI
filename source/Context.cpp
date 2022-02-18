@@ -21,7 +21,8 @@
 #include "OpenGUI/Core/StdLog.h"
 #include "OpenGUI/Bind/Bind.h"
 #include "Text/godot/text_server_adv.h"
-#include <deque>
+#include "OpenGUI/Style2/generated/position.h"
+#include <queue>
 
 OGUI::WindowContext::WindowContext(WindowHandle window)
 	: window(window)
@@ -212,17 +213,22 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	nvgBeginFrame(wctx.currentDrawCtx->nvg, 1.0f); 
 	struct DrawElement
 	{
+		int zorder;
 		VisualElement* element;
 		Matrix4x4 clip;
 		bool hasClip;
+		bool operator<(const DrawElement& other) const
+		{
+			return zorder < other.zorder;
+		}
 	};
-	std::deque<DrawElement> queue;
+	std::priority_queue<DrawElement> queue;
 	auto& ctx = *wctx.currentDrawCtx;
-	queue.push_back({root, {}, false});
+	queue.push({0, root, {}, false});
 	while(!queue.empty())
 	{
-		auto next = queue.front();
-		queue.pop_front();
+		auto next = queue.top();
+		queue.pop();
 		if(next.hasClip)
 			ctx.prims.clipStack.push_back(next.clip);
 		next.element->DrawPrimitive(ctx);
@@ -234,6 +240,8 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 			if(!child->Visible())
 				return;
 			DrawElement newDraw;
+			auto& pos = StylePosition::Get(child->_style);
+			newDraw.zorder = next.zorder + 1 + pos.zOrderBias;
 			newDraw.element = child;
 			newDraw.hasClip = clippingChild | next.hasClip;
 			if(clippingChild)
@@ -241,7 +249,7 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 			else 
 				newDraw.clip = next.clip;
 			child->_opacity = StyleEffects::Get(child->_style).opacity * next.element->_opacity;
-			queue.push_back(newDraw);
+			queue.push(newDraw);
 		});
 	}
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
@@ -392,11 +400,13 @@ bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative
 	return false;
 }
 
-bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta)
+bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta, float x, float y)
 {
 	auto picked = _elementUnderCursor;
 	if (!picked)
 		return false;
+	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
 	PointerScrollEvent event;
 	event.pointerType = u"mouse";
 	event.button = EMouseKey::MB;

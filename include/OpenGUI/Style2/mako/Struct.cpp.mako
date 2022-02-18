@@ -333,7 +333,6 @@ void OGUI::Style${struct.ident}::SetupParser()
 
 
 %for i, prop in enumerate(struct.longhands):
-attr("script": true)
 void OGUI::SetStyle${to_camel_case(prop.name)}(VisualElement* element, ${prop.reference_type} value)
 {
     element->_procedureOverrides[Style${struct.ident}Entry] |= 1ull<<${i};
@@ -349,7 +348,22 @@ void OGUI::SetStyle${to_camel_case(prop.name)}(VisualElement* element, ${prop.re
 %endif
     element->UpdateStyle(damage);
 }
-attr("script": true)
+%if prop.type == "YGValue":
+void OGUI::SetStyle${to_camel_case(prop.name)}Pixel(VisualElement* element, float value)
+{
+    SetStyle${to_camel_case(prop.name)}(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyle${to_camel_case(prop.name)}Percentage(VisualElement* element, float value)
+{
+    SetStyle${to_camel_case(prop.name)}(element, YGValue{value, YGUnitPercent});
+}
+%if prop.valueRule == "Width":
+void OGUI::SetStyle${to_camel_case(prop.name)}Auto(VisualElement* element)
+{
+    SetStyle${to_camel_case(prop.name)}(element, YGValueAuto);
+}
+%endif
+%endif
 void OGUI::ResetStyle${to_camel_case(prop.name)}(VisualElement* element)
 {
     element->_procedureOverrides[Style${struct.ident}Entry] &= ~(1ull<<${i});

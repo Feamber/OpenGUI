@@ -114,6 +114,7 @@ void OGUI::StylePosition::Initialize()
     flexDisplay = YGDisplayFlex;
     verticalAlign = EInlineAlign::Middle;
     aspectRatio = YGUndefined;
+    zOrderBias = 0;
 }
 
 void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
@@ -185,6 +186,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             case Ids::flexDisplay: if(mask & (1ull<<30)) continue; break;
             case Ids::verticalAlign: if(mask & (1ull<<31)) continue; break;
             case Ids::aspectRatio: if(mask & (1ull<<32)) continue; break;
+            case Ids::zOrderBias: if(mask & (1ull<<33)) continue; break;
         }
         if(prop.keyword)
         {
@@ -359,6 +361,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->aspectRatio = YGUndefined;
                     break;
                     }
+                case Ids::zOrderBias: {
+                    auto v = fget();
+                    v->zOrderBias = 0;
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -529,6 +536,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 case Ids::aspectRatio:{
                     auto v = fget();
                     v->aspectRatio = pst->aspectRatio;
+                    break;
+                    }
+                case Ids::zOrderBias:{
+                    auto v = fget();
+                    v->zOrderBias = pst->zOrderBias;
                     break;
                     }
                 default: break;
@@ -704,6 +716,11 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                     v->aspectRatio = sheet.Get<float>(prop.value);
                     break;
                     }
+                case Ids::zOrderBias:{
+                    auto v = fget();
+                    v->zOrderBias = sheet.Get<int>(prop.value);
+                    break;
+                    }
                 default: break;
             }
         }
@@ -781,6 +798,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexDisplay: if(mask & (1ull<<30)) continue; break;
             case Ids::verticalAlign: if(mask & (1ull<<31)) continue; break;
             case Ids::aspectRatio: if(mask & (1ull<<32)) continue; break;
+            case Ids::zOrderBias: if(mask & (1ull<<33)) continue; break;
         }
         switch(prop.id)
         {
@@ -1376,6 +1394,21 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                     damage |= RestyleDamage::Layout;
                 break;
                 }
+            case Ids::zOrderBias:{
+                auto v = fget();
+                if(prop.alpha == 0.f && prop.from == prop.to)
+                    break;
+                if(prop.alpha == 0.f)
+                    v->zOrderBias = sheet.Get<int>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v->zOrderBias = sheet.Get<int>(prop.to);
+                else if(prop.from == prop.to)
+                    v->zOrderBias = OGUI::Lerp(v->zOrderBias, sheet.Get<int>(prop.to), prop.alpha);
+                else
+                    v->zOrderBias = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
+                
+                break;
+                }
             default: break;
         }
     }
@@ -1457,6 +1490,8 @@ void OGUI::StylePosition::Merge(ComputedStyle& style, ComputedStyle& other, cons
         s.verticalAlign = po->verticalAlign;
     if(mask & (1ull << 32))
         s.aspectRatio = po->aspectRatio;
+    if(mask & (1ull << 33))
+        s.zOrderBias = po->zOrderBias;
 }
 
 void OGUI::StylePosition::SetupParser()
@@ -1996,10 +2031,25 @@ void OGUI::StylePosition::SetupParser()
             };
         });
     }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "z-order-biasValue <- GlobalValue / Integer \nz-order-bias <- 'z-order-bias' _ ':' _ z-order-biasValue";
+        RegisterProperty("z-order-bias");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::zOrderBias;
+            parser["z-order-biasValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<int>(std::any_cast<int&>(vs[0]))});
+            };
+        });
+    }
 }
 
 
-attr("script": true)
 void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction>& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<0;
@@ -2007,12 +2057,10 @@ void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFu
     RestyleDamage damage = RestyleDamage::Transform;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleTransform(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<0);
 }
-attr("script": true)
 void OGUI::SetStyleFlexGrow(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<1;
@@ -2020,12 +2068,10 @@ void OGUI::SetStyleFlexGrow(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFlexGrow(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<1);
 }
-attr("script": true)
 void OGUI::SetStyleFlexShrink(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<2;
@@ -2033,12 +2079,10 @@ void OGUI::SetStyleFlexShrink(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFlexShrink(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<2);
 }
-attr("script": true)
 void OGUI::SetStyleFlexBasis(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<3;
@@ -2046,12 +2090,22 @@ void OGUI::SetStyleFlexBasis(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleFlexBasisPixel(VisualElement* element, float value)
+{
+    SetStyleFlexBasis(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleFlexBasisPercentage(VisualElement* element, float value)
+{
+    SetStyleFlexBasis(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::SetStyleFlexBasisAuto(VisualElement* element)
+{
+    SetStyleFlexBasis(element, YGValueAuto);
+}
 void OGUI::ResetStyleFlexBasis(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<3);
 }
-attr("script": true)
 void OGUI::SetStyleTop(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<4;
@@ -2059,12 +2113,18 @@ void OGUI::SetStyleTop(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleTopPixel(VisualElement* element, float value)
+{
+    SetStyleTop(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleTopPercentage(VisualElement* element, float value)
+{
+    SetStyleTop(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleTop(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<4);
 }
-attr("script": true)
 void OGUI::SetStyleRight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<5;
@@ -2072,12 +2132,18 @@ void OGUI::SetStyleRight(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleRightPixel(VisualElement* element, float value)
+{
+    SetStyleRight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleRightPercentage(VisualElement* element, float value)
+{
+    SetStyleRight(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleRight(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<5);
 }
-attr("script": true)
 void OGUI::SetStyleBottom(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<6;
@@ -2085,12 +2151,18 @@ void OGUI::SetStyleBottom(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleBottomPixel(VisualElement* element, float value)
+{
+    SetStyleBottom(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBottomPercentage(VisualElement* element, float value)
+{
+    SetStyleBottom(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleBottom(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<6);
 }
-attr("script": true)
 void OGUI::SetStyleLeft(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<7;
@@ -2098,12 +2170,18 @@ void OGUI::SetStyleLeft(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleLeftPixel(VisualElement* element, float value)
+{
+    SetStyleLeft(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleLeftPercentage(VisualElement* element, float value)
+{
+    SetStyleLeft(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleLeft(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<7);
 }
-attr("script": true)
 void OGUI::SetStyleMarginTop(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<8;
@@ -2111,12 +2189,18 @@ void OGUI::SetStyleMarginTop(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMarginTopPixel(VisualElement* element, float value)
+{
+    SetStyleMarginTop(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMarginTopPercentage(VisualElement* element, float value)
+{
+    SetStyleMarginTop(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleMarginTop(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<8);
 }
-attr("script": true)
 void OGUI::SetStyleMarginRight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<9;
@@ -2124,12 +2208,18 @@ void OGUI::SetStyleMarginRight(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMarginRightPixel(VisualElement* element, float value)
+{
+    SetStyleMarginRight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMarginRightPercentage(VisualElement* element, float value)
+{
+    SetStyleMarginRight(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleMarginRight(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<9);
 }
-attr("script": true)
 void OGUI::SetStyleMarginBottom(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<10;
@@ -2137,12 +2227,18 @@ void OGUI::SetStyleMarginBottom(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMarginBottomPixel(VisualElement* element, float value)
+{
+    SetStyleMarginBottom(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMarginBottomPercentage(VisualElement* element, float value)
+{
+    SetStyleMarginBottom(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleMarginBottom(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<10);
 }
-attr("script": true)
 void OGUI::SetStyleMarginLeft(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<11;
@@ -2150,12 +2246,18 @@ void OGUI::SetStyleMarginLeft(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMarginLeftPixel(VisualElement* element, float value)
+{
+    SetStyleMarginLeft(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMarginLeftPercentage(VisualElement* element, float value)
+{
+    SetStyleMarginLeft(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleMarginLeft(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<11);
 }
-attr("script": true)
 void OGUI::SetStylePaddingTop(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<12;
@@ -2163,12 +2265,18 @@ void OGUI::SetStylePaddingTop(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStylePaddingTopPixel(VisualElement* element, float value)
+{
+    SetStylePaddingTop(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStylePaddingTopPercentage(VisualElement* element, float value)
+{
+    SetStylePaddingTop(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStylePaddingTop(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<12);
 }
-attr("script": true)
 void OGUI::SetStylePaddingRight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<13;
@@ -2176,12 +2284,18 @@ void OGUI::SetStylePaddingRight(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStylePaddingRightPixel(VisualElement* element, float value)
+{
+    SetStylePaddingRight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStylePaddingRightPercentage(VisualElement* element, float value)
+{
+    SetStylePaddingRight(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStylePaddingRight(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<13);
 }
-attr("script": true)
 void OGUI::SetStylePaddingBottom(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<14;
@@ -2189,12 +2303,18 @@ void OGUI::SetStylePaddingBottom(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStylePaddingBottomPixel(VisualElement* element, float value)
+{
+    SetStylePaddingBottom(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStylePaddingBottomPercentage(VisualElement* element, float value)
+{
+    SetStylePaddingBottom(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStylePaddingBottom(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<14);
 }
-attr("script": true)
 void OGUI::SetStylePaddingLeft(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<15;
@@ -2202,12 +2322,18 @@ void OGUI::SetStylePaddingLeft(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStylePaddingLeftPixel(VisualElement* element, float value)
+{
+    SetStylePaddingLeft(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStylePaddingLeftPercentage(VisualElement* element, float value)
+{
+    SetStylePaddingLeft(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStylePaddingLeft(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<15);
 }
-attr("script": true)
 void OGUI::SetStyleWidth(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<16;
@@ -2215,12 +2341,22 @@ void OGUI::SetStyleWidth(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleWidthPixel(VisualElement* element, float value)
+{
+    SetStyleWidth(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleWidthPercentage(VisualElement* element, float value)
+{
+    SetStyleWidth(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::SetStyleWidthAuto(VisualElement* element)
+{
+    SetStyleWidth(element, YGValueAuto);
+}
 void OGUI::ResetStyleWidth(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<16);
 }
-attr("script": true)
 void OGUI::SetStyleHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<17;
@@ -2228,12 +2364,22 @@ void OGUI::SetStyleHeight(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleHeightPixel(VisualElement* element, float value)
+{
+    SetStyleHeight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleHeightPercentage(VisualElement* element, float value)
+{
+    SetStyleHeight(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::SetStyleHeightAuto(VisualElement* element)
+{
+    SetStyleHeight(element, YGValueAuto);
+}
 void OGUI::ResetStyleHeight(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<17);
 }
-attr("script": true)
 void OGUI::SetStylePosition(VisualElement* element, const YGPositionType& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<18;
@@ -2241,12 +2387,10 @@ void OGUI::SetStylePosition(VisualElement* element, const YGPositionType& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStylePosition(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<18);
 }
-attr("script": true)
 void OGUI::SetStyleOverflow(VisualElement* element, const EFlexOverflow& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<19;
@@ -2254,12 +2398,10 @@ void OGUI::SetStyleOverflow(VisualElement* element, const EFlexOverflow& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleOverflow(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<19);
 }
-attr("script": true)
 void OGUI::SetStyleAlignSelf(VisualElement* element, const YGAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<20;
@@ -2267,12 +2409,10 @@ void OGUI::SetStyleAlignSelf(VisualElement* element, const YGAlign& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleAlignSelf(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<20);
 }
-attr("script": true)
 void OGUI::SetStyleMaxWidth(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<21;
@@ -2280,12 +2420,18 @@ void OGUI::SetStyleMaxWidth(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMaxWidthPixel(VisualElement* element, float value)
+{
+    SetStyleMaxWidth(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMaxWidthPercentage(VisualElement* element, float value)
+{
+    SetStyleMaxWidth(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleMaxWidth(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<21);
 }
-attr("script": true)
 void OGUI::SetStyleMaxHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<22;
@@ -2293,12 +2439,18 @@ void OGUI::SetStyleMaxHeight(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMaxHeightPixel(VisualElement* element, float value)
+{
+    SetStyleMaxHeight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMaxHeightPercentage(VisualElement* element, float value)
+{
+    SetStyleMaxHeight(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleMaxHeight(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<22);
 }
-attr("script": true)
 void OGUI::SetStyleMinWidth(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<23;
@@ -2306,12 +2458,22 @@ void OGUI::SetStyleMinWidth(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMinWidthPixel(VisualElement* element, float value)
+{
+    SetStyleMinWidth(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMinWidthPercentage(VisualElement* element, float value)
+{
+    SetStyleMinWidth(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::SetStyleMinWidthAuto(VisualElement* element)
+{
+    SetStyleMinWidth(element, YGValueAuto);
+}
 void OGUI::ResetStyleMinWidth(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<23);
 }
-attr("script": true)
 void OGUI::SetStyleMinHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<24;
@@ -2319,12 +2481,22 @@ void OGUI::SetStyleMinHeight(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleMinHeightPixel(VisualElement* element, float value)
+{
+    SetStyleMinHeight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleMinHeightPercentage(VisualElement* element, float value)
+{
+    SetStyleMinHeight(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::SetStyleMinHeightAuto(VisualElement* element)
+{
+    SetStyleMinHeight(element, YGValueAuto);
+}
 void OGUI::ResetStyleMinHeight(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<24);
 }
-attr("script": true)
 void OGUI::SetStyleFlexDirection(VisualElement* element, const YGFlexDirection& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<25;
@@ -2332,12 +2504,10 @@ void OGUI::SetStyleFlexDirection(VisualElement* element, const YGFlexDirection& 
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFlexDirection(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<25);
 }
-attr("script": true)
 void OGUI::SetStyleAlignContent(VisualElement* element, const YGAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<26;
@@ -2345,12 +2515,10 @@ void OGUI::SetStyleAlignContent(VisualElement* element, const YGAlign& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleAlignContent(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<26);
 }
-attr("script": true)
 void OGUI::SetStyleAlignItems(VisualElement* element, const YGAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<27;
@@ -2358,12 +2526,10 @@ void OGUI::SetStyleAlignItems(VisualElement* element, const YGAlign& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleAlignItems(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<27);
 }
-attr("script": true)
 void OGUI::SetStyleJustifyContent(VisualElement* element, const YGJustify& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<28;
@@ -2371,12 +2537,10 @@ void OGUI::SetStyleJustifyContent(VisualElement* element, const YGJustify& value
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleJustifyContent(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<28);
 }
-attr("script": true)
 void OGUI::SetStyleFlexWrap(VisualElement* element, const YGWrap& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<29;
@@ -2384,12 +2548,10 @@ void OGUI::SetStyleFlexWrap(VisualElement* element, const YGWrap& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFlexWrap(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<29);
 }
-attr("script": true)
 void OGUI::SetStyleFlexDisplay(VisualElement* element, const YGDisplay& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<30;
@@ -2397,12 +2559,10 @@ void OGUI::SetStyleFlexDisplay(VisualElement* element, const YGDisplay& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFlexDisplay(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<30);
 }
-attr("script": true)
 void OGUI::SetStyleVerticalAlign(VisualElement* element, const EInlineAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<31;
@@ -2410,12 +2570,10 @@ void OGUI::SetStyleVerticalAlign(VisualElement* element, const EInlineAlign& val
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleVerticalAlign(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<31);
 }
-attr("script": true)
 void OGUI::SetStyleAspectRatio(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<32;
@@ -2423,8 +2581,18 @@ void OGUI::SetStyleAspectRatio(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleAspectRatio(VisualElement* element)
 {
     element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<32);
+}
+void OGUI::SetStyleZOrderBias(VisualElement* element, const int& value)
+{
+    element->_procedureOverrides[StylePositionEntry] |= 1ull<<33;
+    StylePosition::GetOrAdd(element->_style).zOrderBias = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleZOrderBias(VisualElement* element)
+{
+    element->_procedureOverrides[StylePositionEntry] &= ~(1ull<<33);
 }

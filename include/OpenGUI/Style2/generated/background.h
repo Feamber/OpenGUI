@@ -44,10 +44,16 @@ namespace OGUI reflect
         static void SetupParser();
     };
 
+    attr("script": true)
     OGUI_API void SetStyleBackgroundColor(VisualElement* element, const Color4f& value);
+    attr("script": true)
     OGUI_API void ResetStyleBackgroundColor(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBackgroundImage(VisualElement* element, const ostr::string_view& value);
+    attr("script": true)
     OGUI_API void ResetStyleBackgroundImage(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleBackgroundMaterial(VisualElement* element, const ostr::string_view& value);
+    attr("script": true)
     OGUI_API void ResetStyleBackgroundMaterial(VisualElement* element);
 }

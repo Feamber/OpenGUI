@@ -641,7 +641,6 @@ void OGUI::StyleText::SetupParser()
 }
 
 
-attr("script": true)
 void OGUI::SetStyleFontSize(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<0;
@@ -649,12 +648,10 @@ void OGUI::SetStyleFontSize(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::TextLayout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFontSize(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<0);
 }
-attr("script": true)
 void OGUI::SetStyleColor(VisualElement* element, const Color4f& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<1;
@@ -662,12 +659,10 @@ void OGUI::SetStyleColor(VisualElement* element, const Color4f& value)
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleColor(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<1);
 }
-attr("script": true)
 void OGUI::SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string>& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<2;
@@ -675,12 +670,10 @@ void OGUI::SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::stri
     RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFontFamily(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<2);
 }
-attr("script": true)
 void OGUI::SetStyleFontStyle(VisualElement* element, const ETextStyle& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<3;
@@ -688,12 +681,10 @@ void OGUI::SetStyleFontStyle(VisualElement* element, const ETextStyle& value)
     RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFontStyle(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<3);
 }
-attr("script": true)
 void OGUI::SetStyleFontWeight(VisualElement* element, const int& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<4;
@@ -701,12 +692,10 @@ void OGUI::SetStyleFontWeight(VisualElement* element, const int& value)
     RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleFontWeight(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<4);
 }
-attr("script": true)
 void OGUI::SetStyleLineHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<5;
@@ -714,12 +703,22 @@ void OGUI::SetStyleLineHeight(VisualElement* element, const YGValue& value)
     RestyleDamage damage = RestyleDamage::TextLayout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleLineHeightPixel(VisualElement* element, float value)
+{
+    SetStyleLineHeight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleLineHeightPercentage(VisualElement* element, float value)
+{
+    SetStyleLineHeight(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::SetStyleLineHeightAuto(VisualElement* element)
+{
+    SetStyleLineHeight(element, YGValueAuto);
+}
 void OGUI::ResetStyleLineHeight(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<5);
 }
-attr("script": true)
 void OGUI::SetStyleTextAlign(VisualElement* element, const ETextAlign& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<6;
@@ -727,12 +726,10 @@ void OGUI::SetStyleTextAlign(VisualElement* element, const ETextAlign& value)
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleTextAlign(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<6);
 }
-attr("script": true)
 void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow>& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<7;
@@ -740,7 +737,6 @@ void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleTextShadow(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<7);

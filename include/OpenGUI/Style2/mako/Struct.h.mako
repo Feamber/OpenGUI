@@ -50,7 +50,21 @@ namespace OGUI reflect
     };
 
 %for prop in struct.longhands:
+%if not prop.is_vector:
+    attr("script": true)
+%endif
     ${linkage} void SetStyle${to_camel_case(prop.name)}(VisualElement* element, ${prop.reference_type} value);
+%if prop.type == "YGValue":
+    attr("script": true)
+    ${linkage} void SetStyle${to_camel_case(prop.name)}Pixel(VisualElement* element, float value);
+    attr("script": true)
+    ${linkage} void SetStyle${to_camel_case(prop.name)}Percentage(VisualElement* element, float value);
+%if prop.valueRule == "Width":
+    attr("script": true)
+    ${linkage} void SetStyle${to_camel_case(prop.name)}Auto(VisualElement* element);
+%endif
+%endif
+    attr("script": true)
     ${linkage} void ResetStyle${to_camel_case(prop.name)}(VisualElement* element);
 %endfor
 }

@@ -364,7 +364,6 @@ void OGUI::StyleBackground::SetupParser()
 }
 
 
-attr("script": true)
 void OGUI::SetStyleBackgroundColor(VisualElement* element, const Color4f& value)
 {
     element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<0;
@@ -372,12 +371,10 @@ void OGUI::SetStyleBackgroundColor(VisualElement* element, const Color4f& value)
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleBackgroundColor(VisualElement* element)
 {
     element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<0);
 }
-attr("script": true)
 void OGUI::SetStyleBackgroundImage(VisualElement* element, const ostr::string_view& value)
 {
     element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<1;
@@ -385,12 +382,10 @@ void OGUI::SetStyleBackgroundImage(VisualElement* element, const ostr::string_vi
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleBackgroundImage(VisualElement* element)
 {
     element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<1);
 }
-attr("script": true)
 void OGUI::SetStyleBackgroundMaterial(VisualElement* element, const ostr::string_view& value)
 {
     element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<2;
@@ -398,7 +393,6 @@ void OGUI::SetStyleBackgroundMaterial(VisualElement* element, const ostr::string
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleBackgroundMaterial(VisualElement* element)
 {
     element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<2);

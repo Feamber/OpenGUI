@@ -633,7 +633,6 @@ void OGUI::StyleBorder::SetupParser()
 }
 
 
-attr("script": true)
 void OGUI::SetStyleBorderTopWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<0;
@@ -641,12 +640,10 @@ void OGUI::SetStyleBorderTopWidth(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleBorderTopWidth(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<0);
 }
-attr("script": true)
 void OGUI::SetStyleBorderRightWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<1;
@@ -654,12 +651,10 @@ void OGUI::SetStyleBorderRightWidth(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleBorderRightWidth(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<1);
 }
-attr("script": true)
 void OGUI::SetStyleBorderBottomWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<2;
@@ -667,12 +662,10 @@ void OGUI::SetStyleBorderBottomWidth(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleBorderBottomWidth(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<2);
 }
-attr("script": true)
 void OGUI::SetStyleBorderLeftWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<3;
@@ -680,12 +673,10 @@ void OGUI::SetStyleBorderLeftWidth(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::Layout;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleBorderLeftWidth(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<3);
 }
-attr("script": true)
 void OGUI::SetStyleBorderTopLeftRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<4;
@@ -693,12 +684,18 @@ void OGUI::SetStyleBorderTopLeftRadius(VisualElement* element, const YGValue& va
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleBorderTopLeftRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderTopLeftRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderTopLeftRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderTopLeftRadius(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleBorderTopLeftRadius(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<4);
 }
-attr("script": true)
 void OGUI::SetStyleBorderTopRightRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<5;
@@ -706,12 +703,18 @@ void OGUI::SetStyleBorderTopRightRadius(VisualElement* element, const YGValue& v
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleBorderTopRightRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderTopRightRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderTopRightRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderTopRightRadius(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleBorderTopRightRadius(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<5);
 }
-attr("script": true)
 void OGUI::SetStyleBorderBottomRightRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<6;
@@ -719,12 +722,18 @@ void OGUI::SetStyleBorderBottomRightRadius(VisualElement* element, const YGValue
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleBorderBottomRightRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderBottomRightRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderBottomRightRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderBottomRightRadius(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleBorderBottomRightRadius(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<6);
 }
-attr("script": true)
 void OGUI::SetStyleBorderBottomLeftRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<7;
@@ -732,7 +741,14 @@ void OGUI::SetStyleBorderBottomLeftRadius(VisualElement* element, const YGValue&
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
+void OGUI::SetStyleBorderBottomLeftRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderBottomLeftRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderBottomLeftRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderBottomLeftRadius(element, YGValue{value, YGUnitPercent});
+}
 void OGUI::ResetStyleBorderBottomLeftRadius(VisualElement* element)
 {
     element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<7);

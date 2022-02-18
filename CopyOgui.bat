@@ -5,12 +5,7 @@ set UEPluginPath=D:\7daysHD\Project\Plugins\UEOpenGUI\Source\UEOpenGUI
 move %UEOGUIPath%\Public\OGUICore.h %UEOGUIPath%\OGUICore.h
 move %UEOGUIPath%\Private\OGUICore.cpp %UEOGUIPath%\OGUICore.cpp
 
-rd /q/s %UEOGUIPath%\Public
-rd /q/s %UEOGUIPath%\Private
 rd /q/s %UEPluginPath%\IntelliSense
-
-xcopy /y /r /E /H /C /I /f %OGUIPath%\lua-binding\source %UEPluginPath%\Private
-xcopy /y /r /E /H /C /I /f %OGUIPath%\lua-binding\include %UEPluginPath%\Private
 xcopy /y /r /E /H /C /I /f %OGUIPath%\lua-binding\IntelliSense %UEPluginPath%\IntelliSense
 xcopy /y /r /E /H /C /I /f %OGUIPath%\include %UEOGUIPath%\Public
 xcopy /y /r /E /H /C /I /f %OGUIPath%\source %UEOGUIPath%\Private

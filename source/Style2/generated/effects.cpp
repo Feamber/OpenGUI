@@ -262,7 +262,6 @@ void OGUI::StyleEffects::SetupParser()
 }
 
 
-attr("script": true)
 void OGUI::SetStyleOpacity(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleEffectsEntry] |= 1ull<<0;
@@ -270,7 +269,6 @@ void OGUI::SetStyleOpacity(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleOpacity(VisualElement* element)
 {
     element->_procedureOverrides[StyleEffectsEntry] &= ~(1ull<<0);

@@ -58,20 +58,40 @@ namespace OGUI reflect
         static void SetupParser();
     };
 
+    attr("script": true)
     OGUI_API void SetStyleFontSize(VisualElement* element, const float& value);
+    attr("script": true)
     OGUI_API void ResetStyleFontSize(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleColor(VisualElement* element, const Color4f& value);
+    attr("script": true)
     OGUI_API void ResetStyleColor(VisualElement* element);
     OGUI_API void SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string>& value);
+    attr("script": true)
     OGUI_API void ResetStyleFontFamily(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleFontStyle(VisualElement* element, const ETextStyle& value);
+    attr("script": true)
     OGUI_API void ResetStyleFontStyle(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleFontWeight(VisualElement* element, const int& value);
+    attr("script": true)
     OGUI_API void ResetStyleFontWeight(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleLineHeight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleLineHeightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleLineHeightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleLineHeightAuto(VisualElement* element);
+    attr("script": true)
     OGUI_API void ResetStyleLineHeight(VisualElement* element);
+    attr("script": true)
     OGUI_API void SetStyleTextAlign(VisualElement* element, const ETextAlign& value);
+    attr("script": true)
     OGUI_API void ResetStyleTextAlign(VisualElement* element);
     OGUI_API void SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow>& value);
+    attr("script": true)
     OGUI_API void ResetStyleTextShadow(VisualElement* element);
 }

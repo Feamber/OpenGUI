@@ -266,7 +266,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 			sstack.push_back(ss);
 	}
 	element->_selectorDirty |= force;
-	if(element->_selectorDirty)
+	if(element->_selectorDirty || refresh)
 	{
 		if(element->_depended)
 			force = true;
@@ -299,7 +299,11 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		else if(element->_inlineStyle)
 			ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>{}, refresh);
 		else
-			element->_style = ComputedStyle::Create(element->_physicalParent ? &element->_physicalParent->_style : nullptr);
+		{
+			auto newStyle = ComputedStyle::Create(element->_physicalParent ? &element->_physicalParent->_style : nullptr);
+			newStyle.Merge(element->_style, element->_procedureOverrides);
+			element->_style = std::move(newStyle);
+		}
 		matchingContext.currentElement = nullptr;
 	}
 	else 
