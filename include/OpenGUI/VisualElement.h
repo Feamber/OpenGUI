@@ -45,7 +45,9 @@ namespace OGUI reflect
 	public:
 		VisualElement();
 		virtual ~VisualElement();
+		attr("script":true)
 		VisualElement* GetParent();
+		attr("script":true)
 		VisualElement* GetHierachyParent();
 		bool IsSibling(VisualElement*);
 		bool IsParent(VisualElement*);
@@ -124,6 +126,7 @@ namespace OGUI reflect
 		void UpdateWorldTransform();
 		Rect GetLayout() const;
 		Rect GetRect() const;
+		attr("script":true)
 		Vector2f GetSize() const;
 		Rect _inlineLayout;
 		Rect _prevLayout;
@@ -238,6 +241,8 @@ namespace OGUI reflect
 		bool _OnLostFocus(struct LostFocusEvent& event);
 
 		bool _OnPointerDown(struct PointerDownEvent& event);
+		attr("script":true)
+		void SetFocusable(bool focusable);
 #pragma endregion
 
 #pragma region Hover
