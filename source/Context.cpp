@@ -222,26 +222,23 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 			return zorder < other.zorder;
 		}
 	};
-	std::priority_queue<DrawElement> queue;
+	std::deque<DrawElement> queue;
+	
 	auto& ctx = *wctx.currentDrawCtx;
-	queue.push({0, root, {}, false});
+	queue.push_back({0, root, {}, false});
+	std::vector<DrawElement> toDraw;
 	while(!queue.empty())
 	{
-		auto next = queue.top();
-		queue.pop();
-		if(next.hasClip)
-			ctx.prims.clipStack.push_back(next.clip);
-		next.element->DrawPrimitive(ctx);
-		if(next.hasClip)
-			ctx.prims.clipStack.pop_back();
+		auto next = queue.front();
+		queue.pop_front();
+		toDraw.push_back(next);
 		auto clippingChild = next.element->IsClippingChildren();
 		next.element->Traverse([&](VisualElement* child)
 		{
 			if(!child->Visible())
 				return;
 			DrawElement newDraw;
-			auto& pos = StylePosition::Get(child->_style);
-			newDraw.zorder = next.zorder + 1 + pos.zOrderBias;
+			newDraw.zorder = next.zorder + 1 + StylePosition::Get(child->_style).zOrderBias;
 			newDraw.element = child;
 			newDraw.hasClip = clippingChild | next.hasClip;
 			if(clippingChild)
@@ -249,8 +246,17 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 			else 
 				newDraw.clip = next.clip;
 			child->_opacity = StyleEffects::Get(child->_style).opacity * next.element->_opacity;
-			queue.push(newDraw);
+			queue.push_back(newDraw);
 		});
+	}
+	std::stable_sort(toDraw.begin(), toDraw.end());
+	for(auto& draw : toDraw)
+	{
+		if(draw.hasClip)
+			ctx.prims.clipStack.push_back(draw.clip);
+		draw.element->DrawPrimitive(ctx);
+		if(draw.hasClip)
+			ctx.prims.clipStack.pop_back();
 	}
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }
