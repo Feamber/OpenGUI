@@ -14,8 +14,9 @@
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
-namespace OGUI
+namespace OGUI reflect
 {
+    class VisualElement;
     using namespace ostr::literal;
     struct OGUI_API StylePosition
     {
@@ -59,6 +60,7 @@ namespace OGUI
             static constexpr size_t flexDisplay = OGUI::hash(u"flex-display"_o);
             static constexpr size_t verticalAlign = OGUI::hash(u"vertical-align"_o);
             static constexpr size_t aspectRatio = OGUI::hash(u"aspect-ratio"_o);
+            static constexpr size_t zOrderBias = OGUI::hash(u"z-order-bias"_o);
             static constexpr size_t margin = OGUI::hash(u"margin"_o);
             static constexpr size_t padding = OGUI::hash(u"padding"_o);
         };
@@ -95,15 +97,240 @@ namespace OGUI
         YGDisplay flexDisplay;
         EInlineAlign verticalAlign;
         float aspectRatio;
+        int zOrderBias;
         void Initialize();
         static const StylePosition& GetDefault();
         static const StylePosition& Get(const ComputedStyle& style);
         static StylePosition* TryGet(const ComputedStyle& style);
         static StylePosition& GetOrAdd(ComputedStyle& style);
         static void Dispose(ComputedStyle& style);
-        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
-            const ComputedStyle* parent);
-        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, 
+            const gsl::span<size_t>& override, const ComputedStyle* parent);
+        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, 
+            const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
+        static void Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
         static void SetupParser();
     };
+
+    OGUI_API void SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction>& value);
+    attr("script": true)
+    OGUI_API void ResetStyleTransform(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFlexGrow(VisualElement* element, const float& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFlexGrow(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFlexShrink(VisualElement* element, const float& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFlexShrink(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFlexBasis(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleFlexBasisPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleFlexBasisPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleFlexBasisAuto(VisualElement* element);
+    attr("script": true)
+    OGUI_API void ResetStyleFlexBasis(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleTop(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleTopPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleTopPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleTop(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleRight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleRightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleRightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleRight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleBottom(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleBottomPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleBottomPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleBottom(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleLeft(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleLeftPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleLeftPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleLeft(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMarginTop(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginTopPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginTopPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleMarginTop(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMarginRight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginRightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginRightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleMarginRight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMarginBottom(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginBottomPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginBottomPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleMarginBottom(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMarginLeft(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginLeftPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMarginLeftPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleMarginLeft(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStylePaddingTop(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingTopPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingTopPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStylePaddingTop(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStylePaddingRight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingRightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingRightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStylePaddingRight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStylePaddingBottom(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingBottomPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingBottomPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStylePaddingBottom(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStylePaddingLeft(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingLeftPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStylePaddingLeftPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStylePaddingLeft(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleWidth(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleWidthPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleWidthPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleWidthAuto(VisualElement* element);
+    attr("script": true)
+    OGUI_API void ResetStyleWidth(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleHeight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleHeightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleHeightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleHeightAuto(VisualElement* element);
+    attr("script": true)
+    OGUI_API void ResetStyleHeight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStylePosition(VisualElement* element, const YGPositionType& value);
+    attr("script": true)
+    OGUI_API void ResetStylePosition(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleOverflow(VisualElement* element, const EFlexOverflow& value);
+    attr("script": true)
+    OGUI_API void ResetStyleOverflow(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleAlignSelf(VisualElement* element, const YGAlign& value);
+    attr("script": true)
+    OGUI_API void ResetStyleAlignSelf(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMaxWidth(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMaxWidthPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMaxWidthPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleMaxWidth(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMaxHeight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMaxHeightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMaxHeightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void ResetStyleMaxHeight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMinWidth(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMinWidthPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMinWidthPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMinWidthAuto(VisualElement* element);
+    attr("script": true)
+    OGUI_API void ResetStyleMinWidth(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleMinHeight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleMinHeightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMinHeightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleMinHeightAuto(VisualElement* element);
+    attr("script": true)
+    OGUI_API void ResetStyleMinHeight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFlexDirection(VisualElement* element, const YGFlexDirection& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFlexDirection(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleAlignContent(VisualElement* element, const YGAlign& value);
+    attr("script": true)
+    OGUI_API void ResetStyleAlignContent(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleAlignItems(VisualElement* element, const YGAlign& value);
+    attr("script": true)
+    OGUI_API void ResetStyleAlignItems(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleJustifyContent(VisualElement* element, const YGJustify& value);
+    attr("script": true)
+    OGUI_API void ResetStyleJustifyContent(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFlexWrap(VisualElement* element, const YGWrap& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFlexWrap(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFlexDisplay(VisualElement* element, const YGDisplay& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFlexDisplay(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleVerticalAlign(VisualElement* element, const EInlineAlign& value);
+    attr("script": true)
+    OGUI_API void ResetStyleVerticalAlign(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleAspectRatio(VisualElement* element, const float& value);
+    attr("script": true)
+    OGUI_API void ResetStyleAspectRatio(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleZOrderBias(VisualElement* element, const int& value);
+    attr("script": true)
+    OGUI_API void ResetStyleZOrderBias(VisualElement* element);
 }

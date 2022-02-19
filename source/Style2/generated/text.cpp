@@ -7,6 +7,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "OpenGUI/VisualElement.h"
 
 size_t StyleTextEntry = 0;
 
@@ -61,6 +62,13 @@ OGUI::StyleText& OGUI::StyleText::GetOrAdd(ComputedStyle& style)
         s.owned = true;
         return *value.get();
     }
+    else if(!s.owned)
+    {
+        auto value = std::make_shared<OGUI::StyleText>(*(OGUI::StyleText*)s.ptr.get());
+        s.ptr = std::static_pointer_cast<void>(value);
+        s.owned = true;
+        return *value.get();
+    }
     else 
         return *(StyleText*)s.ptr.get();
 }
@@ -82,7 +90,7 @@ void OGUI::StyleText::Initialize()
     textShadow = {};
 }
 
-void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
+void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::StyleText* st = nullptr;
@@ -112,9 +120,21 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
         }
         return st;
     };
+    auto mask = override[StyleTextEntry];
     
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::fontSize: if(mask & (1ull<<0)) continue; break;
+            case Ids::color: if(mask & (1ull<<1)) continue; break;
+            case Ids::fontFamily: if(mask & (1ull<<2)) continue; break;
+            case Ids::fontStyle: if(mask & (1ull<<3)) continue; break;
+            case Ids::fontWeight: if(mask & (1ull<<4)) continue; break;
+            case Ids::lineHeight: if(mask & (1ull<<5)) continue; break;
+            case Ids::textAlign: if(mask & (1ull<<6)) continue; break;
+            case Ids::textShadow: if(mask & (1ull<<7)) continue; break;
+        }
         if(prop.keyword)
         {
             if (prop.value.index == (int)StyleKeyword::Initial || !pst
@@ -122,42 +142,42 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
             {
                 switch(prop.id)
                 {
-                case Ids::fontSize:{
+                case Ids::fontSize: {
                     auto v = fget();
                     v->fontSize = 20.f;
                     break;
                     }
-                case Ids::color:{
+                case Ids::color: {
                     auto v = fget();
                     v->color = Color4f(0,0,0,1);
                     break;
                     }
-                case Ids::fontFamily:{
+                case Ids::fontFamily: {
                     auto v = fget();
                     v->fontFamily = {};
                     break;
                     }
-                case Ids::fontStyle:{
+                case Ids::fontStyle: {
                     auto v = fget();
                     v->fontStyle = ETextStyle::Normal;
                     break;
                     }
-                case Ids::fontWeight:{
+                case Ids::fontWeight: {
                     auto v = fget();
                     v->fontWeight = 400;
                     break;
                     }
-                case Ids::lineHeight:{
+                case Ids::lineHeight: {
                     auto v = fget();
                     v->lineHeight = YGValueAuto;
                     break;
                     }
-                case Ids::textAlign:{
+                case Ids::textAlign: {
                     auto v = fget();
                     v->textAlign = ETextAlign::Start;
                     break;
                     }
-                case Ids::textShadow:{
+                case Ids::textShadow: {
                     auto v = fget();
                     v->textShadow = {};
                     break;
@@ -264,7 +284,7 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
 }
 
 
-OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
 {
     OGUI::StyleText* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
@@ -295,8 +315,21 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
         return st;
     };
     
+    auto mask = override[StyleTextEntry];
+    
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::fontSize: if(mask & (1ull<<0)) continue; break;
+            case Ids::color: if(mask & (1ull<<1)) continue; break;
+            case Ids::fontFamily: if(mask & (1ull<<2)) continue; break;
+            case Ids::fontStyle: if(mask & (1ull<<3)) continue; break;
+            case Ids::fontWeight: if(mask & (1ull<<4)) continue; break;
+            case Ids::lineHeight: if(mask & (1ull<<5)) continue; break;
+            case Ids::textAlign: if(mask & (1ull<<6)) continue; break;
+            case Ids::textShadow: if(mask & (1ull<<7)) continue; break;
+        }
         switch(prop.id)
         {
             case Ids::fontSize:{
@@ -436,6 +469,33 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
         }
     }
     return damage;
+}
+
+void OGUI::StyleText::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    auto mask = override[StyleTextEntry];
+    if(!mask)
+        return;
+    auto& s = GetOrAdd(style);
+    if(mask & (1ull << 0))
+        s.fontSize = po->fontSize;
+    if(mask & (1ull << 1))
+        s.color = po->color;
+    if(mask & (1ull << 2))
+        s.fontFamily = po->fontFamily;
+    if(mask & (1ull << 3))
+        s.fontStyle = po->fontStyle;
+    if(mask & (1ull << 4))
+        s.fontWeight = po->fontWeight;
+    if(mask & (1ull << 5))
+        s.lineHeight = po->lineHeight;
+    if(mask & (1ull << 6))
+        s.textAlign = po->textAlign;
+    if(mask & (1ull << 7))
+        s.textShadow = po->textShadow;
 }
 
 void OGUI::StyleText::SetupParser()
@@ -578,4 +638,106 @@ void OGUI::StyleText::SetupParser()
             };
         });
     }
+}
+
+
+void OGUI::SetStyleFontSize(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<0;
+    StyleText::GetOrAdd(element->_style).fontSize = value;
+    RestyleDamage damage = RestyleDamage::TextLayout;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleFontSize(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<0);
+}
+void OGUI::SetStyleColor(VisualElement* element, const Color4f& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<1;
+    StyleText::GetOrAdd(element->_style).color = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleColor(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<1);
+}
+void OGUI::SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string>& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<2;
+    StyleText::GetOrAdd(element->_style).fontFamily = ToOwned(value);
+    RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleFontFamily(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<2);
+}
+void OGUI::SetStyleFontStyle(VisualElement* element, const ETextStyle& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<3;
+    StyleText::GetOrAdd(element->_style).fontStyle = value;
+    RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleFontStyle(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<3);
+}
+void OGUI::SetStyleFontWeight(VisualElement* element, const int& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<4;
+    StyleText::GetOrAdd(element->_style).fontWeight = value;
+    RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleFontWeight(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<4);
+}
+void OGUI::SetStyleLineHeight(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<5;
+    StyleText::GetOrAdd(element->_style).lineHeight = value;
+    RestyleDamage damage = RestyleDamage::TextLayout;
+    element->UpdateStyle(damage);
+}
+void OGUI::SetStyleLineHeightPixel(VisualElement* element, float value)
+{
+    SetStyleLineHeight(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleLineHeightPercentage(VisualElement* element, float value)
+{
+    SetStyleLineHeight(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::SetStyleLineHeightAuto(VisualElement* element)
+{
+    SetStyleLineHeight(element, YGValueAuto);
+}
+void OGUI::ResetStyleLineHeight(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<5);
+}
+void OGUI::SetStyleTextAlign(VisualElement* element, const ETextAlign& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<6;
+    StyleText::GetOrAdd(element->_style).textAlign = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleTextAlign(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<6);
+}
+void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow>& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<7;
+    StyleText::GetOrAdd(element->_style).textShadow = ToOwned(value);
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleTextShadow(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<7);
 }

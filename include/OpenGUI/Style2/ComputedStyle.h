@@ -16,8 +16,9 @@ namespace OGUI
 		size_t hash;
 		size_t entry;
 		bool inherited;
-        void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
-		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+        void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent);
+		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
+		void (*Merge)(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
     };
 
 	struct StyleRegistry
@@ -39,6 +40,7 @@ namespace OGUI
 		desc.name = T::name;
 		desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
 		desc.ApplyProperties = &T::ApplyProperties;
+		desc.Merge = &T::Merge;
 		desc.entry = NewStyleStructEntry();
         RegisterStyleStruct(desc);
 		T::SetEntry(desc.entry);
@@ -62,8 +64,9 @@ namespace OGUI
 		ComputedStyle& operator=(const ComputedStyle& other);
 		ComputedStyle& operator=(ComputedStyle&& other) = default;
 		static ComputedStyle Create(const ComputedStyle* parent);
-		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent);
-        RestyleDamage ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent);
+        RestyleDamage ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
+		void Merge(ComputedStyle& other, const gsl::span<size_t>& override);
 	};
 
 }

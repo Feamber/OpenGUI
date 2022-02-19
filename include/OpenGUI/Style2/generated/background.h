@@ -10,8 +10,9 @@
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
-namespace OGUI
+namespace OGUI reflect
 {
+    class VisualElement;
     using namespace ostr::literal;
     struct OGUI_API StyleBackground
     {
@@ -35,9 +36,24 @@ namespace OGUI
         static StyleBackground* TryGet(const ComputedStyle& style);
         static StyleBackground& GetOrAdd(ComputedStyle& style);
         static void Dispose(ComputedStyle& style);
-        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
-            const ComputedStyle* parent);
-        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, 
+            const gsl::span<size_t>& override, const ComputedStyle* parent);
+        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, 
+            const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
+        static void Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
         static void SetupParser();
     };
+
+    attr("script": true)
+    OGUI_API void SetStyleBackgroundColor(VisualElement* element, const Color4f& value);
+    attr("script": true)
+    OGUI_API void ResetStyleBackgroundColor(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleBackgroundImage(VisualElement* element, const ostr::string_view& value);
+    attr("script": true)
+    OGUI_API void ResetStyleBackgroundImage(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleBackgroundMaterial(VisualElement* element, const ostr::string_view& value);
+    attr("script": true)
+    OGUI_API void ResetStyleBackgroundMaterial(VisualElement* element);
 }

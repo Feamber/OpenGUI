@@ -21,17 +21,10 @@ void SampleControls::ScrollView::InitializeChildren()
 {
     slider = new VisualElement();
     scrollbar = new VisualElement();
-    scrollbar->_styleOverriding.push_back([=]()
-    {
-        auto& pos = StylePosition::GetOrAdd(scrollbar->_style);
-        pos.position = YGPositionTypeAbsolute;
-        pos.right = YGValue{0.f, YGUnitPoint};
-        pos.height = YGValue{100.f, YGUnitPercent};
-        //pos.top = YGValue{0.f, YGUnitPoint};
-        //pos.bottom = YGValue{0.f, YGUnitPoint};
-        pos.justifyContent = YGJustifyCenter;
-        return RestyleDamage::None;
-    });
+    OGUI::SetStylePosition(scrollbar, YGPositionTypeAbsolute);
+    OGUI::SetStyleRight(scrollbar, YGValue{0.f, YGUnitPoint});
+    OGUI::SetStyleHeight(scrollbar, YGValue{100.f, YGUnitPercent});
+    OGUI::SetStyleJustifyContent(scrollbar, YGJustifyCenter);
     scrollbar->_scrollable = false;
     slider->_styleOverriding.push_back([=]()
     {

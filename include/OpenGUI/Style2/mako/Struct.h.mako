@@ -1,6 +1,8 @@
 //DO NOT MODIFY THIS FILE
 //generated from Style2/mako/Struct.h.mako
-
+<%! 
+    from tool.style_codegen import to_camel_case
+%>
 #pragma once
 %for header in struct.headers:
 #include "${header}"
@@ -10,8 +12,9 @@
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
-namespace OGUI
+namespace OGUI reflect
 {
+    class VisualElement;
     using namespace ostr::literal;
     struct ${linkage} Style${struct.ident}
     {
@@ -38,9 +41,30 @@ namespace OGUI
         static Style${struct.ident}* TryGet(const ComputedStyle& style);
         static Style${struct.ident}& GetOrAdd(ComputedStyle& style);
         static void Dispose(ComputedStyle& style);
-        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
-            const ComputedStyle* parent);
-        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, 
+            const gsl::span<size_t>& override, const ComputedStyle* parent);
+        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, 
+            const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
+        static void Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
         static void SetupParser();
     };
+
+%for prop in struct.longhands:
+%if not prop.is_vector:
+    attr("script": true)
+%endif
+    ${linkage} void SetStyle${to_camel_case(prop.name)}(VisualElement* element, ${prop.reference_type} value);
+%if prop.type == "YGValue":
+    attr("script": true)
+    ${linkage} void SetStyle${to_camel_case(prop.name)}Pixel(VisualElement* element, float value);
+    attr("script": true)
+    ${linkage} void SetStyle${to_camel_case(prop.name)}Percentage(VisualElement* element, float value);
+%if prop.valueRule == "Width":
+    attr("script": true)
+    ${linkage} void SetStyle${to_camel_case(prop.name)}Auto(VisualElement* element);
+%endif
+%endif
+    attr("script": true)
+    ${linkage} void ResetStyle${to_camel_case(prop.name)}(VisualElement* element);
+%endfor
 }

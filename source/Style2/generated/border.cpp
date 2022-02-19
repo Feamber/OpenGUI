@@ -7,6 +7,7 @@
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "OpenGUI/VisualElement.h"
 #include "border_shorthands.h"
 
 size_t StyleBorderEntry = 0;
@@ -62,6 +63,13 @@ OGUI::StyleBorder& OGUI::StyleBorder::GetOrAdd(ComputedStyle& style)
         s.owned = true;
         return *value.get();
     }
+    else if(!s.owned)
+    {
+        auto value = std::make_shared<OGUI::StyleBorder>(*(OGUI::StyleBorder*)s.ptr.get());
+        s.ptr = std::static_pointer_cast<void>(value);
+        s.owned = true;
+        return *value.get();
+    }
     else 
         return *(StyleBorder*)s.ptr.get();
 }
@@ -83,7 +91,7 @@ void OGUI::StyleBorder::Initialize()
     borderBottomLeftRadius = YGValueZero;
 }
 
-void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const ComputedStyle* parent)
+void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
     OGUI::StyleBorder* st = nullptr;
@@ -113,9 +121,21 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
         }
         return st;
     };
+    auto mask = override[StyleBorderEntry];
     
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::borderTopWidth: if(mask & (1ull<<0)) continue; break;
+            case Ids::borderRightWidth: if(mask & (1ull<<1)) continue; break;
+            case Ids::borderBottomWidth: if(mask & (1ull<<2)) continue; break;
+            case Ids::borderLeftWidth: if(mask & (1ull<<3)) continue; break;
+            case Ids::borderTopLeftRadius: if(mask & (1ull<<4)) continue; break;
+            case Ids::borderTopRightRadius: if(mask & (1ull<<5)) continue; break;
+            case Ids::borderBottomRightRadius: if(mask & (1ull<<6)) continue; break;
+            case Ids::borderBottomLeftRadius: if(mask & (1ull<<7)) continue; break;
+        }
         if(prop.keyword)
         {
             if (prop.value.index == (int)StyleKeyword::Initial || !pst
@@ -124,42 +144,42 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             {
                 switch(prop.id)
                 {
-                case Ids::borderTopWidth:{
+                case Ids::borderTopWidth: {
                     auto v = fget();
                     v->borderTopWidth = 0.f;
                     break;
                     }
-                case Ids::borderRightWidth:{
+                case Ids::borderRightWidth: {
                     auto v = fget();
                     v->borderRightWidth = 0.f;
                     break;
                     }
-                case Ids::borderBottomWidth:{
+                case Ids::borderBottomWidth: {
                     auto v = fget();
                     v->borderBottomWidth = 0.f;
                     break;
                     }
-                case Ids::borderLeftWidth:{
+                case Ids::borderLeftWidth: {
                     auto v = fget();
                     v->borderLeftWidth = 0.f;
                     break;
                     }
-                case Ids::borderTopLeftRadius:{
+                case Ids::borderTopLeftRadius: {
                     auto v = fget();
                     v->borderTopLeftRadius = YGValueZero;
                     break;
                     }
-                case Ids::borderTopRightRadius:{
+                case Ids::borderTopRightRadius: {
                     auto v = fget();
                     v->borderTopRightRadius = YGValueZero;
                     break;
                     }
-                case Ids::borderBottomRightRadius:{
+                case Ids::borderBottomRightRadius: {
                     auto v = fget();
                     v->borderBottomRightRadius = YGValueZero;
                     break;
                     }
-                case Ids::borderBottomLeftRadius:{
+                case Ids::borderBottomLeftRadius: {
                     auto v = fget();
                     v->borderBottomLeftRadius = YGValueZero;
                     break;
@@ -266,7 +286,7 @@ void OGUI::StyleBorder::ApplyProperties(ComputedStyle& style, const StyleSheetSt
 }
 
 
-OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props)
+OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
 {
     OGUI::StyleBorder* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
@@ -297,8 +317,21 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
         return st;
     };
     
+    auto mask = override[StyleBorderEntry];
+    
     for(auto& prop : props)
     {
+        switch(prop.id)
+        {
+            case Ids::borderTopWidth: if(mask & (1ull<<0)) continue; break;
+            case Ids::borderRightWidth: if(mask & (1ull<<1)) continue; break;
+            case Ids::borderBottomWidth: if(mask & (1ull<<2)) continue; break;
+            case Ids::borderLeftWidth: if(mask & (1ull<<3)) continue; break;
+            case Ids::borderTopLeftRadius: if(mask & (1ull<<4)) continue; break;
+            case Ids::borderTopRightRadius: if(mask & (1ull<<5)) continue; break;
+            case Ids::borderBottomRightRadius: if(mask & (1ull<<6)) continue; break;
+            case Ids::borderBottomLeftRadius: if(mask & (1ull<<7)) continue; break;
+        }
         switch(prop.id)
         {
             case Ids::borderTopWidth:{
@@ -439,6 +472,33 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
     return damage;
 }
 
+void OGUI::StyleBorder::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    auto mask = override[StyleBorderEntry];
+    if(!mask)
+        return;
+    auto& s = GetOrAdd(style);
+    if(mask & (1ull << 0))
+        s.borderTopWidth = po->borderTopWidth;
+    if(mask & (1ull << 1))
+        s.borderRightWidth = po->borderRightWidth;
+    if(mask & (1ull << 2))
+        s.borderBottomWidth = po->borderBottomWidth;
+    if(mask & (1ull << 3))
+        s.borderLeftWidth = po->borderLeftWidth;
+    if(mask & (1ull << 4))
+        s.borderTopLeftRadius = po->borderTopLeftRadius;
+    if(mask & (1ull << 5))
+        s.borderTopRightRadius = po->borderTopRightRadius;
+    if(mask & (1ull << 6))
+        s.borderBottomRightRadius = po->borderBottomRightRadius;
+    if(mask & (1ull << 7))
+        s.borderBottomLeftRadius = po->borderBottomLeftRadius;
+}
+
 void OGUI::StyleBorder::SetupParser()
 {
     CSSParser::RegisterBorderRadius();
@@ -570,4 +630,126 @@ void OGUI::StyleBorder::SetupParser()
             };
         });
     }
+}
+
+
+void OGUI::SetStyleBorderTopWidth(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<0;
+    StyleBorder::GetOrAdd(element->_style).borderTopWidth = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleBorderTopWidth(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<0);
+}
+void OGUI::SetStyleBorderRightWidth(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<1;
+    StyleBorder::GetOrAdd(element->_style).borderRightWidth = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleBorderRightWidth(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<1);
+}
+void OGUI::SetStyleBorderBottomWidth(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<2;
+    StyleBorder::GetOrAdd(element->_style).borderBottomWidth = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleBorderBottomWidth(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<2);
+}
+void OGUI::SetStyleBorderLeftWidth(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<3;
+    StyleBorder::GetOrAdd(element->_style).borderLeftWidth = value;
+    RestyleDamage damage = RestyleDamage::Layout;
+    element->UpdateStyle(damage);
+}
+void OGUI::ResetStyleBorderLeftWidth(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<3);
+}
+void OGUI::SetStyleBorderTopLeftRadius(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<4;
+    StyleBorder::GetOrAdd(element->_style).borderTopLeftRadius = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::SetStyleBorderTopLeftRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderTopLeftRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderTopLeftRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderTopLeftRadius(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::ResetStyleBorderTopLeftRadius(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<4);
+}
+void OGUI::SetStyleBorderTopRightRadius(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<5;
+    StyleBorder::GetOrAdd(element->_style).borderTopRightRadius = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::SetStyleBorderTopRightRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderTopRightRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderTopRightRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderTopRightRadius(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::ResetStyleBorderTopRightRadius(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<5);
+}
+void OGUI::SetStyleBorderBottomRightRadius(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<6;
+    StyleBorder::GetOrAdd(element->_style).borderBottomRightRadius = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::SetStyleBorderBottomRightRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderBottomRightRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderBottomRightRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderBottomRightRadius(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::ResetStyleBorderBottomRightRadius(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<6);
+}
+void OGUI::SetStyleBorderBottomLeftRadius(VisualElement* element, const YGValue& value)
+{
+    element->_procedureOverrides[StyleBorderEntry] |= 1ull<<7;
+    StyleBorder::GetOrAdd(element->_style).borderBottomLeftRadius = value;
+    RestyleDamage damage = RestyleDamage::None;
+    element->UpdateStyle(damage);
+}
+void OGUI::SetStyleBorderBottomLeftRadiusPixel(VisualElement* element, float value)
+{
+    SetStyleBorderBottomLeftRadius(element, YGValue{value, YGUnitPoint});
+}
+void OGUI::SetStyleBorderBottomLeftRadiusPercentage(VisualElement* element, float value)
+{
+    SetStyleBorderBottomLeftRadius(element, YGValue{value, YGUnitPercent});
+}
+void OGUI::ResetStyleBorderBottomLeftRadius(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBorderEntry] &= ~(1ull<<7);
 }

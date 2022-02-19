@@ -294,7 +294,9 @@ inline static bool SDLEventHandler(const SDL_Event& event, SDL_Window* window, O
         case SDL_MOUSEWHEEL:
         {
             //olog::Info(u"MouseWheel Delta:{}"_o.format(event.wheel.y));
-            ctx.OnMouseWheel(hWnd, event.wheel.y);
+			int x, y;
+			SDL_GetRelativeMouseState(&x, &y);
+            ctx.OnMouseWheel(hWnd, event.wheel.y, x, y);
             break;
         }
         case SDL_WINDOWEVENT:

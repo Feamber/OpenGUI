@@ -731,8 +731,8 @@ int main(int , char* []) {
 
 	std::vector<AppWindow*> windows;
 	SampleControls::Install();
-	//ExternalControlSample sample;
-	//windows.push_back(sample.MakeWindow());
+	ExternalControlSample sample;
+	windows.push_back(sample.MakeWindow());
 	LuaSample lsample;
 	windows.push_back(lsample.MakeWindow());
 	//DataBindSample sample2;

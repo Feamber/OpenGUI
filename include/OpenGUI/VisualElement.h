@@ -144,7 +144,7 @@ namespace OGUI reflect
 
 		//TODO: should we merge these two
 		std::unique_ptr<InlineStyle> _inlineStyle;
-		std::unique_ptr<InlineStyle> _procedureStyle;
+		size_t _procedureOverrides[8] = {0};
 		std::shared_ptr<class AsyncRenderTexture> backgroundImageResource;
 		MaterialHandle backgroundMaterial = nullptr;
 		

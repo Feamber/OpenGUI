@@ -1,5 +1,6 @@
 
 #include "OpenGUI/Style2/ComputedStyle.h"
+#include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Rule.h"
 #include "OpenGUI/Style2/generated/animation.h"
 #include "OpenGUI/Style2/generated/background.h"
@@ -88,18 +89,25 @@ OGUI::ComputedStyle OGUI::ComputedStyle::Create(const ComputedStyle *parent)
     return result;
 }
 
-void OGUI::ComputedStyle::ApplyProperties(const StyleSheetStorage &sheet, const gsl::span<StyleProperty> &props, const ComputedStyle *parent)
+void OGUI::ComputedStyle::ApplyProperties(const StyleSheetStorage &sheet, const gsl::span<StyleProperty> &props, const gsl::span<size_t>& override, const ComputedStyle *parent)
 {
     auto& registry = GetRegistry();
     for(auto& desc : registry.descriptions)
-        desc.ApplyProperties(*this, sheet, props, parent);
+        desc.ApplyProperties(*this, sheet, props, override, parent);
 }
 
-OGUI::RestyleDamage OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleSheetStorage &sheet, const gsl::span<AnimatedProperty> &props)
+OGUI::RestyleDamage OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleSheetStorage &sheet, const gsl::span<AnimatedProperty> &props, const gsl::span<size_t>& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     auto& registry = GetRegistry();
     for(auto& desc : registry.descriptions)
-        damage |= desc.ApplyAnimatedProperties(*this, sheet, props);
+        damage |= desc.ApplyAnimatedProperties(*this, sheet, props, override);
     return damage;
+}
+
+void OGUI::ComputedStyle::Merge(ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto& registry = GetRegistry();
+    for(auto& desc : registry.descriptions)
+        desc.Merge(*this, other, override);
 }

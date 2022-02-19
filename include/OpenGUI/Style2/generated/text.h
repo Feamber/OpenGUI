@@ -14,8 +14,9 @@
 #include "OpenGUI/Style2/Lerp/CommonLerp.h"
 #include "OpenGUI/Core/Utilities/string_hash.hpp"
 
-namespace OGUI
+namespace OGUI reflect
 {
+    class VisualElement;
     using namespace ostr::literal;
     struct OGUI_API StyleText
     {
@@ -49,9 +50,48 @@ namespace OGUI
         static StyleText* TryGet(const ComputedStyle& style);
         static StyleText& GetOrAdd(ComputedStyle& style);
         static void Dispose(ComputedStyle& style);
-        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props,
-            const ComputedStyle* parent);
-        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props);
+        static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, 
+            const gsl::span<size_t>& override, const ComputedStyle* parent);
+        static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, 
+            const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
+        static void Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
         static void SetupParser();
     };
+
+    attr("script": true)
+    OGUI_API void SetStyleFontSize(VisualElement* element, const float& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFontSize(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleColor(VisualElement* element, const Color4f& value);
+    attr("script": true)
+    OGUI_API void ResetStyleColor(VisualElement* element);
+    OGUI_API void SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string>& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFontFamily(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFontStyle(VisualElement* element, const ETextStyle& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFontStyle(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleFontWeight(VisualElement* element, const int& value);
+    attr("script": true)
+    OGUI_API void ResetStyleFontWeight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleLineHeight(VisualElement* element, const YGValue& value);
+    attr("script": true)
+    OGUI_API void SetStyleLineHeightPixel(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleLineHeightPercentage(VisualElement* element, float value);
+    attr("script": true)
+    OGUI_API void SetStyleLineHeightAuto(VisualElement* element);
+    attr("script": true)
+    OGUI_API void ResetStyleLineHeight(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleTextAlign(VisualElement* element, const ETextAlign& value);
+    attr("script": true)
+    OGUI_API void ResetStyleTextAlign(VisualElement* element);
+    OGUI_API void SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow>& value);
+    attr("script": true)
+    OGUI_API void ResetStyleTextShadow(VisualElement* element);
 }

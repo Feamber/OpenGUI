@@ -265,10 +265,8 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		if (std::find(sstack.begin(), sstack.end(), ss) == sstack.end())
 			sstack.push_back(ss);
 	}
-	if (refresh)
-		element->ResetStyles();
 	element->_selectorDirty |= force;
-	if(element->_selectorDirty)
+	if(element->_selectorDirty || refresh)
 	{
 		if(element->_depended)
 			force = true;
@@ -301,12 +299,17 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		else if(element->_inlineStyle)
 			ApplyMatchedRules(element, gsl::span<SelectorMatchRecord>{}, refresh);
 		else
-			element->_style = ComputedStyle::Create(element->_physicalParent ? &element->_physicalParent->_style : nullptr);
+		{
+			auto newStyle = ComputedStyle::Create(element->_physicalParent ? &element->_physicalParent->_style : nullptr);
+			newStyle.Merge(element->_style, element->_procedureOverrides);
+			element->_style = std::move(newStyle);
+		}
 		matchingContext.currentElement = nullptr;
 	}
 	else 
 	{
-
+		if (refresh)
+			element->ResetStyles();
 	}
 	UpdateStyle(element, sstack);
 	if(element->_beforeElement)
@@ -326,18 +329,17 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		sstack.erase(start + originStyleSheetCount, start + styleSheetCount);
 }
 
-
-
 void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors, bool refresh)
 {
 	element->_styleDirty = true;
 	auto parent = element->_physicalParent ? &element->_physicalParent->_style : nullptr;
 	ComputedStyle resolvedStyle = ComputedStyle::Create(parent);
+	resolvedStyle.Merge(element->_style, element->_procedureOverrides);
 	std::vector<AnimStyle> anims;
 	for (auto& record : matchedSelectors)
 	{
 		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-		resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, parent);
+		resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, element->_procedureOverrides, parent);
 		for(auto& properties : rule.animation)
 		{
 			AnimStyle* style = nullptr;
@@ -362,7 +364,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	if(element->_inlineStyle)
 	{ 	
 		//apply inline styles
-		resolvedStyle.ApplyProperties(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, parent);
+		resolvedStyle.ApplyProperties(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, element->_procedureOverrides, parent);
 		for(auto& properties : element->_inlineStyle->rule.animation)
 		{
 			AnimStyle* style = nullptr;
@@ -536,9 +538,9 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	{
 		element->_style = element->_preAnimatedStyle;
 		for (auto& anim : element->_anims)
-			damage |= anim.Apply(element->_style);
+			damage |= anim.Apply(element->_style, element->_procedureOverrides);
 		for (auto& anim : element->_procedureAnims)
-			damage |= anim.Apply(element->_style);
+			damage |= anim.Apply(element->_style, element->_procedureOverrides);
 	}
 	element->_prevEvaluating = animationEvaling;
 	
@@ -549,7 +551,6 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 
 void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss)
 {
-	auto _style = element->_style;
 	RestyleDamage damage = element->_selectorDirty ? RestyleDamage::All : RestyleDamage::None;
 	damage |= UpdateAnim(element);
 	element->UpdateStyle(damage, ss);
