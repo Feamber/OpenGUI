@@ -1,13 +1,18 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Style2/Selector.h"
-#include "OpenGUI/Context.h"
+#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Style2/generated/border.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Style2/generated/effects.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -67,6 +72,165 @@ void BindLua_generated(lua_State* L)
     OGUI["QueryFirst"] = +[](OGUI::VisualElement * _0, ostr::string _1) { return OGUI::QueryFirst(_0, _1); };
     OGUI["QueryAll"] = +[](OGUI::VisualElement * _0, ostr::string _1, std::vector<OGUI::VisualElement *> & _2) { return OGUI::QueryAll(_0, _1, _2); };
     OGUI["BindTree"] = (void(*)(OGUI::VisualElement *, OGUI::Bindable &))&OGUI::BindTree;
+    OGUI["SetStyleBackgroundColor"] = (void(*)(OGUI::VisualElement *, const OGUI::Vector<float, 4> &))&OGUI::SetStyleBackgroundColor;
+    OGUI["ResetStyleBackgroundColor"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBackgroundColor;
+    OGUI["SetStyleBackgroundImage"] = (void(*)(OGUI::VisualElement *, const ostr::string_view &))&OGUI::SetStyleBackgroundImage;
+    OGUI["ResetStyleBackgroundImage"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBackgroundImage;
+    OGUI["SetStyleBackgroundMaterial"] = (void(*)(OGUI::VisualElement *, const ostr::string_view &))&OGUI::SetStyleBackgroundMaterial;
+    OGUI["ResetStyleBackgroundMaterial"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBackgroundMaterial;
+    OGUI["SetStyleBorderTopWidth"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleBorderTopWidth;
+    OGUI["ResetStyleBorderTopWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderTopWidth;
+    OGUI["SetStyleBorderRightWidth"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleBorderRightWidth;
+    OGUI["ResetStyleBorderRightWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderRightWidth;
+    OGUI["SetStyleBorderBottomWidth"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleBorderBottomWidth;
+    OGUI["ResetStyleBorderBottomWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderBottomWidth;
+    OGUI["SetStyleBorderLeftWidth"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleBorderLeftWidth;
+    OGUI["ResetStyleBorderLeftWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderLeftWidth;
+    OGUI["SetStyleBorderTopLeftRadius"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleBorderTopLeftRadius;
+    OGUI["SetStyleBorderTopLeftRadiusPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderTopLeftRadiusPixel;
+    OGUI["SetStyleBorderTopLeftRadiusPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderTopLeftRadiusPercentage;
+    OGUI["ResetStyleBorderTopLeftRadius"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderTopLeftRadius;
+    OGUI["SetStyleBorderTopRightRadius"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleBorderTopRightRadius;
+    OGUI["SetStyleBorderTopRightRadiusPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderTopRightRadiusPixel;
+    OGUI["SetStyleBorderTopRightRadiusPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderTopRightRadiusPercentage;
+    OGUI["ResetStyleBorderTopRightRadius"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderTopRightRadius;
+    OGUI["SetStyleBorderBottomRightRadius"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleBorderBottomRightRadius;
+    OGUI["SetStyleBorderBottomRightRadiusPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderBottomRightRadiusPixel;
+    OGUI["SetStyleBorderBottomRightRadiusPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderBottomRightRadiusPercentage;
+    OGUI["ResetStyleBorderBottomRightRadius"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderBottomRightRadius;
+    OGUI["SetStyleBorderBottomLeftRadius"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleBorderBottomLeftRadius;
+    OGUI["SetStyleBorderBottomLeftRadiusPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderBottomLeftRadiusPixel;
+    OGUI["SetStyleBorderBottomLeftRadiusPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBorderBottomLeftRadiusPercentage;
+    OGUI["ResetStyleBorderBottomLeftRadius"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderBottomLeftRadius;
+    OGUI["SetStyleOpacity"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleOpacity;
+    OGUI["ResetStyleOpacity"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleOpacity;
+    OGUI["ResetStyleTransform"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTransform;
+    OGUI["SetStyleFlexGrow"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleFlexGrow;
+    OGUI["ResetStyleFlexGrow"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFlexGrow;
+    OGUI["SetStyleFlexShrink"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleFlexShrink;
+    OGUI["ResetStyleFlexShrink"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFlexShrink;
+    OGUI["SetStyleFlexBasis"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleFlexBasis;
+    OGUI["SetStyleFlexBasisPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleFlexBasisPixel;
+    OGUI["SetStyleFlexBasisPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleFlexBasisPercentage;
+    OGUI["SetStyleFlexBasisAuto"] = (void(*)(OGUI::VisualElement *))&OGUI::SetStyleFlexBasisAuto;
+    OGUI["ResetStyleFlexBasis"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFlexBasis;
+    OGUI["SetStyleTop"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleTop;
+    OGUI["SetStyleTopPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleTopPixel;
+    OGUI["SetStyleTopPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleTopPercentage;
+    OGUI["ResetStyleTop"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTop;
+    OGUI["SetStyleRight"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleRight;
+    OGUI["SetStyleRightPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleRightPixel;
+    OGUI["SetStyleRightPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleRightPercentage;
+    OGUI["ResetStyleRight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleRight;
+    OGUI["SetStyleBottom"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleBottom;
+    OGUI["SetStyleBottomPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBottomPixel;
+    OGUI["SetStyleBottomPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleBottomPercentage;
+    OGUI["ResetStyleBottom"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBottom;
+    OGUI["SetStyleLeft"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleLeft;
+    OGUI["SetStyleLeftPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleLeftPixel;
+    OGUI["SetStyleLeftPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleLeftPercentage;
+    OGUI["ResetStyleLeft"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleLeft;
+    OGUI["SetStyleMarginTop"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMarginTop;
+    OGUI["SetStyleMarginTopPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginTopPixel;
+    OGUI["SetStyleMarginTopPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginTopPercentage;
+    OGUI["ResetStyleMarginTop"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMarginTop;
+    OGUI["SetStyleMarginRight"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMarginRight;
+    OGUI["SetStyleMarginRightPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginRightPixel;
+    OGUI["SetStyleMarginRightPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginRightPercentage;
+    OGUI["ResetStyleMarginRight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMarginRight;
+    OGUI["SetStyleMarginBottom"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMarginBottom;
+    OGUI["SetStyleMarginBottomPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginBottomPixel;
+    OGUI["SetStyleMarginBottomPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginBottomPercentage;
+    OGUI["ResetStyleMarginBottom"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMarginBottom;
+    OGUI["SetStyleMarginLeft"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMarginLeft;
+    OGUI["SetStyleMarginLeftPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginLeftPixel;
+    OGUI["SetStyleMarginLeftPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMarginLeftPercentage;
+    OGUI["ResetStyleMarginLeft"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMarginLeft;
+    OGUI["SetStylePaddingTop"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStylePaddingTop;
+    OGUI["SetStylePaddingTopPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingTopPixel;
+    OGUI["SetStylePaddingTopPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingTopPercentage;
+    OGUI["ResetStylePaddingTop"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStylePaddingTop;
+    OGUI["SetStylePaddingRight"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStylePaddingRight;
+    OGUI["SetStylePaddingRightPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingRightPixel;
+    OGUI["SetStylePaddingRightPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingRightPercentage;
+    OGUI["ResetStylePaddingRight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStylePaddingRight;
+    OGUI["SetStylePaddingBottom"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStylePaddingBottom;
+    OGUI["SetStylePaddingBottomPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingBottomPixel;
+    OGUI["SetStylePaddingBottomPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingBottomPercentage;
+    OGUI["ResetStylePaddingBottom"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStylePaddingBottom;
+    OGUI["SetStylePaddingLeft"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStylePaddingLeft;
+    OGUI["SetStylePaddingLeftPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingLeftPixel;
+    OGUI["SetStylePaddingLeftPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStylePaddingLeftPercentage;
+    OGUI["ResetStylePaddingLeft"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStylePaddingLeft;
+    OGUI["SetStyleWidth"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleWidth;
+    OGUI["SetStyleWidthPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleWidthPixel;
+    OGUI["SetStyleWidthPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleWidthPercentage;
+    OGUI["SetStyleWidthAuto"] = (void(*)(OGUI::VisualElement *))&OGUI::SetStyleWidthAuto;
+    OGUI["ResetStyleWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleWidth;
+    OGUI["SetStyleHeight"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleHeight;
+    OGUI["SetStyleHeightPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleHeightPixel;
+    OGUI["SetStyleHeightPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleHeightPercentage;
+    OGUI["SetStyleHeightAuto"] = (void(*)(OGUI::VisualElement *))&OGUI::SetStyleHeightAuto;
+    OGUI["ResetStyleHeight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleHeight;
+    OGUI["SetStylePosition"] = (void(*)(OGUI::VisualElement *, const YGPositionType &))&OGUI::SetStylePosition;
+    OGUI["ResetStylePosition"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStylePosition;
+    OGUI["SetStyleOverflow"] = (void(*)(OGUI::VisualElement *, const OGUI::EFlexOverflow &))&OGUI::SetStyleOverflow;
+    OGUI["ResetStyleOverflow"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleOverflow;
+    OGUI["SetStyleAlignSelf"] = (void(*)(OGUI::VisualElement *, const YGAlign &))&OGUI::SetStyleAlignSelf;
+    OGUI["ResetStyleAlignSelf"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleAlignSelf;
+    OGUI["SetStyleMaxWidth"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMaxWidth;
+    OGUI["SetStyleMaxWidthPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMaxWidthPixel;
+    OGUI["SetStyleMaxWidthPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMaxWidthPercentage;
+    OGUI["ResetStyleMaxWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMaxWidth;
+    OGUI["SetStyleMaxHeight"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMaxHeight;
+    OGUI["SetStyleMaxHeightPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMaxHeightPixel;
+    OGUI["SetStyleMaxHeightPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMaxHeightPercentage;
+    OGUI["ResetStyleMaxHeight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMaxHeight;
+    OGUI["SetStyleMinWidth"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMinWidth;
+    OGUI["SetStyleMinWidthPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMinWidthPixel;
+    OGUI["SetStyleMinWidthPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMinWidthPercentage;
+    OGUI["SetStyleMinWidthAuto"] = (void(*)(OGUI::VisualElement *))&OGUI::SetStyleMinWidthAuto;
+    OGUI["ResetStyleMinWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMinWidth;
+    OGUI["SetStyleMinHeight"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleMinHeight;
+    OGUI["SetStyleMinHeightPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMinHeightPixel;
+    OGUI["SetStyleMinHeightPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleMinHeightPercentage;
+    OGUI["SetStyleMinHeightAuto"] = (void(*)(OGUI::VisualElement *))&OGUI::SetStyleMinHeightAuto;
+    OGUI["ResetStyleMinHeight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleMinHeight;
+    OGUI["SetStyleFlexDirection"] = (void(*)(OGUI::VisualElement *, const YGFlexDirection &))&OGUI::SetStyleFlexDirection;
+    OGUI["ResetStyleFlexDirection"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFlexDirection;
+    OGUI["SetStyleAlignContent"] = (void(*)(OGUI::VisualElement *, const YGAlign &))&OGUI::SetStyleAlignContent;
+    OGUI["ResetStyleAlignContent"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleAlignContent;
+    OGUI["SetStyleAlignItems"] = (void(*)(OGUI::VisualElement *, const YGAlign &))&OGUI::SetStyleAlignItems;
+    OGUI["ResetStyleAlignItems"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleAlignItems;
+    OGUI["SetStyleJustifyContent"] = (void(*)(OGUI::VisualElement *, const YGJustify &))&OGUI::SetStyleJustifyContent;
+    OGUI["ResetStyleJustifyContent"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleJustifyContent;
+    OGUI["SetStyleFlexWrap"] = (void(*)(OGUI::VisualElement *, const YGWrap &))&OGUI::SetStyleFlexWrap;
+    OGUI["ResetStyleFlexWrap"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFlexWrap;
+    OGUI["SetStyleFlexDisplay"] = (void(*)(OGUI::VisualElement *, const YGDisplay &))&OGUI::SetStyleFlexDisplay;
+    OGUI["ResetStyleFlexDisplay"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFlexDisplay;
+    OGUI["SetStyleVerticalAlign"] = (void(*)(OGUI::VisualElement *, const OGUI::EInlineAlign &))&OGUI::SetStyleVerticalAlign;
+    OGUI["ResetStyleVerticalAlign"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleVerticalAlign;
+    OGUI["SetStyleAspectRatio"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleAspectRatio;
+    OGUI["ResetStyleAspectRatio"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleAspectRatio;
+    OGUI["SetStyleZOrderBias"] = (void(*)(OGUI::VisualElement *, const int &))&OGUI::SetStyleZOrderBias;
+    OGUI["ResetStyleZOrderBias"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleZOrderBias;
+    OGUI["SetStyleFontSize"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleFontSize;
+    OGUI["ResetStyleFontSize"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFontSize;
+    OGUI["SetStyleColor"] = (void(*)(OGUI::VisualElement *, const OGUI::Vector<float, 4> &))&OGUI::SetStyleColor;
+    OGUI["ResetStyleColor"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleColor;
+    OGUI["ResetStyleFontFamily"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFontFamily;
+    OGUI["SetStyleFontStyle"] = (void(*)(OGUI::VisualElement *, const OGUI::ETextStyle &))&OGUI::SetStyleFontStyle;
+    OGUI["ResetStyleFontStyle"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFontStyle;
+    OGUI["SetStyleFontWeight"] = (void(*)(OGUI::VisualElement *, const int &))&OGUI::SetStyleFontWeight;
+    OGUI["ResetStyleFontWeight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleFontWeight;
+    OGUI["SetStyleLineHeight"] = (void(*)(OGUI::VisualElement *, const YGValue &))&OGUI::SetStyleLineHeight;
+    OGUI["SetStyleLineHeightPixel"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleLineHeightPixel;
+    OGUI["SetStyleLineHeightPercentage"] = (void(*)(OGUI::VisualElement *, float))&OGUI::SetStyleLineHeightPercentage;
+    OGUI["SetStyleLineHeightAuto"] = (void(*)(OGUI::VisualElement *))&OGUI::SetStyleLineHeightAuto;
+    OGUI["ResetStyleLineHeight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleLineHeight;
+    OGUI["SetStyleTextAlign"] = (void(*)(OGUI::VisualElement *, const OGUI::ETextAlign &))&OGUI::SetStyleTextAlign;
+    OGUI["ResetStyleTextAlign"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextAlign;
+    OGUI["ResetStyleTextShadow"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextShadow;
     OGUI.new_enum<int>("ENavMode", {
         {"None", 0},
         {"Horizontal", 1},
