@@ -237,9 +237,9 @@ void OGUI::StyleSample::MergeId(ComputedStyle& style, ComputedStyle& other, cons
     }
 }
 
-size_t OGUI::StyleSample::GetProperty(ostr::string_view name)
+size_t OGUI::StyleSample::GetProperty(ostr::string_view pname)
 {
-    switchstr(name)
+    switchstr(pname)
     {
         casestr("some-value") return Ids::someValue;
         default: return -1;

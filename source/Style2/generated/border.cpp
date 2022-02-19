@@ -612,9 +612,9 @@ void OGUI::StyleBorder::MergeId(ComputedStyle& style, ComputedStyle& other, cons
     }
 }
 
-size_t OGUI::StyleBorder::GetProperty(ostr::string_view name)
+size_t OGUI::StyleBorder::GetProperty(ostr::string_view pname)
 {
-    switchstr(name)
+    switchstr(pname)
     {
         casestr("border-top-width") return Ids::borderTopWidth;
         casestr("border-right-width") return Ids::borderRightWidth;

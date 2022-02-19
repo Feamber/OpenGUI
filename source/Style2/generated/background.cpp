@@ -337,9 +337,9 @@ void OGUI::StyleBackground::MergeId(ComputedStyle& style, ComputedStyle& other, 
     }
 }
 
-size_t OGUI::StyleBackground::GetProperty(ostr::string_view name)
+size_t OGUI::StyleBackground::GetProperty(ostr::string_view pname)
 {
-    switchstr(name)
+    switchstr(pname)
     {
         casestr("background-color") return Ids::backgroundColor;
         casestr("background-image") return Ids::backgroundImage;

@@ -237,9 +237,9 @@ void OGUI::StyleEffects::MergeId(ComputedStyle& style, ComputedStyle& other, con
     }
 }
 
-size_t OGUI::StyleEffects::GetProperty(ostr::string_view name)
+size_t OGUI::StyleEffects::GetProperty(ostr::string_view pname)
 {
-    switchstr(name)
+    switchstr(pname)
     {
         casestr("opacity") return Ids::opacity;
         default: return -1;

@@ -296,9 +296,9 @@ void OGUI::Style${struct.ident}::MergeId(ComputedStyle& style, ComputedStyle& ot
     }
 }
 
-size_t OGUI::Style${struct.ident}::GetProperty(ostr::string_view name)
+size_t OGUI::Style${struct.ident}::GetProperty(ostr::string_view pname)
 {
-    switchstr(name)
+    switchstr(pname)
     {
 %for prop in struct.longhands:
         casestr("${prop.name}") return Ids::${prop.ident};

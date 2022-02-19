@@ -612,9 +612,9 @@ void OGUI::StyleText::MergeId(ComputedStyle& style, ComputedStyle& other, const 
     }
 }
 
-size_t OGUI::StyleText::GetProperty(ostr::string_view name)
+size_t OGUI::StyleText::GetProperty(ostr::string_view pname)
 {
-    switchstr(name)
+    switchstr(pname)
     {
         casestr("font-size") return Ids::fontSize;
         casestr("color") return Ids::color;

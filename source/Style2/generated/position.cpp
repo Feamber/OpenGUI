@@ -2082,9 +2082,9 @@ void OGUI::StylePosition::MergeId(ComputedStyle& style, ComputedStyle& other, co
     }
 }
 
-size_t OGUI::StylePosition::GetProperty(ostr::string_view name)
+size_t OGUI::StylePosition::GetProperty(ostr::string_view pname)
 {
-    switchstr(name)
+    switchstr(pname)
     {
         casestr("transform") return Ids::transform;
         casestr("flex-grow") return Ids::flexGrow;
