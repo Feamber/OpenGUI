@@ -366,7 +366,7 @@ namespace OGUI
         if(visibility)
             _paragraphDirty = true;
             
-        Context::Get()._layoutDirty = true;
+        Context::Get().MarkLayoutDirty(this);
         YGNodeMarkDirty(_ygnode);
     }
 

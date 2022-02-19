@@ -42,6 +42,7 @@ namespace OGUI reflect
 
 		std::shared_ptr<PrimDrawContext> currentDrawCtx;
 		bool _cssCacheInvalidated = true;
+		bool _layoutDirty = true;
 	protected:
 		WindowHandle window;
 		VisualWindow* ui;
@@ -109,7 +110,6 @@ namespace OGUI reflect
 
 		//Global States
 		float _deltaTime = 0.f;
-		bool _layoutDirty = true;
 	
 		//APIs
 		WindowContext& Create(const WindowHandle window);
@@ -118,6 +118,7 @@ namespace OGUI reflect
 		void PreparePrimitives(const WindowHandle window);
 		void Render(const WindowHandle window);
 		void MarkDirty(VisualElement* element, DirtyReason reason);
+		void MarkLayoutDirty(VisualElement* element);
 		void InvalidateCssCache();
 
 		//Message Handling

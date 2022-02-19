@@ -4787,7 +4787,8 @@ TextServerAdvanced::~TextServerAdvanced() {
 		FT_Done_FreeType(library);
 	}
 #endif
-	u_cleanup();
+	if(icu_data)
+		u_cleanup();
 #ifndef ICU_STATIC_DATA
 	if (icu_data != nullptr) {
 		memfree(icu_data);

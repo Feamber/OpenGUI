@@ -442,7 +442,7 @@ void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
 	child->_selectorDirty = true;
 	UpdateRoot(child);
 	auto& Ctx = Context::Get();
-	Ctx._layoutDirty = true;
+	Ctx.MarkLayoutDirty(this);
 	{
 		PostAttachEvent event;
 		event.prevParent = child->GetHierachyParent();
@@ -640,7 +640,7 @@ void OGUI::VisualElement::MarkLayoutDirty(bool visiblity)
 
 void OGUI::VisualElement::NotifyLayoutDirty(bool visiblity)
 {
-	Context::Get()._layoutDirty = true;
+	Context::Get().MarkLayoutDirty(this);
 	auto p = this;
 	while(p!=nullptr)
 	{
@@ -812,8 +812,13 @@ bool OGUI::VisualElement::Visible() const
 
 void OGUI::VisualElement::SetVisibility(bool visible)
 {
-	_visible = visible;
-	NotifyLayoutDirty(true);
+	if(_visible != visible)
+	{
+		_visible = visible;
+		auto& pos = StylePosition::Get(_style);
+		YGNodeStyleSetDisplay(_ygnode, _visible ? pos.flexDisplay : YGDisplayNone);
+		NotifyLayoutDirty(true);
+	}
 }
 
 bool OGUI::VisualElement::Intersect(Vector2f point)

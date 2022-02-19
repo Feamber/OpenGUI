@@ -108,16 +108,18 @@ namespace OGUI
 		else
 			element->Traverse([&](VisualElement* next) { CheckLayoutRec(next); });
 	}
-	void UpdateLayout(VisualElement* element, float width, float height)
+	void UpdateLayout(WindowContext& wctx, VisualElement* element)
 	{
+		float width = wctx.GetWidth(), height = wctx.GetHeight();
 		auto& ctx = Context::Get();
-		if(!ctx._layoutDirty)
+		
+		if(!wctx._layoutDirty)
 			return;
 		CacheLayoutRec(element);
-		while (ctx._layoutDirty)
+		while (wctx._layoutDirty)
 		{
 			element->CalculateLayout(width, height);
-			ctx._layoutDirty = false;
+			wctx._layoutDirty = false;
 		}
 		CheckLayoutRec(element);
 	}
@@ -174,6 +176,15 @@ void OGUI::Context::Remove(const OGUI::WindowHandle window)
 	}
 }
 
+void OGUI::Context::MarkLayoutDirty(VisualElement* element)
+{
+	if(element->GetRoot()->GetTypeName() == "VisualWindow")
+	{
+		auto& wctx = GetWindowContext(((VisualWindow*)element->GetRoot())->handle);
+		wctx._layoutDirty = true;
+	}
+}
+
 void OGUI::Context::InvalidateCssCache()
 {
 	for(auto& window : windowContexts)
@@ -189,7 +200,7 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	_deltaTime = dt;
 	styleSystem.Update(root, wctx._cssCacheInvalidated);
 	wctx._cssCacheInvalidated = false;
-	UpdateLayout(root, wctx.GetWidth(), wctx.GetHeight());
+	UpdateLayout(wctx, root);
 	UpdateScrollSize(root);
 	TransformRec(root);
 	UpdateVisibility(root);
@@ -861,8 +872,6 @@ bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& lo
 		{
 			if(element->_visible)
 			{
-				_layoutDirty = true;
-				InvalidateCssCache();
 				element->SetVisibility(false);
 			}
 			return false;
@@ -870,10 +879,9 @@ bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& lo
 	}
 	if(!element->_visible)
 	{
-		_layoutDirty = true;
-		InvalidateCssCache();
 		element->SetVisibility(true);
 	}
+	MarkLayoutDirty(element);
 	return true;
 }
 
