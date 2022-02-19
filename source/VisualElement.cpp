@@ -988,6 +988,11 @@ bool OGUI::VisualElement::_OnPointerDown(struct PointerDownEvent& event)
 	return false;
 }
 
+void OGUI::VisualElement::SetFocusable(bool inFocusable)
+{
+	focusable = inFocusable;
+}
+
 OGUI::VisualElement* OGUI::VisualElement::GetPrevFocusScope()
 {
 	VisualElement* current = this;

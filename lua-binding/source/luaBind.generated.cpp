@@ -1,30 +1,18 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Context.h"
-#include "OpenGUI/Event/EventBase.h"
-#include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Event/EventBase.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
     sol::state_view lua(L);
     sol::table OGUI = lua["OGUI"];
-    {
-        sol::usertype<OGUI::Context> type = OGUI.new_usertype<OGUI::Context>("Context");
-        type["IsElementValid"] = (bool(OGUI::Context::*)(OGUI::VisualElement *)const)&OGUI::Context::IsElementValid;
-        type["ActivateWindow"] = (bool(OGUI::Context::*)(OGUI::VisualWindow *))&OGUI::Context::ActivateWindow;
-        type["SetFocus"] = (bool(OGUI::Context::*)(OGUI::VisualElement *, OGUI::EFocusChangeCause, ostr::string))&OGUI::Context::SetFocus;
-        type["SetXmlFilter_Global"] = (void(OGUI::Context::*)(const char *, const char *))&OGUI::Context::SetXmlFilter_Global;
-        type["CleanXmlFilter_Global"] = (void(OGUI::Context::*)(const char *))&OGUI::Context::CleanXmlFilter_Global;
-        type["ResetXmlFilter_Global"] = (void(OGUI::Context::*)())&OGUI::Context::ResetXmlFilter_Global;
-        type["UpdataXmlFilterCache_Global"] = (void(OGUI::Context::*)())&OGUI::Context::UpdataXmlFilterCache_Global;
-        type["HasFilterTag_Global"] = (bool(OGUI::Context::*)(const char *)const)&OGUI::Context::HasFilterTag_Global;
-        type["Get"] = (OGUI::Context &(*)())&OGUI::Context::Get;
-    }
     {
         sol::usertype<OGUI::IEventArg> type = OGUI.new_usertype<OGUI::IEventArg>("IEventArg");
         type["TryGet"] = +[](OGUI::IEventArg* self, ostr::string _0) { return self->TryGet(_0); };
@@ -37,6 +25,8 @@ void BindLua_generated(lua_State* L)
     {
         sol::usertype<OGUI::VisualElement> type = 
             OGUI.new_usertype<OGUI::VisualElement>("VisualElement", sol::base_classes, sol::bases<OGUI::Bindable>());
+        type["GetParent"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetParent;
+        type["GetHierachyParent"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetHierachyParent;
         type["Visible"] = (bool(OGUI::VisualElement::*)()const)&OGUI::VisualElement::Visible;
         type["GetName"] = (const ostr::string &(OGUI::VisualElement::*)())&OGUI::VisualElement::GetName;
         type["SetName"] = (void(OGUI::VisualElement::*)(ostr::string))&OGUI::VisualElement::SetName;
@@ -49,9 +39,11 @@ void BindLua_generated(lua_State* L)
         type["RemoveChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetRoot;
         type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetLayoutRoot;
+        type["GetSize"] = (OGUI::Vector<float, 2>(OGUI::VisualElement::*)()const)&OGUI::VisualElement::GetSize;
         type["AddStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->AddStyleClass(_0); };
         type["RemoveStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->RemoveStyleClass(_0); };
         type["SetPseudoClass"] = (void(OGUI::VisualElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
+        type["SetFocusable"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetFocusable;
         type["GetFocusScopeFocused"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetFocusScopeFocused;
         type["AddScroll"] = (void(OGUI::VisualElement::*)(OGUI::Vector<float, 2>))&OGUI::VisualElement::AddScroll;
         type["SetScroll"] = (void(OGUI::VisualElement::*)(OGUI::Vector<float, 2>))&OGUI::VisualElement::SetScroll;
@@ -59,6 +51,18 @@ void BindLua_generated(lua_State* L)
         type["CleanXmlFilter"] = (void(OGUI::VisualElement::*)(const char *))&OGUI::VisualElement::CleanXmlFilter;
         type["Bind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Bind;
         type["Unbind"] = (void(OGUI::VisualElement::*)(OGUI::Bindable &))&OGUI::Bindable::Unbind;
+    }
+    {
+        sol::usertype<OGUI::Context> type = OGUI.new_usertype<OGUI::Context>("Context");
+        type["IsElementValid"] = (bool(OGUI::Context::*)(OGUI::VisualElement *)const)&OGUI::Context::IsElementValid;
+        type["ActivateWindow"] = (bool(OGUI::Context::*)(OGUI::VisualWindow *))&OGUI::Context::ActivateWindow;
+        type["SetFocus"] = (bool(OGUI::Context::*)(OGUI::VisualElement *, OGUI::EFocusChangeCause, ostr::string))&OGUI::Context::SetFocus;
+        type["SetXmlFilter_Global"] = (void(OGUI::Context::*)(const char *, const char *))&OGUI::Context::SetXmlFilter_Global;
+        type["CleanXmlFilter_Global"] = (void(OGUI::Context::*)(const char *))&OGUI::Context::CleanXmlFilter_Global;
+        type["ResetXmlFilter_Global"] = (void(OGUI::Context::*)())&OGUI::Context::ResetXmlFilter_Global;
+        type["UpdataXmlFilterCache_Global"] = (void(OGUI::Context::*)())&OGUI::Context::UpdataXmlFilterCache_Global;
+        type["HasFilterTag_Global"] = (bool(OGUI::Context::*)(const char *)const)&OGUI::Context::HasFilterTag_Global;
+        type["Get"] = (OGUI::Context &(*)())&OGUI::Context::Get;
     }
     OGUI["QueryFirst"] = +[](OGUI::VisualElement * _0, ostr::string _1) { return OGUI::QueryFirst(_0, _1); };
     OGUI["QueryAll"] = +[](OGUI::VisualElement * _0, ostr::string _1, std::vector<OGUI::VisualElement *> & _2) { return OGUI::QueryAll(_0, _1, _2); };
@@ -306,6 +310,15 @@ void BindLua_generated(lua_State* L)
         {"Rotate", 4},
         {"LongPress", 5}
     });
+    OGUI.new_enum<int>("EventRoutePhase", {
+        {"None", 0},
+        {"TrickleDown", 1},
+        {"Reach", 2},
+        {"Broadcast", 4},
+        {"BubbleUp", 8},
+        {"All", 15},
+        {"NoBroadcast", 11}
+    });
     OGUI.new_enum<int>("PseudoStates", {
         {"None", 0},
         {"Active", 1},
@@ -316,15 +329,6 @@ void BindLua_generated(lua_State* L)
         {"KeyboardFocus", 32},
         {"Scroll", 64},
         {"Root", 128}
-    });
-    OGUI.new_enum<int>("EventRoutePhase", {
-        {"None", 0},
-        {"TrickleDown", 1},
-        {"Reach", 2},
-        {"Broadcast", 4},
-        {"BubbleUp", 8},
-        {"All", 15},
-        {"NoBroadcast", 11}
     });
     OGUI.new_enum<int>("EFocusChangeCause", {
         {"UserActions", 0},
