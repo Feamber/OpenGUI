@@ -204,6 +204,25 @@ def gen_animation():
     write(struct.header_path, header_file)
     write(struct.source_path, source_file)
 
+    
+def gen_transition():
+    struct = make_struct("transition", False)
+
+    def add_longhand(*args, **kwargs):
+        struct.add_longhand(*args, **kwargs)
+    add_longhand("transition-property", "size_t", "{}", "Name")
+    add_longhand("transition-duration", "float", "1.f", "Time")
+    add_longhand("transition-delay", "float", "0.f", "Time")
+    add_longhand("transition-timing-function",
+                 "AnimTimingFunction", "{}", "AnimTimingFunction")
+    struct.headers.append("OpenGUI/Style2/AnimTypes.h")
+    header_template = os.path.join(BASE, "TransitionStruct.h.mako")
+    header_file = render(header_template, struct=struct)
+    source_template = os.path.join(BASE, "TransitionStruct.cpp.mako")
+    source_file = render(source_template, struct=struct)
+    write(struct.header_path, header_file)
+    write(struct.source_path, source_file)
+
 
 def to_syntax(ident):
     return re.sub("([A-Z]+)", lambda m: "-" + m.group(1).lower(), ident).strip("-")
@@ -264,6 +283,7 @@ def main():
     gen_text()
     gen_background()
     gen_animation()
+    gen_transition()
     gen_effects()
     gen_enum_parser()
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGUI/Configure.h"
 #include "OpenGUI/Core/ostring/ostr.h"
+#include "OpenGUI/Core/ostring/osv.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Forward.h"
 #include <gsl/span>
@@ -8,6 +9,7 @@
 #include <unordered_map>
 namespace OGUI
 {
+
     struct ComputedStyle;
 
     struct StyleDesc
@@ -16,9 +18,12 @@ namespace OGUI
 		size_t hash;
 		size_t entry;
 		bool inherited;
-        void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent);
-		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
-		void (*Merge)(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
+        void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent);
+		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override);
+		RestyleDamage (*ApplyTransitionProperties)(ComputedStyle& style, const ComputedStyle& target, const gsl::span<TransitionProperty>& props, const StyleMasks& override);
+		void (*Merge)(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override);
+		void (*MergeId)(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
+		size_t (*GetProperty)(ostr::string_view name);
     };
 
 	struct StyleRegistry
@@ -39,8 +44,11 @@ namespace OGUI
 		desc.inherited = T::inherited;
 		desc.name = T::name;
 		desc.ApplyAnimatedProperties = &T::ApplyAnimatedProperties;
+		desc.ApplyTransitionProperties = &T::ApplyTransitionProperties;
 		desc.ApplyProperties = &T::ApplyProperties;
 		desc.Merge = &T::Merge;
+		desc.MergeId = &T::MergeId;
+		desc.GetProperty = &T::GetProperty;
 		desc.entry = NewStyleStructEntry();
         RegisterStyleStruct(desc);
 		T::SetEntry(desc.entry);
@@ -64,9 +72,12 @@ namespace OGUI
 		ComputedStyle& operator=(const ComputedStyle& other);
 		ComputedStyle& operator=(ComputedStyle&& other) = default;
 		static ComputedStyle Create(const ComputedStyle* parent);
-		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent);
-        RestyleDamage ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
-		void Merge(ComputedStyle& other, const gsl::span<size_t>& override);
+		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent);
+        RestyleDamage ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override);
+		RestyleDamage ApplyTransitionProperties(const ComputedStyle& target, const gsl::span<TransitionProperty>& props, const StyleMasks& override);
+		void Merge(ComputedStyle& other, const StyleMasks& override);
+		void MergeId(ComputedStyle& other, const gsl::span<size_t>& override);
+		static size_t GetProperty(ostr::string_view name);
 	};
 
 }

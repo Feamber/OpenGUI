@@ -141,7 +141,7 @@ namespace OGUI reflect
 
 		//TODO: should we merge these two
 		std::unique_ptr<InlineStyle> _inlineStyle;
-		size_t _procedureOverrides[8] = {0};
+		StyleMasks _procedureOverrides = {0};
 		std::shared_ptr<class AsyncRenderTexture> backgroundImageResource;
 		MaterialHandle backgroundMaterial = nullptr;
 		
@@ -156,6 +156,7 @@ namespace OGUI reflect
 		bool _layoutDirty = false;
 		ComputedStyle _style;
 		ComputedStyle _preAnimatedStyle;
+		ComputedStyle _transitionStyle;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<ostr::string> _styleClasses;
 		std::unordered_map<Name, TextureHandle> textures;
@@ -187,6 +188,7 @@ namespace OGUI reflect
 
 #pragma region Animation
 	public:
+		std::vector<ComputedTransition> _trans;
 		std::vector<ComputedAnim> _anims;
 		std::vector<ComputedAnim> _procedureAnims;
 		bool _prevEvaluating = false;

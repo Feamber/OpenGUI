@@ -117,36 +117,9 @@ void OGUI::StylePosition::Initialize()
     zOrderBias = 0;
 }
 
-void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
+void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
-    OGUI::StylePosition* st = nullptr;
-    auto& s = style.structs[StylePositionEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StylePosition*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StylePosition>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StylePosition>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     auto mask = override[StylePositionEntry];
     
     for(auto& prop : props)
@@ -197,173 +170,173 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 switch(prop.id)
                 {
                 case Ids::transform: {
-                    auto v = fget();
-                    v->transform = {};
+                    auto& v = GetOrAdd(style);
+                    v.transform = {};
                     break;
                     }
                 case Ids::flexGrow: {
-                    auto v = fget();
-                    v->flexGrow = 0.f;
+                    auto& v = GetOrAdd(style);
+                    v.flexGrow = 0.f;
                     break;
                     }
                 case Ids::flexShrink: {
-                    auto v = fget();
-                    v->flexShrink = 1.f;
+                    auto& v = GetOrAdd(style);
+                    v.flexShrink = 1.f;
                     break;
                     }
                 case Ids::flexBasis: {
-                    auto v = fget();
-                    v->flexBasis = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.flexBasis = YGValueAuto;
                     break;
                     }
                 case Ids::top: {
-                    auto v = fget();
-                    v->top = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.top = YGValueAuto;
                     break;
                     }
                 case Ids::right: {
-                    auto v = fget();
-                    v->right = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.right = YGValueAuto;
                     break;
                     }
                 case Ids::bottom: {
-                    auto v = fget();
-                    v->bottom = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.bottom = YGValueAuto;
                     break;
                     }
                 case Ids::left: {
-                    auto v = fget();
-                    v->left = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.left = YGValueAuto;
                     break;
                     }
                 case Ids::marginTop: {
-                    auto v = fget();
-                    v->marginTop = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.marginTop = YGValueZero;
                     break;
                     }
                 case Ids::marginRight: {
-                    auto v = fget();
-                    v->marginRight = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.marginRight = YGValueZero;
                     break;
                     }
                 case Ids::marginBottom: {
-                    auto v = fget();
-                    v->marginBottom = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.marginBottom = YGValueZero;
                     break;
                     }
                 case Ids::marginLeft: {
-                    auto v = fget();
-                    v->marginLeft = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.marginLeft = YGValueZero;
                     break;
                     }
                 case Ids::paddingTop: {
-                    auto v = fget();
-                    v->paddingTop = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.paddingTop = YGValueZero;
                     break;
                     }
                 case Ids::paddingRight: {
-                    auto v = fget();
-                    v->paddingRight = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.paddingRight = YGValueZero;
                     break;
                     }
                 case Ids::paddingBottom: {
-                    auto v = fget();
-                    v->paddingBottom = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.paddingBottom = YGValueZero;
                     break;
                     }
                 case Ids::paddingLeft: {
-                    auto v = fget();
-                    v->paddingLeft = YGValueZero;
+                    auto& v = GetOrAdd(style);
+                    v.paddingLeft = YGValueZero;
                     break;
                     }
                 case Ids::width: {
-                    auto v = fget();
-                    v->width = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.width = YGValueAuto;
                     break;
                     }
                 case Ids::height: {
-                    auto v = fget();
-                    v->height = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.height = YGValueAuto;
                     break;
                     }
                 case Ids::position: {
-                    auto v = fget();
-                    v->position = YGPositionTypeRelative;
+                    auto& v = GetOrAdd(style);
+                    v.position = YGPositionTypeRelative;
                     break;
                     }
                 case Ids::overflow: {
-                    auto v = fget();
-                    v->overflow = EFlexOverflow::Visible;
+                    auto& v = GetOrAdd(style);
+                    v.overflow = EFlexOverflow::Visible;
                     break;
                     }
                 case Ids::alignSelf: {
-                    auto v = fget();
-                    v->alignSelf = YGAlignAuto;
+                    auto& v = GetOrAdd(style);
+                    v.alignSelf = YGAlignAuto;
                     break;
                     }
                 case Ids::maxWidth: {
-                    auto v = fget();
-                    v->maxWidth = YGValueUndefined;
+                    auto& v = GetOrAdd(style);
+                    v.maxWidth = YGValueUndefined;
                     break;
                     }
                 case Ids::maxHeight: {
-                    auto v = fget();
-                    v->maxHeight = YGValueUndefined;
+                    auto& v = GetOrAdd(style);
+                    v.maxHeight = YGValueUndefined;
                     break;
                     }
                 case Ids::minWidth: {
-                    auto v = fget();
-                    v->minWidth = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.minWidth = YGValueAuto;
                     break;
                     }
                 case Ids::minHeight: {
-                    auto v = fget();
-                    v->minHeight = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.minHeight = YGValueAuto;
                     break;
                     }
                 case Ids::flexDirection: {
-                    auto v = fget();
-                    v->flexDirection = YGFlexDirectionRow;
+                    auto& v = GetOrAdd(style);
+                    v.flexDirection = YGFlexDirectionRow;
                     break;
                     }
                 case Ids::alignContent: {
-                    auto v = fget();
-                    v->alignContent = YGAlignFlexStart;
+                    auto& v = GetOrAdd(style);
+                    v.alignContent = YGAlignFlexStart;
                     break;
                     }
                 case Ids::alignItems: {
-                    auto v = fget();
-                    v->alignItems = YGAlignStretch;
+                    auto& v = GetOrAdd(style);
+                    v.alignItems = YGAlignStretch;
                     break;
                     }
                 case Ids::justifyContent: {
-                    auto v = fget();
-                    v->justifyContent = YGJustifyFlexStart;
+                    auto& v = GetOrAdd(style);
+                    v.justifyContent = YGJustifyFlexStart;
                     break;
                     }
                 case Ids::flexWrap: {
-                    auto v = fget();
-                    v->flexWrap = YGWrapNoWrap;
+                    auto& v = GetOrAdd(style);
+                    v.flexWrap = YGWrapNoWrap;
                     break;
                     }
                 case Ids::flexDisplay: {
-                    auto v = fget();
-                    v->flexDisplay = YGDisplayFlex;
+                    auto& v = GetOrAdd(style);
+                    v.flexDisplay = YGDisplayFlex;
                     break;
                     }
                 case Ids::verticalAlign: {
-                    auto v = fget();
-                    v->verticalAlign = EInlineAlign::Middle;
+                    auto& v = GetOrAdd(style);
+                    v.verticalAlign = EInlineAlign::Middle;
                     break;
                     }
                 case Ids::aspectRatio: {
-                    auto v = fget();
-                    v->aspectRatio = YGUndefined;
+                    auto& v = GetOrAdd(style);
+                    v.aspectRatio = YGUndefined;
                     break;
                     }
                 case Ids::zOrderBias: {
-                    auto v = fget();
-                    v->zOrderBias = 0;
+                    auto& v = GetOrAdd(style);
+                    v.zOrderBias = 0;
                     break;
                     }
                 default: break;
@@ -374,173 +347,173 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
                 switch(prop.id)
                 {
                 case Ids::transform:{
-                    auto v = fget();
-                    v->transform = pst->transform;
+                    auto& v = GetOrAdd(style);
+                    v.transform = pst->transform;
                     break;
                     }
                 case Ids::flexGrow:{
-                    auto v = fget();
-                    v->flexGrow = pst->flexGrow;
+                    auto& v = GetOrAdd(style);
+                    v.flexGrow = pst->flexGrow;
                     break;
                     }
                 case Ids::flexShrink:{
-                    auto v = fget();
-                    v->flexShrink = pst->flexShrink;
+                    auto& v = GetOrAdd(style);
+                    v.flexShrink = pst->flexShrink;
                     break;
                     }
                 case Ids::flexBasis:{
-                    auto v = fget();
-                    v->flexBasis = pst->flexBasis;
+                    auto& v = GetOrAdd(style);
+                    v.flexBasis = pst->flexBasis;
                     break;
                     }
                 case Ids::top:{
-                    auto v = fget();
-                    v->top = pst->top;
+                    auto& v = GetOrAdd(style);
+                    v.top = pst->top;
                     break;
                     }
                 case Ids::right:{
-                    auto v = fget();
-                    v->right = pst->right;
+                    auto& v = GetOrAdd(style);
+                    v.right = pst->right;
                     break;
                     }
                 case Ids::bottom:{
-                    auto v = fget();
-                    v->bottom = pst->bottom;
+                    auto& v = GetOrAdd(style);
+                    v.bottom = pst->bottom;
                     break;
                     }
                 case Ids::left:{
-                    auto v = fget();
-                    v->left = pst->left;
+                    auto& v = GetOrAdd(style);
+                    v.left = pst->left;
                     break;
                     }
                 case Ids::marginTop:{
-                    auto v = fget();
-                    v->marginTop = pst->marginTop;
+                    auto& v = GetOrAdd(style);
+                    v.marginTop = pst->marginTop;
                     break;
                     }
                 case Ids::marginRight:{
-                    auto v = fget();
-                    v->marginRight = pst->marginRight;
+                    auto& v = GetOrAdd(style);
+                    v.marginRight = pst->marginRight;
                     break;
                     }
                 case Ids::marginBottom:{
-                    auto v = fget();
-                    v->marginBottom = pst->marginBottom;
+                    auto& v = GetOrAdd(style);
+                    v.marginBottom = pst->marginBottom;
                     break;
                     }
                 case Ids::marginLeft:{
-                    auto v = fget();
-                    v->marginLeft = pst->marginLeft;
+                    auto& v = GetOrAdd(style);
+                    v.marginLeft = pst->marginLeft;
                     break;
                     }
                 case Ids::paddingTop:{
-                    auto v = fget();
-                    v->paddingTop = pst->paddingTop;
+                    auto& v = GetOrAdd(style);
+                    v.paddingTop = pst->paddingTop;
                     break;
                     }
                 case Ids::paddingRight:{
-                    auto v = fget();
-                    v->paddingRight = pst->paddingRight;
+                    auto& v = GetOrAdd(style);
+                    v.paddingRight = pst->paddingRight;
                     break;
                     }
                 case Ids::paddingBottom:{
-                    auto v = fget();
-                    v->paddingBottom = pst->paddingBottom;
+                    auto& v = GetOrAdd(style);
+                    v.paddingBottom = pst->paddingBottom;
                     break;
                     }
                 case Ids::paddingLeft:{
-                    auto v = fget();
-                    v->paddingLeft = pst->paddingLeft;
+                    auto& v = GetOrAdd(style);
+                    v.paddingLeft = pst->paddingLeft;
                     break;
                     }
                 case Ids::width:{
-                    auto v = fget();
-                    v->width = pst->width;
+                    auto& v = GetOrAdd(style);
+                    v.width = pst->width;
                     break;
                     }
                 case Ids::height:{
-                    auto v = fget();
-                    v->height = pst->height;
+                    auto& v = GetOrAdd(style);
+                    v.height = pst->height;
                     break;
                     }
                 case Ids::position:{
-                    auto v = fget();
-                    v->position = pst->position;
+                    auto& v = GetOrAdd(style);
+                    v.position = pst->position;
                     break;
                     }
                 case Ids::overflow:{
-                    auto v = fget();
-                    v->overflow = pst->overflow;
+                    auto& v = GetOrAdd(style);
+                    v.overflow = pst->overflow;
                     break;
                     }
                 case Ids::alignSelf:{
-                    auto v = fget();
-                    v->alignSelf = pst->alignSelf;
+                    auto& v = GetOrAdd(style);
+                    v.alignSelf = pst->alignSelf;
                     break;
                     }
                 case Ids::maxWidth:{
-                    auto v = fget();
-                    v->maxWidth = pst->maxWidth;
+                    auto& v = GetOrAdd(style);
+                    v.maxWidth = pst->maxWidth;
                     break;
                     }
                 case Ids::maxHeight:{
-                    auto v = fget();
-                    v->maxHeight = pst->maxHeight;
+                    auto& v = GetOrAdd(style);
+                    v.maxHeight = pst->maxHeight;
                     break;
                     }
                 case Ids::minWidth:{
-                    auto v = fget();
-                    v->minWidth = pst->minWidth;
+                    auto& v = GetOrAdd(style);
+                    v.minWidth = pst->minWidth;
                     break;
                     }
                 case Ids::minHeight:{
-                    auto v = fget();
-                    v->minHeight = pst->minHeight;
+                    auto& v = GetOrAdd(style);
+                    v.minHeight = pst->minHeight;
                     break;
                     }
                 case Ids::flexDirection:{
-                    auto v = fget();
-                    v->flexDirection = pst->flexDirection;
+                    auto& v = GetOrAdd(style);
+                    v.flexDirection = pst->flexDirection;
                     break;
                     }
                 case Ids::alignContent:{
-                    auto v = fget();
-                    v->alignContent = pst->alignContent;
+                    auto& v = GetOrAdd(style);
+                    v.alignContent = pst->alignContent;
                     break;
                     }
                 case Ids::alignItems:{
-                    auto v = fget();
-                    v->alignItems = pst->alignItems;
+                    auto& v = GetOrAdd(style);
+                    v.alignItems = pst->alignItems;
                     break;
                     }
                 case Ids::justifyContent:{
-                    auto v = fget();
-                    v->justifyContent = pst->justifyContent;
+                    auto& v = GetOrAdd(style);
+                    v.justifyContent = pst->justifyContent;
                     break;
                     }
                 case Ids::flexWrap:{
-                    auto v = fget();
-                    v->flexWrap = pst->flexWrap;
+                    auto& v = GetOrAdd(style);
+                    v.flexWrap = pst->flexWrap;
                     break;
                     }
                 case Ids::flexDisplay:{
-                    auto v = fget();
-                    v->flexDisplay = pst->flexDisplay;
+                    auto& v = GetOrAdd(style);
+                    v.flexDisplay = pst->flexDisplay;
                     break;
                     }
                 case Ids::verticalAlign:{
-                    auto v = fget();
-                    v->verticalAlign = pst->verticalAlign;
+                    auto& v = GetOrAdd(style);
+                    v.verticalAlign = pst->verticalAlign;
                     break;
                     }
                 case Ids::aspectRatio:{
-                    auto v = fget();
-                    v->aspectRatio = pst->aspectRatio;
+                    auto& v = GetOrAdd(style);
+                    v.aspectRatio = pst->aspectRatio;
                     break;
                     }
                 case Ids::zOrderBias:{
-                    auto v = fget();
-                    v->zOrderBias = pst->zOrderBias;
+                    auto& v = GetOrAdd(style);
+                    v.zOrderBias = pst->zOrderBias;
                     break;
                     }
                 default: break;
@@ -552,173 +525,173 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             switch(prop.id)
             {
                 case Ids::transform:{
-                    auto v = fget();
-                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.value));
+                    auto& v = GetOrAdd(style);
+                    v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.value));
                     break;
                     }
                 case Ids::flexGrow:{
-                    auto v = fget();
-                    v->flexGrow = sheet.Get<float>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.flexGrow = sheet.Get<float>(prop.value);
                     break;
                     }
                 case Ids::flexShrink:{
-                    auto v = fget();
-                    v->flexShrink = sheet.Get<float>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.flexShrink = sheet.Get<float>(prop.value);
                     break;
                     }
                 case Ids::flexBasis:{
-                    auto v = fget();
-                    v->flexBasis = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.flexBasis = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::top:{
-                    auto v = fget();
-                    v->top = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.top = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::right:{
-                    auto v = fget();
-                    v->right = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.right = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::bottom:{
-                    auto v = fget();
-                    v->bottom = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.bottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::left:{
-                    auto v = fget();
-                    v->left = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.left = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::marginTop:{
-                    auto v = fget();
-                    v->marginTop = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.marginTop = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::marginRight:{
-                    auto v = fget();
-                    v->marginRight = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.marginRight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::marginBottom:{
-                    auto v = fget();
-                    v->marginBottom = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.marginBottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::marginLeft:{
-                    auto v = fget();
-                    v->marginLeft = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.marginLeft = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::paddingTop:{
-                    auto v = fget();
-                    v->paddingTop = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.paddingTop = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::paddingRight:{
-                    auto v = fget();
-                    v->paddingRight = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.paddingRight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::paddingBottom:{
-                    auto v = fget();
-                    v->paddingBottom = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.paddingBottom = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::paddingLeft:{
-                    auto v = fget();
-                    v->paddingLeft = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.paddingLeft = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::width:{
-                    auto v = fget();
-                    v->width = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.width = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::height:{
-                    auto v = fget();
-                    v->height = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.height = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::position:{
-                    auto v = fget();
-                    v->position = sheet.Get<YGPositionType>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.position = sheet.Get<YGPositionType>(prop.value);
                     break;
                     }
                 case Ids::overflow:{
-                    auto v = fget();
-                    v->overflow = sheet.Get<EFlexOverflow>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.overflow = sheet.Get<EFlexOverflow>(prop.value);
                     break;
                     }
                 case Ids::alignSelf:{
-                    auto v = fget();
-                    v->alignSelf = sheet.Get<YGAlign>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.alignSelf = sheet.Get<YGAlign>(prop.value);
                     break;
                     }
                 case Ids::maxWidth:{
-                    auto v = fget();
-                    v->maxWidth = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.maxWidth = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::maxHeight:{
-                    auto v = fget();
-                    v->maxHeight = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.maxHeight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::minWidth:{
-                    auto v = fget();
-                    v->minWidth = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.minWidth = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::minHeight:{
-                    auto v = fget();
-                    v->minHeight = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.minHeight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::flexDirection:{
-                    auto v = fget();
-                    v->flexDirection = sheet.Get<YGFlexDirection>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.flexDirection = sheet.Get<YGFlexDirection>(prop.value);
                     break;
                     }
                 case Ids::alignContent:{
-                    auto v = fget();
-                    v->alignContent = sheet.Get<YGAlign>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.alignContent = sheet.Get<YGAlign>(prop.value);
                     break;
                     }
                 case Ids::alignItems:{
-                    auto v = fget();
-                    v->alignItems = sheet.Get<YGAlign>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.alignItems = sheet.Get<YGAlign>(prop.value);
                     break;
                     }
                 case Ids::justifyContent:{
-                    auto v = fget();
-                    v->justifyContent = sheet.Get<YGJustify>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.justifyContent = sheet.Get<YGJustify>(prop.value);
                     break;
                     }
                 case Ids::flexWrap:{
-                    auto v = fget();
-                    v->flexWrap = sheet.Get<YGWrap>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.flexWrap = sheet.Get<YGWrap>(prop.value);
                     break;
                     }
                 case Ids::flexDisplay:{
-                    auto v = fget();
-                    v->flexDisplay = sheet.Get<YGDisplay>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.flexDisplay = sheet.Get<YGDisplay>(prop.value);
                     break;
                     }
                 case Ids::verticalAlign:{
-                    auto v = fget();
-                    v->verticalAlign = sheet.Get<EInlineAlign>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.verticalAlign = sheet.Get<EInlineAlign>(prop.value);
                     break;
                     }
                 case Ids::aspectRatio:{
-                    auto v = fget();
-                    v->aspectRatio = sheet.Get<float>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.aspectRatio = sheet.Get<float>(prop.value);
                     break;
                     }
                 case Ids::zOrderBias:{
-                    auto v = fget();
-                    v->zOrderBias = sheet.Get<int>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.zOrderBias = sheet.Get<int>(prop.value);
                     break;
                     }
                 default: break;
@@ -728,36 +701,9 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
 }
 
 
-OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override)
 {
-    OGUI::StylePosition* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto& s = style.structs[StylePositionEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StylePosition*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StylePosition>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StylePosition>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     
     auto mask = override[StylePositionEntry];
     
@@ -803,609 +749,609 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
         switch(prop.id)
         {
             case Ids::transform:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.from));
+                    v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.to));
+                    v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->transform = OGUI::Lerp(v->transform, sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
+                    v.transform = OGUI::Lerp(v.transform, sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 else
-                    v->transform = OGUI::Lerp(sheet.Get<const gsl::span<TransformFunction>>(prop.from), sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
+                    v.transform = OGUI::Lerp(sheet.Get<const gsl::span<TransformFunction>>(prop.from), sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 
                     damage |= RestyleDamage::Transform;
                 break;
                 }
             case Ids::flexGrow:{
-                auto v = fget();
-                auto prevValue = v->flexGrow;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexGrow;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->flexGrow = sheet.Get<float>(prop.from);
+                    v.flexGrow = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->flexGrow = sheet.Get<float>(prop.to);
+                    v.flexGrow = sheet.Get<float>(prop.to);
                 else if(prop.from == prop.to)
-                    v->flexGrow = OGUI::Lerp(v->flexGrow, sheet.Get<float>(prop.to), prop.alpha);
+                    v.flexGrow = OGUI::Lerp(v.flexGrow, sheet.Get<float>(prop.to), prop.alpha);
                 else
-                    v->flexGrow = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.flexGrow = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
-                if(prevValue != v->flexGrow)
+                if(prevValue != v.flexGrow)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexShrink:{
-                auto v = fget();
-                auto prevValue = v->flexShrink;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexShrink;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->flexShrink = sheet.Get<float>(prop.from);
+                    v.flexShrink = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->flexShrink = sheet.Get<float>(prop.to);
+                    v.flexShrink = sheet.Get<float>(prop.to);
                 else if(prop.from == prop.to)
-                    v->flexShrink = OGUI::Lerp(v->flexShrink, sheet.Get<float>(prop.to), prop.alpha);
+                    v.flexShrink = OGUI::Lerp(v.flexShrink, sheet.Get<float>(prop.to), prop.alpha);
                 else
-                    v->flexShrink = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.flexShrink = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
-                if(prevValue != v->flexShrink)
+                if(prevValue != v.flexShrink)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexBasis:{
-                auto v = fget();
-                auto prevValue = v->flexBasis;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexBasis;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->flexBasis = sheet.Get<YGValue>(prop.from);
+                    v.flexBasis = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->flexBasis = sheet.Get<YGValue>(prop.to);
+                    v.flexBasis = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->flexBasis = OGUI::Lerp(v->flexBasis, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.flexBasis = OGUI::Lerp(v.flexBasis, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->flexBasis = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.flexBasis = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->flexBasis)
+                if(prevValue != v.flexBasis)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::top:{
-                auto v = fget();
-                auto prevValue = v->top;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.top;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->top = sheet.Get<YGValue>(prop.from);
+                    v.top = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->top = sheet.Get<YGValue>(prop.to);
+                    v.top = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->top = OGUI::Lerp(v->top, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.top = OGUI::Lerp(v.top, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->top = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.top = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->top)
+                if(prevValue != v.top)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::right:{
-                auto v = fget();
-                auto prevValue = v->right;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.right;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->right = sheet.Get<YGValue>(prop.from);
+                    v.right = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->right = sheet.Get<YGValue>(prop.to);
+                    v.right = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->right = OGUI::Lerp(v->right, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.right = OGUI::Lerp(v.right, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->right = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.right = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->right)
+                if(prevValue != v.right)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::bottom:{
-                auto v = fget();
-                auto prevValue = v->bottom;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.bottom;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->bottom = sheet.Get<YGValue>(prop.from);
+                    v.bottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->bottom = sheet.Get<YGValue>(prop.to);
+                    v.bottom = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->bottom = OGUI::Lerp(v->bottom, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.bottom = OGUI::Lerp(v.bottom, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->bottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.bottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->bottom)
+                if(prevValue != v.bottom)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::left:{
-                auto v = fget();
-                auto prevValue = v->left;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.left;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->left = sheet.Get<YGValue>(prop.from);
+                    v.left = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->left = sheet.Get<YGValue>(prop.to);
+                    v.left = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->left = OGUI::Lerp(v->left, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.left = OGUI::Lerp(v.left, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->left)
+                if(prevValue != v.left)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginTop:{
-                auto v = fget();
-                auto prevValue = v->marginTop;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginTop;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->marginTop = sheet.Get<YGValue>(prop.from);
+                    v.marginTop = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->marginTop = sheet.Get<YGValue>(prop.to);
+                    v.marginTop = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->marginTop = OGUI::Lerp(v->marginTop, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginTop = OGUI::Lerp(v.marginTop, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->marginTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->marginTop)
+                if(prevValue != v.marginTop)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginRight:{
-                auto v = fget();
-                auto prevValue = v->marginRight;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginRight;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->marginRight = sheet.Get<YGValue>(prop.from);
+                    v.marginRight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->marginRight = sheet.Get<YGValue>(prop.to);
+                    v.marginRight = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->marginRight = OGUI::Lerp(v->marginRight, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginRight = OGUI::Lerp(v.marginRight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->marginRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->marginRight)
+                if(prevValue != v.marginRight)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginBottom:{
-                auto v = fget();
-                auto prevValue = v->marginBottom;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginBottom;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->marginBottom = sheet.Get<YGValue>(prop.from);
+                    v.marginBottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->marginBottom = sheet.Get<YGValue>(prop.to);
+                    v.marginBottom = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->marginBottom = OGUI::Lerp(v->marginBottom, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginBottom = OGUI::Lerp(v.marginBottom, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->marginBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->marginBottom)
+                if(prevValue != v.marginBottom)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::marginLeft:{
-                auto v = fget();
-                auto prevValue = v->marginLeft;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginLeft;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->marginLeft = sheet.Get<YGValue>(prop.from);
+                    v.marginLeft = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->marginLeft = sheet.Get<YGValue>(prop.to);
+                    v.marginLeft = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->marginLeft = OGUI::Lerp(v->marginLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginLeft = OGUI::Lerp(v.marginLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->marginLeft)
+                if(prevValue != v.marginLeft)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingTop:{
-                auto v = fget();
-                auto prevValue = v->paddingTop;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingTop;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->paddingTop = sheet.Get<YGValue>(prop.from);
+                    v.paddingTop = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->paddingTop = sheet.Get<YGValue>(prop.to);
+                    v.paddingTop = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->paddingTop = OGUI::Lerp(v->paddingTop, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingTop = OGUI::Lerp(v.paddingTop, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->paddingTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->paddingTop)
+                if(prevValue != v.paddingTop)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingRight:{
-                auto v = fget();
-                auto prevValue = v->paddingRight;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingRight;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->paddingRight = sheet.Get<YGValue>(prop.from);
+                    v.paddingRight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->paddingRight = sheet.Get<YGValue>(prop.to);
+                    v.paddingRight = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->paddingRight = OGUI::Lerp(v->paddingRight, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingRight = OGUI::Lerp(v.paddingRight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->paddingRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->paddingRight)
+                if(prevValue != v.paddingRight)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingBottom:{
-                auto v = fget();
-                auto prevValue = v->paddingBottom;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingBottom;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->paddingBottom = sheet.Get<YGValue>(prop.from);
+                    v.paddingBottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->paddingBottom = sheet.Get<YGValue>(prop.to);
+                    v.paddingBottom = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->paddingBottom = OGUI::Lerp(v->paddingBottom, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingBottom = OGUI::Lerp(v.paddingBottom, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->paddingBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->paddingBottom)
+                if(prevValue != v.paddingBottom)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::paddingLeft:{
-                auto v = fget();
-                auto prevValue = v->paddingLeft;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingLeft;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->paddingLeft = sheet.Get<YGValue>(prop.from);
+                    v.paddingLeft = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->paddingLeft = sheet.Get<YGValue>(prop.to);
+                    v.paddingLeft = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->paddingLeft = OGUI::Lerp(v->paddingLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingLeft = OGUI::Lerp(v.paddingLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->paddingLeft)
+                if(prevValue != v.paddingLeft)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::width:{
-                auto v = fget();
-                auto prevValue = v->width;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.width;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->width = sheet.Get<YGValue>(prop.from);
+                    v.width = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->width = sheet.Get<YGValue>(prop.to);
+                    v.width = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->width = OGUI::Lerp(v->width, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.width = OGUI::Lerp(v.width, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->width = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.width = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->width)
+                if(prevValue != v.width)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::height:{
-                auto v = fget();
-                auto prevValue = v->height;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.height;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->height = sheet.Get<YGValue>(prop.from);
+                    v.height = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->height = sheet.Get<YGValue>(prop.to);
+                    v.height = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->height = OGUI::Lerp(v->height, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.height = OGUI::Lerp(v.height, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->height = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.height = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->height)
+                if(prevValue != v.height)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::position:{
-                auto v = fget();
-                auto prevValue = v->position;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.position;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->position = sheet.Get<YGPositionType>(prop.from);
+                    v.position = sheet.Get<YGPositionType>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->position = sheet.Get<YGPositionType>(prop.to);
+                    v.position = sheet.Get<YGPositionType>(prop.to);
                 else if(prop.from == prop.to)
-                    v->position = OGUI::Lerp(v->position, sheet.Get<YGPositionType>(prop.to), prop.alpha);
+                    v.position = OGUI::Lerp(v.position, sheet.Get<YGPositionType>(prop.to), prop.alpha);
                 else
-                    v->position = OGUI::Lerp(sheet.Get<YGPositionType>(prop.from), sheet.Get<YGPositionType>(prop.to), prop.alpha);
+                    v.position = OGUI::Lerp(sheet.Get<YGPositionType>(prop.from), sheet.Get<YGPositionType>(prop.to), prop.alpha);
                 
-                if(prevValue != v->position)
+                if(prevValue != v.position)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::overflow:{
-                auto v = fget();
-                auto prevValue = v->overflow;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.overflow;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->overflow = sheet.Get<EFlexOverflow>(prop.from);
+                    v.overflow = sheet.Get<EFlexOverflow>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->overflow = sheet.Get<EFlexOverflow>(prop.to);
+                    v.overflow = sheet.Get<EFlexOverflow>(prop.to);
                 else if(prop.from == prop.to)
-                    v->overflow = OGUI::Lerp(v->overflow, sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
+                    v.overflow = OGUI::Lerp(v.overflow, sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
                 else
-                    v->overflow = OGUI::Lerp(sheet.Get<EFlexOverflow>(prop.from), sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
+                    v.overflow = OGUI::Lerp(sheet.Get<EFlexOverflow>(prop.from), sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
                 
-                if(prevValue != v->overflow)
+                if(prevValue != v.overflow)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::alignSelf:{
-                auto v = fget();
-                auto prevValue = v->alignSelf;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.alignSelf;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->alignSelf = sheet.Get<YGAlign>(prop.from);
+                    v.alignSelf = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->alignSelf = sheet.Get<YGAlign>(prop.to);
+                    v.alignSelf = sheet.Get<YGAlign>(prop.to);
                 else if(prop.from == prop.to)
-                    v->alignSelf = OGUI::Lerp(v->alignSelf, sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignSelf = OGUI::Lerp(v.alignSelf, sheet.Get<YGAlign>(prop.to), prop.alpha);
                 else
-                    v->alignSelf = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignSelf = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
-                if(prevValue != v->alignSelf)
+                if(prevValue != v.alignSelf)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::maxWidth:{
-                auto v = fget();
-                auto prevValue = v->maxWidth;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.maxWidth;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->maxWidth = sheet.Get<YGValue>(prop.from);
+                    v.maxWidth = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->maxWidth = sheet.Get<YGValue>(prop.to);
+                    v.maxWidth = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->maxWidth = OGUI::Lerp(v->maxWidth, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.maxWidth = OGUI::Lerp(v.maxWidth, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->maxWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.maxWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->maxWidth)
+                if(prevValue != v.maxWidth)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::maxHeight:{
-                auto v = fget();
-                auto prevValue = v->maxHeight;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.maxHeight;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->maxHeight = sheet.Get<YGValue>(prop.from);
+                    v.maxHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->maxHeight = sheet.Get<YGValue>(prop.to);
+                    v.maxHeight = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->maxHeight = OGUI::Lerp(v->maxHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.maxHeight = OGUI::Lerp(v.maxHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->maxHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.maxHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->maxHeight)
+                if(prevValue != v.maxHeight)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::minWidth:{
-                auto v = fget();
-                auto prevValue = v->minWidth;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.minWidth;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->minWidth = sheet.Get<YGValue>(prop.from);
+                    v.minWidth = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->minWidth = sheet.Get<YGValue>(prop.to);
+                    v.minWidth = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->minWidth = OGUI::Lerp(v->minWidth, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.minWidth = OGUI::Lerp(v.minWidth, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->minWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.minWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->minWidth)
+                if(prevValue != v.minWidth)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::minHeight:{
-                auto v = fget();
-                auto prevValue = v->minHeight;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.minHeight;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->minHeight = sheet.Get<YGValue>(prop.from);
+                    v.minHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->minHeight = sheet.Get<YGValue>(prop.to);
+                    v.minHeight = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->minHeight = OGUI::Lerp(v->minHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.minHeight = OGUI::Lerp(v.minHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->minHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.minHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->minHeight)
+                if(prevValue != v.minHeight)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexDirection:{
-                auto v = fget();
-                auto prevValue = v->flexDirection;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexDirection;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->flexDirection = sheet.Get<YGFlexDirection>(prop.from);
+                    v.flexDirection = sheet.Get<YGFlexDirection>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->flexDirection = sheet.Get<YGFlexDirection>(prop.to);
+                    v.flexDirection = sheet.Get<YGFlexDirection>(prop.to);
                 else if(prop.from == prop.to)
-                    v->flexDirection = OGUI::Lerp(v->flexDirection, sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
+                    v.flexDirection = OGUI::Lerp(v.flexDirection, sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
                 else
-                    v->flexDirection = OGUI::Lerp(sheet.Get<YGFlexDirection>(prop.from), sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
+                    v.flexDirection = OGUI::Lerp(sheet.Get<YGFlexDirection>(prop.from), sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
                 
-                if(prevValue != v->flexDirection)
+                if(prevValue != v.flexDirection)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::alignContent:{
-                auto v = fget();
-                auto prevValue = v->alignContent;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.alignContent;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->alignContent = sheet.Get<YGAlign>(prop.from);
+                    v.alignContent = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->alignContent = sheet.Get<YGAlign>(prop.to);
+                    v.alignContent = sheet.Get<YGAlign>(prop.to);
                 else if(prop.from == prop.to)
-                    v->alignContent = OGUI::Lerp(v->alignContent, sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignContent = OGUI::Lerp(v.alignContent, sheet.Get<YGAlign>(prop.to), prop.alpha);
                 else
-                    v->alignContent = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignContent = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
-                if(prevValue != v->alignContent)
+                if(prevValue != v.alignContent)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::alignItems:{
-                auto v = fget();
-                auto prevValue = v->alignItems;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.alignItems;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->alignItems = sheet.Get<YGAlign>(prop.from);
+                    v.alignItems = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->alignItems = sheet.Get<YGAlign>(prop.to);
+                    v.alignItems = sheet.Get<YGAlign>(prop.to);
                 else if(prop.from == prop.to)
-                    v->alignItems = OGUI::Lerp(v->alignItems, sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignItems = OGUI::Lerp(v.alignItems, sheet.Get<YGAlign>(prop.to), prop.alpha);
                 else
-                    v->alignItems = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignItems = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
-                if(prevValue != v->alignItems)
+                if(prevValue != v.alignItems)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::justifyContent:{
-                auto v = fget();
-                auto prevValue = v->justifyContent;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.justifyContent;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->justifyContent = sheet.Get<YGJustify>(prop.from);
+                    v.justifyContent = sheet.Get<YGJustify>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->justifyContent = sheet.Get<YGJustify>(prop.to);
+                    v.justifyContent = sheet.Get<YGJustify>(prop.to);
                 else if(prop.from == prop.to)
-                    v->justifyContent = OGUI::Lerp(v->justifyContent, sheet.Get<YGJustify>(prop.to), prop.alpha);
+                    v.justifyContent = OGUI::Lerp(v.justifyContent, sheet.Get<YGJustify>(prop.to), prop.alpha);
                 else
-                    v->justifyContent = OGUI::Lerp(sheet.Get<YGJustify>(prop.from), sheet.Get<YGJustify>(prop.to), prop.alpha);
+                    v.justifyContent = OGUI::Lerp(sheet.Get<YGJustify>(prop.from), sheet.Get<YGJustify>(prop.to), prop.alpha);
                 
-                if(prevValue != v->justifyContent)
+                if(prevValue != v.justifyContent)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexWrap:{
-                auto v = fget();
-                auto prevValue = v->flexWrap;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexWrap;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->flexWrap = sheet.Get<YGWrap>(prop.from);
+                    v.flexWrap = sheet.Get<YGWrap>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->flexWrap = sheet.Get<YGWrap>(prop.to);
+                    v.flexWrap = sheet.Get<YGWrap>(prop.to);
                 else if(prop.from == prop.to)
-                    v->flexWrap = OGUI::Lerp(v->flexWrap, sheet.Get<YGWrap>(prop.to), prop.alpha);
+                    v.flexWrap = OGUI::Lerp(v.flexWrap, sheet.Get<YGWrap>(prop.to), prop.alpha);
                 else
-                    v->flexWrap = OGUI::Lerp(sheet.Get<YGWrap>(prop.from), sheet.Get<YGWrap>(prop.to), prop.alpha);
+                    v.flexWrap = OGUI::Lerp(sheet.Get<YGWrap>(prop.from), sheet.Get<YGWrap>(prop.to), prop.alpha);
                 
-                if(prevValue != v->flexWrap)
+                if(prevValue != v.flexWrap)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::flexDisplay:{
-                auto v = fget();
-                auto prevValue = v->flexDisplay;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexDisplay;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->flexDisplay = sheet.Get<YGDisplay>(prop.from);
+                    v.flexDisplay = sheet.Get<YGDisplay>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->flexDisplay = sheet.Get<YGDisplay>(prop.to);
+                    v.flexDisplay = sheet.Get<YGDisplay>(prop.to);
                 else if(prop.from == prop.to)
-                    v->flexDisplay = OGUI::Lerp(v->flexDisplay, sheet.Get<YGDisplay>(prop.to), prop.alpha);
+                    v.flexDisplay = OGUI::Lerp(v.flexDisplay, sheet.Get<YGDisplay>(prop.to), prop.alpha);
                 else
-                    v->flexDisplay = OGUI::Lerp(sheet.Get<YGDisplay>(prop.from), sheet.Get<YGDisplay>(prop.to), prop.alpha);
+                    v.flexDisplay = OGUI::Lerp(sheet.Get<YGDisplay>(prop.from), sheet.Get<YGDisplay>(prop.to), prop.alpha);
                 
-                if(prevValue != v->flexDisplay)
+                if(prevValue != v.flexDisplay)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::verticalAlign:{
-                auto v = fget();
-                auto prevValue = v->verticalAlign;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.verticalAlign;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->verticalAlign = sheet.Get<EInlineAlign>(prop.from);
+                    v.verticalAlign = sheet.Get<EInlineAlign>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->verticalAlign = sheet.Get<EInlineAlign>(prop.to);
+                    v.verticalAlign = sheet.Get<EInlineAlign>(prop.to);
                 else if(prop.from == prop.to)
-                    v->verticalAlign = OGUI::Lerp(v->verticalAlign, sheet.Get<EInlineAlign>(prop.to), prop.alpha);
+                    v.verticalAlign = OGUI::Lerp(v.verticalAlign, sheet.Get<EInlineAlign>(prop.to), prop.alpha);
                 else
-                    v->verticalAlign = OGUI::Lerp(sheet.Get<EInlineAlign>(prop.from), sheet.Get<EInlineAlign>(prop.to), prop.alpha);
+                    v.verticalAlign = OGUI::Lerp(sheet.Get<EInlineAlign>(prop.from), sheet.Get<EInlineAlign>(prop.to), prop.alpha);
                 
-                if(prevValue != v->verticalAlign)
+                if(prevValue != v.verticalAlign)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::aspectRatio:{
-                auto v = fget();
-                auto prevValue = v->aspectRatio;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.aspectRatio;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->aspectRatio = sheet.Get<float>(prop.from);
+                    v.aspectRatio = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->aspectRatio = sheet.Get<float>(prop.to);
+                    v.aspectRatio = sheet.Get<float>(prop.to);
                 else if(prop.from == prop.to)
-                    v->aspectRatio = OGUI::Lerp(v->aspectRatio, sheet.Get<float>(prop.to), prop.alpha);
+                    v.aspectRatio = OGUI::Lerp(v.aspectRatio, sheet.Get<float>(prop.to), prop.alpha);
                 else
-                    v->aspectRatio = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.aspectRatio = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
-                if(prevValue != v->aspectRatio)
+                if(prevValue != v.aspectRatio)
                     damage |= RestyleDamage::Layout;
                 break;
                 }
             case Ids::zOrderBias:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->zOrderBias = sheet.Get<int>(prop.from);
+                    v.zOrderBias = sheet.Get<int>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->zOrderBias = sheet.Get<int>(prop.to);
+                    v.zOrderBias = sheet.Get<int>(prop.to);
                 else if(prop.from == prop.to)
-                    v->zOrderBias = OGUI::Lerp(v->zOrderBias, sheet.Get<int>(prop.to), prop.alpha);
+                    v.zOrderBias = OGUI::Lerp(v.zOrderBias, sheet.Get<int>(prop.to), prop.alpha);
                 else
-                    v->zOrderBias = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
+                    v.zOrderBias = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -1415,7 +1361,466 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
     return damage;
 }
 
-void OGUI::StylePosition::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+
+OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+{
+    RestyleDamage damage = RestyleDamage::None;
+    
+    auto mask = override[StylePositionEntry];
+    auto& dst = Get(target);
+
+    for(auto& prop : props)
+    {
+        switch(prop.id)
+        {
+            case Ids::transform: if(mask & (1ull<<0)) continue; break;
+            case Ids::flexGrow: if(mask & (1ull<<1)) continue; break;
+            case Ids::flexShrink: if(mask & (1ull<<2)) continue; break;
+            case Ids::flexBasis: if(mask & (1ull<<3)) continue; break;
+            case Ids::top: if(mask & (1ull<<4)) continue; break;
+            case Ids::right: if(mask & (1ull<<5)) continue; break;
+            case Ids::bottom: if(mask & (1ull<<6)) continue; break;
+            case Ids::left: if(mask & (1ull<<7)) continue; break;
+            case Ids::marginTop: if(mask & (1ull<<8)) continue; break;
+            case Ids::marginRight: if(mask & (1ull<<9)) continue; break;
+            case Ids::marginBottom: if(mask & (1ull<<10)) continue; break;
+            case Ids::marginLeft: if(mask & (1ull<<11)) continue; break;
+            case Ids::paddingTop: if(mask & (1ull<<12)) continue; break;
+            case Ids::paddingRight: if(mask & (1ull<<13)) continue; break;
+            case Ids::paddingBottom: if(mask & (1ull<<14)) continue; break;
+            case Ids::paddingLeft: if(mask & (1ull<<15)) continue; break;
+            case Ids::width: if(mask & (1ull<<16)) continue; break;
+            case Ids::height: if(mask & (1ull<<17)) continue; break;
+            case Ids::position: if(mask & (1ull<<18)) continue; break;
+            case Ids::overflow: if(mask & (1ull<<19)) continue; break;
+            case Ids::alignSelf: if(mask & (1ull<<20)) continue; break;
+            case Ids::maxWidth: if(mask & (1ull<<21)) continue; break;
+            case Ids::maxHeight: if(mask & (1ull<<22)) continue; break;
+            case Ids::minWidth: if(mask & (1ull<<23)) continue; break;
+            case Ids::minHeight: if(mask & (1ull<<24)) continue; break;
+            case Ids::flexDirection: if(mask & (1ull<<25)) continue; break;
+            case Ids::alignContent: if(mask & (1ull<<26)) continue; break;
+            case Ids::alignItems: if(mask & (1ull<<27)) continue; break;
+            case Ids::justifyContent: if(mask & (1ull<<28)) continue; break;
+            case Ids::flexWrap: if(mask & (1ull<<29)) continue; break;
+            case Ids::flexDisplay: if(mask & (1ull<<30)) continue; break;
+            case Ids::verticalAlign: if(mask & (1ull<<31)) continue; break;
+            case Ids::aspectRatio: if(mask & (1ull<<32)) continue; break;
+            case Ids::zOrderBias: if(mask & (1ull<<33)) continue; break;
+        }
+        switch(prop.id)
+        {
+            case Ids::transform:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.transform = dst.transform;
+                else
+                    v.transform = OGUI::Lerp(v.transform, dst.transform, prop.alpha);
+                
+                    damage |= RestyleDamage::Transform;
+                break;
+                }
+            case Ids::flexGrow:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexGrow;
+                if(prop.alpha == 1.f)
+                    v.flexGrow = dst.flexGrow;
+                else
+                    v.flexGrow = OGUI::Lerp(v.flexGrow, dst.flexGrow, prop.alpha);
+                
+                if(prevValue != v.flexGrow)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::flexShrink:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexShrink;
+                if(prop.alpha == 1.f)
+                    v.flexShrink = dst.flexShrink;
+                else
+                    v.flexShrink = OGUI::Lerp(v.flexShrink, dst.flexShrink, prop.alpha);
+                
+                if(prevValue != v.flexShrink)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::flexBasis:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexBasis;
+                if(prop.alpha == 1.f)
+                    v.flexBasis = dst.flexBasis;
+                else
+                    v.flexBasis = OGUI::Lerp(v.flexBasis, dst.flexBasis, prop.alpha);
+                
+                if(prevValue != v.flexBasis)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::top:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.top;
+                if(prop.alpha == 1.f)
+                    v.top = dst.top;
+                else
+                    v.top = OGUI::Lerp(v.top, dst.top, prop.alpha);
+                
+                if(prevValue != v.top)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::right:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.right;
+                if(prop.alpha == 1.f)
+                    v.right = dst.right;
+                else
+                    v.right = OGUI::Lerp(v.right, dst.right, prop.alpha);
+                
+                if(prevValue != v.right)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::bottom:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.bottom;
+                if(prop.alpha == 1.f)
+                    v.bottom = dst.bottom;
+                else
+                    v.bottom = OGUI::Lerp(v.bottom, dst.bottom, prop.alpha);
+                
+                if(prevValue != v.bottom)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::left:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.left;
+                if(prop.alpha == 1.f)
+                    v.left = dst.left;
+                else
+                    v.left = OGUI::Lerp(v.left, dst.left, prop.alpha);
+                
+                if(prevValue != v.left)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::marginTop:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginTop;
+                if(prop.alpha == 1.f)
+                    v.marginTop = dst.marginTop;
+                else
+                    v.marginTop = OGUI::Lerp(v.marginTop, dst.marginTop, prop.alpha);
+                
+                if(prevValue != v.marginTop)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::marginRight:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginRight;
+                if(prop.alpha == 1.f)
+                    v.marginRight = dst.marginRight;
+                else
+                    v.marginRight = OGUI::Lerp(v.marginRight, dst.marginRight, prop.alpha);
+                
+                if(prevValue != v.marginRight)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::marginBottom:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginBottom;
+                if(prop.alpha == 1.f)
+                    v.marginBottom = dst.marginBottom;
+                else
+                    v.marginBottom = OGUI::Lerp(v.marginBottom, dst.marginBottom, prop.alpha);
+                
+                if(prevValue != v.marginBottom)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::marginLeft:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.marginLeft;
+                if(prop.alpha == 1.f)
+                    v.marginLeft = dst.marginLeft;
+                else
+                    v.marginLeft = OGUI::Lerp(v.marginLeft, dst.marginLeft, prop.alpha);
+                
+                if(prevValue != v.marginLeft)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::paddingTop:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingTop;
+                if(prop.alpha == 1.f)
+                    v.paddingTop = dst.paddingTop;
+                else
+                    v.paddingTop = OGUI::Lerp(v.paddingTop, dst.paddingTop, prop.alpha);
+                
+                if(prevValue != v.paddingTop)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::paddingRight:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingRight;
+                if(prop.alpha == 1.f)
+                    v.paddingRight = dst.paddingRight;
+                else
+                    v.paddingRight = OGUI::Lerp(v.paddingRight, dst.paddingRight, prop.alpha);
+                
+                if(prevValue != v.paddingRight)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::paddingBottom:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingBottom;
+                if(prop.alpha == 1.f)
+                    v.paddingBottom = dst.paddingBottom;
+                else
+                    v.paddingBottom = OGUI::Lerp(v.paddingBottom, dst.paddingBottom, prop.alpha);
+                
+                if(prevValue != v.paddingBottom)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::paddingLeft:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.paddingLeft;
+                if(prop.alpha == 1.f)
+                    v.paddingLeft = dst.paddingLeft;
+                else
+                    v.paddingLeft = OGUI::Lerp(v.paddingLeft, dst.paddingLeft, prop.alpha);
+                
+                if(prevValue != v.paddingLeft)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::width:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.width;
+                if(prop.alpha == 1.f)
+                    v.width = dst.width;
+                else
+                    v.width = OGUI::Lerp(v.width, dst.width, prop.alpha);
+                
+                if(prevValue != v.width)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::height:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.height;
+                if(prop.alpha == 1.f)
+                    v.height = dst.height;
+                else
+                    v.height = OGUI::Lerp(v.height, dst.height, prop.alpha);
+                
+                if(prevValue != v.height)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::position:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.position;
+                if(prop.alpha == 1.f)
+                    v.position = dst.position;
+                else
+                    v.position = OGUI::Lerp(v.position, dst.position, prop.alpha);
+                
+                if(prevValue != v.position)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::overflow:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.overflow;
+                if(prop.alpha == 1.f)
+                    v.overflow = dst.overflow;
+                else
+                    v.overflow = OGUI::Lerp(v.overflow, dst.overflow, prop.alpha);
+                
+                if(prevValue != v.overflow)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::alignSelf:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.alignSelf;
+                if(prop.alpha == 1.f)
+                    v.alignSelf = dst.alignSelf;
+                else
+                    v.alignSelf = OGUI::Lerp(v.alignSelf, dst.alignSelf, prop.alpha);
+                
+                if(prevValue != v.alignSelf)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::maxWidth:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.maxWidth;
+                if(prop.alpha == 1.f)
+                    v.maxWidth = dst.maxWidth;
+                else
+                    v.maxWidth = OGUI::Lerp(v.maxWidth, dst.maxWidth, prop.alpha);
+                
+                if(prevValue != v.maxWidth)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::maxHeight:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.maxHeight;
+                if(prop.alpha == 1.f)
+                    v.maxHeight = dst.maxHeight;
+                else
+                    v.maxHeight = OGUI::Lerp(v.maxHeight, dst.maxHeight, prop.alpha);
+                
+                if(prevValue != v.maxHeight)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::minWidth:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.minWidth;
+                if(prop.alpha == 1.f)
+                    v.minWidth = dst.minWidth;
+                else
+                    v.minWidth = OGUI::Lerp(v.minWidth, dst.minWidth, prop.alpha);
+                
+                if(prevValue != v.minWidth)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::minHeight:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.minHeight;
+                if(prop.alpha == 1.f)
+                    v.minHeight = dst.minHeight;
+                else
+                    v.minHeight = OGUI::Lerp(v.minHeight, dst.minHeight, prop.alpha);
+                
+                if(prevValue != v.minHeight)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::flexDirection:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexDirection;
+                if(prop.alpha == 1.f)
+                    v.flexDirection = dst.flexDirection;
+                else
+                    v.flexDirection = OGUI::Lerp(v.flexDirection, dst.flexDirection, prop.alpha);
+                
+                if(prevValue != v.flexDirection)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::alignContent:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.alignContent;
+                if(prop.alpha == 1.f)
+                    v.alignContent = dst.alignContent;
+                else
+                    v.alignContent = OGUI::Lerp(v.alignContent, dst.alignContent, prop.alpha);
+                
+                if(prevValue != v.alignContent)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::alignItems:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.alignItems;
+                if(prop.alpha == 1.f)
+                    v.alignItems = dst.alignItems;
+                else
+                    v.alignItems = OGUI::Lerp(v.alignItems, dst.alignItems, prop.alpha);
+                
+                if(prevValue != v.alignItems)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::justifyContent:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.justifyContent;
+                if(prop.alpha == 1.f)
+                    v.justifyContent = dst.justifyContent;
+                else
+                    v.justifyContent = OGUI::Lerp(v.justifyContent, dst.justifyContent, prop.alpha);
+                
+                if(prevValue != v.justifyContent)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::flexWrap:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexWrap;
+                if(prop.alpha == 1.f)
+                    v.flexWrap = dst.flexWrap;
+                else
+                    v.flexWrap = OGUI::Lerp(v.flexWrap, dst.flexWrap, prop.alpha);
+                
+                if(prevValue != v.flexWrap)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::flexDisplay:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.flexDisplay;
+                if(prop.alpha == 1.f)
+                    v.flexDisplay = dst.flexDisplay;
+                else
+                    v.flexDisplay = OGUI::Lerp(v.flexDisplay, dst.flexDisplay, prop.alpha);
+                
+                if(prevValue != v.flexDisplay)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::verticalAlign:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.verticalAlign;
+                if(prop.alpha == 1.f)
+                    v.verticalAlign = dst.verticalAlign;
+                else
+                    v.verticalAlign = OGUI::Lerp(v.verticalAlign, dst.verticalAlign, prop.alpha);
+                
+                if(prevValue != v.verticalAlign)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::aspectRatio:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.aspectRatio;
+                if(prop.alpha == 1.f)
+                    v.aspectRatio = dst.aspectRatio;
+                else
+                    v.aspectRatio = OGUI::Lerp(v.aspectRatio, dst.aspectRatio, prop.alpha);
+                
+                if(prevValue != v.aspectRatio)
+                    damage |= RestyleDamage::Layout;
+                break;
+                }
+            case Ids::zOrderBias:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.zOrderBias = dst.zOrderBias;
+                else
+                    v.zOrderBias = OGUI::Lerp(v.zOrderBias, dst.zOrderBias, prop.alpha);
+                
+                break;
+                }
+            default: break;
+        }
+    }
+    return damage; 
+}
+
+void OGUI::StylePosition::Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override)
 {
     auto po = TryGet(other);
     if(!po)
@@ -1492,6 +1897,232 @@ void OGUI::StylePosition::Merge(ComputedStyle& style, ComputedStyle& other, cons
         s.aspectRatio = po->aspectRatio;
     if(mask & (1ull << 33))
         s.zOrderBias = po->zOrderBias;
+}
+
+void OGUI::StylePosition::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    for(auto prop : override)
+    {
+        switch(prop)
+        {
+            case Ids::transform: {
+                 auto& v = GetOrAdd(style);
+                 v.transform = po->transform;
+                 break;
+            }
+            case Ids::flexGrow: {
+                 auto& v = GetOrAdd(style);
+                 v.flexGrow = po->flexGrow;
+                 break;
+            }
+            case Ids::flexShrink: {
+                 auto& v = GetOrAdd(style);
+                 v.flexShrink = po->flexShrink;
+                 break;
+            }
+            case Ids::flexBasis: {
+                 auto& v = GetOrAdd(style);
+                 v.flexBasis = po->flexBasis;
+                 break;
+            }
+            case Ids::top: {
+                 auto& v = GetOrAdd(style);
+                 v.top = po->top;
+                 break;
+            }
+            case Ids::right: {
+                 auto& v = GetOrAdd(style);
+                 v.right = po->right;
+                 break;
+            }
+            case Ids::bottom: {
+                 auto& v = GetOrAdd(style);
+                 v.bottom = po->bottom;
+                 break;
+            }
+            case Ids::left: {
+                 auto& v = GetOrAdd(style);
+                 v.left = po->left;
+                 break;
+            }
+            case Ids::marginTop: {
+                 auto& v = GetOrAdd(style);
+                 v.marginTop = po->marginTop;
+                 break;
+            }
+            case Ids::marginRight: {
+                 auto& v = GetOrAdd(style);
+                 v.marginRight = po->marginRight;
+                 break;
+            }
+            case Ids::marginBottom: {
+                 auto& v = GetOrAdd(style);
+                 v.marginBottom = po->marginBottom;
+                 break;
+            }
+            case Ids::marginLeft: {
+                 auto& v = GetOrAdd(style);
+                 v.marginLeft = po->marginLeft;
+                 break;
+            }
+            case Ids::paddingTop: {
+                 auto& v = GetOrAdd(style);
+                 v.paddingTop = po->paddingTop;
+                 break;
+            }
+            case Ids::paddingRight: {
+                 auto& v = GetOrAdd(style);
+                 v.paddingRight = po->paddingRight;
+                 break;
+            }
+            case Ids::paddingBottom: {
+                 auto& v = GetOrAdd(style);
+                 v.paddingBottom = po->paddingBottom;
+                 break;
+            }
+            case Ids::paddingLeft: {
+                 auto& v = GetOrAdd(style);
+                 v.paddingLeft = po->paddingLeft;
+                 break;
+            }
+            case Ids::width: {
+                 auto& v = GetOrAdd(style);
+                 v.width = po->width;
+                 break;
+            }
+            case Ids::height: {
+                 auto& v = GetOrAdd(style);
+                 v.height = po->height;
+                 break;
+            }
+            case Ids::position: {
+                 auto& v = GetOrAdd(style);
+                 v.position = po->position;
+                 break;
+            }
+            case Ids::overflow: {
+                 auto& v = GetOrAdd(style);
+                 v.overflow = po->overflow;
+                 break;
+            }
+            case Ids::alignSelf: {
+                 auto& v = GetOrAdd(style);
+                 v.alignSelf = po->alignSelf;
+                 break;
+            }
+            case Ids::maxWidth: {
+                 auto& v = GetOrAdd(style);
+                 v.maxWidth = po->maxWidth;
+                 break;
+            }
+            case Ids::maxHeight: {
+                 auto& v = GetOrAdd(style);
+                 v.maxHeight = po->maxHeight;
+                 break;
+            }
+            case Ids::minWidth: {
+                 auto& v = GetOrAdd(style);
+                 v.minWidth = po->minWidth;
+                 break;
+            }
+            case Ids::minHeight: {
+                 auto& v = GetOrAdd(style);
+                 v.minHeight = po->minHeight;
+                 break;
+            }
+            case Ids::flexDirection: {
+                 auto& v = GetOrAdd(style);
+                 v.flexDirection = po->flexDirection;
+                 break;
+            }
+            case Ids::alignContent: {
+                 auto& v = GetOrAdd(style);
+                 v.alignContent = po->alignContent;
+                 break;
+            }
+            case Ids::alignItems: {
+                 auto& v = GetOrAdd(style);
+                 v.alignItems = po->alignItems;
+                 break;
+            }
+            case Ids::justifyContent: {
+                 auto& v = GetOrAdd(style);
+                 v.justifyContent = po->justifyContent;
+                 break;
+            }
+            case Ids::flexWrap: {
+                 auto& v = GetOrAdd(style);
+                 v.flexWrap = po->flexWrap;
+                 break;
+            }
+            case Ids::flexDisplay: {
+                 auto& v = GetOrAdd(style);
+                 v.flexDisplay = po->flexDisplay;
+                 break;
+            }
+            case Ids::verticalAlign: {
+                 auto& v = GetOrAdd(style);
+                 v.verticalAlign = po->verticalAlign;
+                 break;
+            }
+            case Ids::aspectRatio: {
+                 auto& v = GetOrAdd(style);
+                 v.aspectRatio = po->aspectRatio;
+                 break;
+            }
+            case Ids::zOrderBias: {
+                 auto& v = GetOrAdd(style);
+                 v.zOrderBias = po->zOrderBias;
+                 break;
+            }
+        }
+    }
+}
+
+size_t OGUI::StylePosition::GetProperty(ostr::string_view name)
+{
+    switchstr(name)
+    {
+        casestr("transform") return Ids::transform;
+        casestr("flex-grow") return Ids::flexGrow;
+        casestr("flex-shrink") return Ids::flexShrink;
+        casestr("flex-basis") return Ids::flexBasis;
+        casestr("top") return Ids::top;
+        casestr("right") return Ids::right;
+        casestr("bottom") return Ids::bottom;
+        casestr("left") return Ids::left;
+        casestr("margin-top") return Ids::marginTop;
+        casestr("margin-right") return Ids::marginRight;
+        casestr("margin-bottom") return Ids::marginBottom;
+        casestr("margin-left") return Ids::marginLeft;
+        casestr("padding-top") return Ids::paddingTop;
+        casestr("padding-right") return Ids::paddingRight;
+        casestr("padding-bottom") return Ids::paddingBottom;
+        casestr("padding-left") return Ids::paddingLeft;
+        casestr("width") return Ids::width;
+        casestr("height") return Ids::height;
+        casestr("position") return Ids::position;
+        casestr("overflow") return Ids::overflow;
+        casestr("align-self") return Ids::alignSelf;
+        casestr("max-width") return Ids::maxWidth;
+        casestr("max-height") return Ids::maxHeight;
+        casestr("min-width") return Ids::minWidth;
+        casestr("min-height") return Ids::minHeight;
+        casestr("flex-direction") return Ids::flexDirection;
+        casestr("align-content") return Ids::alignContent;
+        casestr("align-items") return Ids::alignItems;
+        casestr("justify-content") return Ids::justifyContent;
+        casestr("flex-wrap") return Ids::flexWrap;
+        casestr("flex-display") return Ids::flexDisplay;
+        casestr("vertical-align") return Ids::verticalAlign;
+        casestr("aspect-ratio") return Ids::aspectRatio;
+        casestr("z-order-bias") return Ids::zOrderBias;
+        default: return -1;
+    }
+    return -1;
 }
 
 void OGUI::StylePosition::SetupParser()

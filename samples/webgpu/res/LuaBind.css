@@ -22,11 +22,15 @@
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
+    transition-property: background-color;
+    transition-duration: 10s;
 }
 
 Button:hover{
     transform:  scale(1.05, 1.05);
     background-color: rgb(80, 135, 255);
+    transition-property: background-color;
+    transition-duration: 1s;
 }
 
 Button:active{

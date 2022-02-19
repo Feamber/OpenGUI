@@ -8,6 +8,8 @@
 #include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Style2/generated/effects.h"
+#include "OpenGUI/Style2/generated/transition.h"
+#include "gsl/span"
 
 OGUI::StyleRegistry& GetRegistry()
 {
@@ -48,6 +50,7 @@ void OGUI::RegisterBuiltinStructs()
     CSSParser::SetupEnumParser();
     CSSParser::SetupDrawValueParser();
     AnimStyle::SetupParser();
+    TransitionStyle::SetupParser();
     RegisterStyleStruct<StyleText>();
     RegisterStyleStruct<StyleBackground>();
     RegisterStyleStruct<StyleBorder>();
@@ -89,14 +92,14 @@ OGUI::ComputedStyle OGUI::ComputedStyle::Create(const ComputedStyle *parent)
     return result;
 }
 
-void OGUI::ComputedStyle::ApplyProperties(const StyleSheetStorage &sheet, const gsl::span<StyleProperty> &props, const gsl::span<size_t>& override, const ComputedStyle *parent)
+void OGUI::ComputedStyle::ApplyProperties(const StyleSheetStorage &sheet, const gsl::span<StyleProperty> &props, const StyleMasks& override, const ComputedStyle *parent)
 {
     auto& registry = GetRegistry();
     for(auto& desc : registry.descriptions)
         desc.ApplyProperties(*this, sheet, props, override, parent);
 }
 
-OGUI::RestyleDamage OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleSheetStorage &sheet, const gsl::span<AnimatedProperty> &props, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleSheetStorage &sheet, const gsl::span<AnimatedProperty> &props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     auto& registry = GetRegistry();
@@ -105,9 +108,37 @@ OGUI::RestyleDamage OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleShee
     return damage;
 }
 
-void OGUI::ComputedStyle::Merge(ComputedStyle& other, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::ComputedStyle::ApplyTransitionProperties(const ComputedStyle& target, const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+{
+    RestyleDamage damage = RestyleDamage::None;
+    auto& registry = GetRegistry();
+    for(auto& desc : registry.descriptions)
+        damage |= desc.ApplyTransitionProperties(*this, target, props, override);
+    return damage;
+}
+
+void OGUI::ComputedStyle::Merge(ComputedStyle& other, const StyleMasks& override)
 {
     auto& registry = GetRegistry();
     for(auto& desc : registry.descriptions)
         desc.Merge(*this, other, override);
+}
+
+void OGUI::ComputedStyle::MergeId(ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto& registry = GetRegistry();
+    for(auto& desc : registry.descriptions)
+        desc.MergeId(*this, other, override);
+}
+
+size_t OGUI::ComputedStyle::GetProperty(ostr::string_view name)
+{
+    auto& registry = GetRegistry();
+    for(auto& desc : registry.descriptions)
+    {
+        auto id = desc.GetProperty(name);
+        if(id != -1)
+            return id;
+    }
+    return -1;
 }

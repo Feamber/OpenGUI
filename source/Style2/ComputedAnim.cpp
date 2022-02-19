@@ -131,7 +131,7 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
     return true;
 }
 
-OGUI::RestyleDamage OGUI::ComputedAnim::Apply(ComputedStyle &s, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::ComputedAnim::Apply(ComputedStyle &s, const StyleMasks& override)
 {
     std::vector<AnimatedProperty> props;
 	float percentage;

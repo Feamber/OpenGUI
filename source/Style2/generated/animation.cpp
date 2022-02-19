@@ -116,8 +116,8 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-name"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(vs.size() < anim.size())
-                    throw peg::parse_error("animation-name dose not match animation properties count.");
+                if(anim.size() != 0)
+                    throw peg::parse_error("animation-name is already specified.");
                 anim.resize(vs.size());
                 for(int i=0; i<vs.size(); ++i)
                     anim[i].name = ostr::string::decode_from_utf8(std::any_cast<const std::string_view&>(vs[i]));
@@ -134,16 +134,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-durationValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-duration dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -157,16 +158,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-delayValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-delay dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -180,16 +182,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-directionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-direction dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimDirection>(std::any_cast<EAnimDirection&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimDirection>(std::any_cast<EAnimDirection&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -203,16 +206,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-iteration-countValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-iteration-count dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -226,16 +230,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-play-stateValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-play-state dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimPlayState>(std::any_cast<EAnimPlayState&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimPlayState>(std::any_cast<EAnimPlayState&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -249,16 +254,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-timing-functionValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-timing-function dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<AnimTimingFunction>(std::any_cast<AnimTimingFunction&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<AnimTimingFunction>(std::any_cast<AnimTimingFunction&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -272,16 +278,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-fill-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-fill-mode dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimFillMode>(std::any_cast<EAnimFillMode&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimFillMode>(std::any_cast<EAnimFillMode&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -295,16 +302,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-yield-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-yield-mode dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimYieldMode>(std::any_cast<EAnimYieldMode&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimYieldMode>(std::any_cast<EAnimYieldMode&>(vs[i%vs.size()]))});
+
             };
         });
     }
@@ -318,16 +326,17 @@ void OGUI::AnimStyle::SetupParser()
             parser["animation-resume-modeValue"] = [](peg::SemanticValues& vs, std::any& dt){
                 auto& ctx = GetContext<PropertyListContext>(dt);
                 auto& anim = ctx.rule->animation;
-                if(anim.size() > 0 && !anim[0].name.is_empty() && vs.size() > anim.size())
-                    throw peg::parse_error("animation-resume-mode dose not match animation-name count.");
-                anim.resize(std::max(anim.size(), vs.size()));
+                if(anim.size() == 0)
+                    throw peg::parse_error("animation-name must be specified first.");
+                auto size = anim.size();
                 
                 if(vs.choice() == 0)
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[i%vs.size()])});
                 else
-                    for(int i=0; i<vs.size(); ++i)
-                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimResumeMode>(std::any_cast<EAnimResumeMode&>(vs[0]))});
+                    for(int i=0; i<size; ++i)
+                        anim[i].properties.push_back({hash, ctx.storage->Push<EAnimResumeMode>(std::any_cast<EAnimResumeMode&>(vs[i%vs.size()]))});
+
             };
         });
     }

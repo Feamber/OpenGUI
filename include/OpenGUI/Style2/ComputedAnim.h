@@ -1,9 +1,19 @@
 #pragma once
 #include "OpenGUI/Style2/Forward.h"
+#include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/generated/animation.h"
+#include "OpenGUI/Style2/generated/transition.h"
 
 namespace OGUI
 {
+	OGUI_API float ApplyTimingFunction(AnimTimingFunction function, float percentage);
+
+    struct OGUI_API ComputedTransition
+    {
+        float time = 0.f;
+        TransitionStyle style;
+    };
+
     struct OGUI_API ComputedAnim
     {
 		float time = 0.f;
@@ -34,6 +44,6 @@ namespace OGUI
 
         bool Init(const gsl::span<StyleSheet*>& sheets);
         bool GetPercentage(float& percent);
-        RestyleDamage Apply(ComputedStyle& style, const gsl::span<size_t>& override);
+        RestyleDamage Apply(ComputedStyle& style, const StyleMasks& override);
     };
 }

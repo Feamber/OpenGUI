@@ -83,36 +83,9 @@ void OGUI::StyleSample::Initialize()
     someValue = 0.5f;
 }
 
-void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
+void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
-    OGUI::StyleSample* st = nullptr;
-    auto& s = style.structs[StyleSampleEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleSample*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleSample>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleSample>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     auto mask = override[StyleSampleEntry];
     
     for(auto& prop : props)
@@ -130,8 +103,8 @@ void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                 switch(prop.id)
                 {
                 case Ids::someValue: {
-                    auto v = fget();
-                    v->someValue = 0.5f;
+                    auto& v = GetOrAdd(style);
+                    v.someValue = 0.5f;
                     break;
                     }
                 default: break;
@@ -142,8 +115,8 @@ void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetSt
                 switch(prop.id)
                 {
                 case Ids::someValue:{
-                    auto v = fget();
-                    v->someValue = pst->someValue;
+                    auto& v = GetOrAdd(style);
+                    v.someValue = pst->someValue;
                     break;
                     }
                 default: break;
@@ -155,8 +128,8 @@ void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetSt
             switch(prop.id)
             {
                 case Ids::someValue:{
-                    auto v = fget();
-                    v->someValue = sheet.Get<float>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.someValue = sheet.Get<float>(prop.value);
                     break;
                     }
                 default: break;
@@ -166,36 +139,9 @@ void OGUI::StyleSample::ApplyProperties(ComputedStyle& style, const StyleSheetSt
 }
 
 
-OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override)
 {
-    OGUI::StyleSample* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto& s = style.structs[StyleSampleEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleSample*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleSample>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleSample>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     
     auto mask = override[StyleSampleEntry];
     
@@ -208,17 +154,17 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
         switch(prop.id)
         {
             case Ids::someValue:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->someValue = sheet.Get<float>(prop.from);
+                    v.someValue = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->someValue = sheet.Get<float>(prop.to);
+                    v.someValue = sheet.Get<float>(prop.to);
                 else if(prop.from == prop.to)
-                    v->someValue = OGUI::Lerp(v->someValue, sheet.Get<float>(prop.to), prop.alpha);
+                    v.someValue = OGUI::Lerp(v.someValue, sheet.Get<float>(prop.to), prop.alpha);
                 else
-                    v->someValue = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.someValue = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -228,7 +174,39 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
     return damage;
 }
 
-void OGUI::StyleSample::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+
+OGUI::RestyleDamage OGUI::StyleSample::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+{
+    RestyleDamage damage = RestyleDamage::None;
+    
+    auto mask = override[StyleSampleEntry];
+    auto& dst = Get(target);
+
+    for(auto& prop : props)
+    {
+        switch(prop.id)
+        {
+            case Ids::someValue: if(mask & (1ull<<0)) continue; break;
+        }
+        switch(prop.id)
+        {
+            case Ids::someValue:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.someValue = dst.someValue;
+                else
+                    v.someValue = OGUI::Lerp(v.someValue, dst.someValue, prop.alpha);
+                
+                break;
+                }
+            default: break;
+        }
+    }
+    return damage; 
+}
+
+void OGUI::StyleSample::Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override)
 {
     auto po = TryGet(other);
     if(!po)
@@ -239,6 +217,34 @@ void OGUI::StyleSample::Merge(ComputedStyle& style, ComputedStyle& other, const 
     auto& s = GetOrAdd(style);
     if(mask & (1ull << 0))
         s.someValue = po->someValue;
+}
+
+void OGUI::StyleSample::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    for(auto prop : override)
+    {
+        switch(prop)
+        {
+            case Ids::someValue: {
+                 auto& v = GetOrAdd(style);
+                 v.someValue = po->someValue;
+                 break;
+            }
+        }
+    }
+}
+
+size_t OGUI::StyleSample::GetProperty(ostr::string_view name)
+{
+    switchstr(name)
+    {
+        casestr("some-value") return Ids::someValue;
+        default: return -1;
+    }
+    return -1;
 }
 
 void OGUI::StyleSample::SetupParser()
@@ -262,7 +268,6 @@ void OGUI::StyleSample::SetupParser()
 }
 
 
-attr("script": true)
 void OGUI::SetStyleSomeValue(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleSampleEntry] |= 1ull<<0;
@@ -270,7 +275,6 @@ void OGUI::SetStyleSomeValue(VisualElement* element, const float& value)
     RestyleDamage damage = RestyleDamage::None;
     element->UpdateStyle(damage);
 }
-attr("script": true)
 void OGUI::ResetStyleSomeValue(VisualElement* element)
 {
     element->_procedureOverrides[StyleSampleEntry] &= ~(1ull<<0);

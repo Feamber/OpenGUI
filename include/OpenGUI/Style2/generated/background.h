@@ -37,10 +37,14 @@ namespace OGUI reflect
         static StyleBackground& GetOrAdd(ComputedStyle& style);
         static void Dispose(ComputedStyle& style);
         static void ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, 
-            const gsl::span<size_t>& override, const ComputedStyle* parent);
+            const StyleMasks& override, const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, 
-            const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override);
-        static void Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
+            const gsl::span<AnimatedProperty>& props, const StyleMasks& override);
+        static RestyleDamage ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+            const gsl::span<TransitionProperty>& props, const StyleMasks& override);
+        static void Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override);
+        static void MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
+        static size_t GetProperty(ostr::string_view name);
         static void SetupParser();
     };
 

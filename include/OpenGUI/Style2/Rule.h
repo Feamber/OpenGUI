@@ -106,6 +106,12 @@ namespace OGUI
             std::vector<StyleProperty> properties;
         };
         std::vector<AnimRule> animation;
+        struct TransitionRule
+        {
+            size_t property;
+            std::vector<StyleProperty> properties;
+        };
+        std::vector<TransitionRule> transition;
 	};
 
     struct StyleKeyframes

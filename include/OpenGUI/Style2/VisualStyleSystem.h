@@ -35,6 +35,7 @@ namespace OGUI
 		static void FindMatches(StyleMatchingContext& context, std::vector<SelectorMatchRecord>& matchedSelectors);
 		void ApplyMatchedRules(VisualElement* element, gsl::span<SelectorMatchRecord> matchedSelectors, bool refresh);
 		RestyleDamage UpdateAnim(VisualElement* element);
+		RestyleDamage UpdateTransition(VisualElement* element);
 		void UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss);
 		void UpdateAnimTime(std::vector<ComputedAnim>& anims, VisualElement* element);
 

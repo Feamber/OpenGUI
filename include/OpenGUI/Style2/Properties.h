@@ -69,4 +69,12 @@ namespace OGUI reflect
 		VariantHandle to;
 		float alpha;
 	};
+
+	struct TransitionProperty
+	{
+		size_t id;
+		float alpha;
+	};
+	
+	using StyleMasks = std::array<size_t, 8>;
 }

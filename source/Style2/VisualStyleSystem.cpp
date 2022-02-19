@@ -3,11 +3,13 @@
 #include "OpenGUI/Core/ostring/ostr.h"
 #include "OpenGUI/Event/AnimEvent.h"
 #include "OpenGUI/Style2/ComputedAnim.h"
+#include "OpenGUI/Style2/Forward.h"
 #include "OpenGUI/Style2/Properties.h"
 #include <algorithm>
 #include <bitset>
 #include "OpenGUI/Style2/VisualStyleSystem.h"
 #include "OpenGUI/Style2/Rule.h"
+#include "OpenGUI/Style2/generated/transition.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/Parse.h"
@@ -336,10 +338,10 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	ComputedStyle resolvedStyle = ComputedStyle::Create(parent);
 	resolvedStyle.Merge(element->_style, element->_procedureOverrides);
 	std::vector<AnimStyle> anims;
-	for (auto& record : matchedSelectors)
+	std::vector<TransitionStyle> trans;
+	auto ApplyProperties = [&](StyleRule& rule, StyleSheetStorage& storage)
 	{
-		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
-		resolvedStyle.ApplyProperties(record.sheet->storage, rule.properties, element->_procedureOverrides, parent);
+		resolvedStyle.ApplyProperties(storage, rule.properties, element->_procedureOverrides, parent);
 		for(auto& properties : rule.animation)
 		{
 			AnimStyle* style = nullptr;
@@ -358,32 +360,49 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 				style->Initialize();
 				style->animationName = properties.name;
 			}
-			style->ApplyProperties(record.sheet->storage, properties.properties);
+			style->ApplyProperties(storage, properties.properties);
 		}
-	}
-	if(element->_inlineStyle)
-	{ 	
-		//apply inline styles
-		resolvedStyle.ApplyProperties(element->_inlineStyle->storage, element->_inlineStyle->rule.properties, element->_procedureOverrides, parent);
-		for(auto& properties : element->_inlineStyle->rule.animation)
+		for(auto& properties : rule.transition)
 		{
-			AnimStyle* style = nullptr;
-			for(auto& anim : anims)
+			TransitionStyle* style = nullptr;
+			for(auto& tran : trans)
 			{
-				if(anim.animationName == properties.name)
+				if(tran.transitionProperty == properties.property)
 				{
-					style = &anim;
+					style = &tran;
 					break;
 				}
 			}
 			if(!style)
 			{
-				anims.push_back({});
-				style = &anims.back();
+				trans.push_back({});
+				style = &trans.back();
 				style->Initialize();
-				style->animationName = properties.name;
+				style->transitionProperty = properties.property;
 			}
-			style->ApplyProperties(element->_inlineStyle->storage, properties.properties);
+			style->ApplyProperties(storage, properties.properties);
+		}
+	};
+	for (auto& record : matchedSelectors)
+	{
+		auto& rule = record.sheet->styleRules[record.complexSelector->ruleIndex];
+		ApplyProperties(rule, record.sheet->storage);
+	}
+	if(element->_inlineStyle)
+		ApplyProperties(element->_inlineStyle->rule, element->_inlineStyle->storage);
+	element->_transitionStyle = ComputedStyle();
+	if(!trans.empty())
+	{
+		std::vector<size_t> props;
+		for(auto tran : trans)
+			props.push_back(tran.transitionProperty);
+		element->_transitionStyle.MergeId(resolvedStyle, props);
+		resolvedStyle.MergeId(element->_preAnimatedStyle, props);
+		element->_trans.resize(trans.size());
+		for(int i=0; i<trans.size(); ++i)
+		{
+			element->_trans[i].style = trans[i];
+			element->_trans[i].time = 0.f;
 		}
 	}
 	{
@@ -549,9 +568,31 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 	return damage;
 }
 
+OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateTransition(VisualElement* element)
+{
+	auto& ctx = Context::Get();
+	auto& trans = element->_trans;
+	std::vector<TransitionProperty> props;
+	auto iter = std::remove_if(trans.begin(), trans.end(), [&](ComputedTransition& tran)
+	{
+		tran.time += ctx._deltaTime;
+		float alpha = (tran.time - tran.style.transitionDelay) / tran.style.transitionDuration;
+		if(alpha < 0)
+			return false;
+		if(alpha >= 1.f)
+			alpha = 1.f;
+		props.push_back({tran.style.transitionProperty, ApplyTimingFunction(tran.style.transitionTimingFunction, alpha)});
+		return alpha == 1.f;
+	});
+	if(iter != trans.end())
+		trans.erase(iter, trans.end());
+	return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionStyle, props, element->_procedureOverrides);
+}
+
 void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss)
 {
 	RestyleDamage damage = element->_selectorDirty ? RestyleDamage::All : RestyleDamage::None;
+	damage |= UpdateTransition(element);
 	damage |= UpdateAnim(element);
 	element->UpdateStyle(damage, ss);
 }

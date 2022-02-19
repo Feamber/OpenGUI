@@ -1,8 +1,8 @@
 //DO NOT MODIFY THIS FILE
 //generated from EnumParser.cpp.mako
 #include "OpenGUI/Style2/Parse.h"
-#include "OpenGUI/Style2/AnimTypes.h"
 #include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Style2/AnimTypes.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Text/TextTypes.h"
 

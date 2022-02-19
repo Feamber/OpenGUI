@@ -90,36 +90,9 @@ void OGUI::Style${struct.ident}::Initialize()
 %endfor
 }
 
-void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
+void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
-    OGUI::Style${struct.ident}* st = nullptr;
-    auto& s = style.structs[Style${struct.ident}Entry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (Style${struct.ident}*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::Style${struct.ident}>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::Style${struct.ident}>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     auto mask = override[Style${struct.ident}Entry];
     
     for(auto& prop : props)
@@ -142,8 +115,8 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
                 {
             %for prop in struct.longhands:
                 case Ids::${prop.ident}: {
-                    auto v = fget();
-                    v->${prop.ident} = ${prop.initial_value};
+                    auto& v = GetOrAdd(style);
+                    v.${prop.ident} = ${prop.initial_value};
                     break;
                     }
             %endfor
@@ -156,8 +129,8 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
                 {
             %for prop in struct.longhands:
                 case Ids::${prop.ident}:{
-                    auto v = fget();
-                    v->${prop.ident} = pst->${prop.ident};
+                    auto& v = GetOrAdd(style);
+                    v.${prop.ident} = pst->${prop.ident};
                     break;
                     }
             %endfor
@@ -171,11 +144,11 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
             {
             %for prop in struct.longhands:
                 case Ids::${prop.ident}:{
-                    auto v = fget();
+                    auto& v = GetOrAdd(style);
                 %if prop.is_vector:
-                    v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.value));
+                    v.${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.value));
                 %else:
-                    v->${prop.ident} = sheet.Get<${prop.view_type}>(prop.value);
+                    v.${prop.ident} = sheet.Get<${prop.view_type}>(prop.value);
                 %endif
                     break;
                     }
@@ -187,36 +160,9 @@ void OGUI::Style${struct.ident}::ApplyProperties(ComputedStyle& style, const Sty
 }
 
 
-OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override)
 {
-    OGUI::Style${struct.ident}* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto& s = style.structs[Style${struct.ident}Entry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (Style${struct.ident}*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::Style${struct.ident}>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::Style${struct.ident}>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     
     auto mask = override[Style${struct.ident}Entry];
     
@@ -232,32 +178,32 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
         {
         %for prop in struct.longhands:
             case Ids::${prop.ident}:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
             %if prop.restyle_damage and not prop.is_vector:
-                auto prevValue = v->${prop.ident};
+                auto prevValue = v.${prop.ident};
             %endif
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
                 %if prop.is_vector:
-                    v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.from));
+                    v.${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.from));
                 %else:
-                    v->${prop.ident} = sheet.Get<${prop.view_type}>(prop.from);
+                    v.${prop.ident} = sheet.Get<${prop.view_type}>(prop.from);
                 %endif
                 else if(prop.alpha == 1.f)
                 %if prop.is_vector:
-                    v->${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.to));
+                    v.${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.to));
                 %else:
-                    v->${prop.ident} = sheet.Get<${prop.view_type}>(prop.to);
+                    v.${prop.ident} = sheet.Get<${prop.view_type}>(prop.to);
                 %endif
                 else if(prop.from == prop.to)
-                    v->${prop.ident} = OGUI::Lerp(v->${prop.ident}, sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
+                    v.${prop.ident} = OGUI::Lerp(v.${prop.ident}, sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
                 else
-                    v->${prop.ident} = OGUI::Lerp(sheet.Get<${prop.view_type}>(prop.from), sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
+                    v.${prop.ident} = OGUI::Lerp(sheet.Get<${prop.view_type}>(prop.from), sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
                 
             %if prop.restyle_damage:
             %if not prop.is_vector:
-                if(prevValue != v->${prop.ident})
+                if(prevValue != v.${prop.ident})
             %endif
                     damage |= ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
             %endif
@@ -270,7 +216,52 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
     return damage;
 }
 
-void OGUI::Style${struct.ident}::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+
+OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+{
+    RestyleDamage damage = RestyleDamage::None;
+    
+    auto mask = override[Style${struct.ident}Entry];
+    auto& dst = Get(target);
+
+    for(auto& prop : props)
+    {
+        switch(prop.id)
+        {
+        %for i, prop in enumerate(struct.longhands):
+            case Ids::${prop.ident}: if(mask & (1ull<<${i})) continue; break;
+        %endfor
+        }
+        switch(prop.id)
+        {
+        %for prop in struct.longhands:
+            case Ids::${prop.ident}:{
+                auto& v = GetOrAdd(style);
+            %if prop.restyle_damage and not prop.is_vector:
+                auto prevValue = v.${prop.ident};
+            %endif
+                if(prop.alpha == 1.f)
+                    v.${prop.ident} = dst.${prop.ident};
+                else
+                    v.${prop.ident} = OGUI::Lerp(v.${prop.ident}, dst.${prop.ident}, prop.alpha);
+                
+            %if prop.restyle_damage:
+            %if not prop.is_vector:
+                if(prevValue != v.${prop.ident})
+            %endif
+                    damage |= ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
+            %endif
+                break;
+                }
+        %endfor
+            default: break;
+        }
+    }
+    return damage; 
+}
+
+void OGUI::Style${struct.ident}::Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override)
 {
     auto po = TryGet(other);
     if(!po)
@@ -283,6 +274,38 @@ void OGUI::Style${struct.ident}::Merge(ComputedStyle& style, ComputedStyle& othe
     if(mask & (1ull << ${i}))
         s.${prop.ident} = po->${prop.ident};
 %endfor
+}
+
+void OGUI::Style${struct.ident}::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    for(auto prop : override)
+    {
+        switch(prop)
+        {
+        %for prop in struct.longhands:
+            case Ids::${prop.ident}: {
+                 auto& v = GetOrAdd(style);
+                 v.${prop.ident} = po->${prop.ident};
+                 break;
+            }
+        %endfor
+        }
+    }
+}
+
+size_t OGUI::Style${struct.ident}::GetProperty(ostr::string_view name)
+{
+    switchstr(name)
+    {
+%for prop in struct.longhands:
+        casestr("${prop.name}") return Ids::${prop.ident};
+%endfor
+        default: return -1;
+    }
+    return -1;
 }
 
 void OGUI::Style${struct.ident}::SetupParser()

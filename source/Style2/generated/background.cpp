@@ -85,36 +85,9 @@ void OGUI::StyleBackground::Initialize()
     backgroundMaterial = {};
 }
 
-void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
+void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
-    OGUI::StyleBackground* st = nullptr;
-    auto& s = style.structs[StyleBackgroundEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleBackground*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleBackground>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleBackground>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     auto mask = override[StyleBackgroundEntry];
     
     for(auto& prop : props)
@@ -134,18 +107,18 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                 switch(prop.id)
                 {
                 case Ids::backgroundColor: {
-                    auto v = fget();
-                    v->backgroundColor = Color4f(1.f,1.f,1.f,1.f);
+                    auto& v = GetOrAdd(style);
+                    v.backgroundColor = Color4f(1.f,1.f,1.f,1.f);
                     break;
                     }
                 case Ids::backgroundImage: {
-                    auto v = fget();
-                    v->backgroundImage = {};
+                    auto& v = GetOrAdd(style);
+                    v.backgroundImage = {};
                     break;
                     }
                 case Ids::backgroundMaterial: {
-                    auto v = fget();
-                    v->backgroundMaterial = {};
+                    auto& v = GetOrAdd(style);
+                    v.backgroundMaterial = {};
                     break;
                     }
                 default: break;
@@ -156,18 +129,18 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                 switch(prop.id)
                 {
                 case Ids::backgroundColor:{
-                    auto v = fget();
-                    v->backgroundColor = pst->backgroundColor;
+                    auto& v = GetOrAdd(style);
+                    v.backgroundColor = pst->backgroundColor;
                     break;
                     }
                 case Ids::backgroundImage:{
-                    auto v = fget();
-                    v->backgroundImage = pst->backgroundImage;
+                    auto& v = GetOrAdd(style);
+                    v.backgroundImage = pst->backgroundImage;
                     break;
                     }
                 case Ids::backgroundMaterial:{
-                    auto v = fget();
-                    v->backgroundMaterial = pst->backgroundMaterial;
+                    auto& v = GetOrAdd(style);
+                    v.backgroundMaterial = pst->backgroundMaterial;
                     break;
                     }
                 default: break;
@@ -179,18 +152,18 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
             switch(prop.id)
             {
                 case Ids::backgroundColor:{
-                    auto v = fget();
-                    v->backgroundColor = sheet.Get<Color4f>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.backgroundColor = sheet.Get<Color4f>(prop.value);
                     break;
                     }
                 case Ids::backgroundImage:{
-                    auto v = fget();
-                    v->backgroundImage = sheet.Get<const ostr::string_view>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.backgroundImage = sheet.Get<const ostr::string_view>(prop.value);
                     break;
                     }
                 case Ids::backgroundMaterial:{
-                    auto v = fget();
-                    v->backgroundMaterial = sheet.Get<const ostr::string_view>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.value);
                     break;
                     }
                 default: break;
@@ -200,36 +173,9 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
 }
 
 
-OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override)
 {
-    OGUI::StyleBackground* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto& s = style.structs[StyleBackgroundEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleBackground*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleBackground>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleBackground>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     
     auto mask = override[StyleBackgroundEntry];
     
@@ -244,47 +190,47 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
         switch(prop.id)
         {
             case Ids::backgroundColor:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->backgroundColor = sheet.Get<Color4f>(prop.from);
+                    v.backgroundColor = sheet.Get<Color4f>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->backgroundColor = sheet.Get<Color4f>(prop.to);
+                    v.backgroundColor = sheet.Get<Color4f>(prop.to);
                 else if(prop.from == prop.to)
-                    v->backgroundColor = OGUI::Lerp(v->backgroundColor, sheet.Get<Color4f>(prop.to), prop.alpha);
+                    v.backgroundColor = OGUI::Lerp(v.backgroundColor, sheet.Get<Color4f>(prop.to), prop.alpha);
                 else
-                    v->backgroundColor = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
+                    v.backgroundColor = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
                 
                 break;
                 }
             case Ids::backgroundImage:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->backgroundImage = sheet.Get<const ostr::string_view>(prop.from);
+                    v.backgroundImage = sheet.Get<const ostr::string_view>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->backgroundImage = sheet.Get<const ostr::string_view>(prop.to);
+                    v.backgroundImage = sheet.Get<const ostr::string_view>(prop.to);
                 else if(prop.from == prop.to)
-                    v->backgroundImage = OGUI::Lerp(v->backgroundImage, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                    v.backgroundImage = OGUI::Lerp(v.backgroundImage, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 else
-                    v->backgroundImage = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                    v.backgroundImage = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 
                 break;
                 }
             case Ids::backgroundMaterial:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->backgroundMaterial = sheet.Get<const ostr::string_view>(prop.from);
+                    v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->backgroundMaterial = sheet.Get<const ostr::string_view>(prop.to);
+                    v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.to);
                 else if(prop.from == prop.to)
-                    v->backgroundMaterial = OGUI::Lerp(v->backgroundMaterial, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                    v.backgroundMaterial = OGUI::Lerp(v.backgroundMaterial, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 else
-                    v->backgroundMaterial = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                    v.backgroundMaterial = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -294,7 +240,59 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
     return damage;
 }
 
-void OGUI::StyleBackground::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+
+OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+{
+    RestyleDamage damage = RestyleDamage::None;
+    
+    auto mask = override[StyleBackgroundEntry];
+    auto& dst = Get(target);
+
+    for(auto& prop : props)
+    {
+        switch(prop.id)
+        {
+            case Ids::backgroundColor: if(mask & (1ull<<0)) continue; break;
+            case Ids::backgroundImage: if(mask & (1ull<<1)) continue; break;
+            case Ids::backgroundMaterial: if(mask & (1ull<<2)) continue; break;
+        }
+        switch(prop.id)
+        {
+            case Ids::backgroundColor:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.backgroundColor = dst.backgroundColor;
+                else
+                    v.backgroundColor = OGUI::Lerp(v.backgroundColor, dst.backgroundColor, prop.alpha);
+                
+                break;
+                }
+            case Ids::backgroundImage:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.backgroundImage = dst.backgroundImage;
+                else
+                    v.backgroundImage = OGUI::Lerp(v.backgroundImage, dst.backgroundImage, prop.alpha);
+                
+                break;
+                }
+            case Ids::backgroundMaterial:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.backgroundMaterial = dst.backgroundMaterial;
+                else
+                    v.backgroundMaterial = OGUI::Lerp(v.backgroundMaterial, dst.backgroundMaterial, prop.alpha);
+                
+                break;
+                }
+            default: break;
+        }
+    }
+    return damage; 
+}
+
+void OGUI::StyleBackground::Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override)
 {
     auto po = TryGet(other);
     if(!po)
@@ -309,6 +307,46 @@ void OGUI::StyleBackground::Merge(ComputedStyle& style, ComputedStyle& other, co
         s.backgroundImage = po->backgroundImage;
     if(mask & (1ull << 2))
         s.backgroundMaterial = po->backgroundMaterial;
+}
+
+void OGUI::StyleBackground::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    for(auto prop : override)
+    {
+        switch(prop)
+        {
+            case Ids::backgroundColor: {
+                 auto& v = GetOrAdd(style);
+                 v.backgroundColor = po->backgroundColor;
+                 break;
+            }
+            case Ids::backgroundImage: {
+                 auto& v = GetOrAdd(style);
+                 v.backgroundImage = po->backgroundImage;
+                 break;
+            }
+            case Ids::backgroundMaterial: {
+                 auto& v = GetOrAdd(style);
+                 v.backgroundMaterial = po->backgroundMaterial;
+                 break;
+            }
+        }
+    }
+}
+
+size_t OGUI::StyleBackground::GetProperty(ostr::string_view name)
+{
+    switchstr(name)
+    {
+        casestr("background-color") return Ids::backgroundColor;
+        casestr("background-image") return Ids::backgroundImage;
+        casestr("background-material") return Ids::backgroundMaterial;
+        default: return -1;
+    }
+    return -1;
 }
 
 void OGUI::StyleBackground::SetupParser()

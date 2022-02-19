@@ -83,36 +83,9 @@ void OGUI::StyleEffects::Initialize()
     opacity = 1;
 }
 
-void OGUI::StyleEffects::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
+void OGUI::StyleEffects::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
-    OGUI::StyleEffects* st = nullptr;
-    auto& s = style.structs[StyleEffectsEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleEffects*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleEffects>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleEffects>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     auto mask = override[StyleEffectsEntry];
     
     for(auto& prop : props)
@@ -130,8 +103,8 @@ void OGUI::StyleEffects::ApplyProperties(ComputedStyle& style, const StyleSheetS
                 switch(prop.id)
                 {
                 case Ids::opacity: {
-                    auto v = fget();
-                    v->opacity = 1;
+                    auto& v = GetOrAdd(style);
+                    v.opacity = 1;
                     break;
                     }
                 default: break;
@@ -142,8 +115,8 @@ void OGUI::StyleEffects::ApplyProperties(ComputedStyle& style, const StyleSheetS
                 switch(prop.id)
                 {
                 case Ids::opacity:{
-                    auto v = fget();
-                    v->opacity = pst->opacity;
+                    auto& v = GetOrAdd(style);
+                    v.opacity = pst->opacity;
                     break;
                     }
                 default: break;
@@ -155,8 +128,8 @@ void OGUI::StyleEffects::ApplyProperties(ComputedStyle& style, const StyleSheetS
             switch(prop.id)
             {
                 case Ids::opacity:{
-                    auto v = fget();
-                    v->opacity = sheet.Get<float>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.opacity = sheet.Get<float>(prop.value);
                     break;
                     }
                 default: break;
@@ -166,36 +139,9 @@ void OGUI::StyleEffects::ApplyProperties(ComputedStyle& style, const StyleSheetS
 }
 
 
-OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override)
 {
-    OGUI::StyleEffects* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto& s = style.structs[StyleEffectsEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleEffects*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleEffects>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleEffects>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     
     auto mask = override[StyleEffectsEntry];
     
@@ -208,17 +154,17 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
         switch(prop.id)
         {
             case Ids::opacity:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->opacity = sheet.Get<float>(prop.from);
+                    v.opacity = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->opacity = sheet.Get<float>(prop.to);
+                    v.opacity = sheet.Get<float>(prop.to);
                 else if(prop.from == prop.to)
-                    v->opacity = OGUI::Lerp(v->opacity, sheet.Get<float>(prop.to), prop.alpha);
+                    v.opacity = OGUI::Lerp(v.opacity, sheet.Get<float>(prop.to), prop.alpha);
                 else
-                    v->opacity = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.opacity = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -228,7 +174,39 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
     return damage;
 }
 
-void OGUI::StyleEffects::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+
+OGUI::RestyleDamage OGUI::StyleEffects::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+{
+    RestyleDamage damage = RestyleDamage::None;
+    
+    auto mask = override[StyleEffectsEntry];
+    auto& dst = Get(target);
+
+    for(auto& prop : props)
+    {
+        switch(prop.id)
+        {
+            case Ids::opacity: if(mask & (1ull<<0)) continue; break;
+        }
+        switch(prop.id)
+        {
+            case Ids::opacity:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.opacity = dst.opacity;
+                else
+                    v.opacity = OGUI::Lerp(v.opacity, dst.opacity, prop.alpha);
+                
+                break;
+                }
+            default: break;
+        }
+    }
+    return damage; 
+}
+
+void OGUI::StyleEffects::Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override)
 {
     auto po = TryGet(other);
     if(!po)
@@ -239,6 +217,34 @@ void OGUI::StyleEffects::Merge(ComputedStyle& style, ComputedStyle& other, const
     auto& s = GetOrAdd(style);
     if(mask & (1ull << 0))
         s.opacity = po->opacity;
+}
+
+void OGUI::StyleEffects::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    for(auto prop : override)
+    {
+        switch(prop)
+        {
+            case Ids::opacity: {
+                 auto& v = GetOrAdd(style);
+                 v.opacity = po->opacity;
+                 break;
+            }
+        }
+    }
+}
+
+size_t OGUI::StyleEffects::GetProperty(ostr::string_view name)
+{
+    switchstr(name)
+    {
+        casestr("opacity") return Ids::opacity;
+        default: return -1;
+    }
+    return -1;
 }
 
 void OGUI::StyleEffects::SetupParser()

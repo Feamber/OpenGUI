@@ -90,36 +90,9 @@ void OGUI::StyleText::Initialize()
     textShadow = {};
 }
 
-void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const gsl::span<size_t>& override, const ComputedStyle* parent)
+void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
 {
     auto pst = parent ? TryGet(*parent) : nullptr;
-    OGUI::StyleText* st = nullptr;
-    auto& s = style.structs[StyleTextEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleText*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleText>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleText>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     auto mask = override[StyleTextEntry];
     
     for(auto& prop : props)
@@ -143,43 +116,43 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 switch(prop.id)
                 {
                 case Ids::fontSize: {
-                    auto v = fget();
-                    v->fontSize = 20.f;
+                    auto& v = GetOrAdd(style);
+                    v.fontSize = 20.f;
                     break;
                     }
                 case Ids::color: {
-                    auto v = fget();
-                    v->color = Color4f(0,0,0,1);
+                    auto& v = GetOrAdd(style);
+                    v.color = Color4f(0,0,0,1);
                     break;
                     }
                 case Ids::fontFamily: {
-                    auto v = fget();
-                    v->fontFamily = {};
+                    auto& v = GetOrAdd(style);
+                    v.fontFamily = {};
                     break;
                     }
                 case Ids::fontStyle: {
-                    auto v = fget();
-                    v->fontStyle = ETextStyle::Normal;
+                    auto& v = GetOrAdd(style);
+                    v.fontStyle = ETextStyle::Normal;
                     break;
                     }
                 case Ids::fontWeight: {
-                    auto v = fget();
-                    v->fontWeight = 400;
+                    auto& v = GetOrAdd(style);
+                    v.fontWeight = 400;
                     break;
                     }
                 case Ids::lineHeight: {
-                    auto v = fget();
-                    v->lineHeight = YGValueAuto;
+                    auto& v = GetOrAdd(style);
+                    v.lineHeight = YGValueAuto;
                     break;
                     }
                 case Ids::textAlign: {
-                    auto v = fget();
-                    v->textAlign = ETextAlign::Start;
+                    auto& v = GetOrAdd(style);
+                    v.textAlign = ETextAlign::Start;
                     break;
                     }
                 case Ids::textShadow: {
-                    auto v = fget();
-                    v->textShadow = {};
+                    auto& v = GetOrAdd(style);
+                    v.textShadow = {};
                     break;
                     }
                 default: break;
@@ -190,43 +163,43 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 switch(prop.id)
                 {
                 case Ids::fontSize:{
-                    auto v = fget();
-                    v->fontSize = pst->fontSize;
+                    auto& v = GetOrAdd(style);
+                    v.fontSize = pst->fontSize;
                     break;
                     }
                 case Ids::color:{
-                    auto v = fget();
-                    v->color = pst->color;
+                    auto& v = GetOrAdd(style);
+                    v.color = pst->color;
                     break;
                     }
                 case Ids::fontFamily:{
-                    auto v = fget();
-                    v->fontFamily = pst->fontFamily;
+                    auto& v = GetOrAdd(style);
+                    v.fontFamily = pst->fontFamily;
                     break;
                     }
                 case Ids::fontStyle:{
-                    auto v = fget();
-                    v->fontStyle = pst->fontStyle;
+                    auto& v = GetOrAdd(style);
+                    v.fontStyle = pst->fontStyle;
                     break;
                     }
                 case Ids::fontWeight:{
-                    auto v = fget();
-                    v->fontWeight = pst->fontWeight;
+                    auto& v = GetOrAdd(style);
+                    v.fontWeight = pst->fontWeight;
                     break;
                     }
                 case Ids::lineHeight:{
-                    auto v = fget();
-                    v->lineHeight = pst->lineHeight;
+                    auto& v = GetOrAdd(style);
+                    v.lineHeight = pst->lineHeight;
                     break;
                     }
                 case Ids::textAlign:{
-                    auto v = fget();
-                    v->textAlign = pst->textAlign;
+                    auto& v = GetOrAdd(style);
+                    v.textAlign = pst->textAlign;
                     break;
                     }
                 case Ids::textShadow:{
-                    auto v = fget();
-                    v->textShadow = pst->textShadow;
+                    auto& v = GetOrAdd(style);
+                    v.textShadow = pst->textShadow;
                     break;
                     }
                 default: break;
@@ -238,43 +211,43 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
             switch(prop.id)
             {
                 case Ids::fontSize:{
-                    auto v = fget();
-                    v->fontSize = sheet.Get<float>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.fontSize = sheet.Get<float>(prop.value);
                     break;
                     }
                 case Ids::color:{
-                    auto v = fget();
-                    v->color = sheet.Get<Color4f>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.color = sheet.Get<Color4f>(prop.value);
                     break;
                     }
                 case Ids::fontFamily:{
-                    auto v = fget();
-                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.value));
+                    auto& v = GetOrAdd(style);
+                    v.fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.value));
                     break;
                     }
                 case Ids::fontStyle:{
-                    auto v = fget();
-                    v->fontStyle = sheet.Get<ETextStyle>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.fontStyle = sheet.Get<ETextStyle>(prop.value);
                     break;
                     }
                 case Ids::fontWeight:{
-                    auto v = fget();
-                    v->fontWeight = sheet.Get<int>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.fontWeight = sheet.Get<int>(prop.value);
                     break;
                     }
                 case Ids::lineHeight:{
-                    auto v = fget();
-                    v->lineHeight = sheet.Get<YGValue>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.lineHeight = sheet.Get<YGValue>(prop.value);
                     break;
                     }
                 case Ids::textAlign:{
-                    auto v = fget();
-                    v->textAlign = sheet.Get<ETextAlign>(prop.value);
+                    auto& v = GetOrAdd(style);
+                    v.textAlign = sheet.Get<ETextAlign>(prop.value);
                     break;
                     }
                 case Ids::textShadow:{
-                    auto v = fget();
-                    v->textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.value));
+                    auto& v = GetOrAdd(style);
+                    v.textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.value));
                     break;
                     }
                 default: break;
@@ -284,36 +257,9 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
 }
 
 
-OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const gsl::span<size_t>& override)
+OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override)
 {
-    OGUI::StyleText* st = nullptr;
     RestyleDamage damage = RestyleDamage::None;
-    auto& s = style.structs[StyleTextEntry];
-    bool owned = false;
-    if(s.ptr)
-    {
-        st = (StyleText*)s.ptr.get();
-        owned = s.owned;
-    }
-    auto fget = [&]
-    {
-        if(!st)
-        {
-            auto value = std::make_shared<OGUI::StyleText>();
-            value->Initialize();
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        else if(!owned)
-        {
-            auto value = std::make_shared<OGUI::StyleText>(*st);
-            s.ptr = std::static_pointer_cast<void>(value);
-            s.owned = owned = true;
-            st = value.get();
-        }
-        return st;
-    };
     
     auto mask = override[StyleTextEntry];
     
@@ -333,135 +279,135 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
         switch(prop.id)
         {
             case Ids::fontSize:{
-                auto v = fget();
-                auto prevValue = v->fontSize;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.fontSize;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->fontSize = sheet.Get<float>(prop.from);
+                    v.fontSize = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->fontSize = sheet.Get<float>(prop.to);
+                    v.fontSize = sheet.Get<float>(prop.to);
                 else if(prop.from == prop.to)
-                    v->fontSize = OGUI::Lerp(v->fontSize, sheet.Get<float>(prop.to), prop.alpha);
+                    v.fontSize = OGUI::Lerp(v.fontSize, sheet.Get<float>(prop.to), prop.alpha);
                 else
-                    v->fontSize = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.fontSize = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
-                if(prevValue != v->fontSize)
+                if(prevValue != v.fontSize)
                     damage |= RestyleDamage::TextLayout;
                 break;
                 }
             case Ids::color:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->color = sheet.Get<Color4f>(prop.from);
+                    v.color = sheet.Get<Color4f>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->color = sheet.Get<Color4f>(prop.to);
+                    v.color = sheet.Get<Color4f>(prop.to);
                 else if(prop.from == prop.to)
-                    v->color = OGUI::Lerp(v->color, sheet.Get<Color4f>(prop.to), prop.alpha);
+                    v.color = OGUI::Lerp(v.color, sheet.Get<Color4f>(prop.to), prop.alpha);
                 else
-                    v->color = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
+                    v.color = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
                 
                 break;
                 }
             case Ids::fontFamily:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.from));
+                    v.fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.to));
+                    v.fontFamily = ToOwned(sheet.Get<const gsl::span<ostr::string>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->fontFamily = OGUI::Lerp(v->fontFamily, sheet.Get<const gsl::span<ostr::string>>(prop.to), prop.alpha);
+                    v.fontFamily = OGUI::Lerp(v.fontFamily, sheet.Get<const gsl::span<ostr::string>>(prop.to), prop.alpha);
                 else
-                    v->fontFamily = OGUI::Lerp(sheet.Get<const gsl::span<ostr::string>>(prop.from), sheet.Get<const gsl::span<ostr::string>>(prop.to), prop.alpha);
+                    v.fontFamily = OGUI::Lerp(sheet.Get<const gsl::span<ostr::string>>(prop.from), sheet.Get<const gsl::span<ostr::string>>(prop.to), prop.alpha);
                 
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
                 }
             case Ids::fontStyle:{
-                auto v = fget();
-                auto prevValue = v->fontStyle;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.fontStyle;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->fontStyle = sheet.Get<ETextStyle>(prop.from);
+                    v.fontStyle = sheet.Get<ETextStyle>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->fontStyle = sheet.Get<ETextStyle>(prop.to);
+                    v.fontStyle = sheet.Get<ETextStyle>(prop.to);
                 else if(prop.from == prop.to)
-                    v->fontStyle = OGUI::Lerp(v->fontStyle, sheet.Get<ETextStyle>(prop.to), prop.alpha);
+                    v.fontStyle = OGUI::Lerp(v.fontStyle, sheet.Get<ETextStyle>(prop.to), prop.alpha);
                 else
-                    v->fontStyle = OGUI::Lerp(sheet.Get<ETextStyle>(prop.from), sheet.Get<ETextStyle>(prop.to), prop.alpha);
+                    v.fontStyle = OGUI::Lerp(sheet.Get<ETextStyle>(prop.from), sheet.Get<ETextStyle>(prop.to), prop.alpha);
                 
-                if(prevValue != v->fontStyle)
+                if(prevValue != v.fontStyle)
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
                 }
             case Ids::fontWeight:{
-                auto v = fget();
-                auto prevValue = v->fontWeight;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.fontWeight;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->fontWeight = sheet.Get<int>(prop.from);
+                    v.fontWeight = sheet.Get<int>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->fontWeight = sheet.Get<int>(prop.to);
+                    v.fontWeight = sheet.Get<int>(prop.to);
                 else if(prop.from == prop.to)
-                    v->fontWeight = OGUI::Lerp(v->fontWeight, sheet.Get<int>(prop.to), prop.alpha);
+                    v.fontWeight = OGUI::Lerp(v.fontWeight, sheet.Get<int>(prop.to), prop.alpha);
                 else
-                    v->fontWeight = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
+                    v.fontWeight = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
                 
-                if(prevValue != v->fontWeight)
+                if(prevValue != v.fontWeight)
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
                 }
             case Ids::lineHeight:{
-                auto v = fget();
-                auto prevValue = v->lineHeight;
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.lineHeight;
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->lineHeight = sheet.Get<YGValue>(prop.from);
+                    v.lineHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->lineHeight = sheet.Get<YGValue>(prop.to);
+                    v.lineHeight = sheet.Get<YGValue>(prop.to);
                 else if(prop.from == prop.to)
-                    v->lineHeight = OGUI::Lerp(v->lineHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.lineHeight = OGUI::Lerp(v.lineHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
-                    v->lineHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.lineHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
-                if(prevValue != v->lineHeight)
+                if(prevValue != v.lineHeight)
                     damage |= RestyleDamage::TextLayout;
                 break;
                 }
             case Ids::textAlign:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->textAlign = sheet.Get<ETextAlign>(prop.from);
+                    v.textAlign = sheet.Get<ETextAlign>(prop.from);
                 else if(prop.alpha == 1.f)
-                    v->textAlign = sheet.Get<ETextAlign>(prop.to);
+                    v.textAlign = sheet.Get<ETextAlign>(prop.to);
                 else if(prop.from == prop.to)
-                    v->textAlign = OGUI::Lerp(v->textAlign, sheet.Get<ETextAlign>(prop.to), prop.alpha);
+                    v.textAlign = OGUI::Lerp(v.textAlign, sheet.Get<ETextAlign>(prop.to), prop.alpha);
                 else
-                    v->textAlign = OGUI::Lerp(sheet.Get<ETextAlign>(prop.from), sheet.Get<ETextAlign>(prop.to), prop.alpha);
+                    v.textAlign = OGUI::Lerp(sheet.Get<ETextAlign>(prop.from), sheet.Get<ETextAlign>(prop.to), prop.alpha);
                 
                 break;
                 }
             case Ids::textShadow:{
-                auto v = fget();
+                auto& v = GetOrAdd(style);
                 if(prop.alpha == 0.f && prop.from == prop.to)
                     break;
                 if(prop.alpha == 0.f)
-                    v->textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.from));
+                    v.textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.from));
                 else if(prop.alpha == 1.f)
-                    v->textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.to));
+                    v.textShadow = ToOwned(sheet.Get<const gsl::span<TextShadow>>(prop.to));
                 else if(prop.from == prop.to)
-                    v->textShadow = OGUI::Lerp(v->textShadow, sheet.Get<const gsl::span<TextShadow>>(prop.to), prop.alpha);
+                    v.textShadow = OGUI::Lerp(v.textShadow, sheet.Get<const gsl::span<TextShadow>>(prop.to), prop.alpha);
                 else
-                    v->textShadow = OGUI::Lerp(sheet.Get<const gsl::span<TextShadow>>(prop.from), sheet.Get<const gsl::span<TextShadow>>(prop.to), prop.alpha);
+                    v.textShadow = OGUI::Lerp(sheet.Get<const gsl::span<TextShadow>>(prop.from), sheet.Get<const gsl::span<TextShadow>>(prop.to), prop.alpha);
                 
                 break;
                 }
@@ -471,7 +417,122 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
     return damage;
 }
 
-void OGUI::StyleText::Merge(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+
+OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+{
+    RestyleDamage damage = RestyleDamage::None;
+    
+    auto mask = override[StyleTextEntry];
+    auto& dst = Get(target);
+
+    for(auto& prop : props)
+    {
+        switch(prop.id)
+        {
+            case Ids::fontSize: if(mask & (1ull<<0)) continue; break;
+            case Ids::color: if(mask & (1ull<<1)) continue; break;
+            case Ids::fontFamily: if(mask & (1ull<<2)) continue; break;
+            case Ids::fontStyle: if(mask & (1ull<<3)) continue; break;
+            case Ids::fontWeight: if(mask & (1ull<<4)) continue; break;
+            case Ids::lineHeight: if(mask & (1ull<<5)) continue; break;
+            case Ids::textAlign: if(mask & (1ull<<6)) continue; break;
+            case Ids::textShadow: if(mask & (1ull<<7)) continue; break;
+        }
+        switch(prop.id)
+        {
+            case Ids::fontSize:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.fontSize;
+                if(prop.alpha == 1.f)
+                    v.fontSize = dst.fontSize;
+                else
+                    v.fontSize = OGUI::Lerp(v.fontSize, dst.fontSize, prop.alpha);
+                
+                if(prevValue != v.fontSize)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::color:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.color = dst.color;
+                else
+                    v.color = OGUI::Lerp(v.color, dst.color, prop.alpha);
+                
+                break;
+                }
+            case Ids::fontFamily:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.fontFamily = dst.fontFamily;
+                else
+                    v.fontFamily = OGUI::Lerp(v.fontFamily, dst.fontFamily, prop.alpha);
+                
+                    damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
+                break;
+                }
+            case Ids::fontStyle:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.fontStyle;
+                if(prop.alpha == 1.f)
+                    v.fontStyle = dst.fontStyle;
+                else
+                    v.fontStyle = OGUI::Lerp(v.fontStyle, dst.fontStyle, prop.alpha);
+                
+                if(prevValue != v.fontStyle)
+                    damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
+                break;
+                }
+            case Ids::fontWeight:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.fontWeight;
+                if(prop.alpha == 1.f)
+                    v.fontWeight = dst.fontWeight;
+                else
+                    v.fontWeight = OGUI::Lerp(v.fontWeight, dst.fontWeight, prop.alpha);
+                
+                if(prevValue != v.fontWeight)
+                    damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
+                break;
+                }
+            case Ids::lineHeight:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.lineHeight;
+                if(prop.alpha == 1.f)
+                    v.lineHeight = dst.lineHeight;
+                else
+                    v.lineHeight = OGUI::Lerp(v.lineHeight, dst.lineHeight, prop.alpha);
+                
+                if(prevValue != v.lineHeight)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textAlign:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.textAlign = dst.textAlign;
+                else
+                    v.textAlign = OGUI::Lerp(v.textAlign, dst.textAlign, prop.alpha);
+                
+                break;
+                }
+            case Ids::textShadow:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.textShadow = dst.textShadow;
+                else
+                    v.textShadow = OGUI::Lerp(v.textShadow, dst.textShadow, prop.alpha);
+                
+                break;
+                }
+            default: break;
+        }
+    }
+    return damage; 
+}
+
+void OGUI::StyleText::Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override)
 {
     auto po = TryGet(other);
     if(!po)
@@ -496,6 +557,76 @@ void OGUI::StyleText::Merge(ComputedStyle& style, ComputedStyle& other, const gs
         s.textAlign = po->textAlign;
     if(mask & (1ull << 7))
         s.textShadow = po->textShadow;
+}
+
+void OGUI::StyleText::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
+{
+    auto po = TryGet(other);
+    if(!po)
+        return;
+    for(auto prop : override)
+    {
+        switch(prop)
+        {
+            case Ids::fontSize: {
+                 auto& v = GetOrAdd(style);
+                 v.fontSize = po->fontSize;
+                 break;
+            }
+            case Ids::color: {
+                 auto& v = GetOrAdd(style);
+                 v.color = po->color;
+                 break;
+            }
+            case Ids::fontFamily: {
+                 auto& v = GetOrAdd(style);
+                 v.fontFamily = po->fontFamily;
+                 break;
+            }
+            case Ids::fontStyle: {
+                 auto& v = GetOrAdd(style);
+                 v.fontStyle = po->fontStyle;
+                 break;
+            }
+            case Ids::fontWeight: {
+                 auto& v = GetOrAdd(style);
+                 v.fontWeight = po->fontWeight;
+                 break;
+            }
+            case Ids::lineHeight: {
+                 auto& v = GetOrAdd(style);
+                 v.lineHeight = po->lineHeight;
+                 break;
+            }
+            case Ids::textAlign: {
+                 auto& v = GetOrAdd(style);
+                 v.textAlign = po->textAlign;
+                 break;
+            }
+            case Ids::textShadow: {
+                 auto& v = GetOrAdd(style);
+                 v.textShadow = po->textShadow;
+                 break;
+            }
+        }
+    }
+}
+
+size_t OGUI::StyleText::GetProperty(ostr::string_view name)
+{
+    switchstr(name)
+    {
+        casestr("font-size") return Ids::fontSize;
+        casestr("color") return Ids::color;
+        casestr("font-family") return Ids::fontFamily;
+        casestr("font-style") return Ids::fontStyle;
+        casestr("font-weight") return Ids::fontWeight;
+        casestr("line-height") return Ids::lineHeight;
+        casestr("text-align") return Ids::textAlign;
+        casestr("text-shadow") return Ids::textShadow;
+        default: return -1;
+    }
+    return -1;
 }
 
 void OGUI::StyleText::SetupParser()
