@@ -188,7 +188,10 @@ void OGUI::Context::MarkLayoutDirty(VisualElement* element)
 void OGUI::Context::InvalidateCssCache()
 {
 	for(auto& window : windowContexts)
+	{
 		window->_cssCacheInvalidated = true;
+		window->_layoutDirty = true;
+	}
 }
  
 void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
@@ -429,6 +432,7 @@ bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta, f
 	event.button = EMouseKey::MB;
 	event.gestureType = EGestureEvent::None;
 	event.wheelOrGestureDelta.y = delta;
+	event.position = point;
 	return RouteEvent(picked, event);
 }
 

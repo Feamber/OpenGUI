@@ -452,6 +452,8 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 				{
 					anim.yielding = true;
 					anim.evaluating = true;
+					float t = (anim.time - anim.style.animationDelay) / anim.style.animationDuration;
+					anim.time = (t - int(t)) * anim.style.animationDuration + anim.style.animationDelay;
 					anim.goingback = anim.style.animationYieldMode == EAnimYieldMode::GoBack;
 				}
 				else 

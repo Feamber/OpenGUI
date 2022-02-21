@@ -18,7 +18,7 @@ namespace OGUI
         ostr::string text;
     };
 
-    class TextElement : public VisualElement
+    class OGUI_API TextElement : public VisualElement
     {
     public:
         TextElement();
