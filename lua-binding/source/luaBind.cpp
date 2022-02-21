@@ -629,4 +629,8 @@ void OGUI::BindLua(lua_State* state)
         LuaEvent event{table};
         SendEventTo(target, eventName, event);
     };
+    OGUI["NewVisualElement"] = +[]()
+    {
+        return new VisualElement();;
+    };
 }
