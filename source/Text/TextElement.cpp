@@ -249,6 +249,12 @@ namespace OGUI
         _paragraphDirty = true;
     }
 
+    void TextElement::ClearText()
+    {
+        _inlines.clear();
+        _paragraphDirty = true;
+    }
+
     void TextElement::BuildParagraph()
     {
         if(_paragraphDirty)

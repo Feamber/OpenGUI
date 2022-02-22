@@ -11,14 +11,14 @@ namespace godot
     class TextParagraph; 
     class Font;
 }
-namespace OGUI
+namespace OGUI reflect
 {
     struct OGUI_API BindText : public std::enable_shared_from_this<BindText>
     {
         ostr::string text;
     };
 
-    class OGUI_API TextElement : public VisualElement
+    class OGUI_API reflect TextElement : public VisualElement
     {
     public:
         TextElement();
@@ -37,8 +37,11 @@ namespace OGUI
 
         void AddInlineElement(VisualElement* element);
         void AddInlineText(TextElement* text);
+        attr("script":true)
         void AddText(ostr::string text);
         void AddBindText(Name attrName);
+        attr("script":true)
+        void ClearText();
         void BuildParagraph();
         void UpdateInlineLayout();
 

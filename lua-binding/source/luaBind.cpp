@@ -4,9 +4,12 @@
 #include "OpenGUI/Event/EventBase.h"
 #include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/Style2/ParseUtils.hpp"
+#include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/VisualElement.h"
+#include "OpenGUI/XmlParser/XmlParser.h"
 #include "sol/sol.hpp"
 #include "luaBind.hpp"
+#include <cstddef>
 #include <string>
 #include <typeindex>
 #include "OpenGUI/Event/EventRouter.h"
@@ -631,6 +634,26 @@ void OGUI::BindLua(lua_State* state)
     };
     OGUI["NewVisualElement"] = +[]()
     {
-        return new VisualElement();;
+        return new VisualElement();
+    };
+    OGUI["LoadXmlFile"] = +[](std::string xmlFile)
+    {
+        OGUI::ParseXmlState xmlState;
+        auto asset = OGUI::LoadXmlFile(xmlFile.c_str(), xmlState);
+		OGUI::InstantiateXmlState InstantState;
+		auto ve = asset->Instantiate(InstantState);
+        return ve;
+    };
+    OGUI["CastTextElement"] = +[](VisualElement* target) -> OGUI::TextElement*
+    {
+        if(target->IsA(u"TextElement"))
+            return (OGUI::TextElement*)target;
+        return nullptr;
+    };
+    OGUI["QueryAll_Lua"] = +[](VisualElement* root, ostr::string str)
+    {
+        std::vector<VisualElement*> out;
+        OGUI::QueryAll(root, str, out);
+        return sol::as_table(out);
     };
 }

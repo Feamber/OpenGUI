@@ -1,18 +1,19 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Style2/generated/background.h"
-#include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Event/EventBase.h"
-#include "OpenGUI/Style2/generated/border.h"
-#include "OpenGUI/Context.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Style2/generated/position.h"
+#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Style2/generated/text.h"
+#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style2/generated/effects.h"
+#include "OpenGUI/Style2/generated/border.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -68,6 +69,38 @@ void BindLua_generated(lua_State* L)
         type["UpdataXmlFilterCache_Global"] = (void(OGUI::Context::*)())&OGUI::Context::UpdataXmlFilterCache_Global;
         type["HasFilterTag_Global"] = (bool(OGUI::Context::*)(const char *)const)&OGUI::Context::HasFilterTag_Global;
         type["Get"] = (OGUI::Context &(*)())&OGUI::Context::Get;
+    }
+    {
+        sol::usertype<OGUI::TextElement> type = 
+            OGUI.new_usertype<OGUI::TextElement>("TextElement", sol::base_classes, sol::bases<OGUI::VisualElement>());
+        type["AddText"] = (void(OGUI::TextElement::*)(ostr::string))&OGUI::TextElement::AddText;
+        type["ClearText"] = (void(OGUI::TextElement::*)())&OGUI::TextElement::ClearText;
+        type["GetParent"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetParent;
+        type["GetHierachyParent"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetHierachyParent;
+        type["Visible"] = (bool(OGUI::TextElement::*)()const)&OGUI::VisualElement::Visible;
+        type["GetName"] = (const ostr::string &(OGUI::TextElement::*)())&OGUI::VisualElement::GetName;
+        type["SetName"] = (void(OGUI::TextElement::*)(ostr::string))&OGUI::VisualElement::SetName;
+        type["SetVisibility"] = (void(OGUI::TextElement::*)(bool))&OGUI::VisualElement::SetVisibility;
+        type["IsClippingChildren"] = (bool(OGUI::TextElement::*)())&OGUI::VisualElement::IsClippingChildren;
+        type["IsPick"] = (bool(OGUI::TextElement::*)())&OGUI::VisualElement::IsPick;
+        type["SetIsPick"] = (void(OGUI::TextElement::*)(bool))&OGUI::VisualElement::SetIsPick;
+        type["PushChild"] = (void(OGUI::TextElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::PushChild;
+        type["InsertChild"] = (void(OGUI::TextElement::*)(OGUI::VisualElement *, int))&OGUI::VisualElement::InsertChild;
+        type["RemoveChild"] = (void(OGUI::TextElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
+        type["GetRoot"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetRoot;
+        type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetLayoutRoot;
+        type["GetSize"] = (OGUI::Vector<float, 2>(OGUI::TextElement::*)()const)&OGUI::VisualElement::GetSize;
+        type["AddStyleClass"] = +[](OGUI::TextElement* self, ostr::string _0) { return self->AddStyleClass(_0); };
+        type["RemoveStyleClass"] = +[](OGUI::TextElement* self, ostr::string _0) { return self->RemoveStyleClass(_0); };
+        type["SetPseudoClass"] = (void(OGUI::TextElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
+        type["SetFocusable"] = (void(OGUI::TextElement::*)(bool))&OGUI::VisualElement::SetFocusable;
+        type["GetFocusScopeFocused"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetFocusScopeFocused;
+        type["AddScroll"] = (void(OGUI::TextElement::*)(OGUI::Vector<float, 2>))&OGUI::VisualElement::AddScroll;
+        type["SetScroll"] = (void(OGUI::TextElement::*)(OGUI::Vector<float, 2>))&OGUI::VisualElement::SetScroll;
+        type["SetXmlFilter"] = (void(OGUI::TextElement::*)(const char *, const char *))&OGUI::VisualElement::SetXmlFilter;
+        type["CleanXmlFilter"] = (void(OGUI::TextElement::*)(const char *))&OGUI::VisualElement::CleanXmlFilter;
+        type["Bind"] = (void(OGUI::TextElement::*)(OGUI::Bindable &))&OGUI::Bindable::Bind;
+        type["Unbind"] = (void(OGUI::TextElement::*)(OGUI::Bindable &))&OGUI::Bindable::Unbind;
     }
     OGUI["QueryFirst"] = +[](OGUI::VisualElement * _0, ostr::string _1) { return OGUI::QueryFirst(_0, _1); };
     OGUI["QueryAll"] = +[](OGUI::VisualElement * _0, ostr::string _1, std::vector<OGUI::VisualElement *> & _2) { return OGUI::QueryAll(_0, _1, _2); };
