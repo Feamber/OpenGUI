@@ -191,14 +191,10 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
         {
             case Ids::backgroundColor:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.backgroundColor = sheet.Get<Color4f>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.backgroundColor = sheet.Get<Color4f>(prop.to);
-                else if(prop.from == prop.to)
-                    v.backgroundColor = OGUI::Lerp(v.backgroundColor, sheet.Get<Color4f>(prop.to), prop.alpha);
                 else
                     v.backgroundColor = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
                 
@@ -206,14 +202,10 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                 }
             case Ids::backgroundImage:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.backgroundImage = sheet.Get<const ostr::string_view>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.backgroundImage = sheet.Get<const ostr::string_view>(prop.to);
-                else if(prop.from == prop.to)
-                    v.backgroundImage = OGUI::Lerp(v.backgroundImage, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 else
                     v.backgroundImage = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 
@@ -221,14 +213,10 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                 }
             case Ids::backgroundMaterial:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.to);
-                else if(prop.from == prop.to)
-                    v.backgroundMaterial = OGUI::Lerp(v.backgroundMaterial, sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 else
                     v.backgroundMaterial = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
                 

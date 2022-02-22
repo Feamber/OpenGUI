@@ -155,14 +155,10 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
         {
             case Ids::opacity:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.opacity = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.opacity = sheet.Get<float>(prop.to);
-                else if(prop.from == prop.to)
-                    v.opacity = OGUI::Lerp(v.opacity, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v.opacity = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 

@@ -146,17 +146,9 @@ OGUI::RestyleDamage OGUI::ComputedAnim::Apply(ComputedStyle &s, const StyleMasks
         int i=0;
         for(; i<count && track.frames[i].percentage < percentage; ++i);
         if(i == 0)
-        {   
-            //TODO: per frame timing function
-            auto alpha =  percentage / track.frames[i].percentage;
-            alpha = ApplyTimingFunction(style.animationTimingFunction, alpha);
-            props.push_back({track.id, track.frames[i].value, track.frames[i].value, alpha});
-        }
+            props.push_back({track.id, track.frames[i].value, track.frames[i].value, 0.f});
         else if(i==count)
-        {
-            auto alpha = 0.f;
-            props.push_back({track.id, track.frames[i-1].value, track.frames[i-1].value, alpha});
-        }
+            props.push_back({track.id, track.frames[i-1].value, track.frames[i-1].value, 0.f});
         else 
         {
             auto alpha = (percentage - track.frames[i-1].percentage) / (track.frames[i].percentage - track.frames[i-1].percentage);

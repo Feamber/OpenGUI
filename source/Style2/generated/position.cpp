@@ -750,14 +750,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
         {
             case Ids::transform:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.from));
                 else if(prop.alpha == 1.f)
                     v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.to));
-                else if(prop.from == prop.to)
-                    v.transform = OGUI::Lerp(v.transform, sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 else
                     v.transform = OGUI::Lerp(sheet.Get<const gsl::span<TransformFunction>>(prop.from), sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
                 
@@ -767,14 +763,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexGrow:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexGrow;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.flexGrow = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.flexGrow = sheet.Get<float>(prop.to);
-                else if(prop.from == prop.to)
-                    v.flexGrow = OGUI::Lerp(v.flexGrow, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v.flexGrow = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
@@ -785,14 +777,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexShrink:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexShrink;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.flexShrink = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.flexShrink = sheet.Get<float>(prop.to);
-                else if(prop.from == prop.to)
-                    v.flexShrink = OGUI::Lerp(v.flexShrink, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v.flexShrink = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
@@ -803,14 +791,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexBasis:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexBasis;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.flexBasis = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.flexBasis = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.flexBasis = OGUI::Lerp(v.flexBasis, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.flexBasis = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -821,14 +805,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::top:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.top;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.top = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.top = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.top = OGUI::Lerp(v.top, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.top = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -839,14 +819,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::right:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.right;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.right = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.right = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.right = OGUI::Lerp(v.right, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.right = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -857,14 +833,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::bottom:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.bottom;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.bottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.bottom = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.bottom = OGUI::Lerp(v.bottom, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.bottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -875,14 +847,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::left:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.left;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.left = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.left = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.left = OGUI::Lerp(v.left, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -893,14 +861,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginTop:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginTop;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.marginTop = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.marginTop = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.marginTop = OGUI::Lerp(v.marginTop, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.marginTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -911,14 +875,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginRight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginRight;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.marginRight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.marginRight = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.marginRight = OGUI::Lerp(v.marginRight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.marginRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -929,14 +889,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginBottom:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginBottom;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.marginBottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.marginBottom = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.marginBottom = OGUI::Lerp(v.marginBottom, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.marginBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -947,14 +903,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginLeft:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginLeft;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.marginLeft = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.marginLeft = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.marginLeft = OGUI::Lerp(v.marginLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -965,14 +917,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingTop:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingTop;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.paddingTop = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.paddingTop = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.paddingTop = OGUI::Lerp(v.paddingTop, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.paddingTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -983,14 +931,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingRight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingRight;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.paddingRight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.paddingRight = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.paddingRight = OGUI::Lerp(v.paddingRight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.paddingRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1001,14 +945,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingBottom:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingBottom;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.paddingBottom = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.paddingBottom = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.paddingBottom = OGUI::Lerp(v.paddingBottom, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.paddingBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1019,14 +959,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingLeft:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingLeft;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.paddingLeft = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.paddingLeft = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.paddingLeft = OGUI::Lerp(v.paddingLeft, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1037,14 +973,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::width:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.width;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.width = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.width = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.width = OGUI::Lerp(v.width, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.width = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1055,14 +987,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::height:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.height;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.height = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.height = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.height = OGUI::Lerp(v.height, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.height = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1073,14 +1001,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::position:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.position;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.position = sheet.Get<YGPositionType>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.position = sheet.Get<YGPositionType>(prop.to);
-                else if(prop.from == prop.to)
-                    v.position = OGUI::Lerp(v.position, sheet.Get<YGPositionType>(prop.to), prop.alpha);
                 else
                     v.position = OGUI::Lerp(sheet.Get<YGPositionType>(prop.from), sheet.Get<YGPositionType>(prop.to), prop.alpha);
                 
@@ -1091,14 +1015,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::overflow:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.overflow;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.overflow = sheet.Get<EFlexOverflow>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.overflow = sheet.Get<EFlexOverflow>(prop.to);
-                else if(prop.from == prop.to)
-                    v.overflow = OGUI::Lerp(v.overflow, sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
                 else
                     v.overflow = OGUI::Lerp(sheet.Get<EFlexOverflow>(prop.from), sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
                 
@@ -1109,14 +1029,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::alignSelf:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.alignSelf;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.alignSelf = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.alignSelf = sheet.Get<YGAlign>(prop.to);
-                else if(prop.from == prop.to)
-                    v.alignSelf = OGUI::Lerp(v.alignSelf, sheet.Get<YGAlign>(prop.to), prop.alpha);
                 else
                     v.alignSelf = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
@@ -1127,14 +1043,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::maxWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.maxWidth;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.maxWidth = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.maxWidth = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.maxWidth = OGUI::Lerp(v.maxWidth, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.maxWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1145,14 +1057,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::maxHeight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.maxHeight;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.maxHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.maxHeight = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.maxHeight = OGUI::Lerp(v.maxHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.maxHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1163,14 +1071,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::minWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.minWidth;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.minWidth = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.minWidth = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.minWidth = OGUI::Lerp(v.minWidth, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.minWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1181,14 +1085,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::minHeight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.minHeight;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.minHeight = sheet.Get<YGValue>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.minHeight = sheet.Get<YGValue>(prop.to);
-                else if(prop.from == prop.to)
-                    v.minHeight = OGUI::Lerp(v.minHeight, sheet.Get<YGValue>(prop.to), prop.alpha);
                 else
                     v.minHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
                 
@@ -1199,14 +1099,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexDirection:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexDirection;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.flexDirection = sheet.Get<YGFlexDirection>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.flexDirection = sheet.Get<YGFlexDirection>(prop.to);
-                else if(prop.from == prop.to)
-                    v.flexDirection = OGUI::Lerp(v.flexDirection, sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
                 else
                     v.flexDirection = OGUI::Lerp(sheet.Get<YGFlexDirection>(prop.from), sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
                 
@@ -1217,14 +1113,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::alignContent:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.alignContent;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.alignContent = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.alignContent = sheet.Get<YGAlign>(prop.to);
-                else if(prop.from == prop.to)
-                    v.alignContent = OGUI::Lerp(v.alignContent, sheet.Get<YGAlign>(prop.to), prop.alpha);
                 else
                     v.alignContent = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
@@ -1235,14 +1127,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::alignItems:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.alignItems;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.alignItems = sheet.Get<YGAlign>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.alignItems = sheet.Get<YGAlign>(prop.to);
-                else if(prop.from == prop.to)
-                    v.alignItems = OGUI::Lerp(v.alignItems, sheet.Get<YGAlign>(prop.to), prop.alpha);
                 else
                     v.alignItems = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
                 
@@ -1253,14 +1141,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::justifyContent:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.justifyContent;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.justifyContent = sheet.Get<YGJustify>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.justifyContent = sheet.Get<YGJustify>(prop.to);
-                else if(prop.from == prop.to)
-                    v.justifyContent = OGUI::Lerp(v.justifyContent, sheet.Get<YGJustify>(prop.to), prop.alpha);
                 else
                     v.justifyContent = OGUI::Lerp(sheet.Get<YGJustify>(prop.from), sheet.Get<YGJustify>(prop.to), prop.alpha);
                 
@@ -1271,14 +1155,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexWrap:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexWrap;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.flexWrap = sheet.Get<YGWrap>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.flexWrap = sheet.Get<YGWrap>(prop.to);
-                else if(prop.from == prop.to)
-                    v.flexWrap = OGUI::Lerp(v.flexWrap, sheet.Get<YGWrap>(prop.to), prop.alpha);
                 else
                     v.flexWrap = OGUI::Lerp(sheet.Get<YGWrap>(prop.from), sheet.Get<YGWrap>(prop.to), prop.alpha);
                 
@@ -1289,14 +1169,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexDisplay:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexDisplay;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.flexDisplay = sheet.Get<YGDisplay>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.flexDisplay = sheet.Get<YGDisplay>(prop.to);
-                else if(prop.from == prop.to)
-                    v.flexDisplay = OGUI::Lerp(v.flexDisplay, sheet.Get<YGDisplay>(prop.to), prop.alpha);
                 else
                     v.flexDisplay = OGUI::Lerp(sheet.Get<YGDisplay>(prop.from), sheet.Get<YGDisplay>(prop.to), prop.alpha);
                 
@@ -1307,14 +1183,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::verticalAlign:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.verticalAlign;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.verticalAlign = sheet.Get<EInlineAlign>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.verticalAlign = sheet.Get<EInlineAlign>(prop.to);
-                else if(prop.from == prop.to)
-                    v.verticalAlign = OGUI::Lerp(v.verticalAlign, sheet.Get<EInlineAlign>(prop.to), prop.alpha);
                 else
                     v.verticalAlign = OGUI::Lerp(sheet.Get<EInlineAlign>(prop.from), sheet.Get<EInlineAlign>(prop.to), prop.alpha);
                 
@@ -1325,14 +1197,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::aspectRatio:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.aspectRatio;
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.aspectRatio = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.aspectRatio = sheet.Get<float>(prop.to);
-                else if(prop.from == prop.to)
-                    v.aspectRatio = OGUI::Lerp(v.aspectRatio, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v.aspectRatio = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
@@ -1342,14 +1210,10 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                 }
             case Ids::zOrderBias:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.zOrderBias = sheet.Get<int>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.zOrderBias = sheet.Get<int>(prop.to);
-                else if(prop.from == prop.to)
-                    v.zOrderBias = OGUI::Lerp(v.zOrderBias, sheet.Get<int>(prop.to), prop.alpha);
                 else
                     v.zOrderBias = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
                 

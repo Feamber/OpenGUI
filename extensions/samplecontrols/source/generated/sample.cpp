@@ -155,14 +155,10 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
         {
             case Ids::someValue:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.someValue = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.someValue = sheet.Get<float>(prop.to);
-                else if(prop.from == prop.to)
-                    v.someValue = OGUI::Lerp(v.someValue, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v.someValue = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 

@@ -182,8 +182,6 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
             %if prop.restyle_damage and not prop.is_vector:
                 auto prevValue = v.${prop.ident};
             %endif
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                 %if prop.is_vector:
                     v.${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.from));
@@ -196,8 +194,6 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
                 %else:
                     v.${prop.ident} = sheet.Get<${prop.view_type}>(prop.to);
                 %endif
-                else if(prop.from == prop.to)
-                    v.${prop.ident} = OGUI::Lerp(v.${prop.ident}, sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
                 else
                     v.${prop.ident} = OGUI::Lerp(sheet.Get<${prop.view_type}>(prop.from), sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
                 
