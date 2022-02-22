@@ -155,14 +155,10 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
         {
             case Ids::opacity:{
                 auto& v = GetOrAdd(style);
-                if(prop.alpha == 0.f && prop.from == prop.to)
-                    break;
                 if(prop.alpha == 0.f)
                     v.opacity = sheet.Get<float>(prop.from);
                 else if(prop.alpha == 1.f)
                     v.opacity = sheet.Get<float>(prop.to);
-                else if(prop.from == prop.to)
-                    v.opacity = OGUI::Lerp(v.opacity, sheet.Get<float>(prop.to), prop.alpha);
                 else
                     v.opacity = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
                 
@@ -175,13 +171,14 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
 }
 
 
-OGUI::RestyleDamage OGUI::StyleEffects::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+OGUI::RestyleDamage OGUI::StyleEffects::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
     const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     
     auto mask = override[StyleEffectsEntry];
-    auto& dst = Get(target);
+    auto& src = Get(srcS);
+    auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
@@ -196,7 +193,7 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyTransitionProperties(ComputedStyle&
                 if(prop.alpha == 1.f)
                     v.opacity = dst.opacity;
                 else
-                    v.opacity = OGUI::Lerp(v.opacity, dst.opacity, prop.alpha);
+                    v.opacity = OGUI::Lerp(src.opacity, dst.opacity, prop.alpha);
                 
                 break;
                 }

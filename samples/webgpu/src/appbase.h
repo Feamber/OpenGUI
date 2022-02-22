@@ -313,7 +313,6 @@ public:
 							}
 							top->GetChildren(stack);
 						}
-						ctx.MarkLayoutDirty(element);
 						ctx.InvalidateCssCache();
 					}
 					olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));

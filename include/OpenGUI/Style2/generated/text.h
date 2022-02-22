@@ -54,7 +54,7 @@ namespace OGUI reflect
             const StyleMasks& override, const ComputedStyle* parent);
         static RestyleDamage ApplyAnimatedProperties(ComputedStyle& style, const StyleSheetStorage& sheet, 
             const gsl::span<AnimatedProperty>& props, const StyleMasks& override);
-        static RestyleDamage ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+        static RestyleDamage ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& src, const ComputedStyle& dst, 
             const gsl::span<TransitionProperty>& props, const StyleMasks& override);
         static void Merge(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override);
         static void MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);

@@ -35,6 +35,7 @@ namespace OGUI reflect
         bool _paragraphDirty = false;
         int currShadowPass = 0;
 
+        //TODO: insertion api
         void AddInlineElement(VisualElement* element);
         void AddInlineText(TextElement* text);
         attr("script":true)
@@ -49,6 +50,8 @@ namespace OGUI reflect
         void UpdateStyle(RestyleDamage damage, const std::vector<StyleSheet*>& ss) override;
         void SyncParagraphStyle();
         void GetChildren(std::vector<VisualElement *>& Children) override;
+        void RemoveChild(VisualElement* child) override;
+        void ClearChildren() override;
         void DrawPrimitive(PrimDrawContext &Ctx) override;
 
         void BuildParagraphRec(godot::TextParagraph* p, const struct StyleText& txt);

@@ -99,7 +99,9 @@ namespace OGUI reflect
 		attr("script":true)
 		void InsertChild(VisualElement* child, int index);
 		attr("script":true)
-		void RemoveChild(VisualElement* child);
+		virtual void RemoveChild(VisualElement* child);
+		attr("script":true)
+		virtual void ClearChildren();
 		attr("script":true)
 		VisualElement* GetRoot();
 		attr("script":true)
@@ -159,7 +161,8 @@ namespace OGUI reflect
 		bool _layoutDirty = false;
 		ComputedStyle _style;
 		ComputedStyle _preAnimatedStyle;
-		ComputedStyle _transitionStyle;
+		ComputedStyle _transitionSrcStyle;
+		ComputedStyle _transitionDstStyle;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<ostr::string> _styleClasses;
 		std::unordered_map<Name, TextureHandle> textures;
@@ -195,6 +198,7 @@ namespace OGUI reflect
 		std::vector<ComputedAnim> _anims;
 		std::vector<ComputedAnim> _procedureAnims;
 		bool _prevEvaluating = false;
+		bool _prevTransitioning = false;
 		bool PlayAnimation(const AnimStyle& style);
 		void SetAnimationTime(ostr::string_view name, float time);
 #pragma endregion

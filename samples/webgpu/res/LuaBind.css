@@ -23,14 +23,14 @@
     justify-content: space-around;
     align-items: center;
     transition-property: background-color;
-    transition-duration: 10s;
+    transition-duration: 2s;
 }
 
 Button:hover{
-    transform:  scale(1.05, 1.05);
+    transform:  scale(10.5, 10.5);
     background-color: rgb(80, 135, 255);
-    transition-property: background-color;
-    transition-duration: 1s;
+    transition-property: background-color, transform;
+    transition-duration: 0.5s;
 }
 
 Button:active{

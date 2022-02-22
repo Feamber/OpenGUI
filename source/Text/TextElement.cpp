@@ -455,6 +455,97 @@ namespace OGUI
             }, inl);
         }
     }
+
+    void TextElement::RemoveChild(VisualElement *inChild)
+    {
+        VisualElement::RemoveChild(inChild);
+        auto iter = std::find_if(_inlines.begin(), _inlines.end(), [&](InlineType& inl)
+        {
+            return std::visit(overloaded
+            {
+                [&](VisualElement*& child) 
+                { 
+                    if(child == inChild)
+                        return true;
+                    return false;
+                },
+                [&](TextElement*& child) 
+                { 
+                    if(child == inChild)
+                        return true;
+                    return false;
+                },
+                [](auto&) { return false; },
+            }, inl);
+        });
+        if(iter == _inlines.end())
+            return;
+        {
+            PreDetachEvent event;
+            event.prevParent = this;
+            RouteEvent(inChild, event);
+        }
+        _scrollSizeDirty = true;
+        inChild->_physicalParent = nullptr;
+        _inlines.erase(iter);
+        _paragraphDirty = true;
+        inChild->_root = inChild->_layoutRoot = nullptr;
+        inChild->_layoutType = LayoutType::None;
+        {
+            PostDetachEvent event;
+            event.prevParent = this;
+            RouteEvent(inChild, event);
+        }
+    }
+
+    
+    void TextElement::ClearChildren()
+    {
+        VisualElement::ClearChildren();
+        auto iter = std::remove_if(_inlines.begin(), _inlines.end(), [&](InlineType& inl)
+        {
+             return std::visit(overloaded
+            {
+                [&](VisualElement*& child) 
+                { 
+                    {
+                        PreDetachEvent event;
+                        event.prevParent = this;
+                        RouteEvent(child, event);
+                    }
+                    child->_physicalParent = nullptr;
+                    child->_root = child->_layoutRoot = nullptr;
+                    child->_layoutType = LayoutType::None;
+                    {
+                        PostDetachEvent event;
+                        event.prevParent = this;
+                        RouteEvent(child, event);
+                    }
+                    return true;
+                },
+                [&](TextElement*& child) 
+                { 
+                    {
+                        PreDetachEvent event;
+                        event.prevParent = this;
+                        RouteEvent(child, event);
+                    }
+                    child->_physicalParent = nullptr;
+                    child->_root = child->_layoutRoot = nullptr;
+                    child->_layoutType = LayoutType::None;
+                    {
+                        PostDetachEvent event;
+                        event.prevParent = this;
+                        RouteEvent(child, event);
+                    }
+                    return true;
+                },
+                [](auto&) { return false; },
+            }, inl);
+        });
+        _paragraphDirty = true;
+        _inlines.erase(iter, _inlines.end());
+    }
     
     TextElement::TextElement()
     {

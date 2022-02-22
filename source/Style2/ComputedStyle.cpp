@@ -108,12 +108,12 @@ OGUI::RestyleDamage OGUI::ComputedStyle::ApplyAnimatedProperties(const StyleShee
     return damage;
 }
 
-OGUI::RestyleDamage OGUI::ComputedStyle::ApplyTransitionProperties(const ComputedStyle& target, const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+OGUI::RestyleDamage OGUI::ComputedStyle::ApplyTransitionProperties(const ComputedStyle& src, const ComputedStyle& dst, const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     auto& registry = GetRegistry();
     for(auto& desc : registry.descriptions)
-        damage |= desc.ApplyTransitionProperties(*this, target, props, override);
+        damage |= desc.ApplyTransitionProperties(*this, src, dst, props, override);
     return damage;
 }
 
