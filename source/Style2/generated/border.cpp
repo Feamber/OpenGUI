@@ -419,13 +419,14 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
 }
 
 
-OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
     const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     
     auto mask = override[StyleBorderEntry];
-    auto& dst = Get(target);
+    auto& src = Get(srcS);
+    auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
@@ -448,7 +449,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderTopWidth = dst.borderTopWidth;
                 else
-                    v.borderTopWidth = OGUI::Lerp(v.borderTopWidth, dst.borderTopWidth, prop.alpha);
+                    v.borderTopWidth = OGUI::Lerp(src.borderTopWidth, dst.borderTopWidth, prop.alpha);
                 
                 if(prevValue != v.borderTopWidth)
                     damage |= RestyleDamage::Layout;
@@ -460,7 +461,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderRightWidth = dst.borderRightWidth;
                 else
-                    v.borderRightWidth = OGUI::Lerp(v.borderRightWidth, dst.borderRightWidth, prop.alpha);
+                    v.borderRightWidth = OGUI::Lerp(src.borderRightWidth, dst.borderRightWidth, prop.alpha);
                 
                 if(prevValue != v.borderRightWidth)
                     damage |= RestyleDamage::Layout;
@@ -472,7 +473,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderBottomWidth = dst.borderBottomWidth;
                 else
-                    v.borderBottomWidth = OGUI::Lerp(v.borderBottomWidth, dst.borderBottomWidth, prop.alpha);
+                    v.borderBottomWidth = OGUI::Lerp(src.borderBottomWidth, dst.borderBottomWidth, prop.alpha);
                 
                 if(prevValue != v.borderBottomWidth)
                     damage |= RestyleDamage::Layout;
@@ -484,7 +485,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderLeftWidth = dst.borderLeftWidth;
                 else
-                    v.borderLeftWidth = OGUI::Lerp(v.borderLeftWidth, dst.borderLeftWidth, prop.alpha);
+                    v.borderLeftWidth = OGUI::Lerp(src.borderLeftWidth, dst.borderLeftWidth, prop.alpha);
                 
                 if(prevValue != v.borderLeftWidth)
                     damage |= RestyleDamage::Layout;
@@ -495,7 +496,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderTopLeftRadius = dst.borderTopLeftRadius;
                 else
-                    v.borderTopLeftRadius = OGUI::Lerp(v.borderTopLeftRadius, dst.borderTopLeftRadius, prop.alpha);
+                    v.borderTopLeftRadius = OGUI::Lerp(src.borderTopLeftRadius, dst.borderTopLeftRadius, prop.alpha);
                 
                 break;
                 }
@@ -504,7 +505,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderTopRightRadius = dst.borderTopRightRadius;
                 else
-                    v.borderTopRightRadius = OGUI::Lerp(v.borderTopRightRadius, dst.borderTopRightRadius, prop.alpha);
+                    v.borderTopRightRadius = OGUI::Lerp(src.borderTopRightRadius, dst.borderTopRightRadius, prop.alpha);
                 
                 break;
                 }
@@ -513,7 +514,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderBottomRightRadius = dst.borderBottomRightRadius;
                 else
-                    v.borderBottomRightRadius = OGUI::Lerp(v.borderBottomRightRadius, dst.borderBottomRightRadius, prop.alpha);
+                    v.borderBottomRightRadius = OGUI::Lerp(src.borderBottomRightRadius, dst.borderBottomRightRadius, prop.alpha);
                 
                 break;
                 }
@@ -522,7 +523,7 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.borderBottomLeftRadius = dst.borderBottomLeftRadius;
                 else
-                    v.borderBottomLeftRadius = OGUI::Lerp(v.borderBottomLeftRadius, dst.borderBottomLeftRadius, prop.alpha);
+                    v.borderBottomLeftRadius = OGUI::Lerp(src.borderBottomLeftRadius, dst.borderBottomLeftRadius, prop.alpha);
                 
                 break;
                 }

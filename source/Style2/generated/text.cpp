@@ -418,13 +418,14 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
 }
 
 
-OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
     const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     
     auto mask = override[StyleTextEntry];
-    auto& dst = Get(target);
+    auto& src = Get(srcS);
+    auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
@@ -447,7 +448,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.fontSize = dst.fontSize;
                 else
-                    v.fontSize = OGUI::Lerp(v.fontSize, dst.fontSize, prop.alpha);
+                    v.fontSize = OGUI::Lerp(src.fontSize, dst.fontSize, prop.alpha);
                 
                 if(prevValue != v.fontSize)
                     damage |= RestyleDamage::TextLayout;
@@ -458,7 +459,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.color = dst.color;
                 else
-                    v.color = OGUI::Lerp(v.color, dst.color, prop.alpha);
+                    v.color = OGUI::Lerp(src.color, dst.color, prop.alpha);
                 
                 break;
                 }
@@ -467,7 +468,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.fontFamily = dst.fontFamily;
                 else
-                    v.fontFamily = OGUI::Lerp(v.fontFamily, dst.fontFamily, prop.alpha);
+                    v.fontFamily = OGUI::Lerp(src.fontFamily, dst.fontFamily, prop.alpha);
                 
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
                 break;
@@ -478,7 +479,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.fontStyle = dst.fontStyle;
                 else
-                    v.fontStyle = OGUI::Lerp(v.fontStyle, dst.fontStyle, prop.alpha);
+                    v.fontStyle = OGUI::Lerp(src.fontStyle, dst.fontStyle, prop.alpha);
                 
                 if(prevValue != v.fontStyle)
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
@@ -490,7 +491,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.fontWeight = dst.fontWeight;
                 else
-                    v.fontWeight = OGUI::Lerp(v.fontWeight, dst.fontWeight, prop.alpha);
+                    v.fontWeight = OGUI::Lerp(src.fontWeight, dst.fontWeight, prop.alpha);
                 
                 if(prevValue != v.fontWeight)
                     damage |= RestyleDamage::TextLayout|RestyleDamage::Font;
@@ -502,7 +503,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.lineHeight = dst.lineHeight;
                 else
-                    v.lineHeight = OGUI::Lerp(v.lineHeight, dst.lineHeight, prop.alpha);
+                    v.lineHeight = OGUI::Lerp(src.lineHeight, dst.lineHeight, prop.alpha);
                 
                 if(prevValue != v.lineHeight)
                     damage |= RestyleDamage::TextLayout;
@@ -513,7 +514,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.textAlign = dst.textAlign;
                 else
-                    v.textAlign = OGUI::Lerp(v.textAlign, dst.textAlign, prop.alpha);
+                    v.textAlign = OGUI::Lerp(src.textAlign, dst.textAlign, prop.alpha);
                 
                 break;
                 }
@@ -522,7 +523,7 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 if(prop.alpha == 1.f)
                     v.textShadow = dst.textShadow;
                 else
-                    v.textShadow = OGUI::Lerp(v.textShadow, dst.textShadow, prop.alpha);
+                    v.textShadow = OGUI::Lerp(src.textShadow, dst.textShadow, prop.alpha);
                 
                 break;
                 }

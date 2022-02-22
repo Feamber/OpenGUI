@@ -217,13 +217,14 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
 }
 
 
-OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
     const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     
     auto mask = override[Style${struct.ident}Entry];
-    auto& dst = Get(target);
+    auto& src = Get(srcS);
+    auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
@@ -244,7 +245,7 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyTransitionProperties(Comput
                 if(prop.alpha == 1.f)
                     v.${prop.ident} = dst.${prop.ident};
                 else
-                    v.${prop.ident} = OGUI::Lerp(v.${prop.ident}, dst.${prop.ident}, prop.alpha);
+                    v.${prop.ident} = OGUI::Lerp(src.${prop.ident}, dst.${prop.ident}, prop.alpha);
                 
             %if prop.restyle_damage:
             %if not prop.is_vector:

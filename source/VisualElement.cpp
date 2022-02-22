@@ -473,6 +473,29 @@ void OGUI::VisualElement::RemoveChild(VisualElement* child)
 	}
 }
 
+void OGUI::VisualElement::ClearChildren()
+{
+	for(auto child : _children)
+	{
+		PreDetachEvent event;
+		event.prevParent = this;
+		RouteEvent(child, event);
+    	child->_physicalParent = nullptr;
+		child->_root = child->_layoutRoot = nullptr;
+		child->_layoutType = LayoutType::None;
+	}
+	_scrollSizeDirty = true;
+	if(_ygnode)
+		YGNodeRemoveAllChildren(_ygnode);
+	for(auto child : _children)
+	{
+		PostDetachEvent event;
+		event.prevParent = this;
+		RouteEvent(child, event);
+	}
+	_children.clear();
+}
+
 OGUI::VisualElement* OGUI::VisualElement::GetRoot()
 {
 	return _root ? _root : this;

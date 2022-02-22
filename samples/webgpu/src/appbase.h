@@ -284,7 +284,7 @@ public:
 							element = newVe;
 							parent->PushChild(newVe);
 							OnReloaded();
-							ctx._layoutDirty = true;
+							ctx.MarkLayoutDirty(parent);
 						}
 					}
 					olog::Info(u"xml reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));
@@ -313,7 +313,6 @@ public:
 							}
 							top->GetChildren(stack);
 						}
-						ctx._layoutDirty = true;
 						ctx.InvalidateCssCache();
 					}
 					olog::Info(u"css reload completed, time used: {}"_o.format(std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::high_resolution_clock::now() - begin).count()));

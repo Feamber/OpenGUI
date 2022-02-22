@@ -387,21 +387,24 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	}
 	if(element->_inlineStyle)
 		ApplyProperties(element->_inlineStyle->rule, element->_inlineStyle->storage);
-	element->_transitionStyle = ComputedStyle();
+	element->_transitionSrcStyle = ComputedStyle();
+	element->_transitionDstStyle = ComputedStyle();
 	if(!trans.empty())
 	{
 		std::vector<size_t> props;
 		for(auto tran : trans)
 			props.push_back(tran.transitionProperty);
-		element->_transitionStyle.MergeId(resolvedStyle, props);
-		resolvedStyle.MergeId(element->_preAnimatedStyle, props);
+		element->_transitionSrcStyle = std::move(element->_preAnimatedStyle);
+		element->_transitionDstStyle = std::move(resolvedStyle);
 		element->_trans.resize(trans.size());
 		for(int i=0; i<trans.size(); ++i)
 		{
 			element->_trans[i].style = trans[i];
 			element->_trans[i].time = 0.f;
 		}
+		element->_preAnimatedStyle = element->_transitionDstStyle;
 	}
+	else
 	{
 		element->_preAnimatedStyle = std::move(resolvedStyle);
 		element->_style = element->_preAnimatedStyle;
@@ -572,6 +575,17 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateTransition(VisualElement* ele
 	auto& ctx = Context::Get();
 	auto& trans = element->_trans;
 	std::vector<TransitionProperty> props;
+	if(trans.empty())
+	{
+		if(element->_prevTransitioning)
+			element->_preAnimatedStyle = std::move(element->_transitionDstStyle);
+		element->_prevTransitioning = false;
+		return OGUI::RestyleDamage::None;
+	}
+	else 
+	{
+		element->_prevTransitioning = true;
+	}
 	auto iter = std::remove_if(trans.begin(), trans.end(), [&](ComputedTransition& tran)
 	{
 		tran.time += ctx._deltaTime;
@@ -585,7 +599,7 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateTransition(VisualElement* ele
 	});
 	if(iter != trans.end())
 		trans.erase(iter, trans.end());
-	return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionStyle, props, element->_procedureOverrides);
+	return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props, element->_procedureOverrides);
 }
 
 void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss)

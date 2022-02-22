@@ -175,13 +175,14 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
 }
 
 
-OGUI::RestyleDamage OGUI::StyleSample::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+OGUI::RestyleDamage OGUI::StyleSample::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
     const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     
     auto mask = override[StyleSampleEntry];
-    auto& dst = Get(target);
+    auto& src = Get(srcS);
+    auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
@@ -196,7 +197,7 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyTransitionProperties(ComputedStyle& 
                 if(prop.alpha == 1.f)
                     v.someValue = dst.someValue;
                 else
-                    v.someValue = OGUI::Lerp(v.someValue, dst.someValue, prop.alpha);
+                    v.someValue = OGUI::Lerp(src.someValue, dst.someValue, prop.alpha);
                 
                 break;
                 }

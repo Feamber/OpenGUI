@@ -1362,13 +1362,14 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
 }
 
 
-OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
     const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     
     auto mask = override[StylePositionEntry];
-    auto& dst = Get(target);
+    auto& src = Get(srcS);
+    auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
@@ -1416,7 +1417,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.transform = dst.transform;
                 else
-                    v.transform = OGUI::Lerp(v.transform, dst.transform, prop.alpha);
+                    v.transform = OGUI::Lerp(src.transform, dst.transform, prop.alpha);
                 
                     damage |= RestyleDamage::Transform;
                 break;
@@ -1427,7 +1428,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.flexGrow = dst.flexGrow;
                 else
-                    v.flexGrow = OGUI::Lerp(v.flexGrow, dst.flexGrow, prop.alpha);
+                    v.flexGrow = OGUI::Lerp(src.flexGrow, dst.flexGrow, prop.alpha);
                 
                 if(prevValue != v.flexGrow)
                     damage |= RestyleDamage::Layout;
@@ -1439,7 +1440,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.flexShrink = dst.flexShrink;
                 else
-                    v.flexShrink = OGUI::Lerp(v.flexShrink, dst.flexShrink, prop.alpha);
+                    v.flexShrink = OGUI::Lerp(src.flexShrink, dst.flexShrink, prop.alpha);
                 
                 if(prevValue != v.flexShrink)
                     damage |= RestyleDamage::Layout;
@@ -1451,7 +1452,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.flexBasis = dst.flexBasis;
                 else
-                    v.flexBasis = OGUI::Lerp(v.flexBasis, dst.flexBasis, prop.alpha);
+                    v.flexBasis = OGUI::Lerp(src.flexBasis, dst.flexBasis, prop.alpha);
                 
                 if(prevValue != v.flexBasis)
                     damage |= RestyleDamage::Layout;
@@ -1463,7 +1464,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.top = dst.top;
                 else
-                    v.top = OGUI::Lerp(v.top, dst.top, prop.alpha);
+                    v.top = OGUI::Lerp(src.top, dst.top, prop.alpha);
                 
                 if(prevValue != v.top)
                     damage |= RestyleDamage::Layout;
@@ -1475,7 +1476,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.right = dst.right;
                 else
-                    v.right = OGUI::Lerp(v.right, dst.right, prop.alpha);
+                    v.right = OGUI::Lerp(src.right, dst.right, prop.alpha);
                 
                 if(prevValue != v.right)
                     damage |= RestyleDamage::Layout;
@@ -1487,7 +1488,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.bottom = dst.bottom;
                 else
-                    v.bottom = OGUI::Lerp(v.bottom, dst.bottom, prop.alpha);
+                    v.bottom = OGUI::Lerp(src.bottom, dst.bottom, prop.alpha);
                 
                 if(prevValue != v.bottom)
                     damage |= RestyleDamage::Layout;
@@ -1499,7 +1500,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.left = dst.left;
                 else
-                    v.left = OGUI::Lerp(v.left, dst.left, prop.alpha);
+                    v.left = OGUI::Lerp(src.left, dst.left, prop.alpha);
                 
                 if(prevValue != v.left)
                     damage |= RestyleDamage::Layout;
@@ -1511,7 +1512,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.marginTop = dst.marginTop;
                 else
-                    v.marginTop = OGUI::Lerp(v.marginTop, dst.marginTop, prop.alpha);
+                    v.marginTop = OGUI::Lerp(src.marginTop, dst.marginTop, prop.alpha);
                 
                 if(prevValue != v.marginTop)
                     damage |= RestyleDamage::Layout;
@@ -1523,7 +1524,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.marginRight = dst.marginRight;
                 else
-                    v.marginRight = OGUI::Lerp(v.marginRight, dst.marginRight, prop.alpha);
+                    v.marginRight = OGUI::Lerp(src.marginRight, dst.marginRight, prop.alpha);
                 
                 if(prevValue != v.marginRight)
                     damage |= RestyleDamage::Layout;
@@ -1535,7 +1536,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.marginBottom = dst.marginBottom;
                 else
-                    v.marginBottom = OGUI::Lerp(v.marginBottom, dst.marginBottom, prop.alpha);
+                    v.marginBottom = OGUI::Lerp(src.marginBottom, dst.marginBottom, prop.alpha);
                 
                 if(prevValue != v.marginBottom)
                     damage |= RestyleDamage::Layout;
@@ -1547,7 +1548,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.marginLeft = dst.marginLeft;
                 else
-                    v.marginLeft = OGUI::Lerp(v.marginLeft, dst.marginLeft, prop.alpha);
+                    v.marginLeft = OGUI::Lerp(src.marginLeft, dst.marginLeft, prop.alpha);
                 
                 if(prevValue != v.marginLeft)
                     damage |= RestyleDamage::Layout;
@@ -1559,7 +1560,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.paddingTop = dst.paddingTop;
                 else
-                    v.paddingTop = OGUI::Lerp(v.paddingTop, dst.paddingTop, prop.alpha);
+                    v.paddingTop = OGUI::Lerp(src.paddingTop, dst.paddingTop, prop.alpha);
                 
                 if(prevValue != v.paddingTop)
                     damage |= RestyleDamage::Layout;
@@ -1571,7 +1572,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.paddingRight = dst.paddingRight;
                 else
-                    v.paddingRight = OGUI::Lerp(v.paddingRight, dst.paddingRight, prop.alpha);
+                    v.paddingRight = OGUI::Lerp(src.paddingRight, dst.paddingRight, prop.alpha);
                 
                 if(prevValue != v.paddingRight)
                     damage |= RestyleDamage::Layout;
@@ -1583,7 +1584,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.paddingBottom = dst.paddingBottom;
                 else
-                    v.paddingBottom = OGUI::Lerp(v.paddingBottom, dst.paddingBottom, prop.alpha);
+                    v.paddingBottom = OGUI::Lerp(src.paddingBottom, dst.paddingBottom, prop.alpha);
                 
                 if(prevValue != v.paddingBottom)
                     damage |= RestyleDamage::Layout;
@@ -1595,7 +1596,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.paddingLeft = dst.paddingLeft;
                 else
-                    v.paddingLeft = OGUI::Lerp(v.paddingLeft, dst.paddingLeft, prop.alpha);
+                    v.paddingLeft = OGUI::Lerp(src.paddingLeft, dst.paddingLeft, prop.alpha);
                 
                 if(prevValue != v.paddingLeft)
                     damage |= RestyleDamage::Layout;
@@ -1607,7 +1608,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.width = dst.width;
                 else
-                    v.width = OGUI::Lerp(v.width, dst.width, prop.alpha);
+                    v.width = OGUI::Lerp(src.width, dst.width, prop.alpha);
                 
                 if(prevValue != v.width)
                     damage |= RestyleDamage::Layout;
@@ -1619,7 +1620,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.height = dst.height;
                 else
-                    v.height = OGUI::Lerp(v.height, dst.height, prop.alpha);
+                    v.height = OGUI::Lerp(src.height, dst.height, prop.alpha);
                 
                 if(prevValue != v.height)
                     damage |= RestyleDamage::Layout;
@@ -1631,7 +1632,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.position = dst.position;
                 else
-                    v.position = OGUI::Lerp(v.position, dst.position, prop.alpha);
+                    v.position = OGUI::Lerp(src.position, dst.position, prop.alpha);
                 
                 if(prevValue != v.position)
                     damage |= RestyleDamage::Layout;
@@ -1643,7 +1644,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.overflow = dst.overflow;
                 else
-                    v.overflow = OGUI::Lerp(v.overflow, dst.overflow, prop.alpha);
+                    v.overflow = OGUI::Lerp(src.overflow, dst.overflow, prop.alpha);
                 
                 if(prevValue != v.overflow)
                     damage |= RestyleDamage::Layout;
@@ -1655,7 +1656,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.alignSelf = dst.alignSelf;
                 else
-                    v.alignSelf = OGUI::Lerp(v.alignSelf, dst.alignSelf, prop.alpha);
+                    v.alignSelf = OGUI::Lerp(src.alignSelf, dst.alignSelf, prop.alpha);
                 
                 if(prevValue != v.alignSelf)
                     damage |= RestyleDamage::Layout;
@@ -1667,7 +1668,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.maxWidth = dst.maxWidth;
                 else
-                    v.maxWidth = OGUI::Lerp(v.maxWidth, dst.maxWidth, prop.alpha);
+                    v.maxWidth = OGUI::Lerp(src.maxWidth, dst.maxWidth, prop.alpha);
                 
                 if(prevValue != v.maxWidth)
                     damage |= RestyleDamage::Layout;
@@ -1679,7 +1680,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.maxHeight = dst.maxHeight;
                 else
-                    v.maxHeight = OGUI::Lerp(v.maxHeight, dst.maxHeight, prop.alpha);
+                    v.maxHeight = OGUI::Lerp(src.maxHeight, dst.maxHeight, prop.alpha);
                 
                 if(prevValue != v.maxHeight)
                     damage |= RestyleDamage::Layout;
@@ -1691,7 +1692,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.minWidth = dst.minWidth;
                 else
-                    v.minWidth = OGUI::Lerp(v.minWidth, dst.minWidth, prop.alpha);
+                    v.minWidth = OGUI::Lerp(src.minWidth, dst.minWidth, prop.alpha);
                 
                 if(prevValue != v.minWidth)
                     damage |= RestyleDamage::Layout;
@@ -1703,7 +1704,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.minHeight = dst.minHeight;
                 else
-                    v.minHeight = OGUI::Lerp(v.minHeight, dst.minHeight, prop.alpha);
+                    v.minHeight = OGUI::Lerp(src.minHeight, dst.minHeight, prop.alpha);
                 
                 if(prevValue != v.minHeight)
                     damage |= RestyleDamage::Layout;
@@ -1715,7 +1716,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.flexDirection = dst.flexDirection;
                 else
-                    v.flexDirection = OGUI::Lerp(v.flexDirection, dst.flexDirection, prop.alpha);
+                    v.flexDirection = OGUI::Lerp(src.flexDirection, dst.flexDirection, prop.alpha);
                 
                 if(prevValue != v.flexDirection)
                     damage |= RestyleDamage::Layout;
@@ -1727,7 +1728,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.alignContent = dst.alignContent;
                 else
-                    v.alignContent = OGUI::Lerp(v.alignContent, dst.alignContent, prop.alpha);
+                    v.alignContent = OGUI::Lerp(src.alignContent, dst.alignContent, prop.alpha);
                 
                 if(prevValue != v.alignContent)
                     damage |= RestyleDamage::Layout;
@@ -1739,7 +1740,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.alignItems = dst.alignItems;
                 else
-                    v.alignItems = OGUI::Lerp(v.alignItems, dst.alignItems, prop.alpha);
+                    v.alignItems = OGUI::Lerp(src.alignItems, dst.alignItems, prop.alpha);
                 
                 if(prevValue != v.alignItems)
                     damage |= RestyleDamage::Layout;
@@ -1751,7 +1752,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.justifyContent = dst.justifyContent;
                 else
-                    v.justifyContent = OGUI::Lerp(v.justifyContent, dst.justifyContent, prop.alpha);
+                    v.justifyContent = OGUI::Lerp(src.justifyContent, dst.justifyContent, prop.alpha);
                 
                 if(prevValue != v.justifyContent)
                     damage |= RestyleDamage::Layout;
@@ -1763,7 +1764,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.flexWrap = dst.flexWrap;
                 else
-                    v.flexWrap = OGUI::Lerp(v.flexWrap, dst.flexWrap, prop.alpha);
+                    v.flexWrap = OGUI::Lerp(src.flexWrap, dst.flexWrap, prop.alpha);
                 
                 if(prevValue != v.flexWrap)
                     damage |= RestyleDamage::Layout;
@@ -1775,7 +1776,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.flexDisplay = dst.flexDisplay;
                 else
-                    v.flexDisplay = OGUI::Lerp(v.flexDisplay, dst.flexDisplay, prop.alpha);
+                    v.flexDisplay = OGUI::Lerp(src.flexDisplay, dst.flexDisplay, prop.alpha);
                 
                 if(prevValue != v.flexDisplay)
                     damage |= RestyleDamage::Layout;
@@ -1787,7 +1788,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.verticalAlign = dst.verticalAlign;
                 else
-                    v.verticalAlign = OGUI::Lerp(v.verticalAlign, dst.verticalAlign, prop.alpha);
+                    v.verticalAlign = OGUI::Lerp(src.verticalAlign, dst.verticalAlign, prop.alpha);
                 
                 if(prevValue != v.verticalAlign)
                     damage |= RestyleDamage::Layout;
@@ -1799,7 +1800,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.aspectRatio = dst.aspectRatio;
                 else
-                    v.aspectRatio = OGUI::Lerp(v.aspectRatio, dst.aspectRatio, prop.alpha);
+                    v.aspectRatio = OGUI::Lerp(src.aspectRatio, dst.aspectRatio, prop.alpha);
                 
                 if(prevValue != v.aspectRatio)
                     damage |= RestyleDamage::Layout;
@@ -1810,7 +1811,7 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle
                 if(prop.alpha == 1.f)
                     v.zOrderBias = dst.zOrderBias;
                 else
-                    v.zOrderBias = OGUI::Lerp(v.zOrderBias, dst.zOrderBias, prop.alpha);
+                    v.zOrderBias = OGUI::Lerp(src.zOrderBias, dst.zOrderBias, prop.alpha);
                 
                 break;
                 }

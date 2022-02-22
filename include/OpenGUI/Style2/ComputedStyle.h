@@ -20,7 +20,7 @@ namespace OGUI
 		bool inherited;
         void (*ApplyProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent);
 		RestyleDamage (*ApplyAnimatedProperties)(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override);
-		RestyleDamage (*ApplyTransitionProperties)(ComputedStyle& style, const ComputedStyle& target, const gsl::span<TransitionProperty>& props, const StyleMasks& override);
+		RestyleDamage (*ApplyTransitionProperties)(ComputedStyle& style, const ComputedStyle& src, const ComputedStyle& dst, const gsl::span<TransitionProperty>& props, const StyleMasks& override);
 		void (*Merge)(ComputedStyle& style, ComputedStyle& other, const StyleMasks& override);
 		void (*MergeId)(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override);
 		size_t (*GetProperty)(ostr::string_view name);
@@ -74,7 +74,7 @@ namespace OGUI
 		static ComputedStyle Create(const ComputedStyle* parent);
 		void ApplyProperties(const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent);
         RestyleDamage ApplyAnimatedProperties(const StyleSheetStorage& sheet, const gsl::span<AnimatedProperty>& props, const StyleMasks& override);
-		RestyleDamage ApplyTransitionProperties(const ComputedStyle& target, const gsl::span<TransitionProperty>& props, const StyleMasks& override);
+		RestyleDamage ApplyTransitionProperties(const ComputedStyle& src, const ComputedStyle& dst, const gsl::span<TransitionProperty>& props, const StyleMasks& override);
 		void Merge(ComputedStyle& other, const StyleMasks& override);
 		void MergeId(ComputedStyle& other, const gsl::span<size_t>& override);
 		static size_t GetProperty(ostr::string_view name);

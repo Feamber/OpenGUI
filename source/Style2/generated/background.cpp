@@ -241,13 +241,14 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
 }
 
 
-OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& target, 
+OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
     const gsl::span<TransitionProperty>& props, const StyleMasks& override)
 {
     RestyleDamage damage = RestyleDamage::None;
     
     auto mask = override[StyleBackgroundEntry];
-    auto& dst = Get(target);
+    auto& src = Get(srcS);
+    auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
@@ -264,7 +265,7 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedSty
                 if(prop.alpha == 1.f)
                     v.backgroundColor = dst.backgroundColor;
                 else
-                    v.backgroundColor = OGUI::Lerp(v.backgroundColor, dst.backgroundColor, prop.alpha);
+                    v.backgroundColor = OGUI::Lerp(src.backgroundColor, dst.backgroundColor, prop.alpha);
                 
                 break;
                 }
@@ -273,7 +274,7 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedSty
                 if(prop.alpha == 1.f)
                     v.backgroundImage = dst.backgroundImage;
                 else
-                    v.backgroundImage = OGUI::Lerp(v.backgroundImage, dst.backgroundImage, prop.alpha);
+                    v.backgroundImage = OGUI::Lerp(src.backgroundImage, dst.backgroundImage, prop.alpha);
                 
                 break;
                 }
@@ -282,7 +283,7 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedSty
                 if(prop.alpha == 1.f)
                     v.backgroundMaterial = dst.backgroundMaterial;
                 else
-                    v.backgroundMaterial = OGUI::Lerp(v.backgroundMaterial, dst.backgroundMaterial, prop.alpha);
+                    v.backgroundMaterial = OGUI::Lerp(src.backgroundMaterial, dst.backgroundMaterial, prop.alpha);
                 
                 break;
                 }
