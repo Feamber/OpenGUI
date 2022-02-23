@@ -389,7 +389,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		ApplyProperties(element->_inlineStyle->rule, element->_inlineStyle->storage);
 	element->_transitionSrcStyle = ComputedStyle();
 	element->_transitionDstStyle = ComputedStyle();
-	if(!trans.empty())
+	if(!trans.empty() && element->_styleInitialized)
 	{
 		std::vector<size_t> props;
 		for(auto tran : trans)
@@ -408,6 +408,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	{
 		element->_preAnimatedStyle = std::move(resolvedStyle);
 		element->_style = element->_preAnimatedStyle;
+		element->_styleInitialized = true;
 	}
 	{
 		std::vector<bool> dynbitset;
@@ -453,7 +454,10 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 					anim.yielding = true;
 					anim.evaluating = true;
 					float t = (anim.time - anim.style.animationDelay) / anim.style.animationDuration;
-					anim.time = (t - int(t)) * anim.style.animationDuration + anim.style.animationDelay;
+					t = t - int(t);
+					if(t == 0.f)
+						t = 1.f;
+					anim.time = t * anim.style.animationDuration + anim.style.animationDelay;
 					anim.goingback = anim.style.animationYieldMode == EAnimYieldMode::GoBack;
 				}
 				else 
@@ -590,10 +594,7 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateTransition(VisualElement* ele
 	{
 		tran.time += ctx._deltaTime;
 		float alpha = (tran.time - tran.style.transitionDelay) / tran.style.transitionDuration;
-		if(alpha < 0)
-			return false;
-		if(alpha >= 1.f)
-			alpha = 1.f;
+		alpha = std::clamp(alpha, 0.f, 1.f);
 		props.push_back({tran.style.transitionProperty, ApplyTimingFunction(tran.style.transitionTimingFunction, alpha)});
 		return alpha == 1.f;
 	});

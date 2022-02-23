@@ -197,6 +197,7 @@ namespace OGUI reflect
 		std::vector<ComputedTransition> _trans;
 		std::vector<ComputedAnim> _anims;
 		std::vector<ComputedAnim> _procedureAnims;
+		bool _styleInitialized = false;
 		bool _prevEvaluating = false;
 		bool _prevTransitioning = false;
 		bool PlayAnimation(const AnimStyle& style);
