@@ -2549,9 +2549,27 @@ void OGUI::StylePosition::SetupParser()
 void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction>& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<0;
-    StylePosition::GetOrAdd(element->_style).transform = ToOwned(value);
-    RestyleDamage damage = RestyleDamage::Transform;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::transform)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).transform = ToOwned(value);
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).transform = StylePosition::Get(element->_style).transform;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).transform = ToOwned(value);
+        RestyleDamage damage = RestyleDamage::Transform;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleTransform(VisualElement* element)
 {
@@ -2560,9 +2578,27 @@ void OGUI::ResetStyleTransform(VisualElement* element)
 void OGUI::SetStyleFlexGrow(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<1;
-    StylePosition::GetOrAdd(element->_style).flexGrow = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::flexGrow)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexGrow = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).flexGrow = StylePosition::Get(element->_style).flexGrow;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).flexGrow = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFlexGrow(VisualElement* element)
 {
@@ -2571,9 +2607,27 @@ void OGUI::ResetStyleFlexGrow(VisualElement* element)
 void OGUI::SetStyleFlexShrink(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<2;
-    StylePosition::GetOrAdd(element->_style).flexShrink = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::flexShrink)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexShrink = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).flexShrink = StylePosition::Get(element->_style).flexShrink;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).flexShrink = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFlexShrink(VisualElement* element)
 {
@@ -2582,9 +2636,27 @@ void OGUI::ResetStyleFlexShrink(VisualElement* element)
 void OGUI::SetStyleFlexBasis(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<3;
-    StylePosition::GetOrAdd(element->_style).flexBasis = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::flexBasis)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexBasis = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).flexBasis = StylePosition::Get(element->_style).flexBasis;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).flexBasis = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleFlexBasisPixel(VisualElement* element, float value)
 {
@@ -2605,9 +2677,27 @@ void OGUI::ResetStyleFlexBasis(VisualElement* element)
 void OGUI::SetStyleTop(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<4;
-    StylePosition::GetOrAdd(element->_style).top = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::top)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).top = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).top = StylePosition::Get(element->_style).top;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).top = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleTopPixel(VisualElement* element, float value)
 {
@@ -2624,9 +2714,27 @@ void OGUI::ResetStyleTop(VisualElement* element)
 void OGUI::SetStyleRight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<5;
-    StylePosition::GetOrAdd(element->_style).right = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::right)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).right = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).right = StylePosition::Get(element->_style).right;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).right = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleRightPixel(VisualElement* element, float value)
 {
@@ -2643,9 +2751,27 @@ void OGUI::ResetStyleRight(VisualElement* element)
 void OGUI::SetStyleBottom(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<6;
-    StylePosition::GetOrAdd(element->_style).bottom = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::bottom)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).bottom = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).bottom = StylePosition::Get(element->_style).bottom;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).bottom = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleBottomPixel(VisualElement* element, float value)
 {
@@ -2662,9 +2788,27 @@ void OGUI::ResetStyleBottom(VisualElement* element)
 void OGUI::SetStyleLeft(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<7;
-    StylePosition::GetOrAdd(element->_style).left = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::left)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).left = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).left = StylePosition::Get(element->_style).left;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).left = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleLeftPixel(VisualElement* element, float value)
 {
@@ -2681,9 +2825,27 @@ void OGUI::ResetStyleLeft(VisualElement* element)
 void OGUI::SetStyleMarginTop(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<8;
-    StylePosition::GetOrAdd(element->_style).marginTop = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::marginTop)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginTop = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).marginTop = StylePosition::Get(element->_style).marginTop;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).marginTop = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMarginTopPixel(VisualElement* element, float value)
 {
@@ -2700,9 +2862,27 @@ void OGUI::ResetStyleMarginTop(VisualElement* element)
 void OGUI::SetStyleMarginRight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<9;
-    StylePosition::GetOrAdd(element->_style).marginRight = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::marginRight)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginRight = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).marginRight = StylePosition::Get(element->_style).marginRight;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).marginRight = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMarginRightPixel(VisualElement* element, float value)
 {
@@ -2719,9 +2899,27 @@ void OGUI::ResetStyleMarginRight(VisualElement* element)
 void OGUI::SetStyleMarginBottom(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<10;
-    StylePosition::GetOrAdd(element->_style).marginBottom = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::marginBottom)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginBottom = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).marginBottom = StylePosition::Get(element->_style).marginBottom;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).marginBottom = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMarginBottomPixel(VisualElement* element, float value)
 {
@@ -2738,9 +2936,27 @@ void OGUI::ResetStyleMarginBottom(VisualElement* element)
 void OGUI::SetStyleMarginLeft(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<11;
-    StylePosition::GetOrAdd(element->_style).marginLeft = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::marginLeft)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginLeft = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).marginLeft = StylePosition::Get(element->_style).marginLeft;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).marginLeft = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMarginLeftPixel(VisualElement* element, float value)
 {
@@ -2757,9 +2973,27 @@ void OGUI::ResetStyleMarginLeft(VisualElement* element)
 void OGUI::SetStylePaddingTop(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<12;
-    StylePosition::GetOrAdd(element->_style).paddingTop = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::paddingTop)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingTop = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingTop = StylePosition::Get(element->_style).paddingTop;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).paddingTop = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStylePaddingTopPixel(VisualElement* element, float value)
 {
@@ -2776,9 +3010,27 @@ void OGUI::ResetStylePaddingTop(VisualElement* element)
 void OGUI::SetStylePaddingRight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<13;
-    StylePosition::GetOrAdd(element->_style).paddingRight = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::paddingRight)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingRight = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingRight = StylePosition::Get(element->_style).paddingRight;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).paddingRight = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStylePaddingRightPixel(VisualElement* element, float value)
 {
@@ -2795,9 +3047,27 @@ void OGUI::ResetStylePaddingRight(VisualElement* element)
 void OGUI::SetStylePaddingBottom(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<14;
-    StylePosition::GetOrAdd(element->_style).paddingBottom = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::paddingBottom)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingBottom = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingBottom = StylePosition::Get(element->_style).paddingBottom;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).paddingBottom = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStylePaddingBottomPixel(VisualElement* element, float value)
 {
@@ -2814,9 +3084,27 @@ void OGUI::ResetStylePaddingBottom(VisualElement* element)
 void OGUI::SetStylePaddingLeft(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<15;
-    StylePosition::GetOrAdd(element->_style).paddingLeft = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::paddingLeft)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingLeft = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingLeft = StylePosition::Get(element->_style).paddingLeft;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).paddingLeft = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStylePaddingLeftPixel(VisualElement* element, float value)
 {
@@ -2833,9 +3121,27 @@ void OGUI::ResetStylePaddingLeft(VisualElement* element)
 void OGUI::SetStyleWidth(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<16;
-    StylePosition::GetOrAdd(element->_style).width = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::width)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).width = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).width = StylePosition::Get(element->_style).width;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).width = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleWidthPixel(VisualElement* element, float value)
 {
@@ -2856,9 +3162,27 @@ void OGUI::ResetStyleWidth(VisualElement* element)
 void OGUI::SetStyleHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<17;
-    StylePosition::GetOrAdd(element->_style).height = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::height)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).height = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).height = StylePosition::Get(element->_style).height;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).height = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleHeightPixel(VisualElement* element, float value)
 {
@@ -2879,9 +3203,27 @@ void OGUI::ResetStyleHeight(VisualElement* element)
 void OGUI::SetStylePosition(VisualElement* element, const YGPositionType& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<18;
-    StylePosition::GetOrAdd(element->_style).position = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::position)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).position = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).position = StylePosition::Get(element->_style).position;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).position = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStylePosition(VisualElement* element)
 {
@@ -2890,9 +3232,27 @@ void OGUI::ResetStylePosition(VisualElement* element)
 void OGUI::SetStyleOverflow(VisualElement* element, const EFlexOverflow& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<19;
-    StylePosition::GetOrAdd(element->_style).overflow = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::overflow)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).overflow = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).overflow = StylePosition::Get(element->_style).overflow;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).overflow = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleOverflow(VisualElement* element)
 {
@@ -2901,9 +3261,27 @@ void OGUI::ResetStyleOverflow(VisualElement* element)
 void OGUI::SetStyleAlignSelf(VisualElement* element, const YGAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<20;
-    StylePosition::GetOrAdd(element->_style).alignSelf = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::alignSelf)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).alignSelf = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).alignSelf = StylePosition::Get(element->_style).alignSelf;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).alignSelf = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleAlignSelf(VisualElement* element)
 {
@@ -2912,9 +3290,27 @@ void OGUI::ResetStyleAlignSelf(VisualElement* element)
 void OGUI::SetStyleMaxWidth(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<21;
-    StylePosition::GetOrAdd(element->_style).maxWidth = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::maxWidth)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).maxWidth = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).maxWidth = StylePosition::Get(element->_style).maxWidth;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).maxWidth = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMaxWidthPixel(VisualElement* element, float value)
 {
@@ -2931,9 +3327,27 @@ void OGUI::ResetStyleMaxWidth(VisualElement* element)
 void OGUI::SetStyleMaxHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<22;
-    StylePosition::GetOrAdd(element->_style).maxHeight = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::maxHeight)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).maxHeight = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).maxHeight = StylePosition::Get(element->_style).maxHeight;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).maxHeight = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMaxHeightPixel(VisualElement* element, float value)
 {
@@ -2950,9 +3364,27 @@ void OGUI::ResetStyleMaxHeight(VisualElement* element)
 void OGUI::SetStyleMinWidth(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<23;
-    StylePosition::GetOrAdd(element->_style).minWidth = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::minWidth)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).minWidth = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).minWidth = StylePosition::Get(element->_style).minWidth;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).minWidth = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMinWidthPixel(VisualElement* element, float value)
 {
@@ -2973,9 +3405,27 @@ void OGUI::ResetStyleMinWidth(VisualElement* element)
 void OGUI::SetStyleMinHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<24;
-    StylePosition::GetOrAdd(element->_style).minHeight = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::minHeight)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).minHeight = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).minHeight = StylePosition::Get(element->_style).minHeight;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).minHeight = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleMinHeightPixel(VisualElement* element, float value)
 {
@@ -2996,9 +3446,27 @@ void OGUI::ResetStyleMinHeight(VisualElement* element)
 void OGUI::SetStyleFlexDirection(VisualElement* element, const YGFlexDirection& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<25;
-    StylePosition::GetOrAdd(element->_style).flexDirection = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::flexDirection)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexDirection = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).flexDirection = StylePosition::Get(element->_style).flexDirection;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).flexDirection = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFlexDirection(VisualElement* element)
 {
@@ -3007,9 +3475,27 @@ void OGUI::ResetStyleFlexDirection(VisualElement* element)
 void OGUI::SetStyleAlignContent(VisualElement* element, const YGAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<26;
-    StylePosition::GetOrAdd(element->_style).alignContent = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::alignContent)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).alignContent = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).alignContent = StylePosition::Get(element->_style).alignContent;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).alignContent = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleAlignContent(VisualElement* element)
 {
@@ -3018,9 +3504,27 @@ void OGUI::ResetStyleAlignContent(VisualElement* element)
 void OGUI::SetStyleAlignItems(VisualElement* element, const YGAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<27;
-    StylePosition::GetOrAdd(element->_style).alignItems = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::alignItems)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).alignItems = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).alignItems = StylePosition::Get(element->_style).alignItems;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).alignItems = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleAlignItems(VisualElement* element)
 {
@@ -3029,9 +3533,27 @@ void OGUI::ResetStyleAlignItems(VisualElement* element)
 void OGUI::SetStyleJustifyContent(VisualElement* element, const YGJustify& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<28;
-    StylePosition::GetOrAdd(element->_style).justifyContent = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::justifyContent)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).justifyContent = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).justifyContent = StylePosition::Get(element->_style).justifyContent;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).justifyContent = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleJustifyContent(VisualElement* element)
 {
@@ -3040,9 +3562,27 @@ void OGUI::ResetStyleJustifyContent(VisualElement* element)
 void OGUI::SetStyleFlexWrap(VisualElement* element, const YGWrap& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<29;
-    StylePosition::GetOrAdd(element->_style).flexWrap = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::flexWrap)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexWrap = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).flexWrap = StylePosition::Get(element->_style).flexWrap;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).flexWrap = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFlexWrap(VisualElement* element)
 {
@@ -3051,9 +3591,27 @@ void OGUI::ResetStyleFlexWrap(VisualElement* element)
 void OGUI::SetStyleFlexDisplay(VisualElement* element, const YGDisplay& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<30;
-    StylePosition::GetOrAdd(element->_style).flexDisplay = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::flexDisplay)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexDisplay = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).flexDisplay = StylePosition::Get(element->_style).flexDisplay;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).flexDisplay = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFlexDisplay(VisualElement* element)
 {
@@ -3062,9 +3620,27 @@ void OGUI::ResetStyleFlexDisplay(VisualElement* element)
 void OGUI::SetStyleVerticalAlign(VisualElement* element, const EInlineAlign& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<31;
-    StylePosition::GetOrAdd(element->_style).verticalAlign = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::verticalAlign)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).verticalAlign = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).verticalAlign = StylePosition::Get(element->_style).verticalAlign;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).verticalAlign = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleVerticalAlign(VisualElement* element)
 {
@@ -3073,9 +3649,27 @@ void OGUI::ResetStyleVerticalAlign(VisualElement* element)
 void OGUI::SetStyleAspectRatio(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<32;
-    StylePosition::GetOrAdd(element->_style).aspectRatio = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::aspectRatio)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).aspectRatio = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).aspectRatio = StylePosition::Get(element->_style).aspectRatio;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).aspectRatio = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleAspectRatio(VisualElement* element)
 {
@@ -3084,9 +3678,27 @@ void OGUI::ResetStyleAspectRatio(VisualElement* element)
 void OGUI::SetStyleZOrderBias(VisualElement* element, const int& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<33;
-    StylePosition::GetOrAdd(element->_style).zOrderBias = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StylePosition::Ids::zOrderBias)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StylePosition::GetOrAdd(element->_transitionDstStyle).zOrderBias = value;
+        StylePosition::GetOrAdd(element->_transitionSrcStyle).zOrderBias = StylePosition::Get(element->_style).zOrderBias;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StylePosition::GetOrAdd(element->_style).zOrderBias = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleZOrderBias(VisualElement* element)
 {

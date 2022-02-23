@@ -43,6 +43,7 @@ void BindLua_generated(lua_State* L)
         type["PushChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::PushChild;
         type["InsertChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *, int))&OGUI::VisualElement::InsertChild;
         type["RemoveChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
+        type["ClearChildren"] = (void(OGUI::VisualElement::*)())&OGUI::VisualElement::ClearChildren;
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetRoot;
         type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetLayoutRoot;
         type["GetSize"] = (OGUI::Vector<float, 2>(OGUI::VisualElement::*)()const)&OGUI::VisualElement::GetSize;

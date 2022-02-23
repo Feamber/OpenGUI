@@ -10,6 +10,9 @@ end
 
 function view:SetValue(value)
     print("lua value: " .. self.datamodel.value)
+    if self.slider then
+        OGUI.SetStyleHeightPixel(self.button, self.datamodel.value + 20)
+    end
     self.value = value
 end
 
@@ -24,6 +27,7 @@ function view:ReloadXml(ve)
     OGUI.BindTree(ve, self.datamodel)
     self.slider = OGUI.QueryFirst(ve, "#TestSlider")
     self.button = OGUI.QueryFirst(ve, "#AddButton")
+    self.text = OGUI.QueryFirst(ve, "#CountText")
     self.datamodel:Bind(self.slider)
     self.datamodel:Bind(self.button)
     self.cppDataModel:Bind(self.slider)

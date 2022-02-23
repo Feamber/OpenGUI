@@ -268,9 +268,27 @@ void OGUI::StyleSample::SetupParser()
 void OGUI::SetStyleSomeValue(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleSampleEntry] |= 1ull<<0;
-    StyleSample::GetOrAdd(element->_style).someValue = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleSample::Ids::someValue)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleSample::GetOrAdd(element->_transitionDstStyle).someValue = value;
+        StyleSample::GetOrAdd(element->_transitionSrcStyle).someValue = StyleSample::Get(element->_style).someValue;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleSample::GetOrAdd(element->_style).someValue = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleSomeValue(VisualElement* element)
 {

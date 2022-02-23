@@ -268,9 +268,27 @@ void OGUI::StyleEffects::SetupParser()
 void OGUI::SetStyleOpacity(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleEffectsEntry] |= 1ull<<0;
-    StyleEffects::GetOrAdd(element->_style).opacity = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleEffects::Ids::opacity)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleEffects::GetOrAdd(element->_transitionDstStyle).opacity = value;
+        StyleEffects::GetOrAdd(element->_transitionSrcStyle).opacity = StyleEffects::Get(element->_style).opacity;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleEffects::GetOrAdd(element->_style).opacity = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleOpacity(VisualElement* element)
 {

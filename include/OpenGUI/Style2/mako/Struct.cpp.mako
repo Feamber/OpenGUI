@@ -356,17 +356,39 @@ void OGUI::Style${struct.ident}::SetupParser()
 void OGUI::SetStyle${to_camel_case(prop.name)}(VisualElement* element, ${prop.reference_type} value)
 {
     element->_procedureOverrides[Style${struct.ident}Entry] |= 1ull<<${i};
-%if prop.is_vector:
-    Style${struct.ident}::GetOrAdd(element->_style).${prop.ident} = ToOwned(value);
-%else:
-    Style${struct.ident}::GetOrAdd(element->_style).${prop.ident} = value;
-%endif
-%if prop.restyle_damage:
-    RestyleDamage damage = ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
-%else:
-    RestyleDamage damage = RestyleDamage::None;
-%endif
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == Style${struct.ident}::Ids::${prop.ident})
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+    %if prop.is_vector:
+        Style${struct.ident}::GetOrAdd(element->_transitionDstStyle).${prop.ident} = ToOwned(value);
+    %else:
+        Style${struct.ident}::GetOrAdd(element->_transitionDstStyle).${prop.ident} = value;
+    %endif
+        Style${struct.ident}::GetOrAdd(element->_transitionSrcStyle).${prop.ident} = Style${struct.ident}::Get(element->_style).${prop.ident};
+        transition->time = 0.f;
+    }
+    else
+    {
+    %if prop.is_vector:
+        Style${struct.ident}::GetOrAdd(element->_style).${prop.ident} = ToOwned(value);
+    %else:
+        Style${struct.ident}::GetOrAdd(element->_style).${prop.ident} = value;
+    %endif
+    %if prop.restyle_damage:
+        RestyleDamage damage = ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
+    %else:
+        RestyleDamage damage = RestyleDamage::None;
+    %endif
+        element->UpdateStyle(damage);
+    }
 }
 %if prop.type == "YGValue":
 void OGUI::SetStyle${to_camel_case(prop.name)}Pixel(VisualElement* element, float value)

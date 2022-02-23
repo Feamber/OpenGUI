@@ -394,9 +394,27 @@ void OGUI::StyleBackground::SetupParser()
 void OGUI::SetStyleBackgroundColor(VisualElement* element, const Color4f& value)
 {
     element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<0;
-    StyleBackground::GetOrAdd(element->_style).backgroundColor = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBackground::Ids::backgroundColor)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundColor = value;
+        StyleBackground::GetOrAdd(element->_transitionSrcStyle).backgroundColor = StyleBackground::Get(element->_style).backgroundColor;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBackground::GetOrAdd(element->_style).backgroundColor = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleBackgroundColor(VisualElement* element)
 {
@@ -405,9 +423,27 @@ void OGUI::ResetStyleBackgroundColor(VisualElement* element)
 void OGUI::SetStyleBackgroundImage(VisualElement* element, const ostr::string_view& value)
 {
     element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<1;
-    StyleBackground::GetOrAdd(element->_style).backgroundImage = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBackground::Ids::backgroundImage)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundImage = value;
+        StyleBackground::GetOrAdd(element->_transitionSrcStyle).backgroundImage = StyleBackground::Get(element->_style).backgroundImage;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBackground::GetOrAdd(element->_style).backgroundImage = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleBackgroundImage(VisualElement* element)
 {
@@ -416,9 +452,27 @@ void OGUI::ResetStyleBackgroundImage(VisualElement* element)
 void OGUI::SetStyleBackgroundMaterial(VisualElement* element, const ostr::string_view& value)
 {
     element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<2;
-    StyleBackground::GetOrAdd(element->_style).backgroundMaterial = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBackground::Ids::backgroundMaterial)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundMaterial = value;
+        StyleBackground::GetOrAdd(element->_transitionSrcStyle).backgroundMaterial = StyleBackground::Get(element->_style).backgroundMaterial;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBackground::GetOrAdd(element->_style).backgroundMaterial = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleBackgroundMaterial(VisualElement* element)
 {

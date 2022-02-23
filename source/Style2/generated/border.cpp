@@ -735,9 +735,27 @@ void OGUI::StyleBorder::SetupParser()
 void OGUI::SetStyleBorderTopWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<0;
-    StyleBorder::GetOrAdd(element->_style).borderTopWidth = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderTopWidth)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderTopWidth = StyleBorder::Get(element->_style).borderTopWidth;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderTopWidth = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleBorderTopWidth(VisualElement* element)
 {
@@ -746,9 +764,27 @@ void OGUI::ResetStyleBorderTopWidth(VisualElement* element)
 void OGUI::SetStyleBorderRightWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<1;
-    StyleBorder::GetOrAdd(element->_style).borderRightWidth = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderRightWidth)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderRightWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderRightWidth = StyleBorder::Get(element->_style).borderRightWidth;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderRightWidth = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleBorderRightWidth(VisualElement* element)
 {
@@ -757,9 +793,27 @@ void OGUI::ResetStyleBorderRightWidth(VisualElement* element)
 void OGUI::SetStyleBorderBottomWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<2;
-    StyleBorder::GetOrAdd(element->_style).borderBottomWidth = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderBottomWidth)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderBottomWidth = StyleBorder::Get(element->_style).borderBottomWidth;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderBottomWidth = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleBorderBottomWidth(VisualElement* element)
 {
@@ -768,9 +822,27 @@ void OGUI::ResetStyleBorderBottomWidth(VisualElement* element)
 void OGUI::SetStyleBorderLeftWidth(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<3;
-    StyleBorder::GetOrAdd(element->_style).borderLeftWidth = value;
-    RestyleDamage damage = RestyleDamage::Layout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderLeftWidth)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderLeftWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderLeftWidth = StyleBorder::Get(element->_style).borderLeftWidth;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderLeftWidth = value;
+        RestyleDamage damage = RestyleDamage::Layout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleBorderLeftWidth(VisualElement* element)
 {
@@ -779,9 +851,27 @@ void OGUI::ResetStyleBorderLeftWidth(VisualElement* element)
 void OGUI::SetStyleBorderTopLeftRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<4;
-    StyleBorder::GetOrAdd(element->_style).borderTopLeftRadius = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderTopLeftRadius)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopLeftRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderTopLeftRadius = StyleBorder::Get(element->_style).borderTopLeftRadius;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderTopLeftRadius = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleBorderTopLeftRadiusPixel(VisualElement* element, float value)
 {
@@ -798,9 +888,27 @@ void OGUI::ResetStyleBorderTopLeftRadius(VisualElement* element)
 void OGUI::SetStyleBorderTopRightRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<5;
-    StyleBorder::GetOrAdd(element->_style).borderTopRightRadius = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderTopRightRadius)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopRightRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderTopRightRadius = StyleBorder::Get(element->_style).borderTopRightRadius;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderTopRightRadius = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleBorderTopRightRadiusPixel(VisualElement* element, float value)
 {
@@ -817,9 +925,27 @@ void OGUI::ResetStyleBorderTopRightRadius(VisualElement* element)
 void OGUI::SetStyleBorderBottomRightRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<6;
-    StyleBorder::GetOrAdd(element->_style).borderBottomRightRadius = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderBottomRightRadius)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomRightRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderBottomRightRadius = StyleBorder::Get(element->_style).borderBottomRightRadius;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderBottomRightRadius = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleBorderBottomRightRadiusPixel(VisualElement* element, float value)
 {
@@ -836,9 +962,27 @@ void OGUI::ResetStyleBorderBottomRightRadius(VisualElement* element)
 void OGUI::SetStyleBorderBottomLeftRadius(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleBorderEntry] |= 1ull<<7;
-    StyleBorder::GetOrAdd(element->_style).borderBottomLeftRadius = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBorder::Ids::borderBottomLeftRadius)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomLeftRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderBottomLeftRadius = StyleBorder::Get(element->_style).borderBottomLeftRadius;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBorder::GetOrAdd(element->_style).borderBottomLeftRadius = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleBorderBottomLeftRadiusPixel(VisualElement* element, float value)
 {

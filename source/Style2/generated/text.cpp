@@ -744,9 +744,27 @@ void OGUI::StyleText::SetupParser()
 void OGUI::SetStyleFontSize(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<0;
-    StyleText::GetOrAdd(element->_style).fontSize = value;
-    RestyleDamage damage = RestyleDamage::TextLayout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::fontSize)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).fontSize = value;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).fontSize = StyleText::Get(element->_style).fontSize;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).fontSize = value;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFontSize(VisualElement* element)
 {
@@ -755,9 +773,27 @@ void OGUI::ResetStyleFontSize(VisualElement* element)
 void OGUI::SetStyleColor(VisualElement* element, const Color4f& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<1;
-    StyleText::GetOrAdd(element->_style).color = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::color)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).color = value;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).color = StyleText::Get(element->_style).color;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).color = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleColor(VisualElement* element)
 {
@@ -766,9 +802,27 @@ void OGUI::ResetStyleColor(VisualElement* element)
 void OGUI::SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string>& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<2;
-    StyleText::GetOrAdd(element->_style).fontFamily = ToOwned(value);
-    RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::fontFamily)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).fontFamily = ToOwned(value);
+        StyleText::GetOrAdd(element->_transitionSrcStyle).fontFamily = StyleText::Get(element->_style).fontFamily;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).fontFamily = ToOwned(value);
+        RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFontFamily(VisualElement* element)
 {
@@ -777,9 +831,27 @@ void OGUI::ResetStyleFontFamily(VisualElement* element)
 void OGUI::SetStyleFontStyle(VisualElement* element, const ETextStyle& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<3;
-    StyleText::GetOrAdd(element->_style).fontStyle = value;
-    RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::fontStyle)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).fontStyle = value;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).fontStyle = StyleText::Get(element->_style).fontStyle;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).fontStyle = value;
+        RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFontStyle(VisualElement* element)
 {
@@ -788,9 +860,27 @@ void OGUI::ResetStyleFontStyle(VisualElement* element)
 void OGUI::SetStyleFontWeight(VisualElement* element, const int& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<4;
-    StyleText::GetOrAdd(element->_style).fontWeight = value;
-    RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::fontWeight)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).fontWeight = value;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).fontWeight = StyleText::Get(element->_style).fontWeight;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).fontWeight = value;
+        RestyleDamage damage = RestyleDamage::TextLayout|RestyleDamage::Font;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleFontWeight(VisualElement* element)
 {
@@ -799,9 +889,27 @@ void OGUI::ResetStyleFontWeight(VisualElement* element)
 void OGUI::SetStyleLineHeight(VisualElement* element, const YGValue& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<5;
-    StyleText::GetOrAdd(element->_style).lineHeight = value;
-    RestyleDamage damage = RestyleDamage::TextLayout;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::lineHeight)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).lineHeight = value;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).lineHeight = StyleText::Get(element->_style).lineHeight;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).lineHeight = value;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::SetStyleLineHeightPixel(VisualElement* element, float value)
 {
@@ -822,9 +930,27 @@ void OGUI::ResetStyleLineHeight(VisualElement* element)
 void OGUI::SetStyleTextAlign(VisualElement* element, const ETextAlign& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<6;
-    StyleText::GetOrAdd(element->_style).textAlign = value;
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::textAlign)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).textAlign = value;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).textAlign = StyleText::Get(element->_style).textAlign;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).textAlign = value;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleTextAlign(VisualElement* element)
 {
@@ -833,9 +959,27 @@ void OGUI::ResetStyleTextAlign(VisualElement* element)
 void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow>& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<7;
-    StyleText::GetOrAdd(element->_style).textShadow = ToOwned(value);
-    RestyleDamage damage = RestyleDamage::None;
-    element->UpdateStyle(damage);
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::textShadow)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).textShadow = ToOwned(value);
+        StyleText::GetOrAdd(element->_transitionSrcStyle).textShadow = StyleText::Get(element->_style).textShadow;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).textShadow = ToOwned(value);
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
 }
 void OGUI::ResetStyleTextShadow(VisualElement* element)
 {

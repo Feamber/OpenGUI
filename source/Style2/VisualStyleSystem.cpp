@@ -389,6 +389,12 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		ApplyProperties(element->_inlineStyle->rule, element->_inlineStyle->storage);
 	element->_transitionSrcStyle = ComputedStyle();
 	element->_transitionDstStyle = ComputedStyle();
+	element->_trans.resize(trans.size());
+	for(int i=0; i<trans.size(); ++i)
+	{
+		element->_trans[i].style = trans[i];
+		element->_trans[i].time = -1.f;
+	}
 	if(!trans.empty() && element->_styleInitialized)
 	{
 		std::vector<size_t> props;
@@ -396,13 +402,9 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 			props.push_back(tran.transitionProperty);
 		element->_transitionSrcStyle = std::move(element->_preAnimatedStyle);
 		element->_transitionDstStyle = std::move(resolvedStyle);
-		element->_trans.resize(trans.size());
-		for(int i=0; i<trans.size(); ++i)
-		{
-			element->_trans[i].style = trans[i];
-			element->_trans[i].time = 0.f;
-		}
 		element->_preAnimatedStyle = element->_transitionDstStyle;
+		for(int i=0; i<trans.size(); ++i)
+			element->_trans[i].time = 0.f;
 	}
 	else
 	{
@@ -579,28 +581,32 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateTransition(VisualElement* ele
 	auto& ctx = Context::Get();
 	auto& trans = element->_trans;
 	std::vector<TransitionProperty> props;
-	if(trans.empty())
+	bool transitioning = false;
+	for(auto& tran : trans)
 	{
-		if(element->_prevTransitioning)
-			element->_preAnimatedStyle = std::move(element->_transitionDstStyle);
+		if(tran.time < 0.f)
+			continue;
+		transitioning = true;
+		tran.time += ctx._deltaTime;
+		float alpha = (tran.time - tran.style.transitionDelay) / tran.style.transitionDuration;
+		if(alpha < 0)
+			continue;
+		if(alpha >= 1.f)
+		{
+			alpha = 1.f;
+			tran.time = -1.f;
+		}
+		props.push_back({tran.style.transitionProperty, ApplyTimingFunction(tran.style.transitionTimingFunction, alpha)});
+	}
+	if(!transitioning)
+	{
 		element->_prevTransitioning = false;
 		return OGUI::RestyleDamage::None;
 	}
-	else 
-	{
-		element->_prevTransitioning = true;
-	}
-	auto iter = std::remove_if(trans.begin(), trans.end(), [&](ComputedTransition& tran)
-	{
-		tran.time += ctx._deltaTime;
-		float alpha = (tran.time - tran.style.transitionDelay) / tran.style.transitionDuration;
-		alpha = std::clamp(alpha, 0.f, 1.f);
-		props.push_back({tran.style.transitionProperty, ApplyTimingFunction(tran.style.transitionTimingFunction, alpha)});
-		return alpha == 1.f;
-	});
-	if(iter != trans.end())
-		trans.erase(iter, trans.end());
-	return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props, element->_procedureOverrides);
+	element->_prevTransitioning = transitioning;
+	if(element->_prevEvaluating)
+		return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props, {});
+	return element->_style.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props, {});
 }
 
 void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss)

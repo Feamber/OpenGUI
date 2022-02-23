@@ -22,12 +22,12 @@
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-    transition-property: background-color;
+    transition-property: background-color, height;
     transition-duration: 2s;
 }
 
 Button:hover{
-    transform:  scale(10.5, 10.5);
+    transform:  scale(1.05, 1.05);
     background-color: rgb(80, 135, 255);
     transition-property: background-color, transform;
     transition-duration: 0.5s;
@@ -45,7 +45,8 @@ Button:active{
 
 .InfoText{
     height:30px; 
-    width:150px;
+    width:300px;
+    text-align: center;
 }
 
 .column {
@@ -73,6 +74,9 @@ TextElement {
 }
 
 @keyframes SliderBar-slide {
+    from {
+        transform: translate(-10px, 10px);
+    }
     to {
         transform: translate(190px, 10px);
     }

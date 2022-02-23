@@ -3,7 +3,7 @@
     <Style path="res/LuaBind.css"/>
     
     <VisualElement class="column">
-        <sample:Slider name="TestSlider" min-value="50" max-value="100" value="$value" on:script="Test"> 
+        <sample:Slider name="TestSlider" min-value="1" max-value="10" value="$value" on:script="Test"> 
             <VisualElement name="SliderBar"/>
         </sample:Slider>
         <Text name="ValueText"> ${value} </Text>
