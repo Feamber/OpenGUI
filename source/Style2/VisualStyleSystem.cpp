@@ -405,7 +405,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		std::vector<size_t> props;
 		for(auto tran : trans)
 			props.push_back(tran.transitionProperty);
-		element->_preAnimatedStyle.MergeId(element->_style, props);
+		element->_preAnimatedStyle.MergeId(element->_transitionSrcStyle, props);
 		element->_style = element->_preAnimatedStyle;
 	}
 	else
