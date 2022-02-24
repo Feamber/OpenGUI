@@ -251,11 +251,11 @@ void OGUI::MathValueParser::SetupAction(peg::parser &parser)
     {
         float value = std::any_cast<float>(vs[0]);
         if (vs.choice() == 0)
-            value = value / OGUI::math::PI_ * 180;// rad2deg(value);
-        else if (vs.choice() == 1)
-            value = value * 0.9;// grad2deg(value);
+            value = value / 180 * OGUI::math::PI_;// degree2rad(value);
         else if (vs.choice() == 2)
-            value = value * 360;// turn2deg(value);
+            value = value / 180 * OGUI::math::PI_ * 0.9;// grad2rad(value);
+        else if (vs.choice() == 3)
+            value = value * 2 * OGUI::math::PI_;// turn2rad(value);
         return value;
     };
 
