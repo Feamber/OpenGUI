@@ -1227,53 +1227,15 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
 
 
 OGUI::RestyleDamage OGUI::StylePosition::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
-    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+    const gsl::span<TransitionProperty>& props)
 {
     RestyleDamage damage = RestyleDamage::None;
     
-    auto mask = override[StylePositionEntry];
     auto& src = Get(srcS);
     auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
-        switch(prop.id)
-        {
-            case Ids::transform: if(mask & (1ull<<0)) continue; break;
-            case Ids::flexGrow: if(mask & (1ull<<1)) continue; break;
-            case Ids::flexShrink: if(mask & (1ull<<2)) continue; break;
-            case Ids::flexBasis: if(mask & (1ull<<3)) continue; break;
-            case Ids::top: if(mask & (1ull<<4)) continue; break;
-            case Ids::right: if(mask & (1ull<<5)) continue; break;
-            case Ids::bottom: if(mask & (1ull<<6)) continue; break;
-            case Ids::left: if(mask & (1ull<<7)) continue; break;
-            case Ids::marginTop: if(mask & (1ull<<8)) continue; break;
-            case Ids::marginRight: if(mask & (1ull<<9)) continue; break;
-            case Ids::marginBottom: if(mask & (1ull<<10)) continue; break;
-            case Ids::marginLeft: if(mask & (1ull<<11)) continue; break;
-            case Ids::paddingTop: if(mask & (1ull<<12)) continue; break;
-            case Ids::paddingRight: if(mask & (1ull<<13)) continue; break;
-            case Ids::paddingBottom: if(mask & (1ull<<14)) continue; break;
-            case Ids::paddingLeft: if(mask & (1ull<<15)) continue; break;
-            case Ids::width: if(mask & (1ull<<16)) continue; break;
-            case Ids::height: if(mask & (1ull<<17)) continue; break;
-            case Ids::position: if(mask & (1ull<<18)) continue; break;
-            case Ids::overflow: if(mask & (1ull<<19)) continue; break;
-            case Ids::alignSelf: if(mask & (1ull<<20)) continue; break;
-            case Ids::maxWidth: if(mask & (1ull<<21)) continue; break;
-            case Ids::maxHeight: if(mask & (1ull<<22)) continue; break;
-            case Ids::minWidth: if(mask & (1ull<<23)) continue; break;
-            case Ids::minHeight: if(mask & (1ull<<24)) continue; break;
-            case Ids::flexDirection: if(mask & (1ull<<25)) continue; break;
-            case Ids::alignContent: if(mask & (1ull<<26)) continue; break;
-            case Ids::alignItems: if(mask & (1ull<<27)) continue; break;
-            case Ids::justifyContent: if(mask & (1ull<<28)) continue; break;
-            case Ids::flexWrap: if(mask & (1ull<<29)) continue; break;
-            case Ids::flexDisplay: if(mask & (1ull<<30)) continue; break;
-            case Ids::verticalAlign: if(mask & (1ull<<31)) continue; break;
-            case Ids::aspectRatio: if(mask & (1ull<<32)) continue; break;
-            case Ids::zOrderBias: if(mask & (1ull<<33)) continue; break;
-        }
         switch(prop.id)
         {
             case Ids::transform:{
@@ -2558,15 +2520,17 @@ void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFu
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.transform = ToOwned(value);
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).transform = ToOwned(value);
+        StylePosition::GetOrAdd(element->_transitionDstStyle).transform = override.transform;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).transform = StylePosition::Get(element->_style).transform;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).transform = ToOwned(value);
+        StylePosition::GetOrAdd(element->_style).transform = override.transform;
         RestyleDamage damage = RestyleDamage::Transform;
         element->UpdateStyle(damage);
     }
@@ -2587,15 +2551,17 @@ void OGUI::SetStyleFlexGrow(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.flexGrow = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).flexGrow = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexGrow = override.flexGrow;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).flexGrow = StylePosition::Get(element->_style).flexGrow;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).flexGrow = value;
+        StylePosition::GetOrAdd(element->_style).flexGrow = override.flexGrow;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2616,15 +2582,17 @@ void OGUI::SetStyleFlexShrink(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.flexShrink = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).flexShrink = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexShrink = override.flexShrink;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).flexShrink = StylePosition::Get(element->_style).flexShrink;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).flexShrink = value;
+        StylePosition::GetOrAdd(element->_style).flexShrink = override.flexShrink;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2645,15 +2613,17 @@ void OGUI::SetStyleFlexBasis(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.flexBasis = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).flexBasis = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexBasis = override.flexBasis;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).flexBasis = StylePosition::Get(element->_style).flexBasis;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).flexBasis = value;
+        StylePosition::GetOrAdd(element->_style).flexBasis = override.flexBasis;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2686,15 +2656,17 @@ void OGUI::SetStyleTop(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.top = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).top = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).top = override.top;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).top = StylePosition::Get(element->_style).top;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).top = value;
+        StylePosition::GetOrAdd(element->_style).top = override.top;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2723,15 +2695,17 @@ void OGUI::SetStyleRight(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.right = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).right = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).right = override.right;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).right = StylePosition::Get(element->_style).right;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).right = value;
+        StylePosition::GetOrAdd(element->_style).right = override.right;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2760,15 +2734,17 @@ void OGUI::SetStyleBottom(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.bottom = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).bottom = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).bottom = override.bottom;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).bottom = StylePosition::Get(element->_style).bottom;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).bottom = value;
+        StylePosition::GetOrAdd(element->_style).bottom = override.bottom;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2797,15 +2773,17 @@ void OGUI::SetStyleLeft(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.left = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).left = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).left = override.left;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).left = StylePosition::Get(element->_style).left;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).left = value;
+        StylePosition::GetOrAdd(element->_style).left = override.left;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2834,15 +2812,17 @@ void OGUI::SetStyleMarginTop(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.marginTop = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).marginTop = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginTop = override.marginTop;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).marginTop = StylePosition::Get(element->_style).marginTop;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).marginTop = value;
+        StylePosition::GetOrAdd(element->_style).marginTop = override.marginTop;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2871,15 +2851,17 @@ void OGUI::SetStyleMarginRight(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.marginRight = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).marginRight = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginRight = override.marginRight;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).marginRight = StylePosition::Get(element->_style).marginRight;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).marginRight = value;
+        StylePosition::GetOrAdd(element->_style).marginRight = override.marginRight;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2908,15 +2890,17 @@ void OGUI::SetStyleMarginBottom(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.marginBottom = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).marginBottom = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginBottom = override.marginBottom;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).marginBottom = StylePosition::Get(element->_style).marginBottom;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).marginBottom = value;
+        StylePosition::GetOrAdd(element->_style).marginBottom = override.marginBottom;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2945,15 +2929,17 @@ void OGUI::SetStyleMarginLeft(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.marginLeft = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).marginLeft = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).marginLeft = override.marginLeft;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).marginLeft = StylePosition::Get(element->_style).marginLeft;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).marginLeft = value;
+        StylePosition::GetOrAdd(element->_style).marginLeft = override.marginLeft;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -2982,15 +2968,17 @@ void OGUI::SetStylePaddingTop(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.paddingTop = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingTop = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingTop = override.paddingTop;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingTop = StylePosition::Get(element->_style).paddingTop;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).paddingTop = value;
+        StylePosition::GetOrAdd(element->_style).paddingTop = override.paddingTop;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3019,15 +3007,17 @@ void OGUI::SetStylePaddingRight(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.paddingRight = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingRight = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingRight = override.paddingRight;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingRight = StylePosition::Get(element->_style).paddingRight;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).paddingRight = value;
+        StylePosition::GetOrAdd(element->_style).paddingRight = override.paddingRight;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3056,15 +3046,17 @@ void OGUI::SetStylePaddingBottom(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.paddingBottom = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingBottom = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingBottom = override.paddingBottom;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingBottom = StylePosition::Get(element->_style).paddingBottom;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).paddingBottom = value;
+        StylePosition::GetOrAdd(element->_style).paddingBottom = override.paddingBottom;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3093,15 +3085,17 @@ void OGUI::SetStylePaddingLeft(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.paddingLeft = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingLeft = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).paddingLeft = override.paddingLeft;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).paddingLeft = StylePosition::Get(element->_style).paddingLeft;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).paddingLeft = value;
+        StylePosition::GetOrAdd(element->_style).paddingLeft = override.paddingLeft;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3130,15 +3124,17 @@ void OGUI::SetStyleWidth(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.width = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).width = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).width = override.width;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).width = StylePosition::Get(element->_style).width;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).width = value;
+        StylePosition::GetOrAdd(element->_style).width = override.width;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3171,15 +3167,17 @@ void OGUI::SetStyleHeight(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.height = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).height = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).height = override.height;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).height = StylePosition::Get(element->_style).height;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).height = value;
+        StylePosition::GetOrAdd(element->_style).height = override.height;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3212,15 +3210,17 @@ void OGUI::SetStylePosition(VisualElement* element, const YGPositionType& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.position = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).position = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).position = override.position;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).position = StylePosition::Get(element->_style).position;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).position = value;
+        StylePosition::GetOrAdd(element->_style).position = override.position;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3241,15 +3241,17 @@ void OGUI::SetStyleOverflow(VisualElement* element, const EFlexOverflow& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.overflow = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).overflow = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).overflow = override.overflow;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).overflow = StylePosition::Get(element->_style).overflow;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).overflow = value;
+        StylePosition::GetOrAdd(element->_style).overflow = override.overflow;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3270,15 +3272,17 @@ void OGUI::SetStyleAlignSelf(VisualElement* element, const YGAlign& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.alignSelf = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).alignSelf = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).alignSelf = override.alignSelf;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).alignSelf = StylePosition::Get(element->_style).alignSelf;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).alignSelf = value;
+        StylePosition::GetOrAdd(element->_style).alignSelf = override.alignSelf;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3299,15 +3303,17 @@ void OGUI::SetStyleMaxWidth(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.maxWidth = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).maxWidth = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).maxWidth = override.maxWidth;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).maxWidth = StylePosition::Get(element->_style).maxWidth;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).maxWidth = value;
+        StylePosition::GetOrAdd(element->_style).maxWidth = override.maxWidth;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3336,15 +3342,17 @@ void OGUI::SetStyleMaxHeight(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.maxHeight = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).maxHeight = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).maxHeight = override.maxHeight;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).maxHeight = StylePosition::Get(element->_style).maxHeight;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).maxHeight = value;
+        StylePosition::GetOrAdd(element->_style).maxHeight = override.maxHeight;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3373,15 +3381,17 @@ void OGUI::SetStyleMinWidth(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.minWidth = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).minWidth = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).minWidth = override.minWidth;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).minWidth = StylePosition::Get(element->_style).minWidth;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).minWidth = value;
+        StylePosition::GetOrAdd(element->_style).minWidth = override.minWidth;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3414,15 +3424,17 @@ void OGUI::SetStyleMinHeight(VisualElement* element, const YGValue& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.minHeight = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).minHeight = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).minHeight = override.minHeight;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).minHeight = StylePosition::Get(element->_style).minHeight;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).minHeight = value;
+        StylePosition::GetOrAdd(element->_style).minHeight = override.minHeight;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3455,15 +3467,17 @@ void OGUI::SetStyleFlexDirection(VisualElement* element, const YGFlexDirection& 
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.flexDirection = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).flexDirection = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexDirection = override.flexDirection;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).flexDirection = StylePosition::Get(element->_style).flexDirection;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).flexDirection = value;
+        StylePosition::GetOrAdd(element->_style).flexDirection = override.flexDirection;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3484,15 +3498,17 @@ void OGUI::SetStyleAlignContent(VisualElement* element, const YGAlign& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.alignContent = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).alignContent = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).alignContent = override.alignContent;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).alignContent = StylePosition::Get(element->_style).alignContent;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).alignContent = value;
+        StylePosition::GetOrAdd(element->_style).alignContent = override.alignContent;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3513,15 +3529,17 @@ void OGUI::SetStyleAlignItems(VisualElement* element, const YGAlign& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.alignItems = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).alignItems = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).alignItems = override.alignItems;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).alignItems = StylePosition::Get(element->_style).alignItems;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).alignItems = value;
+        StylePosition::GetOrAdd(element->_style).alignItems = override.alignItems;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3542,15 +3560,17 @@ void OGUI::SetStyleJustifyContent(VisualElement* element, const YGJustify& value
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.justifyContent = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).justifyContent = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).justifyContent = override.justifyContent;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).justifyContent = StylePosition::Get(element->_style).justifyContent;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).justifyContent = value;
+        StylePosition::GetOrAdd(element->_style).justifyContent = override.justifyContent;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3571,15 +3591,17 @@ void OGUI::SetStyleFlexWrap(VisualElement* element, const YGWrap& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.flexWrap = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).flexWrap = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexWrap = override.flexWrap;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).flexWrap = StylePosition::Get(element->_style).flexWrap;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).flexWrap = value;
+        StylePosition::GetOrAdd(element->_style).flexWrap = override.flexWrap;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3600,15 +3622,17 @@ void OGUI::SetStyleFlexDisplay(VisualElement* element, const YGDisplay& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.flexDisplay = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).flexDisplay = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).flexDisplay = override.flexDisplay;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).flexDisplay = StylePosition::Get(element->_style).flexDisplay;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).flexDisplay = value;
+        StylePosition::GetOrAdd(element->_style).flexDisplay = override.flexDisplay;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3629,15 +3653,17 @@ void OGUI::SetStyleVerticalAlign(VisualElement* element, const EInlineAlign& val
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.verticalAlign = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).verticalAlign = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).verticalAlign = override.verticalAlign;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).verticalAlign = StylePosition::Get(element->_style).verticalAlign;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).verticalAlign = value;
+        StylePosition::GetOrAdd(element->_style).verticalAlign = override.verticalAlign;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3658,15 +3684,17 @@ void OGUI::SetStyleAspectRatio(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.aspectRatio = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).aspectRatio = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).aspectRatio = override.aspectRatio;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).aspectRatio = StylePosition::Get(element->_style).aspectRatio;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).aspectRatio = value;
+        StylePosition::GetOrAdd(element->_style).aspectRatio = override.aspectRatio;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -3687,15 +3715,17 @@ void OGUI::SetStyleZOrderBias(VisualElement* element, const int& value)
             break;
         }
     }
+    auto& override = StylePosition::GetOrAdd(element->_overrideStyle);
+    override.zOrderBias = value;
     if(transition)
     {
-        StylePosition::GetOrAdd(element->_transitionDstStyle).zOrderBias = value;
+        StylePosition::GetOrAdd(element->_transitionDstStyle).zOrderBias = override.zOrderBias;
         StylePosition::GetOrAdd(element->_transitionSrcStyle).zOrderBias = StylePosition::Get(element->_style).zOrderBias;
         transition->time = 0.f;
     }
     else
     {
-        StylePosition::GetOrAdd(element->_style).zOrderBias = value;
+        StylePosition::GetOrAdd(element->_style).zOrderBias = override.zOrderBias;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }

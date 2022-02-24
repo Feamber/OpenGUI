@@ -163,6 +163,7 @@ namespace OGUI reflect
 		ComputedStyle _preAnimatedStyle;
 		ComputedStyle _transitionSrcStyle;
 		ComputedStyle _transitionDstStyle;
+		ComputedStyle _overrideStyle;
 		std::vector<StyleSheet*> _styleSheets;
 		std::vector<ostr::string> _styleClasses;
 		std::unordered_map<Name, TextureHandle> textures;

@@ -214,22 +214,15 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
 
 
 OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
-    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+    const gsl::span<TransitionProperty>& props)
 {
     RestyleDamage damage = RestyleDamage::None;
     
-    auto mask = override[Style${struct.ident}Entry];
     auto& src = Get(srcS);
     auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
-        switch(prop.id)
-        {
-        %for i, prop in enumerate(struct.longhands):
-            case Ids::${prop.ident}: if(mask & (1ull<<${i})) continue; break;
-        %endfor
-        }
         switch(prop.id)
         {
         %for prop in struct.longhands:
@@ -365,23 +358,21 @@ void OGUI::SetStyle${to_camel_case(prop.name)}(VisualElement* element, ${prop.re
             break;
         }
     }
+    auto& override = Style${struct.ident}::GetOrAdd(element->_overrideStyle);
+%if prop.is_vector:
+    override.${prop.ident} = ToOwned(value);
+%else:
+    override.${prop.ident} = value;
+%endif
     if(transition)
     {
-    %if prop.is_vector:
-        Style${struct.ident}::GetOrAdd(element->_transitionDstStyle).${prop.ident} = ToOwned(value);
-    %else:
-        Style${struct.ident}::GetOrAdd(element->_transitionDstStyle).${prop.ident} = value;
-    %endif
+        Style${struct.ident}::GetOrAdd(element->_transitionDstStyle).${prop.ident} = override.${prop.ident};
         Style${struct.ident}::GetOrAdd(element->_transitionSrcStyle).${prop.ident} = Style${struct.ident}::Get(element->_style).${prop.ident};
         transition->time = 0.f;
     }
     else
     {
-    %if prop.is_vector:
-        Style${struct.ident}::GetOrAdd(element->_style).${prop.ident} = ToOwned(value);
-    %else:
-        Style${struct.ident}::GetOrAdd(element->_style).${prop.ident} = value;
-    %endif
+        Style${struct.ident}::GetOrAdd(element->_style).${prop.ident} = override.${prop.ident};
     %if prop.restyle_damage:
         RestyleDamage damage = ${"|".join(["RestyleDamage::" + x for x in prop.restyle_damage.split("|")])};
     %else:

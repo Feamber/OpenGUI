@@ -172,20 +172,15 @@ OGUI::RestyleDamage OGUI::StyleSample::ApplyAnimatedProperties(ComputedStyle& st
 
 
 OGUI::RestyleDamage OGUI::StyleSample::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
-    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+    const gsl::span<TransitionProperty>& props)
 {
     RestyleDamage damage = RestyleDamage::None;
     
-    auto mask = override[StyleSampleEntry];
     auto& src = Get(srcS);
     auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
-        switch(prop.id)
-        {
-            case Ids::someValue: if(mask & (1ull<<0)) continue; break;
-        }
         switch(prop.id)
         {
             case Ids::someValue:{
@@ -277,15 +272,17 @@ void OGUI::SetStyleSomeValue(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StyleSample::GetOrAdd(element->_overrideStyle);
+    override.someValue = value;
     if(transition)
     {
-        StyleSample::GetOrAdd(element->_transitionDstStyle).someValue = value;
+        StyleSample::GetOrAdd(element->_transitionDstStyle).someValue = override.someValue;
         StyleSample::GetOrAdd(element->_transitionSrcStyle).someValue = StyleSample::Get(element->_style).someValue;
         transition->time = 0.f;
     }
     else
     {
-        StyleSample::GetOrAdd(element->_style).someValue = value;
+        StyleSample::GetOrAdd(element->_style).someValue = override.someValue;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }

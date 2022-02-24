@@ -388,27 +388,15 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
 
 
 OGUI::RestyleDamage OGUI::StyleBorder::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
-    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+    const gsl::span<TransitionProperty>& props)
 {
     RestyleDamage damage = RestyleDamage::None;
     
-    auto mask = override[StyleBorderEntry];
     auto& src = Get(srcS);
     auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
-        switch(prop.id)
-        {
-            case Ids::borderTopWidth: if(mask & (1ull<<0)) continue; break;
-            case Ids::borderRightWidth: if(mask & (1ull<<1)) continue; break;
-            case Ids::borderBottomWidth: if(mask & (1ull<<2)) continue; break;
-            case Ids::borderLeftWidth: if(mask & (1ull<<3)) continue; break;
-            case Ids::borderTopLeftRadius: if(mask & (1ull<<4)) continue; break;
-            case Ids::borderTopRightRadius: if(mask & (1ull<<5)) continue; break;
-            case Ids::borderBottomRightRadius: if(mask & (1ull<<6)) continue; break;
-            case Ids::borderBottomLeftRadius: if(mask & (1ull<<7)) continue; break;
-        }
         switch(prop.id)
         {
             case Ids::borderTopWidth:{
@@ -744,15 +732,17 @@ void OGUI::SetStyleBorderTopWidth(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderTopWidth = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopWidth = override.borderTopWidth;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderTopWidth = StyleBorder::Get(element->_style).borderTopWidth;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderTopWidth = value;
+        StyleBorder::GetOrAdd(element->_style).borderTopWidth = override.borderTopWidth;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -773,15 +763,17 @@ void OGUI::SetStyleBorderRightWidth(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderRightWidth = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderRightWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderRightWidth = override.borderRightWidth;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderRightWidth = StyleBorder::Get(element->_style).borderRightWidth;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderRightWidth = value;
+        StyleBorder::GetOrAdd(element->_style).borderRightWidth = override.borderRightWidth;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -802,15 +794,17 @@ void OGUI::SetStyleBorderBottomWidth(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderBottomWidth = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomWidth = override.borderBottomWidth;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderBottomWidth = StyleBorder::Get(element->_style).borderBottomWidth;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderBottomWidth = value;
+        StyleBorder::GetOrAdd(element->_style).borderBottomWidth = override.borderBottomWidth;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -831,15 +825,17 @@ void OGUI::SetStyleBorderLeftWidth(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderLeftWidth = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderLeftWidth = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderLeftWidth = override.borderLeftWidth;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderLeftWidth = StyleBorder::Get(element->_style).borderLeftWidth;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderLeftWidth = value;
+        StyleBorder::GetOrAdd(element->_style).borderLeftWidth = override.borderLeftWidth;
         RestyleDamage damage = RestyleDamage::Layout;
         element->UpdateStyle(damage);
     }
@@ -860,15 +856,17 @@ void OGUI::SetStyleBorderTopLeftRadius(VisualElement* element, const YGValue& va
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderTopLeftRadius = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopLeftRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopLeftRadius = override.borderTopLeftRadius;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderTopLeftRadius = StyleBorder::Get(element->_style).borderTopLeftRadius;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderTopLeftRadius = value;
+        StyleBorder::GetOrAdd(element->_style).borderTopLeftRadius = override.borderTopLeftRadius;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }
@@ -897,15 +895,17 @@ void OGUI::SetStyleBorderTopRightRadius(VisualElement* element, const YGValue& v
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderTopRightRadius = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopRightRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderTopRightRadius = override.borderTopRightRadius;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderTopRightRadius = StyleBorder::Get(element->_style).borderTopRightRadius;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderTopRightRadius = value;
+        StyleBorder::GetOrAdd(element->_style).borderTopRightRadius = override.borderTopRightRadius;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }
@@ -934,15 +934,17 @@ void OGUI::SetStyleBorderBottomRightRadius(VisualElement* element, const YGValue
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderBottomRightRadius = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomRightRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomRightRadius = override.borderBottomRightRadius;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderBottomRightRadius = StyleBorder::Get(element->_style).borderBottomRightRadius;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderBottomRightRadius = value;
+        StyleBorder::GetOrAdd(element->_style).borderBottomRightRadius = override.borderBottomRightRadius;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }
@@ -971,15 +973,17 @@ void OGUI::SetStyleBorderBottomLeftRadius(VisualElement* element, const YGValue&
             break;
         }
     }
+    auto& override = StyleBorder::GetOrAdd(element->_overrideStyle);
+    override.borderBottomLeftRadius = value;
     if(transition)
     {
-        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomLeftRadius = value;
+        StyleBorder::GetOrAdd(element->_transitionDstStyle).borderBottomLeftRadius = override.borderBottomLeftRadius;
         StyleBorder::GetOrAdd(element->_transitionSrcStyle).borderBottomLeftRadius = StyleBorder::Get(element->_style).borderBottomLeftRadius;
         transition->time = 0.f;
     }
     else
     {
-        StyleBorder::GetOrAdd(element->_style).borderBottomLeftRadius = value;
+        StyleBorder::GetOrAdd(element->_style).borderBottomLeftRadius = override.borderBottomLeftRadius;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }

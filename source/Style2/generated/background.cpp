@@ -230,22 +230,15 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
 
 
 OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
-    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+    const gsl::span<TransitionProperty>& props)
 {
     RestyleDamage damage = RestyleDamage::None;
     
-    auto mask = override[StyleBackgroundEntry];
     auto& src = Get(srcS);
     auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
-        switch(prop.id)
-        {
-            case Ids::backgroundColor: if(mask & (1ull<<0)) continue; break;
-            case Ids::backgroundImage: if(mask & (1ull<<1)) continue; break;
-            case Ids::backgroundMaterial: if(mask & (1ull<<2)) continue; break;
-        }
         switch(prop.id)
         {
             case Ids::backgroundColor:{
@@ -254,7 +247,6 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedSty
                     v.backgroundColor = dst.backgroundColor;
                 else
                     v.backgroundColor = OGUI::Lerp(src.backgroundColor, dst.backgroundColor, prop.alpha);
-                
                 break;
                 }
             case Ids::backgroundImage:{
@@ -403,15 +395,17 @@ void OGUI::SetStyleBackgroundColor(VisualElement* element, const Color4f& value)
             break;
         }
     }
+    auto& override = StyleBackground::GetOrAdd(element->_overrideStyle);
+    override.backgroundColor = value;
     if(transition)
     {
-        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundColor = value;
+        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundColor = override.backgroundColor;
         StyleBackground::GetOrAdd(element->_transitionSrcStyle).backgroundColor = StyleBackground::Get(element->_style).backgroundColor;
         transition->time = 0.f;
     }
     else
     {
-        StyleBackground::GetOrAdd(element->_style).backgroundColor = value;
+        StyleBackground::GetOrAdd(element->_style).backgroundColor = override.backgroundColor;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }
@@ -432,15 +426,17 @@ void OGUI::SetStyleBackgroundImage(VisualElement* element, const ostr::string_vi
             break;
         }
     }
+    auto& override = StyleBackground::GetOrAdd(element->_overrideStyle);
+    override.backgroundImage = value;
     if(transition)
     {
-        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundImage = value;
+        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundImage = override.backgroundImage;
         StyleBackground::GetOrAdd(element->_transitionSrcStyle).backgroundImage = StyleBackground::Get(element->_style).backgroundImage;
         transition->time = 0.f;
     }
     else
     {
-        StyleBackground::GetOrAdd(element->_style).backgroundImage = value;
+        StyleBackground::GetOrAdd(element->_style).backgroundImage = override.backgroundImage;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }
@@ -461,15 +457,17 @@ void OGUI::SetStyleBackgroundMaterial(VisualElement* element, const ostr::string
             break;
         }
     }
+    auto& override = StyleBackground::GetOrAdd(element->_overrideStyle);
+    override.backgroundMaterial = value;
     if(transition)
     {
-        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundMaterial = value;
+        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundMaterial = override.backgroundMaterial;
         StyleBackground::GetOrAdd(element->_transitionSrcStyle).backgroundMaterial = StyleBackground::Get(element->_style).backgroundMaterial;
         transition->time = 0.f;
     }
     else
     {
-        StyleBackground::GetOrAdd(element->_style).backgroundMaterial = value;
+        StyleBackground::GetOrAdd(element->_style).backgroundMaterial = override.backgroundMaterial;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }

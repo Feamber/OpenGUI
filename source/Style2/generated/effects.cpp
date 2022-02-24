@@ -172,20 +172,15 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
 
 
 OGUI::RestyleDamage OGUI::StyleEffects::ApplyTransitionProperties(ComputedStyle& style, const ComputedStyle& srcS, const ComputedStyle& dstS, 
-    const gsl::span<TransitionProperty>& props, const StyleMasks& override)
+    const gsl::span<TransitionProperty>& props)
 {
     RestyleDamage damage = RestyleDamage::None;
     
-    auto mask = override[StyleEffectsEntry];
     auto& src = Get(srcS);
     auto& dst = Get(dstS);
 
     for(auto& prop : props)
     {
-        switch(prop.id)
-        {
-            case Ids::opacity: if(mask & (1ull<<0)) continue; break;
-        }
         switch(prop.id)
         {
             case Ids::opacity:{
@@ -277,15 +272,17 @@ void OGUI::SetStyleOpacity(VisualElement* element, const float& value)
             break;
         }
     }
+    auto& override = StyleEffects::GetOrAdd(element->_overrideStyle);
+    override.opacity = value;
     if(transition)
     {
-        StyleEffects::GetOrAdd(element->_transitionDstStyle).opacity = value;
+        StyleEffects::GetOrAdd(element->_transitionDstStyle).opacity = override.opacity;
         StyleEffects::GetOrAdd(element->_transitionSrcStyle).opacity = StyleEffects::Get(element->_style).opacity;
         transition->time = 0.f;
     }
     else
     {
-        StyleEffects::GetOrAdd(element->_style).opacity = value;
+        StyleEffects::GetOrAdd(element->_style).opacity = override.opacity;
         RestyleDamage damage = RestyleDamage::None;
         element->UpdateStyle(damage);
     }

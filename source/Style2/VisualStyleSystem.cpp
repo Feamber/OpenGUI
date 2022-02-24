@@ -304,7 +304,7 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		else
 		{
 			auto newStyle = ComputedStyle::Create(element->_physicalParent ? &element->_physicalParent->_style : nullptr);
-			newStyle.Merge(element->_style, element->_procedureOverrides);
+			newStyle.Merge(element->_overrideStyle, element->_procedureOverrides);
 			element->_style = std::move(newStyle);
 			element->_anims.clear();
 		}
@@ -333,7 +333,7 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	element->_styleDirty = true;
 	auto parent = element->_physicalParent ? &element->_physicalParent->_style : nullptr;
 	ComputedStyle resolvedStyle = ComputedStyle::Create(parent);
-	resolvedStyle.Merge(element->_style, element->_procedureOverrides);
+	resolvedStyle.Merge(element->_overrideStyle, element->_procedureOverrides);
 	std::vector<AnimStyle> anims;
 	std::vector<TransitionStyle> trans;
 	auto ApplyProperties = [&](StyleRule& rule, StyleSheetStorage& storage)
@@ -387,8 +387,6 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	}
 	if(element->_inlineStyle)
 		ApplyProperties(element->_inlineStyle->rule, element->_inlineStyle->storage);
-	element->_transitionSrcStyle = ComputedStyle();
-	element->_transitionDstStyle = ComputedStyle();
 	element->_trans.resize(trans.size());
 	for(int i=0; i<trans.size(); ++i)
 	{
@@ -397,19 +395,18 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 	}
 	if(!trans.empty() && element->_styleInitialized)
 	{
-		std::vector<size_t> props;
-		for(auto tran : trans)
-			props.push_back(tran.transitionProperty);
-		element->_transitionSrcStyle = std::move(element->_preAnimatedStyle);
+		element->_transitionSrcStyle = std::move(element->_style);
 		element->_transitionDstStyle = std::move(resolvedStyle);
-		element->_preAnimatedStyle = element->_transitionDstStyle;
+		element->_transitionDstStyle.Merge(element->_overrideStyle, element->_procedureOverrides);
+		element->_style = element->_preAnimatedStyle = element->_transitionDstStyle;
 		for(int i=0; i<trans.size(); ++i)
 			element->_trans[i].time = 0.f;
 	}
 	else
 	{
-		element->_preAnimatedStyle = std::move(resolvedStyle);
-		element->_style = element->_preAnimatedStyle;
+		element->_transitionSrcStyle = ComputedStyle();
+		element->_transitionDstStyle = ComputedStyle();
+		element->_style = element->_preAnimatedStyle = std::move(resolvedStyle);
 		element->_styleInitialized = true;
 	}
 	{
@@ -561,7 +558,7 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 		element->SyncYogaStyle();
 		element->MarkStyleTransformDirty();
 	}
-	if (animationEvaling || element->_styleDirty)
+	if (animationEvaling)
 	{
 		element->_style = element->_preAnimatedStyle;
 		for (auto& anim : element->_anims)
@@ -605,8 +602,8 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateTransition(VisualElement* ele
 	}
 	element->_prevTransitioning = transitioning;
 	if(element->_prevEvaluating)
-		return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props, {});
-	return element->_style.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props, {});
+		return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props);
+	return element->_style.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props);
 }
 
 void OGUI::VisualStyleSystem::UpdateStyle(VisualElement* element, const std::vector<StyleSheet*>& ss)
