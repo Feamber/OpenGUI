@@ -422,7 +422,22 @@ void OGUI::VisualElement::PushChild(VisualElement* child)
 {
 	_scrollSizeDirty = true;
 	child->_physicalParent = this;
-	InsertChild(child, _children.size());\
+	InsertChild(child, _children.size());
+}
+
+void OGUI::VisualElement::InsertChildAfter(VisualElement* child, VisualElement* target)
+{
+	_scrollSizeDirty = true;
+	child->_physicalParent = this;
+	for(int i = 0; i < _children.size(); ++i)
+	{
+		if(_children[i] == target)
+		{
+			InsertChild(child, i+1);
+			return;
+		}
+	}
+	InsertChild(child, _children.size());
 }
 
 void OGUI::VisualElement::InsertChild(VisualElement* child, int index)
