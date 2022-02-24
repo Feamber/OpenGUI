@@ -310,6 +310,9 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		}
 		matchingContext.currentElement = nullptr;
 	}
+	if(refresh)
+		for(auto& anim : element->_procedureAnims)
+			anim.Init(sstack);
 	UpdateStyle(element, sstack);
 	if(element->_beforeElement)
 		UpdateStyle(element->_beforeElement, sstack);
