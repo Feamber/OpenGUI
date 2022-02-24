@@ -809,7 +809,7 @@ void OGUI::VisualElement::_ResetStyles()
 {
 	_selectorDirty = true;
 	auto _reset = ComputedStyle();
-	_reset.Merge(_style, _procedureOverrides);
+	_reset.Merge(_overrideStyle, _procedureOverrides);
 	_preAnimatedStyle = std::move(_reset);
 	_style = _preAnimatedStyle;
 	//dosent clean this cause we want to inherit anim context
