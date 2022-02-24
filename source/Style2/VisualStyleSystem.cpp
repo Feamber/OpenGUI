@@ -398,9 +398,15 @@ void OGUI::VisualStyleSystem::ApplyMatchedRules(VisualElement* element, gsl::spa
 		element->_transitionSrcStyle = std::move(element->_style);
 		element->_transitionDstStyle = std::move(resolvedStyle);
 		element->_transitionDstStyle.Merge(element->_overrideStyle, element->_procedureOverrides);
-		element->_style = element->_preAnimatedStyle = element->_transitionDstStyle;
+		element->_preAnimatedStyle = element->_transitionDstStyle;
 		for(int i=0; i<trans.size(); ++i)
 			element->_trans[i].time = 0.f;
+			
+		std::vector<size_t> props;
+		for(auto tran : trans)
+			props.push_back(tran.transitionProperty);
+		element->_preAnimatedStyle.MergeId(element->_transitionSrcStyle, props);
+		element->_style = element->_preAnimatedStyle;
 	}
 	else
 	{
