@@ -1,19 +1,19 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Event/EventBase.h"
-#include "OpenGUI/Text/TextElement.h"
 #include "OpenGUI/Style2/Selector.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Context.h"
 #include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Style2/generated/border.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Style2/generated/effects.h"
-#include "OpenGUI/Style2/generated/border.h"
+#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Text/TextElement.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -42,6 +42,7 @@ void BindLua_generated(lua_State* L)
         type["SetIsPick"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetIsPick;
         type["PushChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::PushChild;
         type["InsertChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *, int))&OGUI::VisualElement::InsertChild;
+        type["InsertChildAfter"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *, OGUI::VisualElement *))&OGUI::VisualElement::InsertChildAfter;
         type["RemoveChild"] = (void(OGUI::VisualElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
         type["ClearChildren"] = (void(OGUI::VisualElement::*)())&OGUI::VisualElement::ClearChildren;
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetRoot;
@@ -87,7 +88,9 @@ void BindLua_generated(lua_State* L)
         type["SetIsPick"] = (void(OGUI::TextElement::*)(bool))&OGUI::VisualElement::SetIsPick;
         type["PushChild"] = (void(OGUI::TextElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::PushChild;
         type["InsertChild"] = (void(OGUI::TextElement::*)(OGUI::VisualElement *, int))&OGUI::VisualElement::InsertChild;
+        type["InsertChildAfter"] = (void(OGUI::TextElement::*)(OGUI::VisualElement *, OGUI::VisualElement *))&OGUI::VisualElement::InsertChildAfter;
         type["RemoveChild"] = (void(OGUI::TextElement::*)(OGUI::VisualElement *))&OGUI::VisualElement::RemoveChild;
+        type["ClearChildren"] = (void(OGUI::TextElement::*)())&OGUI::VisualElement::ClearChildren;
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetRoot;
         type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetLayoutRoot;
         type["GetSize"] = (OGUI::Vector<float, 2>(OGUI::TextElement::*)()const)&OGUI::VisualElement::GetSize;

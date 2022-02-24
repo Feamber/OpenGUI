@@ -99,6 +99,8 @@ namespace OGUI reflect
 		attr("script":true)
 		void InsertChild(VisualElement* child, int index);
 		attr("script":true)
+		void InsertChildAfter(VisualElement* child, VisualElement* target);
+		attr("script":true)
 		virtual void RemoveChild(VisualElement* child);
 		attr("script":true)
 		virtual void ClearChildren();
