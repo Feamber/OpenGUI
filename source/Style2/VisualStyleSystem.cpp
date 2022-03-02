@@ -310,9 +310,6 @@ void OGUI::VisualStyleSystem::Traverse(VisualElement* element, bool force, bool 
 		}
 		matchingContext.currentElement = nullptr;
 	}
-	if(refresh)
-		for(auto& anim : element->_procedureAnims)
-			anim.Init(sstack);
 	UpdateStyle(element, sstack);
 	if(element->_beforeElement)
 		UpdateStyle(element->_beforeElement, sstack);
@@ -561,19 +558,23 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateAnim(VisualElement* element)
 		animationEvaling |= ctx.evaluating;
 	for (auto& ctx : element->_procedureAnims)
 		animationEvaling |= ctx.evaluating;
-	if (element->_anims.empty() && element->_procedureAnims.empty() && element->_prevEvaluating)
+	bool noAnimation = element->_anims.empty() && element->_procedureAnims.empty();
+	if(!noAnimation)
+	{
+		if(animationEvaling || element->_prevTransitioning || element->_selectorDirty)
+		{
+			element->_style = element->_preAnimatedStyle;
+			for (auto& anim : element->_anims)
+				damage |= anim.Apply(element->_style, element->_procedureOverrides);
+			for (auto& anim : element->_procedureAnims)
+				damage |= anim.Apply(element->_style, element->_procedureOverrides);
+		}
+	}
+	else if(element->_prevEvaluating)
 	{
 		element->_style = element->_preAnimatedStyle;
 		element->SyncYogaStyle();
 		element->MarkStyleTransformDirty();
-	}
-	if (animationEvaling)
-	{
-		element->_style = element->_preAnimatedStyle;
-		for (auto& anim : element->_anims)
-			damage |= anim.Apply(element->_style, element->_procedureOverrides);
-		for (auto& anim : element->_procedureAnims)
-			damage |= anim.Apply(element->_style, element->_procedureOverrides);
 	}
 	element->_prevEvaluating = animationEvaling;
 	
@@ -610,7 +611,7 @@ OGUI::RestyleDamage OGUI::VisualStyleSystem::UpdateTransition(VisualElement* ele
 		return OGUI::RestyleDamage::None;
 	}
 	element->_prevTransitioning = transitioning;
-	if(element->_prevEvaluating)
+	if(!element->_anims.empty() || !element->_procedureAnims.empty())
 		return element->_preAnimatedStyle.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props);
 	return element->_style.ApplyTransitionProperties(element->_transitionSrcStyle, element->_transitionDstStyle, props);
 }
