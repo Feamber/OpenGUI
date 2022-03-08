@@ -733,6 +733,7 @@ NVGpaint nvgLinearGradient(NVGcontext* ctx,
 	p.radius = 0.0f;
 
 	p.feather = nvg__maxf(1.0f, d);
+	p.noGamma = true;
 
 	p.innerColor = icol;
 	p.outerColor = ocol;
@@ -760,6 +761,7 @@ NVGpaint nvgRadialGradient(NVGcontext* ctx,
 	p.radius = r;
 
 	p.feather = nvg__maxf(1.0f, f);
+	p.noGamma = true;
 
 	p.innerColor = icol;
 	p.outerColor = ocol;
@@ -785,6 +787,7 @@ NVGpaint nvgBoxGradient(NVGcontext* ctx,
 	p.radius = r;
 
 	p.feather = nvg__maxf(1.0f, f);
+	p.noGamma = true;
 
 	p.innerColor = icol;
 	p.outerColor = ocol;
@@ -809,6 +812,7 @@ NVGpaint nvgImagePattern(NVGcontext* ctx,
 	p.extent[1] = h;
 
 	p.image = image;
+	p.noGamma = true;
 
 	p.innerColor = p.outerColor = ocol;
 
@@ -831,6 +835,7 @@ NVGpaint nvgMaterialPattern(NVGcontext* ctx,
 	p.extent[1] = h;
 
 	p.material = material;
+	p.noGamma = true;
 
 	p.innerColor = p.outerColor = ocol;
 
@@ -856,6 +861,7 @@ NVGpaint nvgImagePatternEx(NVGcontext* ctx, float cx, float cy, float w, float h
 	p.innerColor = p.outerColor = ocol;
 
 	p.box = box;
+	p.noGamma = true;
 
 	return p;
 }

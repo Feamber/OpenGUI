@@ -225,6 +225,7 @@ static void nvg__renderFill(void* uptr, NVGpaint* paint, NVGcompositeOperationSt
     resource.texture = (TextureHandle)paint->image;
     resource.material = (MaterialHandle)paint->material;
     resource.compositeOperation = compositeOperation;
+    resource.noGamma = paint->noGamma;
     auto invTransform = nvg__getMatrix(paint);
     //fast path
     if(npaths == 1 && paths[0].convex) 
@@ -251,6 +252,7 @@ static void nvg__renderStroke(void* uptr, NVGpaint* paint, NVGcompositeOperation
     resource.texture = (TextureHandle)paint->image;
     resource.material = (MaterialHandle)paint->material;
     resource.compositeOperation = compositeOperation;
+    resource.noGamma = paint->noGamma;
     auto invTransform = nvg__getMatrix(paint);
     //fast path
     auto& command = dc->prims.GetCommand(resource);
@@ -306,6 +308,7 @@ namespace OGUI
             auto& res = command_list.back().resource;
             if(res.texture == resource.texture && res.material == resource.material &&
             res.compositeOperation.dstAlpha == resource.compositeOperation.dstAlpha &&
+            res.noGamma == resource.noGamma &&
             res.compositeOperation.dstRGB == resource.compositeOperation.dstRGB &&
             res.compositeOperation.srcAlpha == resource.compositeOperation.srcAlpha &&
             res.compositeOperation.srcRGB == resource.compositeOperation.srcRGB)

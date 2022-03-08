@@ -26,10 +26,12 @@ namespace OGUI reflect
             static constexpr size_t backgroundColor = OGUI::hash(u"background-color"_o);
             static constexpr size_t backgroundImage = OGUI::hash(u"background-image"_o);
             static constexpr size_t backgroundMaterial = OGUI::hash(u"background-material"_o);
+            static constexpr size_t backgroundGamma = OGUI::hash(u"background-gamma"_o);
         };
         Color4f backgroundColor;
         ostr::string backgroundImage;
         ostr::string backgroundMaterial;
+        bool backgroundGamma;
         void Initialize();
         static const StyleBackground& GetDefault();
         static const StyleBackground& Get(const ComputedStyle& style);
@@ -60,4 +62,8 @@ namespace OGUI reflect
     OGUI_API void SetStyleBackgroundMaterial(VisualElement* element, const ostr::string_view& value);
     attr("script": true)
     OGUI_API void ResetStyleBackgroundMaterial(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleBackgroundGamma(VisualElement* element, const bool& value);
+    attr("script": true)
+    OGUI_API void ResetStyleBackgroundGamma(VisualElement* element);
 }

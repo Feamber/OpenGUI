@@ -83,6 +83,7 @@ void OGUI::StyleBackground::Initialize()
     backgroundColor = Color4f(1.f,1.f,1.f,1.f);
     backgroundImage = {};
     backgroundMaterial = {};
+    backgroundGamma = false;
 }
 
 void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
@@ -97,6 +98,7 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
             case Ids::backgroundColor: if(mask & (1ull<<0)) continue; break;
             case Ids::backgroundImage: if(mask & (1ull<<1)) continue; break;
             case Ids::backgroundMaterial: if(mask & (1ull<<2)) continue; break;
+            case Ids::backgroundGamma: if(mask & (1ull<<3)) continue; break;
         }
         if(prop.keyword)
         {
@@ -121,6 +123,11 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     v.backgroundMaterial = {};
                     break;
                     }
+                case Ids::backgroundGamma: {
+                    auto& v = GetOrAdd(style);
+                    v.backgroundGamma = false;
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -141,6 +148,11 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                 case Ids::backgroundMaterial:{
                     auto& v = GetOrAdd(style);
                     v.backgroundMaterial = pst->backgroundMaterial;
+                    break;
+                    }
+                case Ids::backgroundGamma:{
+                    auto& v = GetOrAdd(style);
+                    v.backgroundGamma = pst->backgroundGamma;
                     break;
                     }
                 default: break;
@@ -166,6 +178,11 @@ void OGUI::StyleBackground::ApplyProperties(ComputedStyle& style, const StyleShe
                     v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.value);
                     break;
                     }
+                case Ids::backgroundGamma:{
+                    auto& v = GetOrAdd(style);
+                    v.backgroundGamma = sheet.Get<bool>(prop.value);
+                    break;
+                    }
                 default: break;
             }
         }
@@ -186,6 +203,7 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
             case Ids::backgroundColor: if(mask & (1ull<<0)) continue; break;
             case Ids::backgroundImage: if(mask & (1ull<<1)) continue; break;
             case Ids::backgroundMaterial: if(mask & (1ull<<2)) continue; break;
+            case Ids::backgroundGamma: if(mask & (1ull<<3)) continue; break;
         }
         switch(prop.id)
         {
@@ -222,6 +240,17 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
                 
                 break;
                 }
+            case Ids::backgroundGamma:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 0.f)
+                    v.backgroundGamma = sheet.Get<bool>(prop.from);
+                else if(prop.alpha == 1.f)
+                    v.backgroundGamma = sheet.Get<bool>(prop.to);
+                else
+                    v.backgroundGamma = OGUI::Lerp(sheet.Get<bool>(prop.from), sheet.Get<bool>(prop.to), prop.alpha);
+                
+                break;
+                }
             default: break;
         }
     }
@@ -247,6 +276,7 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedSty
                     v.backgroundColor = dst.backgroundColor;
                 else
                     v.backgroundColor = OGUI::Lerp(src.backgroundColor, dst.backgroundColor, prop.alpha);
+                
                 break;
                 }
             case Ids::backgroundImage:{
@@ -264,6 +294,15 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyTransitionProperties(ComputedSty
                     v.backgroundMaterial = dst.backgroundMaterial;
                 else
                     v.backgroundMaterial = OGUI::Lerp(src.backgroundMaterial, dst.backgroundMaterial, prop.alpha);
+                
+                break;
+                }
+            case Ids::backgroundGamma:{
+                auto& v = GetOrAdd(style);
+                if(prop.alpha == 1.f)
+                    v.backgroundGamma = dst.backgroundGamma;
+                else
+                    v.backgroundGamma = OGUI::Lerp(src.backgroundGamma, dst.backgroundGamma, prop.alpha);
                 
                 break;
                 }
@@ -288,6 +327,8 @@ void OGUI::StyleBackground::Merge(ComputedStyle& style, ComputedStyle& other, co
         s.backgroundImage = po->backgroundImage;
     if(mask & (1ull << 2))
         s.backgroundMaterial = po->backgroundMaterial;
+    if(mask & (1ull << 3))
+        s.backgroundGamma = po->backgroundGamma;
 }
 
 void OGUI::StyleBackground::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
@@ -314,6 +355,11 @@ void OGUI::StyleBackground::MergeId(ComputedStyle& style, ComputedStyle& other, 
                  v.backgroundMaterial = po->backgroundMaterial;
                  break;
             }
+            case Ids::backgroundGamma: {
+                 auto& v = GetOrAdd(style);
+                 v.backgroundGamma = po->backgroundGamma;
+                 break;
+            }
         }
     }
 }
@@ -325,6 +371,7 @@ size_t OGUI::StyleBackground::GetProperty(ostr::string_view pname)
         casestr("background-color") return Ids::backgroundColor;
         casestr("background-image") return Ids::backgroundImage;
         casestr("background-material") return Ids::backgroundMaterial;
+        casestr("background-gamma") return Ids::backgroundGamma;
         default: return -1;
     }
     return -1;
@@ -377,6 +424,22 @@ void OGUI::StyleBackground::SetupParser()
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
                     ctx.rule->properties.push_back({hash, ctx.storage->Push<const ostr::string_view>(ostr::string::decode_from_utf8(std::any_cast<const std::string_view&>(vs[0])))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "background-gammaValue <- GlobalValue / Bool \nbackground-gamma <- 'background-gamma' _ ':' _ background-gammaValue";
+        RegisterProperty("background-gamma");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::backgroundGamma;
+            parser["background-gammaValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<bool>(std::any_cast<bool&>(vs[0]))});
             };
         });
     }
@@ -475,4 +538,35 @@ void OGUI::SetStyleBackgroundMaterial(VisualElement* element, const ostr::string
 void OGUI::ResetStyleBackgroundMaterial(VisualElement* element)
 {
     element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<2);
+}
+void OGUI::SetStyleBackgroundGamma(VisualElement* element, const bool& value)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] |= 1ull<<3;
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleBackground::Ids::backgroundGamma)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    auto& override = StyleBackground::GetOrAdd(element->_overrideStyle);
+    override.backgroundGamma = value;
+    if(transition)
+    {
+        StyleBackground::GetOrAdd(element->_transitionDstStyle).backgroundGamma = override.backgroundGamma;
+        StyleBackground::GetOrAdd(element->_transitionSrcStyle).backgroundGamma = StyleBackground::Get(element->_style).backgroundGamma;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleBackground::GetOrAdd(element->_style).backgroundGamma = override.backgroundGamma;
+        RestyleDamage damage = RestyleDamage::None;
+        element->UpdateStyle(damage);
+    }
+}
+void OGUI::ResetStyleBackgroundGamma(VisualElement* element)
+{
+    element->_procedureOverrides[StyleBackgroundEntry] &= ~(1ull<<3);
 }

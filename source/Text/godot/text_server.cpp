@@ -1068,12 +1068,13 @@ void TextServer::GlyphDrawPolicy::draw(OGUI::PrimDrawList& list, const OGUI::Rec
 	drawQuad(list, rect, texture, uv, color);
 }
 
-void TextServer::GlyphDrawPolicy::drawQuad(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color)
+void TextServer::GlyphDrawPolicy::drawQuad(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color, bool noGamma)
 {
 	using namespace OGUI;
 	PrimDrawResource resource;
 	resource.texture = texture;
 	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
+	resource.noGamma = noGamma;
 	OGUI::BoxShape(list, resource, rect, uv, color);
 }
 

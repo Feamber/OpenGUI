@@ -169,6 +169,7 @@ def gen_background():
                  "Color4f(1.f,1.f,1.f,1.f)", "Color")
     add_longhand("background-image",	"ostr::string",	"{}", "URL", string = True)
     add_longhand("background-material", "ostr::string", "{}", "URL", string = True)
+    add_longhand("background-gamma",    "bool",         "false", "Bool")
     struct.headers.append("OpenGUI/Core/OMath.h")
     struct.headers.append("OpenGUI/Style2/Lerp/MathLerp.h")
     render_struct(struct)

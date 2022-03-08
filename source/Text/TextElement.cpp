@@ -6,6 +6,7 @@
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Shadow.h"
 #include "OpenGUI/Style2/Transform.h"
+#include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Style2/generated/position.h"
 #include "OpenGUI/Text/TextTypes.h"
 #include "YGValue.h"
@@ -48,6 +49,7 @@ namespace OGUI
         TextElement* root;
         Color4f color = Color4f::vector_one();
         std::vector<TextShadow> shadows;
+        bool noGamma = true;
         
         void draw(PrimDrawList &list, const Rect &inRect, TextureHandle texture, const Rect &inUv, const Color4f &inColor = Color4f::vector_one()) override
         {
@@ -63,7 +65,7 @@ namespace OGUI
                 rect.max += shadow.offset;
                 finalcolor = shadow.color * inColor;
             }
-            godot::TextServer::GlyphDrawPolicy::drawQuad(list, rect, texture, uv, finalcolor);
+            godot::TextServer::GlyphDrawPolicy::drawQuad(list, rect, texture, uv, finalcolor, noGamma);
         }
     };
 
@@ -385,6 +387,7 @@ namespace OGUI
         auto color = text.color;
         _drawPolicy->color = color;
         _drawPolicy->shadows = text.textShadow;
+        _drawPolicy->noGamma = StyleBackground::Get(_style).backgroundGamma;
         
         auto GetHAlign = [&]() //resolve
         {

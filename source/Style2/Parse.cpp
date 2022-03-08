@@ -49,6 +49,7 @@ namespace OGUI::CSSParser
 			String				 <- '"'< (!'"' .)* >'"'
 			Percentage		   <- Number '%'
 			Number				<- ('+' / '-')? (([0-9]*"."([0-9]+ 'e')?[0-9]+) / ([0-9]+))
+			Bool				<- 'false' / 'true'
 			Integer				<- [0-9]+
 			URL					   <- 'url('< (!')' .)* >')'
 			GlobalValue			<- 'inherit' / 'initial'  / 'unset'
@@ -82,6 +83,10 @@ namespace OGUI::CSSParser
 			{
 				throw parse_error("invalid number.");
 			}
+		};
+		parser["Bool"] = [](SemanticValues& vs)
+		{
+			return vs.choice();
 		};
 		parser["Integer"] = [](SemanticValues& vs)
 		{

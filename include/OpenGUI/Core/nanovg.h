@@ -62,6 +62,7 @@ struct NVGpaint {
 	NVGbox box;
 	void* image;
 	void* material;
+	bool noGamma;
 };
 typedef struct NVGpaint NVGpaint;
 
