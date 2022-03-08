@@ -86,7 +86,7 @@ namespace OGUI::CSSParser
 		};
 		parser["Bool"] = [](SemanticValues& vs)
 		{
-			return vs.choice();
+			return !!vs.choice();
 		};
 		parser["Integer"] = [](SemanticValues& vs)
 		{
