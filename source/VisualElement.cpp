@@ -224,7 +224,7 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimDrawContext& Ctx)
 	{
 		image = nvgMaterialPattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, backgroundMaterial, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
 	}
-	image.noGamma = bg.backgroundGamma;
+	image.noGamma = !bg.backgroundGamma;
 	BeginDraw(Ctx.prims);
 	nvgBeginPath(Ctx.nvg);
 	nvgRoundedRectVarying(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, bd.borderTopLeftRadius.value, bd.borderTopRightRadius.value, bd.borderBottomRightRadius.value, bd.borderBottomLeftRadius.value);
