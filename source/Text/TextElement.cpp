@@ -387,7 +387,7 @@ namespace OGUI
         auto color = text.color;
         _drawPolicy->color = color;
         _drawPolicy->shadows = text.textShadow;
-        _drawPolicy->noGamma = StyleBackground::Get(_style).backgroundGamma;
+        _drawPolicy->noGamma = !StyleBackground::Get(_style).backgroundGamma;
         
         auto GetHAlign = [&]() //resolve
         {
