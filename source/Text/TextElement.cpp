@@ -267,6 +267,7 @@ namespace OGUI
             BuildParagraphRec(_paragraph, txt);
             MarkLayoutDirty(false);
             _paragraphDirty = false;
+            _scrollSizeDirty = true;
         }
     }
 

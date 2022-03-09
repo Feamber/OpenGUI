@@ -22,6 +22,7 @@ namespace OGUI reflect
 		uint32_t  color; 
 
 		Vector2f clipUV; //uv in clipspace
+		Vector2f clipUV2;
     };
 
     enum PixelFormat

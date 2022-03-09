@@ -224,13 +224,14 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	auto& wctx = GetWindowContext(window);
 	auto root = wctx.GetWindowUI();
 	wctx.currentDrawCtx = std::make_shared<PrimDrawContext>(wctx);
-	nvgBeginFrame(wctx.currentDrawCtx->nvg, 1.0f); 
+	nvgBeginFrame(wctx.currentDrawCtx->nvg, 1.0f);
+	constexpr size_t maxClipNum = 2;
 	struct DrawElement
 	{
 		int zorder;
 		VisualElement* element;
-		Matrix4x4 clip;
-		bool hasClip;
+		Matrix4x4 clip[maxClipNum];
+		int clipNum = 0;
 		bool operator<(const DrawElement& other) const
 		{
 			return zorder < other.zorder;
@@ -254,11 +255,17 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 			DrawElement newDraw;
 			newDraw.zorder = next.zorder + 1 + StylePosition::Get(child->_style).zOrderBias;
 			newDraw.element = child;
-			newDraw.hasClip = clippingChild | next.hasClip;
+			newDraw.clipNum = std::min((int)clippingChild + next.clipNum, (int)maxClipNum);
 			if(clippingChild)
-				newDraw.clip = next.element->ApplyClipping();
-			else 
-				newDraw.clip = next.clip;
+			{
+				newDraw.clip[1] = next.clip[0];
+				newDraw.clip[0] = next.element->ApplyClipping();
+			}
+			else
+			{
+				newDraw.clip[1] = next.clip[1];
+				newDraw.clip[0] = next.clip[0];
+			}
 			child->_opacity = StyleEffects::Get(child->_style).opacity * next.element->_opacity;
 			queue.push_back(newDraw);
 		});
@@ -266,11 +273,10 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 	std::stable_sort(toDraw.begin(), toDraw.end());
 	for(auto& draw : toDraw)
 	{
-		if(draw.hasClip)
-			ctx.prims.clipStack.push_back(draw.clip);
+		ctx.prims.clipStack.clear();
+		for(int i=0; i<draw.clipNum; ++i)
+			ctx.prims.clipStack.push_back(draw.clip[i]);
 		draw.element->DrawPrimitive(ctx);
-		if(draw.hasClip)
-			ctx.prims.clipStack.pop_back();
 	}
 	wctx.currentDrawCtx->prims.ValidateAndBatch();
 }

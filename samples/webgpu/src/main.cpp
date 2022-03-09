@@ -398,7 +398,7 @@ protected:
 		desc.layout = pipelineLayout;
 
 		// describe buffer layouts
-		WGPUVertexAttribute vertAttrs[5] = {};
+		WGPUVertexAttribute vertAttrs[6] = {};
 		vertAttrs[0].format = WGPUVertexFormat_Float32x2;
 		vertAttrs[0].offset = offsetof(Vertex, position);
 		vertAttrs[0].shaderLocation = 0;
@@ -414,9 +414,12 @@ protected:
 		vertAttrs[4].format = WGPUVertexFormat_Float32x2;
 		vertAttrs[4].offset = offsetof(Vertex, clipUV);
 		vertAttrs[4].shaderLocation = 4;
+		vertAttrs[5].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[5].offset = offsetof(Vertex, clipUV2);
+		vertAttrs[5].shaderLocation = 5;
 		WGPUVertexBufferLayout vertDesc = {};
 		vertDesc.arrayStride = sizeof(Vertex);
-		vertDesc.attributeCount = 5;
+		vertDesc.attributeCount = 6;
 		vertDesc.attributes = vertAttrs;
 
 		// shader stages

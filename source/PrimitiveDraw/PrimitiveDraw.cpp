@@ -293,6 +293,11 @@ namespace OGUI
             {
                 auto& back = list.clipStack.back();
                 vertex.clipUV = Transform(vertex.position, back);
+                if(list.clipStack.size() > 1)
+                {
+                    auto& back2 = list.clipStack[list.clipStack.size() - 2];
+                    vertex.clipUV2 = Transform(vertex.position, back2);
+                }
             }
             else 
             {

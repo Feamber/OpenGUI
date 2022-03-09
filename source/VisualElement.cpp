@@ -1320,6 +1320,12 @@ void OGUI::VisualElement::UpdateScrollSize()
 		}
 		else
 			_scrollOffset.x = 0;
+
+			
+		Traverse([](VisualElement* child)
+		{
+			child->_transformDirty = true;
+		});
 		
 		_scrollSizeDirty = false;
 	}
