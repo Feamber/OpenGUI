@@ -821,13 +821,7 @@ void OGUI::Context::SetXmlFilter_Global(const char* key, const char* filterTag)
 
 	if(result.second || isSet)
 	{
-		UpdataXmlFilterCache_Global();
-		std::map<Name, int> localXmlFilters;
-		for(auto& winContext : windowContexts)
-		{
-			localXmlFilters.clear();
-			RecursionUpdataFilter(winContext->ui, localXmlFilters);
-		}
+		ForceRefreshXmlFilter();
 	}
 }
 
@@ -835,26 +829,14 @@ void OGUI::Context::CleanXmlFilter_Global(const char* key)
 {
 	if(_globalXmlFiltersMap.erase(key) > 0)
 	{
-		UpdataXmlFilterCache_Global();
-		std::map<Name, int> localXmlFilters;
-		for(auto& winContext : windowContexts)
-		{
-			localXmlFilters.clear();
-			RecursionUpdataFilter(winContext->ui, localXmlFilters);
-		}
+		ForceRefreshXmlFilter();
 	}
 }
 
 void OGUI::Context::ResetXmlFilter_Global()
 {
 	_globalXmlFiltersMap.clear();
-	UpdataXmlFilterCache_Global();
-	std::map<Name, int> localXmlFilters;
-	for(auto& winContext : windowContexts)
-	{
-		localXmlFilters.clear();
-		RecursionUpdataFilter(winContext->ui, localXmlFilters);
-	}
+	ForceRefreshXmlFilter();
 }
 
 void OGUI::Context::UpdataXmlFilterCache_Global()
@@ -872,6 +854,17 @@ bool OGUI::Context::HasFilterTag_Global(const char* filterTag) const
 bool OGUI::Context::HasFilterTag_Global(Name filterTag) const
 {
 	return _globalXmlFiltersCache.count(filterTag);
+}
+
+void OGUI::Context::ForceRefreshXmlFilter()
+{
+	UpdataXmlFilterCache_Global();
+	std::map<Name, int> localXmlFilters;
+	for(auto& winContext : windowContexts)
+	{
+		localXmlFilters.clear();
+		RecursionUpdataFilter(winContext->ui, localXmlFilters);
+	}
 }
 
 bool OGUI::Context::UpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters)

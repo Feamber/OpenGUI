@@ -94,6 +94,8 @@ namespace OGUI reflect
 		attr("script":true)
 		bool HasFilterTag_Global(const char* filterTag) const;
 		bool HasFilterTag_Global(Name filterTag) const;
+		attr("script":true)
+		void ForceRefreshXmlFilter();
 
 		bool UpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters);
 		void RecursionUpdataFilter(VisualElement* element, std::map<Name, int>& localXmlFilters);
