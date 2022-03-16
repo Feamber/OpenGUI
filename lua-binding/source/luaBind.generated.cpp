@@ -1,19 +1,19 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Style2/generated/effects.h"
 #include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Style2/generated/text.h"
-#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Style2/generated/border.h"
 #include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Style2/generated/effects.h"
-#include "OpenGUI/Style2/generated/background.h"
-#include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Context.h"
 #include "OpenGUI/Text/TextElement.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Style2/generated/text.h"
+#include "OpenGUI/Core/Types.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -70,6 +70,7 @@ void BindLua_generated(lua_State* L)
         type["ResetXmlFilter_Global"] = (void(OGUI::Context::*)())&OGUI::Context::ResetXmlFilter_Global;
         type["UpdataXmlFilterCache_Global"] = (void(OGUI::Context::*)())&OGUI::Context::UpdataXmlFilterCache_Global;
         type["HasFilterTag_Global"] = (bool(OGUI::Context::*)(const char *)const)&OGUI::Context::HasFilterTag_Global;
+        type["ForceRefreshXmlFilter"] = (void(OGUI::Context::*)())&OGUI::Context::ForceRefreshXmlFilter;
         type["Get"] = (OGUI::Context &(*)())&OGUI::Context::Get;
     }
     {
@@ -115,6 +116,8 @@ void BindLua_generated(lua_State* L)
     OGUI["ResetStyleBackgroundImage"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBackgroundImage;
     OGUI["SetStyleBackgroundMaterial"] = (void(*)(OGUI::VisualElement *, const ostr::string_view &))&OGUI::SetStyleBackgroundMaterial;
     OGUI["ResetStyleBackgroundMaterial"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBackgroundMaterial;
+    OGUI["SetStyleBackgroundGamma"] = (void(*)(OGUI::VisualElement *, const bool &))&OGUI::SetStyleBackgroundGamma;
+    OGUI["ResetStyleBackgroundGamma"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBackgroundGamma;
     OGUI["SetStyleBorderTopWidth"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleBorderTopWidth;
     OGUI["ResetStyleBorderTopWidth"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBorderTopWidth;
     OGUI["SetStyleBorderRightWidth"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleBorderRightWidth;
