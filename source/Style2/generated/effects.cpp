@@ -155,12 +155,27 @@ OGUI::RestyleDamage OGUI::StyleEffects::ApplyAnimatedProperties(ComputedStyle& s
         {
             case Ids::opacity:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().opacity;
+                    }
+                    else
+                    { 
+                        return GetDefault().opacity;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.opacity = sheet.Get<float>(prop.from);
+                    v.opacity = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.opacity = sheet.Get<float>(prop.to);
+                    v.opacity = getValue(prop.to, prop.toKeyword);
                 else
-                    v.opacity = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.opacity = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }

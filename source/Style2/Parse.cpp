@@ -236,11 +236,11 @@ namespace OGUI::CSSParser
 		parser["KeyframeSelector"] = [](SemanticValues& vs)
 		{
 			if(vs.choice() == 0)
-				return vs[0];
+				return std::any_cast<float>(vs[0])/100.f;
 			if(vs.choice() == 1)
-				return std::any(0.f);
+				return 0.f;
 			else
-				return std::any(1.f);
+				return 1.f;
 		};
 		parser["Keyframes"] = [](SemanticValues& vs,  std::any& dt)
 		{

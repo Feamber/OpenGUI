@@ -70,7 +70,7 @@ namespace OGUI reflect
     OGUI_API void SetStyleColor(VisualElement* element, const Color4f& value);
     attr("script": true)
     OGUI_API void ResetStyleColor(VisualElement* element);
-    OGUI_API void SetStyleFontFamily(VisualElement* element, const gsl::span<ostr::string>& value);
+    OGUI_API void SetStyleFontFamily(VisualElement* element, const gsl::span<const ostr::string>& value);
     attr("script": true)
     OGUI_API void ResetStyleFontFamily(VisualElement* element);
     attr("script": true)
@@ -95,7 +95,7 @@ namespace OGUI reflect
     OGUI_API void SetStyleTextAlign(VisualElement* element, const ETextAlign& value);
     attr("script": true)
     OGUI_API void ResetStyleTextAlign(VisualElement* element);
-    OGUI_API void SetStyleTextShadow(VisualElement* element, const gsl::span<TextShadow>& value);
+    OGUI_API void SetStyleTextShadow(VisualElement* element, const gsl::span<const TextShadow>& value);
     attr("script": true)
     OGUI_API void ResetStyleTextShadow(VisualElement* element);
 }

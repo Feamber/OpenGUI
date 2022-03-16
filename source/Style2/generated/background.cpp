@@ -209,45 +209,105 @@ OGUI::RestyleDamage OGUI::StyleBackground::ApplyAnimatedProperties(ComputedStyle
         {
             case Ids::backgroundColor:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> Color4f
+                {
+                    if(!keyword)
+                        return sheet.Get<Color4f>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().backgroundColor;
+                    }
+                    else
+                    { 
+                        return GetDefault().backgroundColor;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.backgroundColor = sheet.Get<Color4f>(prop.from);
+                    v.backgroundColor = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.backgroundColor = sheet.Get<Color4f>(prop.to);
+                    v.backgroundColor = getValue(prop.to, prop.toKeyword);
                 else
-                    v.backgroundColor = OGUI::Lerp(sheet.Get<Color4f>(prop.from), sheet.Get<Color4f>(prop.to), prop.alpha);
+                    v.backgroundColor = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }
             case Ids::backgroundImage:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> const ostr::string_view
+                {
+                    if(!keyword)
+                        return sheet.Get<const ostr::string_view>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().backgroundImage;
+                    }
+                    else
+                    { 
+                        return GetDefault().backgroundImage;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.backgroundImage = sheet.Get<const ostr::string_view>(prop.from);
+                    v.backgroundImage = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.backgroundImage = sheet.Get<const ostr::string_view>(prop.to);
+                    v.backgroundImage = getValue(prop.to, prop.toKeyword);
                 else
-                    v.backgroundImage = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                    v.backgroundImage = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }
             case Ids::backgroundMaterial:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> const ostr::string_view
+                {
+                    if(!keyword)
+                        return sheet.Get<const ostr::string_view>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().backgroundMaterial;
+                    }
+                    else
+                    { 
+                        return GetDefault().backgroundMaterial;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.from);
+                    v.backgroundMaterial = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.backgroundMaterial = sheet.Get<const ostr::string_view>(prop.to);
+                    v.backgroundMaterial = getValue(prop.to, prop.toKeyword);
                 else
-                    v.backgroundMaterial = OGUI::Lerp(sheet.Get<const ostr::string_view>(prop.from), sheet.Get<const ostr::string_view>(prop.to), prop.alpha);
+                    v.backgroundMaterial = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }
             case Ids::backgroundGamma:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> bool
+                {
+                    if(!keyword)
+                        return sheet.Get<bool>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().backgroundGamma;
+                    }
+                    else
+                    { 
+                        return GetDefault().backgroundGamma;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.backgroundGamma = sheet.Get<bool>(prop.from);
+                    v.backgroundGamma = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.backgroundGamma = sheet.Get<bool>(prop.to);
+                    v.backgroundGamma = getValue(prop.to, prop.toKeyword);
                 else
-                    v.backgroundGamma = OGUI::Lerp(sheet.Get<bool>(prop.from), sheet.Get<bool>(prop.to), prop.alpha);
+                    v.backgroundGamma = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }

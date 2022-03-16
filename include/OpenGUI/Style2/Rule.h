@@ -18,7 +18,7 @@ namespace OGUI
     template<class T>
     struct span_trait : std::false_type {};
     template<class T>
-    struct span_trait<const gsl::span<T>> : std::true_type { using type = T; };
+    struct span_trait<const gsl::span<const T>> : std::true_type { using type = T; };
 
     struct StyleSheetStorage
     {
@@ -34,7 +34,7 @@ namespace OGUI
             {
                 return stringData[handle.index];
             }
-            else if constexpr(std::is_same_v<T, const gsl::span<ostr::string>>)
+            else if constexpr(std::is_same_v<T, const gsl::span<const ostr::string>>)
             {
                 size_t size = stringArrSize.find(handle.index)->second;
                 auto begin = (ostr::string*)stringData.data()+handle.index;
@@ -63,7 +63,7 @@ namespace OGUI
                 stringData.push_back(ostr::string{value});
                 return {(int)stringData.size()-1};
             }
-            else if constexpr(std::is_same_v<T, const gsl::span<ostr::string>>)
+            else if constexpr(std::is_same_v<T, const gsl::span<const ostr::string>>)
             {
                 size_t begin = stringData.size();
                 stringArrSize.insert({begin, value.size()});

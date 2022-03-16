@@ -283,12 +283,27 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderTopWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.borderTopWidth;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderTopWidth;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderTopWidth;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderTopWidth = sheet.Get<float>(prop.from);
+                    v.borderTopWidth = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderTopWidth = sheet.Get<float>(prop.to);
+                    v.borderTopWidth = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderTopWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.borderTopWidth = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.borderTopWidth)
                     damage |= RestyleDamage::Layout;
@@ -297,12 +312,27 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderRightWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.borderRightWidth;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderRightWidth;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderRightWidth;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderRightWidth = sheet.Get<float>(prop.from);
+                    v.borderRightWidth = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderRightWidth = sheet.Get<float>(prop.to);
+                    v.borderRightWidth = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderRightWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.borderRightWidth = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.borderRightWidth)
                     damage |= RestyleDamage::Layout;
@@ -311,12 +341,27 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderBottomWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.borderBottomWidth;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderBottomWidth;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderBottomWidth;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderBottomWidth = sheet.Get<float>(prop.from);
+                    v.borderBottomWidth = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderBottomWidth = sheet.Get<float>(prop.to);
+                    v.borderBottomWidth = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderBottomWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.borderBottomWidth = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.borderBottomWidth)
                     damage |= RestyleDamage::Layout;
@@ -325,12 +370,27 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
             case Ids::borderLeftWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.borderLeftWidth;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderLeftWidth;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderLeftWidth;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderLeftWidth = sheet.Get<float>(prop.from);
+                    v.borderLeftWidth = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderLeftWidth = sheet.Get<float>(prop.to);
+                    v.borderLeftWidth = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderLeftWidth = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.borderLeftWidth = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.borderLeftWidth)
                     damage |= RestyleDamage::Layout;
@@ -338,45 +398,105 @@ OGUI::RestyleDamage OGUI::StyleBorder::ApplyAnimatedProperties(ComputedStyle& st
                 }
             case Ids::borderTopLeftRadius:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderTopLeftRadius;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderTopLeftRadius;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderTopLeftRadius = sheet.Get<YGValue>(prop.from);
+                    v.borderTopLeftRadius = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderTopLeftRadius = sheet.Get<YGValue>(prop.to);
+                    v.borderTopLeftRadius = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderTopLeftRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.borderTopLeftRadius = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }
             case Ids::borderTopRightRadius:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderTopRightRadius;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderTopRightRadius;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderTopRightRadius = sheet.Get<YGValue>(prop.from);
+                    v.borderTopRightRadius = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderTopRightRadius = sheet.Get<YGValue>(prop.to);
+                    v.borderTopRightRadius = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderTopRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.borderTopRightRadius = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }
             case Ids::borderBottomRightRadius:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderBottomRightRadius;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderBottomRightRadius;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderBottomRightRadius = sheet.Get<YGValue>(prop.from);
+                    v.borderBottomRightRadius = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderBottomRightRadius = sheet.Get<YGValue>(prop.to);
+                    v.borderBottomRightRadius = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderBottomRightRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.borderBottomRightRadius = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }
             case Ids::borderBottomLeftRadius:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().borderBottomLeftRadius;
+                    }
+                    else
+                    { 
+                        return GetDefault().borderBottomLeftRadius;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.borderBottomLeftRadius = sheet.Get<YGValue>(prop.from);
+                    v.borderBottomLeftRadius = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.borderBottomLeftRadius = sheet.Get<YGValue>(prop.to);
+                    v.borderBottomLeftRadius = getValue(prop.to, prop.toKeyword);
                 else
-                    v.borderBottomLeftRadius = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.borderBottomLeftRadius = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }

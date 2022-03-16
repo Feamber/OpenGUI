@@ -66,7 +66,9 @@ namespace OGUI reflect
 	{
 		size_t id;
 		VariantHandle from;
+		bool fromKeyword;
 		VariantHandle to;
+		bool toKeyword;
 		float alpha;
 	};
 

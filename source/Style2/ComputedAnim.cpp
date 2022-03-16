@@ -47,6 +47,7 @@ bool OGUI::ComputedAnim::Init(const gsl::span<StyleSheet*>& sheets)
             
             Frame frame;
             frame.value = prop.value;
+            frame.keyword = prop.keyword;
             frame.percentage = key.percentage;
             track->frames.push_back(frame);
         }
@@ -146,14 +147,14 @@ OGUI::RestyleDamage OGUI::ComputedAnim::Apply(ComputedStyle &s, const StyleMasks
         int i=0;
         for(; i<count && track.frames[i].percentage < percentage; ++i);
         if(i == 0)
-            props.push_back({track.id, track.frames[i].value, track.frames[i].value, 0.f});
+            props.push_back({track.id, track.frames[i].value, track.frames[i].keyword, track.frames[i].value, track.frames[i].keyword, 1.f});
         else if(i==count)
-            props.push_back({track.id, track.frames[i-1].value, track.frames[i-1].value, 0.f});
+            props.push_back({track.id, track.frames[i-1].value, track.frames[i-1].keyword, track.frames[i-1].value, track.frames[i-1].keyword, 1.f});
         else 
         {
             auto alpha = (percentage - track.frames[i-1].percentage) / (track.frames[i].percentage - track.frames[i-1].percentage);
             alpha = ApplyTimingFunction(style.animationTimingFunction, alpha);
-            props.push_back({track.id, track.frames[i-1].value, track.frames[i].value, alpha});
+            props.push_back({track.id, track.frames[i-1].value, track.frames[i-1].keyword, track.frames[i].value, track.frames[i].keyword, alpha});
         }
     }
 

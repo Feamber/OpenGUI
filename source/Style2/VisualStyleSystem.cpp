@@ -500,7 +500,7 @@ void OGUI::VisualStyleSystem::UpdateAnimTime(std::vector<ComputedAnim>& anims, V
 		float maxTime = anim.style.animationDuration * anim.style.animationIterationCount + anim.style.animationDelay;
 		bool paused = anim.style.animationPlayState == EAnimPlayState::Paused;
 		bool infinite = anim.style.animationIterationCount <= 0.f;
-		if (paused || (!infinite && anim.time >= maxTime))
+		if (paused || (!infinite && anim.time >= maxTime && !anim.goingback))
 		{
 			if(anim.evaluating)
 			{

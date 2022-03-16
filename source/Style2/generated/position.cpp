@@ -526,7 +526,7 @@ void OGUI::StylePosition::ApplyProperties(ComputedStyle& style, const StyleSheet
             {
                 case Ids::transform:{
                     auto& v = GetOrAdd(style);
-                    v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.value));
+                    v.transform = ToOwned(sheet.Get<const gsl::span<const TransformFunction>>(prop.value));
                     break;
                     }
                 case Ids::flexGrow:{
@@ -750,12 +750,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
         {
             case Ids::transform:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> const gsl::span<const TransformFunction>
+                {
+                    if(!keyword)
+                        return sheet.Get<const gsl::span<const TransformFunction>>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().transform;
+                    }
+                    else
+                    { 
+                        return GetDefault().transform;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.from));
+                    v.transform = ToOwned(getValue(prop.from, prop.fromKeyword));
                 else if(prop.alpha == 1.f)
-                    v.transform = ToOwned(sheet.Get<const gsl::span<TransformFunction>>(prop.to));
+                    v.transform = ToOwned(getValue(prop.to, prop.toKeyword));
                 else
-                    v.transform = OGUI::Lerp(sheet.Get<const gsl::span<TransformFunction>>(prop.from), sheet.Get<const gsl::span<TransformFunction>>(prop.to), prop.alpha);
+                    v.transform = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                     damage |= RestyleDamage::Transform;
                 break;
@@ -763,12 +778,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexGrow:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexGrow;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().flexGrow;
+                    }
+                    else
+                    { 
+                        return GetDefault().flexGrow;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.flexGrow = sheet.Get<float>(prop.from);
+                    v.flexGrow = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.flexGrow = sheet.Get<float>(prop.to);
+                    v.flexGrow = getValue(prop.to, prop.toKeyword);
                 else
-                    v.flexGrow = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.flexGrow = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.flexGrow)
                     damage |= RestyleDamage::Layout;
@@ -777,12 +807,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexShrink:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexShrink;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().flexShrink;
+                    }
+                    else
+                    { 
+                        return GetDefault().flexShrink;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.flexShrink = sheet.Get<float>(prop.from);
+                    v.flexShrink = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.flexShrink = sheet.Get<float>(prop.to);
+                    v.flexShrink = getValue(prop.to, prop.toKeyword);
                 else
-                    v.flexShrink = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.flexShrink = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.flexShrink)
                     damage |= RestyleDamage::Layout;
@@ -791,12 +836,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexBasis:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexBasis;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().flexBasis;
+                    }
+                    else
+                    { 
+                        return GetDefault().flexBasis;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.flexBasis = sheet.Get<YGValue>(prop.from);
+                    v.flexBasis = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.flexBasis = sheet.Get<YGValue>(prop.to);
+                    v.flexBasis = getValue(prop.to, prop.toKeyword);
                 else
-                    v.flexBasis = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.flexBasis = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.flexBasis)
                     damage |= RestyleDamage::Layout;
@@ -805,12 +865,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::top:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.top;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().top;
+                    }
+                    else
+                    { 
+                        return GetDefault().top;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.top = sheet.Get<YGValue>(prop.from);
+                    v.top = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.top = sheet.Get<YGValue>(prop.to);
+                    v.top = getValue(prop.to, prop.toKeyword);
                 else
-                    v.top = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.top = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.top)
                     damage |= RestyleDamage::Layout;
@@ -819,12 +894,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::right:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.right;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().right;
+                    }
+                    else
+                    { 
+                        return GetDefault().right;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.right = sheet.Get<YGValue>(prop.from);
+                    v.right = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.right = sheet.Get<YGValue>(prop.to);
+                    v.right = getValue(prop.to, prop.toKeyword);
                 else
-                    v.right = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.right = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.right)
                     damage |= RestyleDamage::Layout;
@@ -833,12 +923,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::bottom:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.bottom;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().bottom;
+                    }
+                    else
+                    { 
+                        return GetDefault().bottom;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.bottom = sheet.Get<YGValue>(prop.from);
+                    v.bottom = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.bottom = sheet.Get<YGValue>(prop.to);
+                    v.bottom = getValue(prop.to, prop.toKeyword);
                 else
-                    v.bottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.bottom = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.bottom)
                     damage |= RestyleDamage::Layout;
@@ -847,12 +952,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::left:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.left;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().left;
+                    }
+                    else
+                    { 
+                        return GetDefault().left;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.left = sheet.Get<YGValue>(prop.from);
+                    v.left = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.left = sheet.Get<YGValue>(prop.to);
+                    v.left = getValue(prop.to, prop.toKeyword);
                 else
-                    v.left = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.left = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.left)
                     damage |= RestyleDamage::Layout;
@@ -861,12 +981,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginTop:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginTop;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().marginTop;
+                    }
+                    else
+                    { 
+                        return GetDefault().marginTop;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.marginTop = sheet.Get<YGValue>(prop.from);
+                    v.marginTop = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.marginTop = sheet.Get<YGValue>(prop.to);
+                    v.marginTop = getValue(prop.to, prop.toKeyword);
                 else
-                    v.marginTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginTop = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.marginTop)
                     damage |= RestyleDamage::Layout;
@@ -875,12 +1010,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginRight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginRight;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().marginRight;
+                    }
+                    else
+                    { 
+                        return GetDefault().marginRight;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.marginRight = sheet.Get<YGValue>(prop.from);
+                    v.marginRight = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.marginRight = sheet.Get<YGValue>(prop.to);
+                    v.marginRight = getValue(prop.to, prop.toKeyword);
                 else
-                    v.marginRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginRight = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.marginRight)
                     damage |= RestyleDamage::Layout;
@@ -889,12 +1039,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginBottom:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginBottom;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().marginBottom;
+                    }
+                    else
+                    { 
+                        return GetDefault().marginBottom;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.marginBottom = sheet.Get<YGValue>(prop.from);
+                    v.marginBottom = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.marginBottom = sheet.Get<YGValue>(prop.to);
+                    v.marginBottom = getValue(prop.to, prop.toKeyword);
                 else
-                    v.marginBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginBottom = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.marginBottom)
                     damage |= RestyleDamage::Layout;
@@ -903,12 +1068,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::marginLeft:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.marginLeft;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().marginLeft;
+                    }
+                    else
+                    { 
+                        return GetDefault().marginLeft;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.marginLeft = sheet.Get<YGValue>(prop.from);
+                    v.marginLeft = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.marginLeft = sheet.Get<YGValue>(prop.to);
+                    v.marginLeft = getValue(prop.to, prop.toKeyword);
                 else
-                    v.marginLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.marginLeft = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.marginLeft)
                     damage |= RestyleDamage::Layout;
@@ -917,12 +1097,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingTop:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingTop;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().paddingTop;
+                    }
+                    else
+                    { 
+                        return GetDefault().paddingTop;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.paddingTop = sheet.Get<YGValue>(prop.from);
+                    v.paddingTop = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.paddingTop = sheet.Get<YGValue>(prop.to);
+                    v.paddingTop = getValue(prop.to, prop.toKeyword);
                 else
-                    v.paddingTop = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingTop = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.paddingTop)
                     damage |= RestyleDamage::Layout;
@@ -931,12 +1126,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingRight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingRight;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().paddingRight;
+                    }
+                    else
+                    { 
+                        return GetDefault().paddingRight;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.paddingRight = sheet.Get<YGValue>(prop.from);
+                    v.paddingRight = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.paddingRight = sheet.Get<YGValue>(prop.to);
+                    v.paddingRight = getValue(prop.to, prop.toKeyword);
                 else
-                    v.paddingRight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingRight = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.paddingRight)
                     damage |= RestyleDamage::Layout;
@@ -945,12 +1155,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingBottom:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingBottom;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().paddingBottom;
+                    }
+                    else
+                    { 
+                        return GetDefault().paddingBottom;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.paddingBottom = sheet.Get<YGValue>(prop.from);
+                    v.paddingBottom = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.paddingBottom = sheet.Get<YGValue>(prop.to);
+                    v.paddingBottom = getValue(prop.to, prop.toKeyword);
                 else
-                    v.paddingBottom = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingBottom = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.paddingBottom)
                     damage |= RestyleDamage::Layout;
@@ -959,12 +1184,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::paddingLeft:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.paddingLeft;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().paddingLeft;
+                    }
+                    else
+                    { 
+                        return GetDefault().paddingLeft;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.paddingLeft = sheet.Get<YGValue>(prop.from);
+                    v.paddingLeft = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.paddingLeft = sheet.Get<YGValue>(prop.to);
+                    v.paddingLeft = getValue(prop.to, prop.toKeyword);
                 else
-                    v.paddingLeft = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.paddingLeft = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.paddingLeft)
                     damage |= RestyleDamage::Layout;
@@ -973,12 +1213,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::width:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.width;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().width;
+                    }
+                    else
+                    { 
+                        return GetDefault().width;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.width = sheet.Get<YGValue>(prop.from);
+                    v.width = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.width = sheet.Get<YGValue>(prop.to);
+                    v.width = getValue(prop.to, prop.toKeyword);
                 else
-                    v.width = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.width = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.width)
                     damage |= RestyleDamage::Layout;
@@ -987,12 +1242,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::height:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.height;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().height;
+                    }
+                    else
+                    { 
+                        return GetDefault().height;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.height = sheet.Get<YGValue>(prop.from);
+                    v.height = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.height = sheet.Get<YGValue>(prop.to);
+                    v.height = getValue(prop.to, prop.toKeyword);
                 else
-                    v.height = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.height = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.height)
                     damage |= RestyleDamage::Layout;
@@ -1001,12 +1271,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::position:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.position;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGPositionType
+                {
+                    if(!keyword)
+                        return sheet.Get<YGPositionType>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().position;
+                    }
+                    else
+                    { 
+                        return GetDefault().position;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.position = sheet.Get<YGPositionType>(prop.from);
+                    v.position = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.position = sheet.Get<YGPositionType>(prop.to);
+                    v.position = getValue(prop.to, prop.toKeyword);
                 else
-                    v.position = OGUI::Lerp(sheet.Get<YGPositionType>(prop.from), sheet.Get<YGPositionType>(prop.to), prop.alpha);
+                    v.position = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.position)
                     damage |= RestyleDamage::Layout;
@@ -1015,12 +1300,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::overflow:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.overflow;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> EFlexOverflow
+                {
+                    if(!keyword)
+                        return sheet.Get<EFlexOverflow>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().overflow;
+                    }
+                    else
+                    { 
+                        return GetDefault().overflow;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.overflow = sheet.Get<EFlexOverflow>(prop.from);
+                    v.overflow = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.overflow = sheet.Get<EFlexOverflow>(prop.to);
+                    v.overflow = getValue(prop.to, prop.toKeyword);
                 else
-                    v.overflow = OGUI::Lerp(sheet.Get<EFlexOverflow>(prop.from), sheet.Get<EFlexOverflow>(prop.to), prop.alpha);
+                    v.overflow = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.overflow)
                     damage |= RestyleDamage::Layout;
@@ -1029,12 +1329,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::alignSelf:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.alignSelf;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGAlign
+                {
+                    if(!keyword)
+                        return sheet.Get<YGAlign>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().alignSelf;
+                    }
+                    else
+                    { 
+                        return GetDefault().alignSelf;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.alignSelf = sheet.Get<YGAlign>(prop.from);
+                    v.alignSelf = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.alignSelf = sheet.Get<YGAlign>(prop.to);
+                    v.alignSelf = getValue(prop.to, prop.toKeyword);
                 else
-                    v.alignSelf = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignSelf = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.alignSelf)
                     damage |= RestyleDamage::Layout;
@@ -1043,12 +1358,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::maxWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.maxWidth;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().maxWidth;
+                    }
+                    else
+                    { 
+                        return GetDefault().maxWidth;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.maxWidth = sheet.Get<YGValue>(prop.from);
+                    v.maxWidth = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.maxWidth = sheet.Get<YGValue>(prop.to);
+                    v.maxWidth = getValue(prop.to, prop.toKeyword);
                 else
-                    v.maxWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.maxWidth = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.maxWidth)
                     damage |= RestyleDamage::Layout;
@@ -1057,12 +1387,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::maxHeight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.maxHeight;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().maxHeight;
+                    }
+                    else
+                    { 
+                        return GetDefault().maxHeight;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.maxHeight = sheet.Get<YGValue>(prop.from);
+                    v.maxHeight = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.maxHeight = sheet.Get<YGValue>(prop.to);
+                    v.maxHeight = getValue(prop.to, prop.toKeyword);
                 else
-                    v.maxHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.maxHeight = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.maxHeight)
                     damage |= RestyleDamage::Layout;
@@ -1071,12 +1416,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::minWidth:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.minWidth;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().minWidth;
+                    }
+                    else
+                    { 
+                        return GetDefault().minWidth;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.minWidth = sheet.Get<YGValue>(prop.from);
+                    v.minWidth = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.minWidth = sheet.Get<YGValue>(prop.to);
+                    v.minWidth = getValue(prop.to, prop.toKeyword);
                 else
-                    v.minWidth = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.minWidth = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.minWidth)
                     damage |= RestyleDamage::Layout;
@@ -1085,12 +1445,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::minHeight:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.minHeight;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGValue
+                {
+                    if(!keyword)
+                        return sheet.Get<YGValue>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().minHeight;
+                    }
+                    else
+                    { 
+                        return GetDefault().minHeight;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.minHeight = sheet.Get<YGValue>(prop.from);
+                    v.minHeight = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.minHeight = sheet.Get<YGValue>(prop.to);
+                    v.minHeight = getValue(prop.to, prop.toKeyword);
                 else
-                    v.minHeight = OGUI::Lerp(sheet.Get<YGValue>(prop.from), sheet.Get<YGValue>(prop.to), prop.alpha);
+                    v.minHeight = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.minHeight)
                     damage |= RestyleDamage::Layout;
@@ -1099,12 +1474,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexDirection:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexDirection;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGFlexDirection
+                {
+                    if(!keyword)
+                        return sheet.Get<YGFlexDirection>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().flexDirection;
+                    }
+                    else
+                    { 
+                        return GetDefault().flexDirection;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.flexDirection = sheet.Get<YGFlexDirection>(prop.from);
+                    v.flexDirection = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.flexDirection = sheet.Get<YGFlexDirection>(prop.to);
+                    v.flexDirection = getValue(prop.to, prop.toKeyword);
                 else
-                    v.flexDirection = OGUI::Lerp(sheet.Get<YGFlexDirection>(prop.from), sheet.Get<YGFlexDirection>(prop.to), prop.alpha);
+                    v.flexDirection = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.flexDirection)
                     damage |= RestyleDamage::Layout;
@@ -1113,12 +1503,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::alignContent:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.alignContent;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGAlign
+                {
+                    if(!keyword)
+                        return sheet.Get<YGAlign>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().alignContent;
+                    }
+                    else
+                    { 
+                        return GetDefault().alignContent;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.alignContent = sheet.Get<YGAlign>(prop.from);
+                    v.alignContent = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.alignContent = sheet.Get<YGAlign>(prop.to);
+                    v.alignContent = getValue(prop.to, prop.toKeyword);
                 else
-                    v.alignContent = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignContent = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.alignContent)
                     damage |= RestyleDamage::Layout;
@@ -1127,12 +1532,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::alignItems:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.alignItems;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGAlign
+                {
+                    if(!keyword)
+                        return sheet.Get<YGAlign>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().alignItems;
+                    }
+                    else
+                    { 
+                        return GetDefault().alignItems;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.alignItems = sheet.Get<YGAlign>(prop.from);
+                    v.alignItems = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.alignItems = sheet.Get<YGAlign>(prop.to);
+                    v.alignItems = getValue(prop.to, prop.toKeyword);
                 else
-                    v.alignItems = OGUI::Lerp(sheet.Get<YGAlign>(prop.from), sheet.Get<YGAlign>(prop.to), prop.alpha);
+                    v.alignItems = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.alignItems)
                     damage |= RestyleDamage::Layout;
@@ -1141,12 +1561,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::justifyContent:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.justifyContent;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGJustify
+                {
+                    if(!keyword)
+                        return sheet.Get<YGJustify>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().justifyContent;
+                    }
+                    else
+                    { 
+                        return GetDefault().justifyContent;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.justifyContent = sheet.Get<YGJustify>(prop.from);
+                    v.justifyContent = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.justifyContent = sheet.Get<YGJustify>(prop.to);
+                    v.justifyContent = getValue(prop.to, prop.toKeyword);
                 else
-                    v.justifyContent = OGUI::Lerp(sheet.Get<YGJustify>(prop.from), sheet.Get<YGJustify>(prop.to), prop.alpha);
+                    v.justifyContent = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.justifyContent)
                     damage |= RestyleDamage::Layout;
@@ -1155,12 +1590,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexWrap:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexWrap;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGWrap
+                {
+                    if(!keyword)
+                        return sheet.Get<YGWrap>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().flexWrap;
+                    }
+                    else
+                    { 
+                        return GetDefault().flexWrap;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.flexWrap = sheet.Get<YGWrap>(prop.from);
+                    v.flexWrap = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.flexWrap = sheet.Get<YGWrap>(prop.to);
+                    v.flexWrap = getValue(prop.to, prop.toKeyword);
                 else
-                    v.flexWrap = OGUI::Lerp(sheet.Get<YGWrap>(prop.from), sheet.Get<YGWrap>(prop.to), prop.alpha);
+                    v.flexWrap = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.flexWrap)
                     damage |= RestyleDamage::Layout;
@@ -1169,12 +1619,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::flexDisplay:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.flexDisplay;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> YGDisplay
+                {
+                    if(!keyword)
+                        return sheet.Get<YGDisplay>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().flexDisplay;
+                    }
+                    else
+                    { 
+                        return GetDefault().flexDisplay;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.flexDisplay = sheet.Get<YGDisplay>(prop.from);
+                    v.flexDisplay = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.flexDisplay = sheet.Get<YGDisplay>(prop.to);
+                    v.flexDisplay = getValue(prop.to, prop.toKeyword);
                 else
-                    v.flexDisplay = OGUI::Lerp(sheet.Get<YGDisplay>(prop.from), sheet.Get<YGDisplay>(prop.to), prop.alpha);
+                    v.flexDisplay = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.flexDisplay)
                     damage |= RestyleDamage::Layout;
@@ -1183,12 +1648,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::verticalAlign:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.verticalAlign;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> EInlineAlign
+                {
+                    if(!keyword)
+                        return sheet.Get<EInlineAlign>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().verticalAlign;
+                    }
+                    else
+                    { 
+                        return GetDefault().verticalAlign;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.verticalAlign = sheet.Get<EInlineAlign>(prop.from);
+                    v.verticalAlign = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.verticalAlign = sheet.Get<EInlineAlign>(prop.to);
+                    v.verticalAlign = getValue(prop.to, prop.toKeyword);
                 else
-                    v.verticalAlign = OGUI::Lerp(sheet.Get<EInlineAlign>(prop.from), sheet.Get<EInlineAlign>(prop.to), prop.alpha);
+                    v.verticalAlign = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.verticalAlign)
                     damage |= RestyleDamage::Layout;
@@ -1197,12 +1677,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
             case Ids::aspectRatio:{
                 auto& v = GetOrAdd(style);
                 auto prevValue = v.aspectRatio;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().aspectRatio;
+                    }
+                    else
+                    { 
+                        return GetDefault().aspectRatio;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.aspectRatio = sheet.Get<float>(prop.from);
+                    v.aspectRatio = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.aspectRatio = sheet.Get<float>(prop.to);
+                    v.aspectRatio = getValue(prop.to, prop.toKeyword);
                 else
-                    v.aspectRatio = OGUI::Lerp(sheet.Get<float>(prop.from), sheet.Get<float>(prop.to), prop.alpha);
+                    v.aspectRatio = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 if(prevValue != v.aspectRatio)
                     damage |= RestyleDamage::Layout;
@@ -1210,12 +1705,27 @@ OGUI::RestyleDamage OGUI::StylePosition::ApplyAnimatedProperties(ComputedStyle& 
                 }
             case Ids::zOrderBias:{
                 auto& v = GetOrAdd(style);
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> int
+                {
+                    if(!keyword)
+                        return sheet.Get<int>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    || handle.index == (int)StyleKeyword::Unset
+                    )
+                    {
+                        return GetDefault().zOrderBias;
+                    }
+                    else
+                    { 
+                        return GetDefault().zOrderBias;
+                    }
+                };
                 if(prop.alpha == 0.f)
-                    v.zOrderBias = sheet.Get<int>(prop.from);
+                    v.zOrderBias = getValue(prop.from, prop.fromKeyword);
                 else if(prop.alpha == 1.f)
-                    v.zOrderBias = sheet.Get<int>(prop.to);
+                    v.zOrderBias = getValue(prop.to, prop.toKeyword);
                 else
-                    v.zOrderBias = OGUI::Lerp(sheet.Get<int>(prop.from), sheet.Get<int>(prop.to), prop.alpha);
+                    v.zOrderBias = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
                 break;
                 }
@@ -1972,7 +2482,7 @@ void OGUI::StylePosition::SetupParser()
                     std::vector<TransformFunction> value;
                     for(auto& e : vs)
                         value.emplace_back(any_move<TransformFunction>(e));
-                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<TransformFunction>>(value)});
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<const TransformFunction>>(value)});
                 }
             };
         });
@@ -2508,7 +3018,7 @@ void OGUI::StylePosition::SetupParser()
 }
 
 
-void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction>& value)
+void OGUI::SetStyleTransform(VisualElement* element, const gsl::span<const TransformFunction>& value)
 {
     element->_procedureOverrides[StylePositionEntry] |= 1ull<<0;
     ComputedTransition* transition = nullptr;

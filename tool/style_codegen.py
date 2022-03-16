@@ -169,8 +169,8 @@ class Longhand(Property):
         else:
             self.parsed_type = type
         if self.is_vector:
-            self.view_type = "const gsl::span<{}>".format(type)
-            self.reference_type = "const gsl::span<{}>&".format(type)
+            self.view_type = "const gsl::span<const {}>".format(type)
+            self.reference_type = "const gsl::span<const {}>&".format(type)
             self.storage_type = "std::vector<{}>".format(type)
         else:
             if self.is_string:

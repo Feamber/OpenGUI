@@ -34,6 +34,7 @@ namespace OGUI
             //TODO: animation timing function
             float percentage;
 		    VariantHandle value;
+            bool keyword;
         };
         struct Track
         {

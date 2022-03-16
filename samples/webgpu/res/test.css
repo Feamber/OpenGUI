@@ -140,7 +140,7 @@ TextElement{
 }
 
 /*multi animation overload hack*/
-#Child2:focus {
+#Child2:hover {
     animation-name:shapeanim2, rotateanim2;
     animation-duration: 0.5s,  0.5s;
     animation-yield-mode:go-back, stop;
@@ -169,10 +169,12 @@ TextElement{
 }
 
 @keyframes shapeanim2 {
+    from {
+        transform: initial;
+        background-color: initial;
+    }
     to {
         transform:  scale(1.2, 1.2), rotate(360deg);
-        border-top-right-radius:0px;
-        border-bottom-right-radius:0px;
         background-color:rgb(73, 214, 125);
     }
 }

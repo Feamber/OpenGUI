@@ -182,20 +182,37 @@ OGUI::RestyleDamage OGUI::Style${struct.ident}::ApplyAnimatedProperties(Computed
             %if prop.restyle_damage and not prop.is_vector:
                 auto prevValue = v.${prop.ident};
             %endif
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> ${prop.view_type}
+                {
+                    if(!keyword)
+                        return sheet.Get<${prop.view_type}>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                %if not struct.inherited:
+                    || handle.index == (int)StyleKeyword::Unset
+                %endif
+                    )
+                    {
+                        return GetDefault().${prop.ident};
+                    }
+                    else
+                    { 
+                        return GetDefault().${prop.ident};
+                    }
+                };
                 if(prop.alpha == 0.f)
                 %if prop.is_vector:
-                    v.${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.from));
+                    v.${prop.ident} = ToOwned(getValue(prop.from, prop.fromKeyword));
                 %else:
-                    v.${prop.ident} = sheet.Get<${prop.view_type}>(prop.from);
+                    v.${prop.ident} = getValue(prop.from, prop.fromKeyword);
                 %endif
                 else if(prop.alpha == 1.f)
                 %if prop.is_vector:
-                    v.${prop.ident} = ToOwned(sheet.Get<${prop.view_type}>(prop.to));
+                    v.${prop.ident} = ToOwned(getValue(prop.to, prop.toKeyword));
                 %else:
-                    v.${prop.ident} = sheet.Get<${prop.view_type}>(prop.to);
+                    v.${prop.ident} = getValue(prop.to, prop.toKeyword);
                 %endif
                 else
-                    v.${prop.ident} = OGUI::Lerp(sheet.Get<${prop.view_type}>(prop.from), sheet.Get<${prop.view_type}>(prop.to), prop.alpha);
+                    v.${prop.ident} = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
             %if prop.restyle_damage:
             %if not prop.is_vector:

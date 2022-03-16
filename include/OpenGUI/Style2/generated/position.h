@@ -116,7 +116,7 @@ namespace OGUI reflect
         static void SetupParser();
     };
 
-    OGUI_API void SetStyleTransform(VisualElement* element, const gsl::span<TransformFunction>& value);
+    OGUI_API void SetStyleTransform(VisualElement* element, const gsl::span<const TransformFunction>& value);
     attr("script": true)
     OGUI_API void ResetStyleTransform(VisualElement* element);
     attr("script": true)
