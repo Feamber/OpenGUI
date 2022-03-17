@@ -428,9 +428,9 @@ bool OGUI::Context::OnMouseMoveHP(const OGUI::WindowHandle window, bool relative
 
 bool OGUI::Context::OnMouseWheel(const OGUI::WindowHandle window, float delta, float x, float y)
 {
-	auto picked = _elementUnderCursor;
-	if (!picked)
+	if (!IsElementValid(_elementUnderCursor))
 		return false;
+	auto picked = _elementUnderCursor;
 	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
 	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
 	PointerScrollEvent event;
