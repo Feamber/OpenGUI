@@ -1581,3 +1581,13 @@ void OGUI::BindTree(VisualElement* element, Bindable& bindable)
 		BindTree(next, bindable);
 	});
 }
+
+void OGUI::UnBindTree(VisualElement* element, Bindable& bindable)
+{
+	element->Unbind(bindable);
+	bindable.Unbind(*element);
+	element->Traverse([&](VisualElement* next)
+	{
+		UnBindTree(next, bindable);
+	});
+}

@@ -1,19 +1,19 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/Style2/generated/effects.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Context.h"
-#include "OpenGUI/Event/EventBase.h"
-#include "OpenGUI/Style2/Selector.h"
-#include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Style2/generated/background.h"
-#include "OpenGUI/Style2/generated/border.h"
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Text/TextElement.h"
-#include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Core/Types.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/Style2/generated/text.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Style2/generated/border.h"
+#include "OpenGUI/Context.h"
+#include "OpenGUI/Style2/generated/effects.h"
+#include "OpenGUI/Style2/generated/position.h"
+#include "OpenGUI/Text/TextElement.h"
+#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Event/EventBase.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -36,6 +36,7 @@ void BindLua_generated(lua_State* L)
         type["Visible"] = (bool(OGUI::VisualElement::*)()const)&OGUI::VisualElement::Visible;
         type["GetName"] = (const ostr::string &(OGUI::VisualElement::*)())&OGUI::VisualElement::GetName;
         type["SetName"] = (void(OGUI::VisualElement::*)(ostr::string))&OGUI::VisualElement::SetName;
+        type["DestoryTree"] = (void(*)(OGUI::VisualElement *))&OGUI::VisualElement::DestoryTree;
         type["SetVisibility"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetVisibility;
         type["IsClippingChildren"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::IsClippingChildren;
         type["IsPick"] = (bool(OGUI::VisualElement::*)())&OGUI::VisualElement::IsPick;
@@ -83,6 +84,7 @@ void BindLua_generated(lua_State* L)
         type["Visible"] = (bool(OGUI::TextElement::*)()const)&OGUI::VisualElement::Visible;
         type["GetName"] = (const ostr::string &(OGUI::TextElement::*)())&OGUI::VisualElement::GetName;
         type["SetName"] = (void(OGUI::TextElement::*)(ostr::string))&OGUI::VisualElement::SetName;
+        type["DestoryTree"] = (void(*)(OGUI::VisualElement *))&OGUI::VisualElement::DestoryTree;
         type["SetVisibility"] = (void(OGUI::TextElement::*)(bool))&OGUI::VisualElement::SetVisibility;
         type["IsClippingChildren"] = (bool(OGUI::TextElement::*)())&OGUI::VisualElement::IsClippingChildren;
         type["IsPick"] = (bool(OGUI::TextElement::*)())&OGUI::VisualElement::IsPick;
@@ -110,6 +112,7 @@ void BindLua_generated(lua_State* L)
     OGUI["QueryFirst"] = +[](OGUI::VisualElement * _0, ostr::string _1) { return OGUI::QueryFirst(_0, _1); };
     OGUI["QueryAll"] = +[](OGUI::VisualElement * _0, ostr::string _1, std::vector<OGUI::VisualElement *> & _2) { return OGUI::QueryAll(_0, _1, _2); };
     OGUI["BindTree"] = (void(*)(OGUI::VisualElement *, OGUI::Bindable &))&OGUI::BindTree;
+    OGUI["UnBindTree"] = (void(*)(OGUI::VisualElement *, OGUI::Bindable &))&OGUI::UnBindTree;
     OGUI["SetStyleBackgroundColor"] = (void(*)(OGUI::VisualElement *, const OGUI::Vector<float, 4> &))&OGUI::SetStyleBackgroundColor;
     OGUI["ResetStyleBackgroundColor"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleBackgroundColor;
     OGUI["SetStyleBackgroundImage"] = (void(*)(OGUI::VisualElement *, const ostr::string_view &))&OGUI::SetStyleBackgroundImage;
