@@ -670,18 +670,19 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, EFocusChangeCause cau
 		VisualElement* prevNewFocused = i-1 >= 0 ? newFocusedPath[i-1] : nullptr;
 		VisualElement* newFocused = newFocusedPath[i];
 
+		auto prevCurrentFocused = prevNewFocused ? prevNewFocused->GetFocusScopeFocused() : nullptr;
 		if(prevNewFocused && oldFocused != newFocused && 
 			prevNewFocused->isFocusScope && 
 			prevNewFocused->isKeeyScopeFocused && 
-			prevNewFocused->currentFocused &&
-			prevNewFocused->currentFocused != newFocused)
+			prevCurrentFocused &&
+			prevCurrentFocused != newFocused)
 		{
 			PreLostFocusEvent preLostFocusEvent;
 			preLostFocusEvent.cause = cause;
 			preLostFocusEvent.causeDescribe = describe;
 			preLostFocusEvent.currentFocusedPath = &oldFocusedPath;
 			preLostFocusEvent.newFocusedPath = &newFocusedPath;
-			if(RouteEvent(prevNewFocused->currentFocused, preLostFocusEvent)) return false;
+			if(RouteEvent(prevCurrentFocused, preLostFocusEvent)) return false;
 		}
 	}
 
@@ -692,13 +693,14 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, EFocusChangeCause cau
 		VisualElement* prevNewFocused = i-1 >= 0 ? newFocusedPath[i-1] : nullptr;
 		VisualElement* newFocused = newFocusedPath[i];
 
+		auto prevCurrentFocused = prevNewFocused ? prevNewFocused->GetFocusScopeFocused() : nullptr;
 		if(oldFocused != newFocused)
 		{
 			if(prevNewFocused && 
 			prevNewFocused->isFocusScope && 
 			prevNewFocused->isKeeyScopeFocused && 
-			prevNewFocused->currentFocused &&
-			prevNewFocused->currentFocused == newFocused)
+			prevCurrentFocused &&
+			prevCurrentFocused == newFocused)
 				continue;
 
 			PreGotFocusEvent preGotFocusEvent;
@@ -728,7 +730,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, EFocusChangeCause cau
 
 		if(oldFocused && oldFocused != newFocused)
 		{
-			if(prevOldFocused) prevOldFocused->currentFocused = nullptr; //实际修改状态
+			if(prevOldFocused)
+				prevOldFocused->currentFocused = nullptr; //实际修改状态
 
 			LostFocusEvent lostFocusEvent;
 			lostFocusEvent.cause = cause;
@@ -756,18 +759,19 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, EFocusChangeCause cau
 		VisualElement* prevNewFocused = i-1 >= 0 ? newFocusedPath[i-1] : nullptr;
 		VisualElement* newFocused = newFocusedPath[i];
 
+		auto prevCurrentFocused = prevNewFocused ? prevNewFocused->GetFocusScopeFocused() : nullptr;
 		if(prevNewFocused && oldFocused != newFocused && 
 			prevNewFocused->isFocusScope && 
 			prevNewFocused->isKeeyScopeFocused && 
-			prevNewFocused->currentFocused &&
-			prevNewFocused->currentFocused != newFocused)
+			prevCurrentFocused &&
+			prevCurrentFocused != newFocused)
 		{
 			LostFocusEvent lostFocusEvent;
 			lostFocusEvent.cause = cause;
 			lostFocusEvent.causeDescribe = describe;
 			lostFocusEvent.currentFocusedPath = &newFocusedPath;
 			lostFocusEvent.oldFocusedPath = &oldFocusedPath;
-			if(RouteEvent(prevNewFocused->currentFocused, lostFocusEvent)) return false;
+			if(RouteEvent(prevCurrentFocused, lostFocusEvent)) return false;
 		}
 	}
 
@@ -787,7 +791,8 @@ bool OGUI::Context::SetFocus(OGUI::VisualElement* element, EFocusChangeCause cau
 			prevNewFocused->currentFocused == newFocused)
 				continue;
 
-			if(prevNewFocused) prevNewFocused->currentFocused = newFocused; //实际修改状态
+			if(prevNewFocused)
+				prevNewFocused->currentFocused = newFocused; //实际修改状态
 
 			GotFocusEvent gotFocusEvent;
 			gotFocusEvent.cause = cause;
