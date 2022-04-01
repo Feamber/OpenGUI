@@ -79,6 +79,7 @@ namespace OGUI reflect
 		void SetName(ostr::string_view name);
 		attr("script":true)
 		void SetName(ostr::string name) { SetName(ostr::string_view{name}); }
+		attr("script":true)
 		static void DestoryTree(VisualElement* element);
 		virtual void GetChildren(std::vector<VisualElement*>& children);
 		attr("script":true)
@@ -334,6 +335,8 @@ namespace OGUI reflect
 
 	attr("script":true)
 	OGUI_API void BindTree(VisualElement* element, Bindable& bindable);
+	attr("script":true)
+	OGUI_API void UnBindTree(VisualElement* element, Bindable& bindable);
 }
 
 

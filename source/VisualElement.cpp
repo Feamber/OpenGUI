@@ -1052,7 +1052,7 @@ OGUI::VisualElement* OGUI::VisualElement::GetPrevFocusScope()
 
 OGUI::VisualElement* OGUI::VisualElement::GetFocusScopeFocused()
 {
-	return currentFocused;
+	return Context::Get().IsElementValid(currentFocused) ? currentFocused : nullptr;
 }
 
 void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, std::vector<OGUI::VisualElement*>& out)
@@ -1062,7 +1062,7 @@ void OGUI::VisualElement::GetRelativeFocusedPath(OGUI::VisualElement* element, s
 	while (current) 
 	{
 		out.push_back(current);
-		current = Context::Get().IsElementValid(current->currentFocused) ? current->currentFocused : nullptr;
+		current = current->GetFocusScopeFocused();
 	}
 }
 
@@ -1579,5 +1579,15 @@ void OGUI::BindTree(VisualElement* element, Bindable& bindable)
 	element->Traverse([&](VisualElement* next)
 	{
 		BindTree(next, bindable);
+	});
+}
+
+void OGUI::UnBindTree(VisualElement* element, Bindable& bindable)
+{
+	element->Unbind(bindable);
+	bindable.Unbind(*element);
+	element->Traverse([&](VisualElement* next)
+	{
+		UnBindTree(next, bindable);
 	});
 }

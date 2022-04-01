@@ -383,3 +383,4 @@ lua-binding/IntelliSense/
 *.exe
 .VSCodeCounter
 CopyOgui.bat
+OpenGUI.code-workspace
