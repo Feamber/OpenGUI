@@ -141,8 +141,6 @@ OGUI::RestyleDamage OGUI::ComputedAnim::Apply(ComputedStyle &s, const StyleMasks
 
     for(auto& track : tracks)
     {
-        if(percentage == 0 && track.frames[0].percentage == 0)
-            continue;
         int count = track.frames.size();
         int i=0;
         for(; i<count && track.frames[i].percentage < percentage; ++i);
