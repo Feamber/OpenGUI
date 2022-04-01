@@ -91,9 +91,9 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
 	iteration = t / style.animationDuration;
 	bool reversed = ShouldReverse(style.animationDirection, iteration);
 
-    if (t <= 0)
+    if (t < 0)
 	{
-		if (test(style.animationFillMode, EAnimFillMode::Backwards) || style.animationPlayState == EAnimPlayState::Paused)
+		if (test(style.animationFillMode, EAnimFillMode::Backwards))
 		{
 			//apply first frame
 			bool reversed2 = style.animationDirection == EAnimDirection::Reverse || style.animationDirection == EAnimDirection::AlternateReverse;
@@ -108,7 +108,7 @@ bool OGUI::ComputedAnim::GetPercentage(float& percent)
 	}
     else if (style.animationIterationCount > 0 && iteration >= style.animationIterationCount && !goingback)
     {
-        if (test(style.animationFillMode, EAnimFillMode::Forwards) || style.animationPlayState == EAnimPlayState::Paused)
+        if (test(style.animationFillMode, EAnimFillMode::Forwards))
         {
             //apply last frame
             if (reversed)
