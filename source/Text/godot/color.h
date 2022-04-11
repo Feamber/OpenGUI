@@ -42,6 +42,8 @@ struct Color {
 		float components[4] = { 0, 0, 0, 1.0 };
 	};
 	Color operator*(const Color &p_color) const;
+	bool operator==(const Color &p_color) const;
+	bool operator!=(const Color &p_color) const { return !(*this == p_color); }
 
     _FORCE_INLINE_ Color() {}
 
@@ -83,5 +85,12 @@ _FORCE_INLINE_ Color Color::operator*(const Color &p_color) const {
 			g * p_color.g,
 			b * p_color.b,
 			a * p_color.a);
+}
+_FORCE_INLINE_ bool Color::operator==(const Color &p_color) const {
+	return (
+			r == p_color.r&&
+			g == p_color.g&&
+			b == p_color.b&&
+			a == p_color.a);
 }
 }

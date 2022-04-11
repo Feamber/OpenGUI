@@ -132,6 +132,8 @@ public:
 		real_t descent = 0.f;
 		real_t underline_position = 0.f;
 		real_t underline_thickness = 0.f;
+		real_t strickout_position = 0.f;
+		real_t strickout_thickness = 0.f;
 		real_t scale = 1.f;
 		real_t oversampling = 1.f;
 
@@ -175,6 +177,8 @@ public:
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		Map<uint32_t, double> variation_coordinates;
 		real_t oversampling = 0.f;
+		
+		int64_t style_flags = 0;
 
 		Map<Vector2i, FontDataForSizeAdvanced *> cache;
 
@@ -266,7 +270,7 @@ public:
 	int _convert_pos(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
 	int _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
 	void _shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index);
-	TextServer::Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size);
+	TextServer::Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size, int p_span);
 
 	// HarfBuzz bitmap font interface.
 
@@ -323,6 +327,9 @@ public:
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) override;
 
+	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) override;
+	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const override;
+
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(RID p_font_rid) const override;
 
@@ -364,9 +371,15 @@ public:
 
 	virtual void font_set_underline_position(RID p_font_rid, int p_size, real_t p_underline_position) override;
 	virtual real_t font_get_underline_position(RID p_font_rid, int p_size) const override;
+	
+	virtual void font_set_strickout_position(RID p_font_rid, int p_size, real_t p_underline_position) override;
+	virtual real_t font_get_strickout_position(RID p_font_rid, int p_size) const override;
 
 	virtual void font_set_underline_thickness(RID p_font_rid, int p_size, real_t p_underline_thickness) override;
 	virtual real_t font_get_underline_thickness(RID p_font_rid, int p_size) const override;
+
+	virtual void font_set_strickout_thickness(RID p_font_rid, int p_size, real_t p_underline_thickness) override;
+	virtual real_t font_get_strickout_thickness(RID p_font_rid, int p_size) const override;
 
 	virtual void font_set_scale(RID p_font_rid, int p_size, real_t p_scale) override;
 	virtual real_t font_get_scale(RID p_font_rid, int p_size) const override;
@@ -420,8 +433,8 @@ public:
 	virtual void font_render_range(RID p_font, const Vector2i &p_size, char32_t p_start, char32_t p_end) override;
 	virtual void font_render_glyph(RID p_font_rid, const Vector2i &p_size, int32_t p_index) override;
 
-	virtual void font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const override;
-	virtual void font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const override;
+	virtual void font_draw_glyph(RID p_shaped, OGUI::PrimDrawContext& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const override;
+	virtual void font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawContext& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const override;
 
 	virtual bool font_is_language_supported(RID p_font_rid, const String &p_language) const override;
 	virtual void font_set_language_support_override(RID p_font_rid, const String &p_language, bool p_supported) override;
@@ -461,22 +474,24 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) override;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const override;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") override;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, int64_t flags = 0, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", const TextDecorationData& decoration = {}) override;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
 	virtual bool shaped_text_resize_object_raw(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
+	
+	virtual TextDecorationData shaped_text_get_decoration(RID p_shaped, int p_span) const override;
 
-	virtual real_t shaped_text_fit_to_width(RID p_shaped, real_t p_width, uint8_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
+	virtual real_t shaped_text_fit_to_width(RID p_shaped, real_t p_width, int64_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_KASHIDA) override;
 	virtual real_t shaped_text_tab_align(RID p_shaped, const Vector<real_t> &p_tab_stops) override;
 
 	virtual bool shaped_text_shape(RID p_shaped) override;
 	virtual bool shaped_text_update_breaks(RID p_shaped) override;
 	virtual bool shaped_text_update_justification_ops(RID p_shaped) override;
 
-	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, real_t p_width, uint8_t p_trim_flags) override;
+	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, real_t p_width, int64_t p_trim_flags) override;
 	virtual TrimData shaped_text_get_trim_data(RID p_shaped) const override;
 
 	virtual bool shaped_text_is_ready(RID p_shaped) const override;

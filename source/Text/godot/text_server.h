@@ -43,6 +43,13 @@
 #include <optional>
 namespace godot{
 
+struct TextDecorationData
+{
+	Color decorationColor = Color(1,1,1,1);
+	float decorationThickness = 1.f;
+	int64_t decorationLineFlag = 0;
+	OGUI::TextureHandle decorationTexture = nullptr;
+};
 
 class TextServer {
 
@@ -58,10 +65,19 @@ public:
 		ORIENTATION_VERTICAL
 	};
 
+	enum DecorationLineFlag {
+		DECORATION_LINE_UNDERLINE = 0x1,
+		DECORATION_LINE_OVERLINE = 0x2,
+		DECORATION_LINE_THROUGH = 0x4,
+	};
+	enum DecorationStyle {
+		DECORATION_STYLE_SOLID
+	};
+
 	enum JustificationFlag {
 		JUSTIFICATION_NONE = 0,
 		JUSTIFICATION_KASHIDA = 1 << 0,
-		JUSTIFICATION_WORD_BOUND = 1 << 1,
+		JUSTIFICATION_CHARACTER = 1 << 1,
 		JUSTIFICATION_TRIM_EDGE_SPACES = 1 << 2,
 		JUSTIFICATION_AFTER_LAST_TAB = 1 << 3,
 		JUSTIFICATION_CONSTRAIN_ELLIPSIS = 1 << 4,
@@ -126,6 +142,12 @@ public:
 		SPACING_BOTTOM,
 	};
 
+	enum FontStyle {
+		FONT_BOLD = 1 << 0,
+		FONT_ITALIC = 1 << 1,
+		FONT_FIXED_WIDTH = 1 << 2,
+	};
+
 	struct Glyph {
 		int start = -1; // Start offset in the source string.
 		int end = -1; // End offset in the source string.
@@ -140,6 +162,7 @@ public:
 
 		RID font_rid; // Font resource.
 		int font_size = 0; // Font size;
+		int span = 0;
 		int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs).
 
 		bool operator==(const Glyph &p_a) const;
@@ -174,8 +197,8 @@ public:
 
 	struct GlyphDrawPolicy {
 		virtual ~GlyphDrawPolicy() {}
-		virtual void draw(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one());
-		static void drawQuad(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one(), bool noGamma = true);
+		virtual void draw(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one());
+		static void drawQuad(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one(), bool noGamma = true);
 	};
 
 	struct ShapedTextData {
@@ -197,11 +220,14 @@ public:
 
 			Vector<RID> fonts;
 			int font_size = 0;
+			int64_t flags = 0;
 			Variant embedded_key = nullptr;
 			std::shared_ptr<GlyphDrawPolicy> draw_policy;
 
 			String language;
 			Map<uint32_t, double> features;
+			
+			TextDecorationData decoration;
 		};
 		Vector<Span> spans;
 
@@ -270,6 +296,9 @@ public:
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) = 0;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) = 0;
 
+	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) = 0;
+	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) = 0;
 	virtual bool font_is_antialiased(RID p_font_rid) const = 0;
 
@@ -310,8 +339,14 @@ public:
 	virtual void font_set_underline_position(RID p_font_rid, int p_size, real_t p_underline_position) = 0;
 	virtual real_t font_get_underline_position(RID p_font_rid, int p_size) const = 0;
 
+	virtual void font_set_strickout_position(RID p_font_rid, int p_size, real_t p_underline_position) = 0;
+	virtual real_t font_get_strickout_position(RID p_font_rid, int p_size) const = 0;
+
 	virtual void font_set_underline_thickness(RID p_font_rid, int p_size, real_t p_underline_thickness) = 0;
 	virtual real_t font_get_underline_thickness(RID p_font_rid, int p_size) const = 0;
+
+	virtual void font_set_strickout_thickness(RID p_font_rid, int p_size, real_t p_underline_thickness) = 0;
+	virtual real_t font_get_strickout_thickness(RID p_font_rid, int p_size) const = 0;
 
 	virtual void font_set_scale(RID p_font_rid, int p_size, real_t p_scale) = 0;
 	virtual real_t font_get_scale(RID p_font_rid, int p_size) const = 0;
@@ -365,8 +400,8 @@ public:
 	virtual void font_render_range(RID p_font, const Vector2i &p_size, char32_t p_start, char32_t p_end) = 0;
 	virtual void font_render_glyph(RID p_font_rid, const Vector2i &p_size, int32_t p_index) = 0;
 
-	virtual void font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const = 0;
-	virtual void font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph(RID p_shaped, OGUI::PrimDrawContext& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawContext& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const = 0;
 
 	virtual bool font_is_language_supported(RID p_font_rid, const String &p_language) const = 0;
 	virtual void font_set_language_support_override(RID p_font_rid, const String &p_language, bool p_supported) = 0;
@@ -387,7 +422,7 @@ public:
 	virtual void font_set_global_oversampling(real_t p_oversampling) = 0;
 
 	Vector2 get_hex_code_box_size(int p_size, char32_t p_index) const;
-	void draw_hex_code_box(OGUI::PrimDrawList& list, int p_size, const Vector2 &p_pos, char32_t p_index, const Color &p_color) const;
+	void draw_hex_code_box(OGUI::PrimDrawContext& list, int p_size, const Vector2 &p_pos, char32_t p_index, const Color &p_color) const;
 
 	/* Shaped text buffer interface */
 
@@ -409,15 +444,17 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) = 0;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const = 0;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "") = 0;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, int64_t flags = 0, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", const TextDecorationData& decoration = {}) = 0;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) = 0;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
 	virtual bool shaped_text_resize_object_raw(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const = 0; // Copy shaped substring (e.g. line break) without reshaping, but correctly reordered, preservers range.
 	virtual RID shaped_text_get_parent(RID p_shaped) const = 0;
+	
+	virtual TextDecorationData shaped_text_get_decoration(RID p_shaped, int p_span) const = 0;
 
-	virtual real_t shaped_text_fit_to_width(RID p_shaped, real_t p_width, uint8_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) = 0;
+	virtual real_t shaped_text_fit_to_width(RID p_shaped, real_t p_width, int64_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_KASHIDA) = 0;
 	virtual real_t shaped_text_tab_align(RID p_shaped, const Vector<real_t> &p_tab_stops) = 0;
 
 	virtual bool shaped_text_shape(RID p_shaped) = 0;
@@ -433,12 +470,12 @@ public:
 
 	virtual Vector<Glyph> shaped_text_sort_logical(RID p_shaped) = 0;
 
-	virtual Vector<Vector2i> shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<real_t> &p_width, int p_start = 0, bool p_once = true, uint8_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
-	virtual Vector<Vector2i> shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start = 0, uint8_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
+	virtual Vector<Vector2i> shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<real_t> &p_width, int p_start = 0, bool p_once = true, int64_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
+	virtual Vector<Vector2i> shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start = 0, int64_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
 	virtual Vector<Vector2i> shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
 
 	virtual TrimData shaped_text_get_trim_data(RID p_shaped) const;
-	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, real_t p_width, uint8_t p_trim_flags) = 0;
+	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, real_t p_width, int64_t p_trim_flags) = 0;
 	virtual Vector<Variant> shaped_text_get_objects(RID p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(RID p_shaped, Variant p_key) const = 0;
 
@@ -461,16 +498,17 @@ public:
 	virtual int shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos);
 
 	// The pen position is always placed on the baseline and moveing left to right.
-	virtual void shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const Vector2 &p_pos, real_t p_clip_l = -1.f, real_t p_clip_r = -1.f, const Color &p_color = Color(1, 1, 1)) const;
-	virtual void shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawList& list, const Vector2 &p_pos, real_t p_clip_l = -1.f, real_t p_clip_r = -1.f, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	virtual void shaped_text_draw(RID p_shaped, OGUI::PrimDrawContext& list, const Vector2 &p_pos, real_t p_clip_l = -1.f, real_t p_clip_r = -1.f, const Color &p_color = Color(1, 1, 1)) const;
+	virtual void shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawContext& list, const Vector2 &p_pos, real_t p_clip_l = -1.f, real_t p_clip_r = -1.f, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	// Number conversion.
 	virtual String format_number(const String &p_string, const String &p_language = "") const { return p_string; };
 	virtual String parse_number(const String &p_string, const String &p_language = "") const { return p_string; };
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
 
-	void canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const;
-	void canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), GlyphDrawPolicy* policy = nullptr) const;
+	void canvas_item_add_rect(OGUI::PrimDrawContext& list, const Rect2 &p_rect, const Color &p_color) const;
+	void canvas_item_add_texture_rect(OGUI::PrimDrawContext& list, const Rect2 &p_rect, const Color &p_color, OGUI::TextureHandle p_texture) const;
+	void canvas_item_add_texture_rect_region(OGUI::PrimDrawContext& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), GlyphDrawPolicy* policy = nullptr) const;
 
 	TextServer();
 	virtual ~TextServer();

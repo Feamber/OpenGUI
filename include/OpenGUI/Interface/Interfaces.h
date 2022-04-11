@@ -65,6 +65,7 @@ namespace OGUI
 	struct OGUI_API TextureInterface;
 	struct OGUI_API MaterialInterface;
 	struct OGUI_API PersistantPrimitiveInterface;
+	struct OGUI_API PrimDrawContext;
     using TextureHandle = TextureInterface*;
     using MaterialHandle = MaterialInterface*;
     using RenderTargetViewHandle = struct RenderTargetView*;

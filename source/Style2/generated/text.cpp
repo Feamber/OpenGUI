@@ -88,6 +88,10 @@ void OGUI::StyleText::Initialize()
     lineHeight = YGValueAuto;
     textAlign = ETextAlign::Start;
     textShadow = {};
+    textDecorationColor = Color4f(0,0,0,1);
+    textDecorationLine = ETextDecorationLine::None;
+    textDecorationThickness = 1;
+    textJustify = ETextJustify::InterWord;
 }
 
 void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStorage& sheet, const gsl::span<StyleProperty>& props, const StyleMasks& override, const ComputedStyle* parent)
@@ -107,6 +111,10 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
             case Ids::lineHeight: if(mask & (1ull<<5)) continue; break;
             case Ids::textAlign: if(mask & (1ull<<6)) continue; break;
             case Ids::textShadow: if(mask & (1ull<<7)) continue; break;
+            case Ids::textDecorationColor: if(mask & (1ull<<8)) continue; break;
+            case Ids::textDecorationLine: if(mask & (1ull<<9)) continue; break;
+            case Ids::textDecorationThickness: if(mask & (1ull<<10)) continue; break;
+            case Ids::textJustify: if(mask & (1ull<<11)) continue; break;
         }
         if(prop.keyword)
         {
@@ -155,6 +163,26 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v.textShadow = {};
                     break;
                     }
+                case Ids::textDecorationColor: {
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationColor = Color4f(0,0,0,1);
+                    break;
+                    }
+                case Ids::textDecorationLine: {
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationLine = ETextDecorationLine::None;
+                    break;
+                    }
+                case Ids::textDecorationThickness: {
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationThickness = 1;
+                    break;
+                    }
+                case Ids::textJustify: {
+                    auto& v = GetOrAdd(style);
+                    v.textJustify = ETextJustify::InterWord;
+                    break;
+                    }
                 default: break;
                 }
             }
@@ -200,6 +228,26 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Ids::textShadow:{
                     auto& v = GetOrAdd(style);
                     v.textShadow = pst->textShadow;
+                    break;
+                    }
+                case Ids::textDecorationColor:{
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationColor = pst->textDecorationColor;
+                    break;
+                    }
+                case Ids::textDecorationLine:{
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationLine = pst->textDecorationLine;
+                    break;
+                    }
+                case Ids::textDecorationThickness:{
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationThickness = pst->textDecorationThickness;
+                    break;
+                    }
+                case Ids::textJustify:{
+                    auto& v = GetOrAdd(style);
+                    v.textJustify = pst->textJustify;
                     break;
                     }
                 default: break;
@@ -250,6 +298,26 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v.textShadow = ToOwned(sheet.Get<const gsl::span<const TextShadow>>(prop.value));
                     break;
                     }
+                case Ids::textDecorationColor:{
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationColor = sheet.Get<Color4f>(prop.value);
+                    break;
+                    }
+                case Ids::textDecorationLine:{
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationLine = sheet.Get<ETextDecorationLine>(prop.value);
+                    break;
+                    }
+                case Ids::textDecorationThickness:{
+                    auto& v = GetOrAdd(style);
+                    v.textDecorationThickness = sheet.Get<float>(prop.value);
+                    break;
+                    }
+                case Ids::textJustify:{
+                    auto& v = GetOrAdd(style);
+                    v.textJustify = sheet.Get<ETextJustify>(prop.value);
+                    break;
+                    }
                 default: break;
             }
         }
@@ -275,6 +343,10 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
             case Ids::lineHeight: if(mask & (1ull<<5)) continue; break;
             case Ids::textAlign: if(mask & (1ull<<6)) continue; break;
             case Ids::textShadow: if(mask & (1ull<<7)) continue; break;
+            case Ids::textDecorationColor: if(mask & (1ull<<8)) continue; break;
+            case Ids::textDecorationLine: if(mask & (1ull<<9)) continue; break;
+            case Ids::textDecorationThickness: if(mask & (1ull<<10)) continue; break;
+            case Ids::textJustify: if(mask & (1ull<<11)) continue; break;
         }
         switch(prop.id)
         {
@@ -491,6 +563,118 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 
                 break;
                 }
+            case Ids::textDecorationColor:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textDecorationColor;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> Color4f
+                {
+                    if(!keyword)
+                        return sheet.Get<Color4f>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    )
+                    {
+                        return GetDefault().textDecorationColor;
+                    }
+                    else
+                    { 
+                        return GetDefault().textDecorationColor;
+                    }
+                };
+                if(prop.alpha == 0.f)
+                    v.textDecorationColor = getValue(prop.from, prop.fromKeyword);
+                else if(prop.alpha == 1.f)
+                    v.textDecorationColor = getValue(prop.to, prop.toKeyword);
+                else
+                    v.textDecorationColor = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
+                
+                if(prevValue != v.textDecorationColor)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textDecorationLine:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textDecorationLine;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> ETextDecorationLine
+                {
+                    if(!keyword)
+                        return sheet.Get<ETextDecorationLine>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    )
+                    {
+                        return GetDefault().textDecorationLine;
+                    }
+                    else
+                    { 
+                        return GetDefault().textDecorationLine;
+                    }
+                };
+                if(prop.alpha == 0.f)
+                    v.textDecorationLine = getValue(prop.from, prop.fromKeyword);
+                else if(prop.alpha == 1.f)
+                    v.textDecorationLine = getValue(prop.to, prop.toKeyword);
+                else
+                    v.textDecorationLine = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
+                
+                if(prevValue != v.textDecorationLine)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textDecorationThickness:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textDecorationThickness;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    )
+                    {
+                        return GetDefault().textDecorationThickness;
+                    }
+                    else
+                    { 
+                        return GetDefault().textDecorationThickness;
+                    }
+                };
+                if(prop.alpha == 0.f)
+                    v.textDecorationThickness = getValue(prop.from, prop.fromKeyword);
+                else if(prop.alpha == 1.f)
+                    v.textDecorationThickness = getValue(prop.to, prop.toKeyword);
+                else
+                    v.textDecorationThickness = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
+                
+                if(prevValue != v.textDecorationThickness)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textJustify:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textJustify;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> ETextJustify
+                {
+                    if(!keyword)
+                        return sheet.Get<ETextJustify>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    )
+                    {
+                        return GetDefault().textJustify;
+                    }
+                    else
+                    { 
+                        return GetDefault().textJustify;
+                    }
+                };
+                if(prop.alpha == 0.f)
+                    v.textJustify = getValue(prop.from, prop.fromKeyword);
+                else if(prop.alpha == 1.f)
+                    v.textJustify = getValue(prop.to, prop.toKeyword);
+                else
+                    v.textJustify = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
+                
+                if(prevValue != v.textJustify)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
             default: break;
         }
     }
@@ -595,6 +779,54 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 
                 break;
                 }
+            case Ids::textDecorationColor:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textDecorationColor;
+                if(prop.alpha == 1.f)
+                    v.textDecorationColor = dst.textDecorationColor;
+                else
+                    v.textDecorationColor = OGUI::Lerp(src.textDecorationColor, dst.textDecorationColor, prop.alpha);
+                
+                if(prevValue != v.textDecorationColor)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textDecorationLine:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textDecorationLine;
+                if(prop.alpha == 1.f)
+                    v.textDecorationLine = dst.textDecorationLine;
+                else
+                    v.textDecorationLine = OGUI::Lerp(src.textDecorationLine, dst.textDecorationLine, prop.alpha);
+                
+                if(prevValue != v.textDecorationLine)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textDecorationThickness:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textDecorationThickness;
+                if(prop.alpha == 1.f)
+                    v.textDecorationThickness = dst.textDecorationThickness;
+                else
+                    v.textDecorationThickness = OGUI::Lerp(src.textDecorationThickness, dst.textDecorationThickness, prop.alpha);
+                
+                if(prevValue != v.textDecorationThickness)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::textJustify:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.textJustify;
+                if(prop.alpha == 1.f)
+                    v.textJustify = dst.textJustify;
+                else
+                    v.textJustify = OGUI::Lerp(src.textJustify, dst.textJustify, prop.alpha);
+                
+                if(prevValue != v.textJustify)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
             default: break;
         }
     }
@@ -626,6 +858,14 @@ void OGUI::StyleText::Merge(ComputedStyle& style, ComputedStyle& other, const St
         s.textAlign = po->textAlign;
     if(mask & (1ull << 7))
         s.textShadow = po->textShadow;
+    if(mask & (1ull << 8))
+        s.textDecorationColor = po->textDecorationColor;
+    if(mask & (1ull << 9))
+        s.textDecorationLine = po->textDecorationLine;
+    if(mask & (1ull << 10))
+        s.textDecorationThickness = po->textDecorationThickness;
+    if(mask & (1ull << 11))
+        s.textJustify = po->textJustify;
 }
 
 void OGUI::StyleText::MergeId(ComputedStyle& style, ComputedStyle& other, const gsl::span<size_t>& override)
@@ -677,6 +917,26 @@ void OGUI::StyleText::MergeId(ComputedStyle& style, ComputedStyle& other, const 
                  v.textShadow = po->textShadow;
                  break;
             }
+            case Ids::textDecorationColor: {
+                 auto& v = GetOrAdd(style);
+                 v.textDecorationColor = po->textDecorationColor;
+                 break;
+            }
+            case Ids::textDecorationLine: {
+                 auto& v = GetOrAdd(style);
+                 v.textDecorationLine = po->textDecorationLine;
+                 break;
+            }
+            case Ids::textDecorationThickness: {
+                 auto& v = GetOrAdd(style);
+                 v.textDecorationThickness = po->textDecorationThickness;
+                 break;
+            }
+            case Ids::textJustify: {
+                 auto& v = GetOrAdd(style);
+                 v.textJustify = po->textJustify;
+                 break;
+            }
         }
     }
 }
@@ -693,6 +953,10 @@ size_t OGUI::StyleText::GetProperty(ostr::string_view pname)
         casestr("line-height") return Ids::lineHeight;
         casestr("text-align") return Ids::textAlign;
         casestr("text-shadow") return Ids::textShadow;
+        casestr("text-decoration-color") return Ids::textDecorationColor;
+        casestr("text-decoration-line") return Ids::textDecorationLine;
+        casestr("text-decoration-thickness") return Ids::textDecorationThickness;
+        casestr("text-justify") return Ids::textJustify;
         default: return -1;
     }
     return -1;
@@ -835,6 +1099,70 @@ void OGUI::StyleText::SetupParser()
                         value.emplace_back(any_move<TextShadow>(e));
                     ctx.rule->properties.push_back({hash, ctx.storage->Push<const gsl::span<const TextShadow>>(value)});
                 }
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "text-decoration-colorValue <- GlobalValue / Color \ntext-decoration-color <- 'text-decoration-color' _ ':' _ text-decoration-colorValue";
+        RegisterProperty("text-decoration-color");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::textDecorationColor;
+            parser["text-decoration-colorValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<Color4f>(std::any_cast<Color4f&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "text-decoration-lineValue <- GlobalValue / TextDecorationLine \ntext-decoration-line <- 'text-decoration-line' _ ':' _ text-decoration-lineValue";
+        RegisterProperty("text-decoration-line");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::textDecorationLine;
+            parser["text-decoration-lineValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<ETextDecorationLine>(std::any_cast<ETextDecorationLine&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "text-decoration-thicknessValue <- GlobalValue / Number \ntext-decoration-thickness <- 'text-decoration-thickness' _ ':' _ text-decoration-thicknessValue";
+        RegisterProperty("text-decoration-thickness");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::textDecorationThickness;
+            parser["text-decoration-thicknessValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "text-justifyValue <- GlobalValue / TextJustify \ntext-justify <- 'text-justify' _ ':' _ text-justifyValue";
+        RegisterProperty("text-justify");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::textJustify;
+            parser["text-justifyValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<ETextJustify>(std::any_cast<ETextJustify&>(vs[0]))});
             };
         });
     }
@@ -1100,4 +1428,128 @@ void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<const Text
 void OGUI::ResetStyleTextShadow(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<7);
+}
+void OGUI::SetStyleTextDecorationColor(VisualElement* element, const Color4f& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<8;
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::textDecorationColor)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    auto& override = StyleText::GetOrAdd(element->_overrideStyle);
+    override.textDecorationColor = value;
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).textDecorationColor = override.textDecorationColor;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).textDecorationColor = StyleText::Get(element->_style).textDecorationColor;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).textDecorationColor = override.textDecorationColor;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
+}
+void OGUI::ResetStyleTextDecorationColor(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<8);
+}
+void OGUI::SetStyleTextDecorationLine(VisualElement* element, const ETextDecorationLine& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<9;
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::textDecorationLine)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    auto& override = StyleText::GetOrAdd(element->_overrideStyle);
+    override.textDecorationLine = value;
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).textDecorationLine = override.textDecorationLine;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).textDecorationLine = StyleText::Get(element->_style).textDecorationLine;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).textDecorationLine = override.textDecorationLine;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
+}
+void OGUI::ResetStyleTextDecorationLine(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<9);
+}
+void OGUI::SetStyleTextDecorationThickness(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<10;
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::textDecorationThickness)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    auto& override = StyleText::GetOrAdd(element->_overrideStyle);
+    override.textDecorationThickness = value;
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).textDecorationThickness = override.textDecorationThickness;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).textDecorationThickness = StyleText::Get(element->_style).textDecorationThickness;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).textDecorationThickness = override.textDecorationThickness;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
+}
+void OGUI::ResetStyleTextDecorationThickness(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<10);
+}
+void OGUI::SetStyleTextJustify(VisualElement* element, const ETextJustify& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<11;
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::textJustify)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    auto& override = StyleText::GetOrAdd(element->_overrideStyle);
+    override.textJustify = value;
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).textJustify = override.textJustify;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).textJustify = StyleText::Get(element->_style).textJustify;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).textJustify = override.textJustify;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
+}
+void OGUI::ResetStyleTextJustify(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<11);
 }

@@ -35,6 +35,10 @@ namespace OGUI reflect
             static constexpr size_t lineHeight = OGUI::hash(u"line-height"_o);
             static constexpr size_t textAlign = OGUI::hash(u"text-align"_o);
             static constexpr size_t textShadow = OGUI::hash(u"text-shadow"_o);
+            static constexpr size_t textDecorationColor = OGUI::hash(u"text-decoration-color"_o);
+            static constexpr size_t textDecorationLine = OGUI::hash(u"text-decoration-line"_o);
+            static constexpr size_t textDecorationThickness = OGUI::hash(u"text-decoration-thickness"_o);
+            static constexpr size_t textJustify = OGUI::hash(u"text-justify"_o);
         };
         float fontSize;
         Color4f color;
@@ -44,6 +48,10 @@ namespace OGUI reflect
         YGValue lineHeight;
         ETextAlign textAlign;
         std::vector<TextShadow> textShadow;
+        Color4f textDecorationColor;
+        ETextDecorationLine textDecorationLine;
+        float textDecorationThickness;
+        ETextJustify textJustify;
         void Initialize();
         static const StyleText& GetDefault();
         static const StyleText& Get(const ComputedStyle& style);
@@ -98,4 +106,20 @@ namespace OGUI reflect
     OGUI_API void SetStyleTextShadow(VisualElement* element, const gsl::span<const TextShadow>& value);
     attr("script": true)
     OGUI_API void ResetStyleTextShadow(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleTextDecorationColor(VisualElement* element, const Color4f& value);
+    attr("script": true)
+    OGUI_API void ResetStyleTextDecorationColor(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleTextDecorationLine(VisualElement* element, const ETextDecorationLine& value);
+    attr("script": true)
+    OGUI_API void ResetStyleTextDecorationLine(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleTextDecorationThickness(VisualElement* element, const float& value);
+    attr("script": true)
+    OGUI_API void ResetStyleTextDecorationThickness(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleTextJustify(VisualElement* element, const ETextJustify& value);
+    attr("script": true)
+    OGUI_API void ResetStyleTextJustify(VisualElement* element);
 }

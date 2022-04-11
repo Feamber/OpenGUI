@@ -20,6 +20,7 @@ void SetupEnumParser()
         AnimFillMode <- 'none' / 'forwards' / 'both' / 'backwards'
         TextStyle <- 'normal' / 'italic'
         TextAlign <- 'start' / 'right' / 'left' / 'justify' / 'end' / 'center'
+        TextJustify <- 'inter-word' / 'inter-ideograph'
     )";
     RegisterGrammar(grammar, [](peg::parser& parser)
     {
@@ -107,6 +108,14 @@ void SetupEnumParser()
                 case 5 : return OGUI::ETextAlign::Center;
             }
             throw peg::parse_error("fail to parse TextAlign");
+        };
+        parser["TextJustify"] = [](peg::SemanticValues& vs, std::any& dt){
+            switch(vs.choice())
+            {
+                case 0 : return OGUI::ETextJustify::InterWord;
+                case 1 : return OGUI::ETextJustify::InterIdeograph;
+            }
+            throw peg::parse_error("fail to parse TextJustify");
         };
     });
 }

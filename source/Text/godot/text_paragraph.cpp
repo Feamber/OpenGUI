@@ -50,7 +50,7 @@ void TextParagraph::_shape_lines() {
 		int start = 0;
 		dropcap_lines = 0;
 
-		uint8_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
+		int64_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
 		if (overrun_behavior != OVERRUN_NO_TRIMMING) {
 			switch (overrun_behavior) {
 				case OVERRUN_TRIM_WORD_ELLIPSIS:
@@ -102,6 +102,7 @@ void TextParagraph::_shape_lines() {
 			}
 		}
 		// Use fixed for the rest of lines.
+		TS->shaped_text_update_justification_ops(rid);
 		Vector<Vector2i> line_breaks = TS->shaped_text_get_line_breaks(rid, max_width, start, flags);
 		for (int i = 0; i < line_breaks.size(); i++) {
 			RID line = TS->shaped_text_substr(rid, line_breaks[i].x, line_breaks[i].y - line_breaks[i].x);
@@ -266,7 +267,7 @@ bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_fonts, 
 	ERR_FAIL_COND_V(!p_fonts, false);
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
-	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, {}, p_opentype_features, p_language);
+	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, flags, {}, p_opentype_features, p_language);
 	mark_dirty();
 	return res;
 }
@@ -277,9 +278,11 @@ void TextParagraph::clear_dropcap() {
 	mark_dirty();
 }
 
-bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
+bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, int64_t p_flags, 
+	const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, const TextDecorationData& decoration) {
 	ERR_FAIL_COND_V(!p_fonts, false);
-	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, draw_policy, p_opentype_features, p_language);
+	p_flags |= flags;
+	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_flags, draw_policy, p_opentype_features, p_language, decoration);
 	mark_dirty();
 	return res;
 }
@@ -337,7 +340,7 @@ void TextParagraph::tab_align(const Vector<float> &p_tab_stops) {
 	mark_dirty();
 }
 
-void TextParagraph::set_flags(uint8_t p_flags) {
+void TextParagraph::set_flags(int64_t p_flags) {
 	if (flags != p_flags) {
 		flags = p_flags;
 		mark_dirty();
@@ -362,7 +365,7 @@ void TextParagraph::set_spacing_bottom(int spacing)
 	}
 }
 
-uint8_t TextParagraph::get_flags() const {
+int64_t TextParagraph::get_flags() const {
 	return flags;
 }
 
@@ -510,7 +513,7 @@ int TextParagraph::get_dropcap_lines() const {
 	return dropcap_lines;
 }
 
-void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const Color &p_color, const Color &p_dc_color) const {
+void TextParagraph::draw(OGUI::PrimDrawContext& list, const Vector2 &p_pos, const Color &p_color, const Color &p_dc_color) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	Vector2 ofs = p_pos;
 	float h_offset = 0.f;
@@ -594,7 +597,7 @@ void TextParagraph::draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const C
 	}
 }
 
-void TextParagraph::draw_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dc_color) const {
+void TextParagraph::draw_outline(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dc_color) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	Vector2 ofs = p_pos;
 
@@ -714,7 +717,7 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 	return TS->shaped_text_get_range(rid).y;
 }
 
-void TextParagraph::draw_dropcap(OGUI::PrimDrawList& list, const Vector2 &p_pos, const Color &p_color) const {
+void TextParagraph::draw_dropcap(OGUI::PrimDrawContext& list, const Vector2 &p_pos, const Color &p_color) const {
 	Vector2 ofs = p_pos;
 	float h_offset = 0.f;
 	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
@@ -736,7 +739,7 @@ void TextParagraph::draw_dropcap(OGUI::PrimDrawList& list, const Vector2 &p_pos,
 	}
 }
 
-void TextParagraph::draw_dropcap_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
+void TextParagraph::draw_dropcap_outline(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
 	Vector2 ofs = p_pos;
 	float h_offset = 0.f;
 	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
@@ -758,7 +761,7 @@ void TextParagraph::draw_dropcap_outline(OGUI::PrimDrawList& list, const Vector2
 	}
 }
 
-void TextParagraph::draw_line(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_line, const Color &p_color) const {
+void TextParagraph::draw_line(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_line, const Color &p_color) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND(p_line < 0 || p_line >= lines_rid.size());
 
@@ -772,7 +775,7 @@ void TextParagraph::draw_line(OGUI::PrimDrawList& list, const Vector2 &p_pos, in
 	return TS->shaped_text_draw(lines_rid[p_line], list, ofs, -1, -1, p_color);
 }
 
-void TextParagraph::draw_line_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_line, int p_outline_size, const Color &p_color) const {
+void TextParagraph::draw_line_outline(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_line, int p_outline_size, const Color &p_color) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	ERR_FAIL_COND(p_line < 0 || p_line >= lines_rid.size());
 
@@ -783,12 +786,6 @@ void TextParagraph::draw_line_outline(OGUI::PrimDrawList& list, const Vector2 &p
 		ofs.x += TS->shaped_text_get_ascent(lines_rid[p_line]) + spacing_top;
 	}
 	return TS->shaped_text_draw_outline(lines_rid[p_line], list, ofs, -1, -1, p_outline_size, p_color);
-}
-
-TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
-	rid = TS->create_shaped_text(p_direction, p_orientation);
-	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, draw_policy, p_opentype_features, p_language);
-	max_width = p_width;
 }
 
 TextParagraph::TextParagraph() {

@@ -51,7 +51,7 @@ namespace OGUI
         std::vector<TextShadow> shadows;
         bool noGamma = true;
         
-        void draw(PrimDrawList &list, const Rect &inRect, TextureHandle texture, const Rect &inUv, const Color4f &inColor = Color4f::vector_one()) override
+        void draw(PrimDrawContext &list, const Rect &inRect, TextureHandle texture, const Rect &inUv, const Color4f &inColor = Color4f::vector_one()) override
         {
             auto rect = inRect;
             auto uv = inUv;
@@ -301,7 +301,16 @@ namespace OGUI
                 [&](ostr::string& text) 
                 { 
                     godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
-                    p->add_string((wchar_t*)text.raw().data(), _font, txt.fontSize, _drawPolicy); 
+                    godot::Color decorationColor(txt.textDecorationColor.X, txt.textDecorationColor.Y, txt.textDecorationColor.Z, txt.textDecorationColor.W);
+                    godot::TextDecorationData decoration;
+                    decoration.decorationColor = decorationColor;
+                    decoration.decorationTexture = nullptr;
+                    decoration.decorationLineFlag = (int64_t)txt.textDecorationLine;
+                    decoration.decorationThickness = txt.textDecorationThickness;
+                    int64 flags = 0;
+                    if(txt.textJustify == ETextJustify::InterIdeograph)
+                        flags |= godot::TextServer::JustificationFlag::JUSTIFICATION_CHARACTER;
+                    p->add_string((wchar_t*)text.raw().data(), _font, txt.fontSize, 0, _drawPolicy, {}, "", decoration); 
                 },
                 [&](VisualElement*& child) 
                 { 
@@ -320,7 +329,13 @@ namespace OGUI
                 [&](std::shared_ptr<BindText>& Bind) 
                 { 
                     godot::Color color(txt.color.X, txt.color.Y, txt.color.Z, txt.color.W);
-                    p->add_string((wchar_t*)Bind->text.raw().data(), _font, txt.fontSize, _drawPolicy); 
+                    godot::Color decorationColor(txt.textDecorationColor.X, txt.textDecorationColor.Y, txt.textDecorationColor.Z, txt.textDecorationColor.W);
+                    godot::TextDecorationData decoration;
+                    decoration.decorationColor = decorationColor;
+                    decoration.decorationTexture = nullptr;
+                    decoration.decorationLineFlag = (int64_t)txt.textDecorationLine;
+                    decoration.decorationThickness = txt.textDecorationThickness;
+                    p->add_string((wchar_t*)Bind->text.raw().data(), _font, txt.fontSize, 0, _drawPolicy, {}, "", decoration); 
                 }
             }, inl);
         }
@@ -363,10 +378,10 @@ namespace OGUI
         for(int i=0;i<shadowPasses;++i)
         {
             currShadowPass = i;
-            _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
+            _paragraph->draw(Ctx, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
         }
         currShadowPass = -1;
-        _paragraph->draw(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
+        _paragraph->draw(Ctx, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
         EndDraw(Ctx.prims, _worldTransform);
     }
 

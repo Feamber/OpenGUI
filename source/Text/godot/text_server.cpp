@@ -30,6 +30,7 @@
 
 #include "OpenGUI/Core/Math/Vector.h"
 #include "OpenGUI/Core/PrimitiveDraw.h"
+#include "OpenGUI/Core/nanovg.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "text_server.h"
 #include "OpenGUI/Context.h"
@@ -154,7 +155,7 @@ Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
 	return Vector2(w + 4, h + 3 + 2 * hex_code_box_font_size[fnt].z);
 }
 
-void TextServer::draw_hex_code_box(OGUI::PrimDrawList& list, int p_size, const Vector2 &p_pos, char32_t p_index, const Color &p_color) const {
+void TextServer::draw_hex_code_box(OGUI::PrimDrawContext& list, int p_size, const Vector2 &p_pos, char32_t p_index, const Color &p_color) const {
 	int fnt = (p_size < 20) ? 0 : 1;
 
 	ERR_FAIL_COND(hex_code_box_font_tex[fnt]);
@@ -210,7 +211,7 @@ void TextServer::draw_hex_code_box(OGUI::PrimDrawList& list, int p_size, const V
 	}
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<real_t> &p_width, int p_start, bool p_once, uint8_t /*TextBreakFlag*/ p_break_flags) const {
+Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<real_t> &p_width, int p_start, bool p_once, int64_t /*TextBreakFlag*/ p_break_flags) const {
 	Vector<Vector2i> lines;
 
 	ERR_FAIL_COND_V(p_width.is_empty(), lines);
@@ -281,7 +282,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	return lines;
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint8_t /*TextBreakFlag*/ p_break_flags) const {
+Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, int64_t /*TextBreakFlag*/ p_break_flags) const {
 	Vector<Vector2i> lines;
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
@@ -779,7 +780,35 @@ int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) {
 	return p_pos;
 }
 
-void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, const Color &p_color) const {
+namespace godot
+{
+	template <typename EF> struct scope_exit {
+	explicit scope_exit(EF &&f)
+		: exit_function(std::move(f)), execute_on_destruction{true} {}
+
+	scope_exit(scope_exit &&rhs)
+		: exit_function(std::move(rhs.exit_function)),
+			execute_on_destruction{rhs.execute_on_destruction} {
+		rhs.release();
+	}
+
+	~scope_exit() {
+		if (execute_on_destruction) { this->exit_function(); }
+	}
+
+	void release() { this->execute_on_destruction = false; }
+
+	private:
+	scope_exit(const scope_exit &) = delete;
+	void operator=(const scope_exit &) = delete;
+	scope_exit &operator=(scope_exit &&) = delete;
+
+	EF exit_function;
+	bool execute_on_destruction;
+	};
+}
+
+void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawContext& list, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, const Color &p_color) const {
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
@@ -804,6 +833,39 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const 
 			}
 		}
 	}
+	Vector2 ul_start;
+	TextDecorationData ul_data;
+
+	float spos=0;
+	float sthk=0;
+	Vector2 so_start;
+					
+	float underline_off = TS->shaped_text_get_underline_position(p_shaped);
+	float underline_width = TS->shaped_text_get_underline_thickness(p_shaped);
+
+	nvgBeginPath(list.nvg);
+	auto drawStrickout = [&]
+	{
+		nvgMoveTo(list.nvg, so_start.x, -so_start.y - spos);
+		nvgLineTo(list.nvg, ofs.x, -ofs.y - spos);
+		nvgStrokeColor(list.nvg, nvgRGBAf(ul_data.decorationColor.r, ul_data.decorationColor.g, ul_data.decorationColor.b, ul_data.decorationColor.a));
+		nvgStrokeWidth(list.nvg, sthk * ul_data.decorationThickness);
+	};
+	auto drawUnderline = [&]
+	{
+		nvgMoveTo(list.nvg, ul_start.x, -ul_start.y - underline_off);
+		nvgLineTo(list.nvg, ofs.x, -ofs.y - underline_off);
+		nvgStrokeColor(list.nvg, nvgRGBAf(ul_data.decorationColor.r, ul_data.decorationColor.g, ul_data.decorationColor.b, ul_data.decorationColor.a));
+		nvgStrokeWidth(list.nvg, underline_width * ul_data.decorationThickness);
+	};
+
+	auto se = scope_exit{[&]{
+		if((ul_data.decorationLineFlag & DecorationLineFlag::DECORATION_LINE_UNDERLINE) != 0)
+			drawUnderline();
+		if((ul_data.decorationLineFlag & DecorationLineFlag::DECORATION_LINE_THROUGH) != 0)
+			drawStrickout();
+		nvgStroke(list.nvg);
+	}};
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -844,6 +906,38 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const 
 					}
 				}
 			}
+			
+			float strickout_off = TS->font_get_strickout_position(glyphs[i].font_rid, glyphs[i].font_size);
+			float strickout_width = TS->font_get_strickout_thickness(glyphs[i].font_rid, glyphs[i].font_size);
+			TextDecorationData decoration = shaped_text_get_decoration(p_shaped, glyphs[i].span);
+			bool decorationChanged = decoration.decorationTexture != ul_data.decorationTexture ||
+			decoration.decorationColor != ul_data.decorationColor ||
+			decoration.decorationLineFlag != ul_data.decorationLineFlag ||
+			decoration.decorationThickness != ul_data.decorationThickness;
+			bool strickChanged = strickout_off != spos || strickout_width != sthk;
+			if(strickChanged)
+			{
+				if((ul_data.decorationLineFlag & DecorationLineFlag::DECORATION_LINE_THROUGH) != 0)
+				{
+					drawStrickout();
+					so_start = ofs;
+				}				
+			}
+			if(decorationChanged)
+			{
+				if((ul_data.decorationLineFlag & DecorationLineFlag::DECORATION_LINE_UNDERLINE) != 0)
+					drawUnderline();
+				if((ul_data.decorationLineFlag & DecorationLineFlag::DECORATION_LINE_THROUGH) != 0 && !strickChanged)
+					drawStrickout();
+				nvgStroke(list.nvg);
+				nvgBeginPath(list.nvg);
+				ul_data = decoration;
+				if((ul_data.decorationLineFlag & DecorationLineFlag::DECORATION_LINE_UNDERLINE) != 0)
+					ul_start = ofs;
+				if((ul_data.decorationLineFlag & DecorationLineFlag::DECORATION_LINE_THROUGH) != 0)
+					so_start = ofs;
+			}
+			spos = strickout_off; sthk = strickout_width;
 
 			if (glyphs[i].font_rid != RID()) {
 				font_draw_glyph(p_shaped, list, glyphs[i], ofs, p_color);
@@ -872,7 +966,7 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawList& list, const 
 	}
 }
 
-void TextServer::shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawList& list, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, int p_outline_size, const Color &p_color) const {
+void TextServer::shaped_text_draw_outline(RID p_shaped, OGUI::PrimDrawContext& list, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, int p_outline_size, const Color &p_color) const {
 	const Vector<TextServer::Glyph> visual = shaped_text_get_glyphs(p_shaped);
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
@@ -1050,7 +1144,7 @@ namespace OGUI
 	}
 }
 
-void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, GlyphDrawPolicy* policy) const
+void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawContext& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, GlyphDrawPolicy* policy) const
 {
 	using namespace OGUI;
 	auto dstRect = p_rect;
@@ -1063,30 +1157,29 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawList& list, c
 		GlyphDrawPolicy::drawQuad(list, math_cast(dstRect), p_texture, math_cast(srcRect), math_cast(p_modulate));
 }
 
-void TextServer::GlyphDrawPolicy::draw(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color)
+void TextServer::GlyphDrawPolicy::draw(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color)
 {
 	drawQuad(list, rect, texture, uv, color);
 }
 
-void TextServer::GlyphDrawPolicy::drawQuad(OGUI::PrimDrawList& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color, bool noGamma)
+void TextServer::GlyphDrawPolicy::drawQuad(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color, bool noGamma)
 {
 	using namespace OGUI;
 	PrimDrawResource resource;
 	resource.texture = texture;
 	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
 	resource.noGamma = noGamma;
-	OGUI::BoxShape(list, resource, rect, uv, color);
+	OGUI::BoxShape(list.prims, resource, rect, uv, color);
 }
 
 
-void TextServer::canvas_item_add_rect(OGUI::PrimDrawList& list, const Rect2 &p_rect, const Color &p_color) const
+void TextServer::canvas_item_add_rect(OGUI::PrimDrawContext& list, const Rect2 &p_rect, const Color &p_color) const
 {
 	using namespace OGUI;
 	PrimDrawResource resource;
 	resource.texture = nullptr;
 	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
 	auto dstRect = p_rect;
-	dstRect.position.y = - p_rect.position.y;
-	dstRect.size.y = - p_rect.size.y;
-	BoxShape(list, resource, math_cast(dstRect), {Vector2f::vector_zero(), Vector2f::vector_one()}, math_cast(p_color));
+	dstRect.position.y = - p_rect.position.y - p_rect.size.y;
+	BoxShape(list.prims, resource, math_cast(dstRect), {Vector2f::vector_zero(), Vector2f::vector_one()}, math_cast(p_color));
 }

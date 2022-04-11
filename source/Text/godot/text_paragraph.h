@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "OpenGUI/Interface/Interfaces.h"
 #include "text_server.h"
 
 namespace godot{
@@ -63,7 +64,7 @@ private:
 	float max_height = -1.0;
 	int max_lines_visible = -1;
 
-	uint8_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES;
+	int64_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES;
 	OverrunBehavior overrun_behavior = OVERRUN_TRIM_ELLIPSIS;
 
 	HAlign align = HALIGN_LEFT;
@@ -104,7 +105,8 @@ public:
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "");
 	void clear_dropcap();
 
-	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "");
+	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, int64_t flags = 0, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy = {}, 
+		const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", const TextDecorationData& decoration = {});
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
 	Vector<Variant> get_objects() const;
@@ -114,8 +116,8 @@ public:
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
-	void set_flags(uint8_t p_flags);
-	uint8_t get_flags() const;
+	void set_flags(int64_t p_flags);
+	int64_t get_flags() const;
 
 	void set_text_overrun_behavior(OverrunBehavior p_behavior);
 	OverrunBehavior get_text_overrun_behavior() const;
@@ -152,18 +154,17 @@ public:
 	Size2 get_dropcap_size() const;
 	int get_dropcap_lines() const;
 
-	void draw(OGUI::PrimDrawList& list, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
-	void draw_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
+	void draw(OGUI::PrimDrawContext& list, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
+	void draw_outline(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
 
-	void draw_line(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_line_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_line(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_line_outline(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
-	void draw_dropcap(OGUI::PrimDrawList& list, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_dropcap_outline(OGUI::PrimDrawList& list, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_dropcap(OGUI::PrimDrawContext& list, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_dropcap_outline(OGUI::PrimDrawContext& list, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	int hit_test(const Point2 &p_coords) const;
 
-	TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
 	~TextParagraph();
 };

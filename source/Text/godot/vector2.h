@@ -61,6 +61,8 @@ struct Vector2 {
 	}
 	Vector2 operator+(const Vector2 &p_v) const;
 	void operator+=(const Vector2 &p_v);
+	Vector2 operator-(const Vector2 &p_v) const;
+	void operator-=(const Vector2 &p_v);
 	Vector2 operator*(const real_t &rvalue) const;
 	Vector2 operator/(const Vector2 &p_v1) const;
 	Vector2 operator/(const real_t &rvalue) const;
@@ -96,6 +98,10 @@ _FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
 	return Vector2(x + p_v.x, y + p_v.y);
 }
 
+_FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
+	return Vector2(x - p_v.x, y - p_v.y);
+}
+
 _FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
 	return Vector2(x * rvalue, y * rvalue);
 }
@@ -103,6 +109,11 @@ _FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
 _FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
 	x += p_v.x;
 	y += p_v.y;
+}
+
+_FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
+	x -= p_v.x;
+	y -= p_v.y;
 }
 
 _FORCE_INLINE_ Vector2 Vector2::operator/(const real_t &rvalue) const {

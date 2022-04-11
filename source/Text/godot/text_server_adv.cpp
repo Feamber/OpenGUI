@@ -34,6 +34,7 @@
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Style2/Transform.h"
 #include "freetype/ftbitmap.h"
+#include "freetype/tttables.h"
 #include "unicode/ubrk.h"
 
 using namespace godot;
@@ -1302,8 +1303,29 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
+		auto os2 = (TT_OS2*) FT_Get_Sfnt_Table(fd->face, FT_SFNT_OS2);
+		if(os2)
+		{
+			fd->strickout_position = (-FT_MulFix(os2->yStrikeoutPosition, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
+			fd->strickout_thickness = (FT_MulFix(os2->yStrikeoutSize, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
+		}
+		else
+		{
+			fd->strickout_position = (-FT_MulFix(fd->face->height / 2.f + fd->ascent, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
+			fd->strickout_thickness = fd->underline_thickness;
+		}
 
 		if (!p_font_data->face_init) {
+			p_font_data->style_flags = 0;
+			if (fd->face->style_flags & FT_STYLE_FLAG_BOLD) {
+				p_font_data->style_flags |= FONT_BOLD;
+			}
+			if (fd->face->style_flags & FT_STYLE_FLAG_ITALIC) {
+				p_font_data->style_flags |= FONT_ITALIC;
+			}
+			if (fd->face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) {
+				p_font_data->style_flags |= FONT_FIXED_WIDTH;
+			}
 			// Get supported scripts from OpenType font data.
 			p_font_data->supported_scripts.clear();
 			unsigned int count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fd->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
@@ -1672,6 +1694,26 @@ void TextServerAdvanced::font_set_data_ptr(RID p_font_rid, const uint8_t *p_data
 	fd->data_size = p_data_size;
 }
 
+void TextServerAdvanced::font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->style_flags = p_style;
+}
+
+int64_t /*FontStyle*/ TextServerAdvanced::font_get_style(const RID &p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+	return fd->style_flags;
+}
+
 void TextServerAdvanced::font_set_antialiased(RID p_font_rid, bool p_antialiased) {
 	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND(!fd);
@@ -1957,6 +1999,33 @@ real_t TextServerAdvanced::font_get_underline_position(RID p_font_rid, int p_siz
 	}
 }
 
+void TextServerAdvanced::font_set_strickout_position(RID p_font_rid, int p_size, real_t p_strickout_position) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->strickout_position = p_strickout_position;
+}
+
+real_t TextServerAdvanced::font_get_strickout_position(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0.f);
+
+	if (fd->msdf) {
+		return fd->cache[size]->strickout_position * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return fd->cache[size]->strickout_position;
+	}
+}
+
 void TextServerAdvanced::font_set_underline_thickness(RID p_font_rid, int p_size, real_t p_underline_thickness) {
 	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
 	ERR_FAIL_COND(!fd);
@@ -1981,6 +2050,33 @@ real_t TextServerAdvanced::font_get_underline_thickness(RID p_font_rid, int p_si
 		return fd->cache[size]->underline_thickness * (real_t)p_size / (real_t)fd->msdf_source_size;
 	} else {
 		return fd->cache[size]->underline_thickness;
+	}
+}
+
+void TextServerAdvanced::font_set_strickout_thickness(RID p_font_rid, int p_size, real_t p_strickout_thickness) {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->cache[size]->strickout_thickness = p_strickout_thickness;
+}
+
+real_t TextServerAdvanced::font_get_strickout_thickness(RID p_font_rid, int p_size) const {
+	FontDataAdvanced *fd = font_owner.getornull(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0.f);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0.f);
+
+	if (fd->msdf) {
+		return fd->cache[size]->strickout_thickness * (real_t)p_size / (real_t)fd->msdf_source_size;
+	} else {
+		return fd->cache[size]->strickout_thickness;
 	}
 }
 
@@ -2605,7 +2701,7 @@ std::shared_ptr<TextServer::GlyphDrawPolicy> get_policy(TextServerAdvanced::Shap
 	return iter->draw_policy;
 }
 
-void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color) const {
+void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawContext& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color) const {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	while(sd->parent != RID())
 		sd = shaped_owner.getornull(sd->parent);
@@ -2650,7 +2746,7 @@ void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawList& list,
 	}
 }
 
-void TextServerAdvanced::font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawList& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color) const {
+void TextServerAdvanced::font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawContext& list, const Glyph& glyph, int p_outline_size, const Vector2 &p_pos, const Color &p_color) const {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	while(sd->parent != RID())
 		sd = shaped_owner.getornull(sd->parent);
@@ -3040,7 +3136,7 @@ TextServer::Orientation TextServerAdvanced::shaped_text_get_orientation(RID p_sh
 	return sd->orientation;
 }
 
-bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const std::shared_ptr<GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language) {
+bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, int64_t p_flags, const std::shared_ptr<GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, const TextDecorationData& p_decoration) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
@@ -3066,6 +3162,8 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	span.font_size = p_size;
 	span.language = p_language;
 	span.features = p_opentype_features;
+	span.flags = p_flags;
+	span.decoration = p_decoration;
 
 	sd->spans.push_back(span);
 	sd->text += p_text;
@@ -3456,7 +3554,14 @@ RID TextServerAdvanced::shaped_text_get_parent(RID p_shaped) const {
 	return sd->parent;
 }
 
-real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width, uint8_t /*JustificationFlag*/ p_jst_flags) {
+TextDecorationData TextServerAdvanced::shaped_text_get_decoration(RID p_shaped, int p_span) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
+	while(sd->parent != RID())
+		sd = shaped_owner.getornull(sd->parent);
+	return sd->spans[p_span].decoration;
+}
+
+real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width, int64_t /*JustificationFlag*/ p_jst_flags) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.f);
 
@@ -3556,7 +3661,7 @@ real_t TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, real_t p_width
 			}
 		}
 	}
-	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
+	if (space_count > 0) {
 		real_t delta_width_per_space = (p_width - justification_width) / space_count;
 		real_t old_width = justification_width;
 		for (int i = start_pos; i <= end_pos; i++) {
@@ -3641,7 +3746,7 @@ real_t TextServerAdvanced::shaped_text_tab_align(RID p_shaped, const Vector<real
 	return 0.f;
 }
 
-void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, real_t p_width, uint8_t p_trim_flags) {
+void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, real_t p_width, int64_t p_trim_flags) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped_line);
 	ERR_FAIL_COND_MSG(!sd, "ShapedTextDataAdvanced invalid.");
 
@@ -3671,6 +3776,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, re
 
 	int sd_size = sd->glyphs.size();
 	RID last_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
+	int last_gl_span = sd_glyphs[sd_size - 1].span;
 	int last_gl_font_size = sd_glyphs[sd_size - 1].font_size;
 	int32_t dot_gl_idx = font_get_glyph_index(last_gl_font_rid, last_gl_font_size, '.');
 	Vector2 dot_adv = font_get_glyph_advance(last_gl_font_rid, last_gl_font_size, dot_gl_idx);
@@ -3744,6 +3850,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, re
 				gl.advance = whitespace_adv.x;
 				gl.index = whitespace_gl_idx;
 				gl.font_rid = last_gl_font_rid;
+				gl.span = last_gl_span;
 				gl.font_size = last_gl_font_size;
 				gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL | (is_rtl ? GRAPHEME_IS_RTL : 0);
 
@@ -3756,6 +3863,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(RID p_shaped_line, re
 			gl.advance = dot_adv.x;
 			gl.index = dot_gl_idx;
 			gl.font_rid = last_gl_font_rid;
+			gl.span = last_gl_span;
 			gl.font_size = last_gl_font_size;
 			gl.flags = GRAPHEME_IS_PUNCTUATION | GRAPHEME_IS_VIRTUAL | (is_rtl ? GRAPHEME_IS_RTL : 0);
 
@@ -3864,6 +3972,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 						gl.end = sd_glyphs[i].end;
 						gl.count = 1;
 						gl.font_rid = sd_glyphs[i].font_rid;
+						gl.span = sd_glyphs[i].span;
 						gl.font_size = sd_glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL;
 						sd->glyphs.insert(i + sd_glyphs[i].count, gl); // Insert after.
@@ -3985,38 +4094,56 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 
 	// Use ICU word iterator and custom kashida detection.
 	UErrorCode err = U_ZERO_ERROR;
-	UBreakIterator *bi = ubrk_open(UBRK_CHARACTER, "", data, data_size, &err);
-	if (U_FAILURE(err)) {
-		// No data - use fallback.
-		int limit = 0;
-		for (int i = 0; i < sd->text.length(); i++) {
-			if (is_whitespace(data[i])) {
-				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
-				if (ks != -1) {
-					jstops[ks] = true;
+	UBreakIterator *bi = nullptr;
+	int i=0;
+	while (i < sd->spans.size()) {
+		bool character = (sd->spans[i].flags & JUSTIFICATION_CHARACTER) == JUSTIFICATION_CHARACTER;
+		int r_start = sd->spans[i].start;
+		while (i + 1 < sd->spans.size() && character == ((sd->spans[i + 1].flags & JUSTIFICATION_CHARACTER) == JUSTIFICATION_CHARACTER)) {
+			i++;
+		}
+		int r_end = sd->spans[i].end;
+		if(!character)
+		{
+			bi = ubrk_open(UBRK_WORD, "", data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
+		}
+		else
+		{
+			bi = ubrk_open(UBRK_CHARACTER, "", data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
+		}
+		if (U_FAILURE(err)) {
+			// No data - use fallback.
+			int limit = 0;
+			for (int i = 0; i < sd->text.length(); i++) {
+				if (is_whitespace(data[i])) {
+					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
+					if (ks != -1) {
+						jstops[ks] = true;
+					}
+					limit = i + 1;
 				}
-				limit = i + 1;
 			}
-		}
-		int ks = _generate_kashida_justification_opportunies(sd->text, limit, sd->text.length()) + sd->start;
-		if (ks != -1) {
-			jstops[ks] = true;
-		}
-	} else {
-		int limit = 0;
-		while (ubrk_next(bi) != UBRK_DONE) {
-			//if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) 
-			{
-				int i = _convert_pos(sd, ubrk_current(bi)) - 1;
-				jstops[i + sd->start] = false;
-				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
-				if (ks != -1) {
-					jstops[ks + sd->start] = true;
+			int ks = _generate_kashida_justification_opportunies(sd->text, limit, sd->text.length()) + sd->start;
+			if (ks != -1) {
+				jstops[ks] = true;
+			}
+		} else {
+			int limit = 0;
+			while (ubrk_next(bi) != UBRK_DONE) {
+				//if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) 
+				{
+					int i = _convert_pos(sd, ubrk_current(bi)) - 1;
+					jstops[i + sd->start] = false;
+					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
+					if (ks != -1) {
+						jstops[ks + sd->start] = true;
+					}
+					limit = i;
 				}
-				limit = i;
 			}
+			ubrk_close(bi);
 		}
-		ubrk_close(bi);
+		++i;
 	}
 
 	sd->sort_valid = false;
@@ -4035,7 +4162,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 							sd->glyphs.data()[i].flags |= GRAPHEME_IS_ELONGATION;
 						} else {
 							if (sd->glyphs[i].font_rid != RID()) {
-								TextServer::Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size);
+								TextServer::Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size, i);
 								if ((gl.flags & GRAPHEME_IS_VALID) == GRAPHEME_IS_VALID) {
 									gl.start = sd->glyphs[i].start;
 									gl.end = sd->glyphs[i].end;
@@ -4058,6 +4185,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 						gl.end = sd->glyphs[i].end;
 						gl.count = 1;
 						gl.font_rid = sd->glyphs[i].font_rid;
+						gl.span = sd->glyphs[i].span;
 						gl.font_size = sd->glyphs[i].font_size;
 						gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_VIRTUAL;
 						sd->glyphs.insert(i + sd->glyphs[i].count, gl); // Insert after.
@@ -4073,7 +4201,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 	return sd->justification_ops_valid;
 }
 
-TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size) {
+TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size, int p_span) {
 	hb_font_t *hb_font = _font_get_hb_handle(p_font, p_font_size);
 	ERR_FAIL_COND_V(hb_font == nullptr, TextServer::Glyph());
 
@@ -4097,6 +4225,7 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 	}
 
 	gl.font_rid = p_font;
+	gl.span = p_span;
 	gl.font_size = p_font_size;
 
 	if (glyph_count > 0) {
@@ -4132,6 +4261,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				gl.index = p_sd->text[i];
 				gl.font_size = fs;
 				gl.font_rid = RID();
+				gl.span = p_span;
 				if (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) {
 					gl.flags |= TextServer::GRAPHEME_IS_RTL;
 				}
@@ -4229,6 +4359,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 			gl.count = 0;
 
 			gl.font_rid = p_fonts[p_fb_index];
+			gl.span = p_span;
 			gl.font_size = fs;
 
 			gl.index = glyph_info[i].codepoint;

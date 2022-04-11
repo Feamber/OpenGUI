@@ -1,6 +1,6 @@
 set OGUIPath=J:\OpenGUI
-set UEOGUIPath=D:\7daysHD\Project\Plugins\UEOpenGUI\Source\ThirdParty\OGUICore
-set UEPluginPath=D:\7daysHD\Project\Plugins\UEOpenGUI\Source\UEOpenGUI
+set UEOGUIPath=F:\7daysHD\Project\Plugins\UEOpenGUI\Source\ThirdParty\OGUICore
+set UEPluginPath=F:\7daysHD\Project\Plugins\UEOpenGUI\Source\UEOpenGUI
 
 move %UEOGUIPath%\Public\OGUICore.h %UEOGUIPath%\OGUICore.h
 move %UEOGUIPath%\Private\OGUICore.cpp %UEOGUIPath%\OGUICore.cpp

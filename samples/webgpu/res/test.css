@@ -18,6 +18,10 @@
     font-family: TestFont;
     src: url(res/arial.ttf);
 }
+@font-face {
+    font-family: TestFont2;
+    src: url(res/Vera.ttf);
+}
 
 .Test{
     width: 20px;
@@ -65,8 +69,11 @@ TextElement{
     font-size:25;
     height:100%; width:100%; 
     color:black;
-    text-align: center;
+    text-align: justify;
     line-height: 120%;
+    text-decoration-line: line-through;
+    text-decoration-color: black;
+    text-justify: inter-ideograph;
     background-color: transparent;
     text-shadow: 3px 0px rgba(0,0,255,0.3), -3px 0px rgba(255,0,0,0.3);
 }
@@ -75,6 +82,12 @@ TextElement{
     font-family: TestFont;
     font-size:35;
     color:aqua;
+}
+
+#Child5 {
+    font-family: TestFont2;
+    font-size:25;
+    color:black;
 }
 
 #Child2 {

@@ -3,6 +3,8 @@
 #include "OpenGUI/Style2/Parse.h"
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Shadow.h"
+#include "OpenGUI/Text/TextTypes.h"
+#include <any>
 #include <string_view>
 
 
@@ -27,6 +29,8 @@ std::string_view OGUI::DrawValueParser::GetGrammar()
     static auto grammar = R"(
         TextShadow <- Length w Length w Color
         TextWeight <- 'normal' / 'bold' / Integer
+        TextDecorationLinePart <- 'none' / 'underline' / 'overline' / 'line-through'
+        TextDecorationLine <- TextDecorationLinePart (_ TextDecorationLinePart)*
     )";
     return grammar;
 }
@@ -46,5 +50,25 @@ void OGUI::DrawValueParser::SetupAction(peg::parser &parser)
             return (int)700;
         else
             return std::any_cast<int>(vs[0]);
+    };
+    parser["TextDecorationLinePart"] = [](SemanticValues& vs)
+    {
+        if(vs.choice() == 0)
+            return ETextDecorationLine::None;
+        else if (vs.choice() == 1)
+            return ETextDecorationLine::Underline;
+        else if (vs.choice() == 2)
+            return ETextDecorationLine::Overline;
+        else
+            return ETextDecorationLine::LineThrough;
+    };
+    parser["TextDecorationLine"] = [](SemanticValues& vs)
+    {
+        ETextDecorationLine value = ETextDecorationLine::None;
+        for(auto& v : vs)
+        {
+            value |= std::any_cast<ETextDecorationLine>(v);
+        }
+        return value;
     };
 }
