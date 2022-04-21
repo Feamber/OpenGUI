@@ -1028,7 +1028,6 @@ bool OGUI::VisualElement::_OnPointerDown(struct PointerDownEvent& event)
 	if(event.currentPhase == EventRoutePhase::Reach && focusable)
 	{
 		Context::Get().SetFocus(this);
-		return true;
 	}
 	return false;
 }
