@@ -1348,216 +1348,216 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 			}
 
 			// Get supported scripts from OS2 table.
-			TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(fd->face, FT_SFNT_OS2);
-			if (os2) {
-				if ((os2->ulUnicodeRange1 & 1L << 4) || (os2->ulUnicodeRange1 & 1L << 5) || (os2->ulUnicodeRange1 & 1L << 6) || (os2->ulUnicodeRange1 & 1L << 31) || (os2->ulUnicodeRange2 & 1L << 0) || (os2->ulUnicodeRange2 & 1L << 1) || (os2->ulUnicodeRange2 & 1L << 2) || (os2->ulUnicodeRange2 & 1L << 3) || (os2->ulUnicodeRange2 & 1L << 4) || (os2->ulUnicodeRange2 & 1L << 5) || (os2->ulUnicodeRange2 & 1L << 6) || (os2->ulUnicodeRange2 & 1L << 7) || (os2->ulUnicodeRange2 & 1L << 8) || (os2->ulUnicodeRange2 & 1L << 9) || (os2->ulUnicodeRange2 & 1L << 10) || (os2->ulUnicodeRange2 & 1L << 11) || (os2->ulUnicodeRange2 & 1L << 12) || (os2->ulUnicodeRange2 & 1L << 13) || (os2->ulUnicodeRange2 & 1L << 14) || (os2->ulUnicodeRange2 & 1L << 15) || (os2->ulUnicodeRange2 & 1L << 30) || (os2->ulUnicodeRange3 & 1L << 0) || (os2->ulUnicodeRange3 & 1L << 1) || (os2->ulUnicodeRange3 & 1L << 2) || (os2->ulUnicodeRange3 & 1L << 4) || (os2->ulUnicodeRange3 & 1L << 5) || (os2->ulUnicodeRange3 & 1L << 18) || (os2->ulUnicodeRange3 & 1L << 24) || (os2->ulUnicodeRange3 & 1L << 25) || (os2->ulUnicodeRange3 & 1L << 26) || (os2->ulUnicodeRange3 & 1L << 27) || (os2->ulUnicodeRange3 & 1L << 28) || (os2->ulUnicodeRange4 & 1L << 3) || (os2->ulUnicodeRange4 & 1L << 6) || (os2->ulUnicodeRange4 & 1L << 15) || (os2->ulUnicodeRange4 & 1L << 23) || (os2->ulUnicodeRange4 & 1L << 24) || (os2->ulUnicodeRange4 & 1L << 26)) {
+			TT_OS2 *os2_ = (TT_OS2 *)FT_Get_Sfnt_Table(fd->face, FT_SFNT_OS2);
+			if (os2_) {
+				if ((os2_->ulUnicodeRange1 & 1L << 4) || (os2_->ulUnicodeRange1 & 1L << 5) || (os2_->ulUnicodeRange1 & 1L << 6) || (os2_->ulUnicodeRange1 & 1L << 31) || (os2_->ulUnicodeRange2 & 1L << 0) || (os2_->ulUnicodeRange2 & 1L << 1) || (os2_->ulUnicodeRange2 & 1L << 2) || (os2_->ulUnicodeRange2 & 1L << 3) || (os2_->ulUnicodeRange2 & 1L << 4) || (os2_->ulUnicodeRange2 & 1L << 5) || (os2_->ulUnicodeRange2 & 1L << 6) || (os2_->ulUnicodeRange2 & 1L << 7) || (os2_->ulUnicodeRange2 & 1L << 8) || (os2_->ulUnicodeRange2 & 1L << 9) || (os2_->ulUnicodeRange2 & 1L << 10) || (os2_->ulUnicodeRange2 & 1L << 11) || (os2_->ulUnicodeRange2 & 1L << 12) || (os2_->ulUnicodeRange2 & 1L << 13) || (os2_->ulUnicodeRange2 & 1L << 14) || (os2_->ulUnicodeRange2 & 1L << 15) || (os2_->ulUnicodeRange2 & 1L << 30) || (os2_->ulUnicodeRange3 & 1L << 0) || (os2_->ulUnicodeRange3 & 1L << 1) || (os2_->ulUnicodeRange3 & 1L << 2) || (os2_->ulUnicodeRange3 & 1L << 4) || (os2_->ulUnicodeRange3 & 1L << 5) || (os2_->ulUnicodeRange3 & 1L << 18) || (os2_->ulUnicodeRange3 & 1L << 24) || (os2_->ulUnicodeRange3 & 1L << 25) || (os2_->ulUnicodeRange3 & 1L << 26) || (os2_->ulUnicodeRange3 & 1L << 27) || (os2_->ulUnicodeRange3 & 1L << 28) || (os2_->ulUnicodeRange4 & 1L << 3) || (os2_->ulUnicodeRange4 & 1L << 6) || (os2_->ulUnicodeRange4 & 1L << 15) || (os2_->ulUnicodeRange4 & 1L << 23) || (os2_->ulUnicodeRange4 & 1L << 24) || (os2_->ulUnicodeRange4 & 1L << 26)) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_COMMON);
 				}
-				if ((os2->ulUnicodeRange1 & 1L << 0) || (os2->ulUnicodeRange1 & 1L << 1) || (os2->ulUnicodeRange1 & 1L << 2) || (os2->ulUnicodeRange1 & 1L << 3) || (os2->ulUnicodeRange1 & 1L << 29)) {
+				if ((os2_->ulUnicodeRange1 & 1L << 0) || (os2_->ulUnicodeRange1 & 1L << 1) || (os2_->ulUnicodeRange1 & 1L << 2) || (os2_->ulUnicodeRange1 & 1L << 3) || (os2_->ulUnicodeRange1 & 1L << 29)) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_LATIN);
 				}
-				if ((os2->ulUnicodeRange1 & 1L << 7) || (os2->ulUnicodeRange1 & 1L << 30)) {
+				if ((os2_->ulUnicodeRange1 & 1L << 7) || (os2_->ulUnicodeRange1 & 1L << 30)) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_GREEK);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 8) {
+				if (os2_->ulUnicodeRange1 & 1L << 8) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_COPTIC);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 9) {
+				if (os2_->ulUnicodeRange1 & 1L << 9) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_CYRILLIC);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 10) {
+				if (os2_->ulUnicodeRange1 & 1L << 10) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_ARMENIAN);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 11) {
+				if (os2_->ulUnicodeRange1 & 1L << 11) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_HEBREW);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 12) {
+				if (os2_->ulUnicodeRange1 & 1L << 12) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_VAI);
 				}
-				if ((os2->ulUnicodeRange1 & 1L << 13) || (os2->ulUnicodeRange2 & 1L << 31) || (os2->ulUnicodeRange3 & 1L << 3)) {
+				if ((os2_->ulUnicodeRange1 & 1L << 13) || (os2_->ulUnicodeRange2 & 1L << 31) || (os2_->ulUnicodeRange3 & 1L << 3)) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_ARABIC);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 14) {
+				if (os2_->ulUnicodeRange1 & 1L << 14) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_NKO);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 15) {
+				if (os2_->ulUnicodeRange1 & 1L << 15) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_DEVANAGARI);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 16) {
+				if (os2_->ulUnicodeRange1 & 1L << 16) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_BENGALI);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 17) {
+				if (os2_->ulUnicodeRange1 & 1L << 17) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_GURMUKHI);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 18) {
+				if (os2_->ulUnicodeRange1 & 1L << 18) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_GUJARATI);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 19) {
+				if (os2_->ulUnicodeRange1 & 1L << 19) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_ORIYA);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 20) {
+				if (os2_->ulUnicodeRange1 & 1L << 20) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TAMIL);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 21) {
+				if (os2_->ulUnicodeRange1 & 1L << 21) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TELUGU);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 22) {
+				if (os2_->ulUnicodeRange1 & 1L << 22) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_KANNADA);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 23) {
+				if (os2_->ulUnicodeRange1 & 1L << 23) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_MALAYALAM);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 24) {
+				if (os2_->ulUnicodeRange1 & 1L << 24) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_THAI);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 25) {
+				if (os2_->ulUnicodeRange1 & 1L << 25) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_LAO);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 26) {
+				if (os2_->ulUnicodeRange1 & 1L << 26) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_GEORGIAN);
 				}
-				if (os2->ulUnicodeRange1 & 1L << 27) {
+				if (os2_->ulUnicodeRange1 & 1L << 27) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_BALINESE);
 				}
-				if ((os2->ulUnicodeRange1 & 1L << 28) || (os2->ulUnicodeRange2 & 1L << 20) || (os2->ulUnicodeRange2 & 1L << 24)) {
+				if ((os2_->ulUnicodeRange1 & 1L << 28) || (os2_->ulUnicodeRange2 & 1L << 20) || (os2_->ulUnicodeRange2 & 1L << 24)) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_HANGUL);
 				}
-				if ((os2->ulUnicodeRange2 & 1L << 21) || (os2->ulUnicodeRange2 & 1L << 22) || (os2->ulUnicodeRange2 & 1L << 23) || (os2->ulUnicodeRange2 & 1L << 26) || (os2->ulUnicodeRange2 & 1L << 27) || (os2->ulUnicodeRange2 & 1L << 29)) {
+				if ((os2_->ulUnicodeRange2 & 1L << 21) || (os2_->ulUnicodeRange2 & 1L << 22) || (os2_->ulUnicodeRange2 & 1L << 23) || (os2_->ulUnicodeRange2 & 1L << 26) || (os2_->ulUnicodeRange2 & 1L << 27) || (os2_->ulUnicodeRange2 & 1L << 29)) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_HAN);
 				}
-				if (os2->ulUnicodeRange2 & 1L << 17) {
+				if (os2_->ulUnicodeRange2 & 1L << 17) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_HIRAGANA);
 				}
-				if (os2->ulUnicodeRange2 & 1L << 18) {
+				if (os2_->ulUnicodeRange2 & 1L << 18) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_KATAKANA);
 				}
-				if (os2->ulUnicodeRange2 & 1L << 19) {
+				if (os2_->ulUnicodeRange2 & 1L << 19) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_BOPOMOFO);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 6) {
+				if (os2_->ulUnicodeRange3 & 1L << 6) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TIBETAN);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 7) {
+				if (os2_->ulUnicodeRange3 & 1L << 7) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_SYRIAC);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 8) {
+				if (os2_->ulUnicodeRange3 & 1L << 8) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_THAANA);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 9) {
+				if (os2_->ulUnicodeRange3 & 1L << 9) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_SINHALA);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 10) {
+				if (os2_->ulUnicodeRange3 & 1L << 10) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_MYANMAR);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 11) {
+				if (os2_->ulUnicodeRange3 & 1L << 11) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_ETHIOPIC);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 12) {
+				if (os2_->ulUnicodeRange3 & 1L << 12) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_CHEROKEE);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 13) {
+				if (os2_->ulUnicodeRange3 & 1L << 13) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_CANADIAN_SYLLABICS);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 14) {
+				if (os2_->ulUnicodeRange3 & 1L << 14) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_OGHAM);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 15) {
+				if (os2_->ulUnicodeRange3 & 1L << 15) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_RUNIC);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 16) {
+				if (os2_->ulUnicodeRange3 & 1L << 16) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_KHMER);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 17) {
+				if (os2_->ulUnicodeRange3 & 1L << 17) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_MONGOLIAN);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 19) {
+				if (os2_->ulUnicodeRange3 & 1L << 19) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_YI);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 20) {
+				if (os2_->ulUnicodeRange3 & 1L << 20) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_HANUNOO);
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TAGBANWA);
 					p_font_data->supported_scripts.insert(HB_SCRIPT_BUHID);
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TAGALOG);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 21) {
+				if (os2_->ulUnicodeRange3 & 1L << 21) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_OLD_ITALIC);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 22) {
+				if (os2_->ulUnicodeRange3 & 1L << 22) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_GOTHIC);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 23) {
+				if (os2_->ulUnicodeRange3 & 1L << 23) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_DESERET);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 29) {
+				if (os2_->ulUnicodeRange3 & 1L << 29) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_LIMBU);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 30) {
+				if (os2_->ulUnicodeRange3 & 1L << 30) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TAI_LE);
 				}
-				if (os2->ulUnicodeRange3 & 1L << 31) {
+				if (os2_->ulUnicodeRange3 & 1L << 31) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_NEW_TAI_LUE);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 0) {
+				if (os2_->ulUnicodeRange4 & 1L << 0) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_BUGINESE);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 1) {
+				if (os2_->ulUnicodeRange4 & 1L << 1) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_GLAGOLITIC);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 2) {
+				if (os2_->ulUnicodeRange4 & 1L << 2) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TIFINAGH);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 4) {
+				if (os2_->ulUnicodeRange4 & 1L << 4) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_SYLOTI_NAGRI);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 5) {
+				if (os2_->ulUnicodeRange4 & 1L << 5) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_LINEAR_B);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 7) {
+				if (os2_->ulUnicodeRange4 & 1L << 7) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_UGARITIC);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 8) {
+				if (os2_->ulUnicodeRange4 & 1L << 8) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_OLD_PERSIAN);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 9) {
+				if (os2_->ulUnicodeRange4 & 1L << 9) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_SHAVIAN);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 10) {
+				if (os2_->ulUnicodeRange4 & 1L << 10) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_OSMANYA);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 11) {
+				if (os2_->ulUnicodeRange4 & 1L << 11) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_CYPRIOT);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 12) {
+				if (os2_->ulUnicodeRange4 & 1L << 12) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_KHAROSHTHI);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 13) {
+				if (os2_->ulUnicodeRange4 & 1L << 13) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_TAI_VIET);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 14) {
+				if (os2_->ulUnicodeRange4 & 1L << 14) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_CUNEIFORM);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 16) {
+				if (os2_->ulUnicodeRange4 & 1L << 16) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_SUNDANESE);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 17) {
+				if (os2_->ulUnicodeRange4 & 1L << 17) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_LEPCHA);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 18) {
+				if (os2_->ulUnicodeRange4 & 1L << 18) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_OL_CHIKI);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 19) {
+				if (os2_->ulUnicodeRange4 & 1L << 19) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_SAURASHTRA);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 20) {
+				if (os2_->ulUnicodeRange4 & 1L << 20) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_KAYAH_LI);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 21) {
+				if (os2_->ulUnicodeRange4 & 1L << 21) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_REJANG);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 22) {
+				if (os2_->ulUnicodeRange4 & 1L << 22) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_CHAM);
 				}
-				if (os2->ulUnicodeRange4 & 1L << 25) {
+				if (os2_->ulUnicodeRange4 & 1L << 25) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_ANATOLIAN_HIEROGLYPHS);
 				}
 			}
@@ -4114,13 +4114,13 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 		if (U_FAILURE(err)) {
 			// No data - use fallback.
 			int limit = 0;
-			for (int i = 0; i < sd->text.length(); i++) {
-				if (is_whitespace(data[i])) {
-					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
+			for (int j = 0; j < sd->text.length(); j++) {
+				if (is_whitespace(data[j])) {
+					int ks = _generate_kashida_justification_opportunies(sd->text, limit, j) + sd->start;
 					if (ks != -1) {
 						jstops[ks] = true;
 					}
-					limit = i + 1;
+					limit = j + 1;
 				}
 			}
 			int ks = _generate_kashida_justification_opportunies(sd->text, limit, sd->text.length()) + sd->start;
@@ -4132,13 +4132,13 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 			while (ubrk_next(bi) != UBRK_DONE) {
 				//if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) 
 				{
-					int i = _convert_pos(sd, ubrk_current(bi)) - 1;
-					jstops[i + sd->start] = false;
-					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
+					int j = _convert_pos(sd, ubrk_current(bi)) - 1;
+					jstops[j + sd->start] = false;
+					int ks = _generate_kashida_justification_opportunies(sd->text, limit, j);
 					if (ks != -1) {
 						jstops[ks + sd->start] = true;
 					}
-					limit = i;
+					limit = j;
 				}
 			}
 			ubrk_close(bi);
@@ -4150,46 +4150,46 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 	sd->glyphs_logical.clear();
 
 	if (jstops.size() > 0) {
-		for (int i = 0; i < sd->glyphs.size(); i++) {
-			if (sd->glyphs[i].count > 0 && (sd->glyphs[i].flags & GRAPHEME_IS_VIRTUAL) == 0) {
-				if (jstops.has(sd->glyphs[i].start)) {
-					char32_t c = sd->text[sd->glyphs[i].start - sd->start];
+		for (int j = 0; j < sd->glyphs.size(); j++) {
+			if (sd->glyphs[j].count > 0 && (sd->glyphs[j].flags & GRAPHEME_IS_VIRTUAL) == 0) {
+				if (jstops.has(sd->glyphs[j].start)) {
+					char32_t c = sd->text[sd->glyphs[j].start - sd->start];
 					if (c == 0xfffc) {
 						continue;
 					}
-					if (jstops[sd->glyphs[i].start]) {
+					if (jstops[sd->glyphs[j].start]) {
 						if (c == 0x0640) {
-							sd->glyphs.data()[i].flags |= GRAPHEME_IS_ELONGATION;
+							sd->glyphs.data()[j].flags |= GRAPHEME_IS_ELONGATION;
 						} else {
-							if (sd->glyphs[i].font_rid != RID()) {
-								TextServer::Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size, i);
+							if (sd->glyphs[j].font_rid != RID()) {
+								TextServer::Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[j].font_rid, sd->glyphs[j].font_size, j);
 								if ((gl.flags & GRAPHEME_IS_VALID) == GRAPHEME_IS_VALID) {
-									gl.start = sd->glyphs[i].start;
-									gl.end = sd->glyphs[i].end;
+									gl.start = sd->glyphs[j].start;
+									gl.end = sd->glyphs[j].end;
 									gl.repeat = 0;
 									gl.count = 1;
 									if (sd->orientation == ORIENTATION_HORIZONTAL) {
-										gl.y_off = sd->glyphs[i].y_off;
+										gl.y_off = sd->glyphs[j].y_off;
 									} else {
-										gl.x_off = sd->glyphs[i].x_off;
+										gl.x_off = sd->glyphs[j].x_off;
 									}
 									gl.flags |= GRAPHEME_IS_ELONGATION | GRAPHEME_IS_VIRTUAL;
-									sd->glyphs.insert(i, gl);
-									i++;
+									sd->glyphs.insert(j, gl);
+									j++;
 								}
 							}
 						}
 					} else if (!is_whitespace(c)) {
 						TextServer::Glyph gl;
-						gl.start = sd->glyphs[i].start;
-						gl.end = sd->glyphs[i].end;
+						gl.start = sd->glyphs[j].start;
+						gl.end = sd->glyphs[j].end;
 						gl.count = 1;
-						gl.font_rid = sd->glyphs[i].font_rid;
-						gl.span = sd->glyphs[i].span;
-						gl.font_size = sd->glyphs[i].font_size;
+						gl.font_rid = sd->glyphs[j].font_rid;
+						gl.span = sd->glyphs[j].span;
+						gl.font_size = sd->glyphs[j].font_size;
 						gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_VIRTUAL;
-						sd->glyphs.insert(i + sd->glyphs[i].count, gl); // Insert after.
-						i += sd->glyphs[i].count;
+						sd->glyphs.insert(j + sd->glyphs[j].count, gl); // Insert after.
+						j += sd->glyphs[j].count;
 						continue;
 					}
 				}
