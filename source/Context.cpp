@@ -395,10 +395,21 @@ bool OGUI::Context::OnMouseUp(const OGUI::WindowHandle window, EMouseKey button,
 
 bool OGUI::Context::OnMouseDoubleClick(const OGUI::WindowHandle window, EMouseKey button, float x, float y)
 {
+	int32 windowWidth = window->GetWidth(), windowHeight =  window->GetHeight();
 	_windowUnderCursor = window;
-	//auto root = GetWindowContext(window).GetWindowUI();
-	//std::cout << "OnMouseDoubleClick: " << x << "," << y << std::endl;
-	return false;
+	auto point = Vector2f(x, windowHeight - y) - Vector2f(windowWidth, windowHeight) / 2; // center of the window
+	auto picked = PickElement(window, point);
+	UpdateHover(picked);
+	if(!picked)
+		return false;
+		
+	YGNodeLayoutGetHadOverflow(picked->_ygnode); 
+	PointerDoubleClickEvent event;
+	event.pointerType = u"mouse";
+	event.button = button;
+	event.gestureType = EGestureEvent::None;
+	event.position = point;
+	return RouteEvent(picked, event);
 }
 
 bool OGUI::Context::OnMouseMove(const OGUI::WindowHandle window, float x, float y, float relativeMotionX, float relativeMotionY)
