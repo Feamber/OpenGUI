@@ -4,6 +4,21 @@
 
 namespace OGUI
 {
+    const Name& GetEventName(type_t<OGUI::AnimStartEvent>) 
+    {
+        static Name name = "anim-start";
+        return name;
+    };
+    const Name& GetEventName(type_t<OGUI::AnimEndEvent>) 
+    {
+        static Name name = "anim-end";
+        return name;
+    };
+    const Name& GetEventName(type_t<OGUI::AnimStopEvent>) 
+    {
+        static Name name = "anim-stop";
+        return name;
+    };
     const Name& GetEventName(type_t<OGUI::PreGotKeyboardFocusEvent>) 
     {
         static Name name = "pre-got-keyboard-focus";
@@ -44,26 +59,6 @@ namespace OGUI
         static Name name = "lost-focus";
         return name;
     };
-    const Name& GetEventName(type_t<OGUI::PreDetachEvent>) 
-    {
-        static Name name = "pre-detach";
-        return name;
-    };
-    const Name& GetEventName(type_t<OGUI::PreAttachEvent>) 
-    {
-        static Name name = "pre-attach";
-        return name;
-    };
-    const Name& GetEventName(type_t<OGUI::PostDetachEvent>) 
-    {
-        static Name name = "post-detach";
-        return name;
-    };
-    const Name& GetEventName(type_t<OGUI::PostAttachEvent>) 
-    {
-        static Name name = "post-attach";
-        return name;
-    };
     const Name& GetEventName(type_t<OGUI::KeyDownEvent>) 
     {
         static Name name = "key-down";
@@ -77,6 +72,16 @@ namespace OGUI
     const Name& GetEventName(type_t<OGUI::KeyHoldEvent>) 
     {
         static Name name = "key-hold";
+        return name;
+    };
+    const Name& GetEventName(type_t<OGUI::KeyAnalogInputEvent>) 
+    {
+        static Name name = "key-analog-input";
+        return name;
+    };
+    const Name& GetEventName(type_t<OGUI::KeyDownNavigationPostEvent>) 
+    {
+        static Name name = "key-down-navigation-post";
         return name;
     };
     const Name& GetEventName(type_t<OGUI::PointerDownEvent>) 
@@ -134,19 +139,24 @@ namespace OGUI
         static Name name = "touch-pressure-change";
         return name;
     };
-    const Name& GetEventName(type_t<OGUI::AnimStartEvent>) 
+    const Name& GetEventName(type_t<OGUI::PreDetachEvent>) 
     {
-        static Name name = "anim-start";
+        static Name name = "pre-detach";
         return name;
     };
-    const Name& GetEventName(type_t<OGUI::AnimEndEvent>) 
+    const Name& GetEventName(type_t<OGUI::PreAttachEvent>) 
     {
-        static Name name = "anim-end";
+        static Name name = "pre-attach";
         return name;
     };
-    const Name& GetEventName(type_t<OGUI::AnimStopEvent>) 
+    const Name& GetEventName(type_t<OGUI::PostDetachEvent>) 
     {
-        static Name name = "anim-stop";
+        static Name name = "post-detach";
+        return name;
+    };
+    const Name& GetEventName(type_t<OGUI::PostAttachEvent>) 
+    {
+        static Name name = "post-attach";
         return name;
     };
 }

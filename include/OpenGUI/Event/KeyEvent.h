@@ -16,4 +16,9 @@ namespace OGUI full_reflect
     KeyDownEvent : KeyData {};
     struct OGUI_API KeyUpEvent : KeyData {};
     struct OGUI_API KeyHoldEvent : KeyData {};
+    struct OGUI_API KeyAnalogInputEvent : KeyData
+    {
+        float analogValue = 0.f;
+    };
+    struct OGUI_API KeyDownNavigationPostEvent : KeyData {};
 }

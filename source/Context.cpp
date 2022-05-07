@@ -483,19 +483,26 @@ bool OGUI::Context::OnKeyDown(const OGUI::WindowHandle window, EKeyCode keyCode)
 		{
 			if(std::find(keyNavigation_Up.begin(), keyNavigation_Up.end(), keyCode) != keyNavigation_Up.end())
 			{
-				return OnKeyNavigation(_keyboardFocused, ENavDirection::Up);
+				result = OnKeyNavigation(_keyboardFocused, ENavDirection::Up);
 			}
 			else if(std::find(keyNavigation_Down.begin(), keyNavigation_Down.end(), keyCode) != keyNavigation_Down.end())
 			{
-				return OnKeyNavigation(_keyboardFocused, ENavDirection::Down);
+				result = OnKeyNavigation(_keyboardFocused, ENavDirection::Down);
 			}
 			else if(std::find(keyNavigation_Left.begin(), keyNavigation_Left.end(), keyCode) != keyNavigation_Left.end())
 			{
-				return OnKeyNavigation(_keyboardFocused, ENavDirection::Left);
+				result = OnKeyNavigation(_keyboardFocused, ENavDirection::Left);
 			}
 			else if(std::find(keyNavigation_Right.begin(), keyNavigation_Right.end(), keyCode) != keyNavigation_Right.end())
 			{
-				return OnKeyNavigation(_keyboardFocused, ENavDirection::Right);
+				result = OnKeyNavigation(_keyboardFocused, ENavDirection::Right);
+			}
+
+			if(!result)
+			{
+				KeyDownNavigationPostEvent ePost;
+				ePost.key = keyCode;
+				result = RouteEvent(_keyboardFocused, ePost);
 			}
 		}
 		return result;
@@ -512,6 +519,22 @@ bool OGUI::Context::OnKeyUp(const OGUI::WindowHandle window, EKeyCode keyCode)
 
 	KeyUpEvent e;
 	e.key = keyCode;
+
+	if (_keyboardFocused)
+		return RouteEvent(_keyboardFocused, e);
+
+	return false;
+}
+
+bool OGUI::Context::OnAnalogValueChanged(const WindowHandle window, EKeyCode keyCode, float analogValue)
+{
+	auto root = GetWindowContext(window).GetWindowUI();
+	if (!root)
+		return false;
+
+	KeyAnalogInputEvent e;
+	e.key = keyCode;
+	e.analogValue = analogValue;
 
 	if (_keyboardFocused)
 		return RouteEvent(_keyboardFocused, e);

@@ -60,10 +60,10 @@ namespace OGUI reflect
 		bool IsElementValid(VisualElement*) const;
 
 #pragma region FocusNavigation
-		std::vector<EKeyCode> keyNavigation_Up {EKeyCode::W, EKeyCode::Up};
-		std::vector<EKeyCode> keyNavigation_Down {EKeyCode::S, EKeyCode::Down};
-		std::vector<EKeyCode> keyNavigation_Left {EKeyCode::A, EKeyCode::Left};
-		std::vector<EKeyCode> keyNavigation_Right {EKeyCode::D, EKeyCode::Right};
+		std::vector<EKeyCode> keyNavigation_Up {EKeyCode::W, EKeyCode::Up, EKeyCode::Gamepad_LeftStick_Up};
+		std::vector<EKeyCode> keyNavigation_Down {EKeyCode::S, EKeyCode::Down, EKeyCode::Gamepad_LeftStick_Down};
+		std::vector<EKeyCode> keyNavigation_Left {EKeyCode::A, EKeyCode::Left, EKeyCode::Gamepad_LeftStick_Left};
+		std::vector<EKeyCode> keyNavigation_Right {EKeyCode::D, EKeyCode::Right, EKeyCode::Gamepad_LeftStick_Right};
 
 		bool OnKeyNavigation(VisualElement* element, ENavDirection direction);
 #pragma endregion
@@ -141,6 +141,7 @@ namespace OGUI reflect
 
 		bool OnKeyDown(const WindowHandle window, EKeyCode keyCode);
 		bool OnKeyUp(const WindowHandle window, EKeyCode keyCode);
+		bool OnAnalogValueChanged(const WindowHandle window, EKeyCode keyCode, float analogValue);
 
 		void OnActivateWindow(const WindowHandle window);
 			

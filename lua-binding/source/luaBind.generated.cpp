@@ -1,19 +1,19 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Core/Types.h"
-#include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Style2/generated/text.h"
-#include "OpenGUI/Bind/EventArg.h"
-#include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Style2/generated/border.h"
 #include "OpenGUI/Context.h"
-#include "OpenGUI/Style2/generated/effects.h"
+#include "OpenGUI/Core/Types.h"
+#include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/Text/TextElement.h"
-#include "OpenGUI/Style2/generated/background.h"
 #include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Text/TextElement.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/Style2/Selector.h"
 #include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Style2/generated/effects.h"
+#include "OpenGUI/VisualElement.h"
+#include "OpenGUI/Style2/generated/background.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -274,6 +274,14 @@ void BindLua_generated(lua_State* L)
     OGUI["SetStyleTextAlign"] = (void(*)(OGUI::VisualElement *, const OGUI::ETextAlign &))&OGUI::SetStyleTextAlign;
     OGUI["ResetStyleTextAlign"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextAlign;
     OGUI["ResetStyleTextShadow"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextShadow;
+    OGUI["SetStyleTextDecorationColor"] = (void(*)(OGUI::VisualElement *, const OGUI::Vector<float, 4> &))&OGUI::SetStyleTextDecorationColor;
+    OGUI["ResetStyleTextDecorationColor"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextDecorationColor;
+    OGUI["SetStyleTextDecorationLine"] = (void(*)(OGUI::VisualElement *, const OGUI::ETextDecorationLine &))&OGUI::SetStyleTextDecorationLine;
+    OGUI["ResetStyleTextDecorationLine"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextDecorationLine;
+    OGUI["SetStyleTextDecorationThickness"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleTextDecorationThickness;
+    OGUI["ResetStyleTextDecorationThickness"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextDecorationThickness;
+    OGUI["SetStyleTextJustify"] = (void(*)(OGUI::VisualElement *, const OGUI::ETextJustify &))&OGUI::SetStyleTextJustify;
+    OGUI["ResetStyleTextJustify"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextJustify;
     OGUI.new_enum<int>("ENavMode", {
         {"None", 0},
         {"Horizontal", 1},

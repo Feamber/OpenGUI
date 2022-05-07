@@ -15,6 +15,54 @@ bool OGUI::TryGet(const OGUI::EventBase& event, ostr::string_view name, OGUI::Me
     }
     return true;
 }
+bool OGUI::TryGet(const OGUI::AnimEventData& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    if(TryGet((const OGUI::EventBase&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("animName") out = event.animName; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::AnimStartEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"anim-start";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::AnimEventData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::AnimEndEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"anim-end";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::AnimEventData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::AnimStopEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"anim-stop";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::AnimEventData&)event, name, out))
+        return true;
+    return false;
+}
 bool OGUI::TryGet(const OGUI::FocusDataBase& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
     if(TryGet((const OGUI::EventBase&)event, name, out))
@@ -176,80 +224,6 @@ bool OGUI::TryGet(const OGUI::LostFocusEvent& event, ostr::string_view name, OGU
         return true;
     return false;
 }
-bool OGUI::TryGet(const OGUI::PreDetachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
-{
-    static ostr::string_view eventName = u"pre-detach";
-    if(name == ostr::string_view(u"eventName"))
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::EventBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("prevParent") out = event.prevParent; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::PreAttachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
-{
-    static ostr::string_view eventName = u"pre-attach";
-    if(name == ostr::string_view(u"eventName"))
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::EventBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("prevParent") out = event.prevParent; break;
-        casestr("nextParent") out = event.nextParent; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::PostDetachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
-{
-    static ostr::string_view eventName = u"post-detach";
-    if(name == ostr::string_view(u"eventName"))
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::EventBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("prevParent") out = event.prevParent; break;
-        default:
-            return false;
-    }
-    return true;
-}
-bool OGUI::TryGet(const OGUI::PostAttachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
-{
-    static ostr::string_view eventName = u"post-attach";
-    if(name == ostr::string_view(u"eventName"))
-    {
-        out = eventName;
-        return true;
-    }
-    if(TryGet((const OGUI::EventBase&)event, name, out))
-        return true;
-    switchstr(name)
-    {
-        casestr("prevParent") out = event.prevParent; break;
-        casestr("nextParent") out = event.nextParent; break;
-        default:
-            return false;
-    }
-    return true;
-}
 bool OGUI::TryGet(const OGUI::KeyData& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
     if(TryGet((const OGUI::EventBase&)event, name, out))
@@ -290,6 +264,36 @@ bool OGUI::TryGet(const OGUI::KeyUpEvent& event, ostr::string_view name, OGUI::M
 bool OGUI::TryGet(const OGUI::KeyHoldEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
     static ostr::string_view eventName = u"key-hold";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::KeyData&)event, name, out))
+        return true;
+    return false;
+}
+bool OGUI::TryGet(const OGUI::KeyAnalogInputEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"key-analog-input";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
+    if(TryGet((const OGUI::KeyData&)event, name, out))
+        return true;
+    switchstr(name)
+    {
+        casestr("analogValue") out = event.analogValue; break;
+        default:
+            return false;
+    }
+    return true;
+}
+bool OGUI::TryGet(const OGUI::KeyDownNavigationPostEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+{
+    static ostr::string_view eventName = u"key-down-navigation-post";
     if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
@@ -456,51 +460,77 @@ bool OGUI::TryGet(const OGUI::TouchPressureChangeEvent& event, ostr::string_view
         return true;
     return false;
 }
-bool OGUI::TryGet(const OGUI::AnimEventData& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::PreDetachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
+    static ostr::string_view eventName = u"pre-detach";
+    if(name == ostr::string_view(u"eventName"))
+    {
+        out = eventName;
+        return true;
+    }
     if(TryGet((const OGUI::EventBase&)event, name, out))
         return true;
     switchstr(name)
     {
-        casestr("animName") out = event.animName; break;
+        casestr("prevParent") out = event.prevParent; break;
         default:
             return false;
     }
     return true;
 }
-bool OGUI::TryGet(const OGUI::AnimStartEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::PreAttachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
-    static ostr::string_view eventName = u"anim-start";
+    static ostr::string_view eventName = u"pre-attach";
     if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
         return true;
     }
-    if(TryGet((const OGUI::AnimEventData&)event, name, out))
+    if(TryGet((const OGUI::EventBase&)event, name, out))
         return true;
-    return false;
+    switchstr(name)
+    {
+        casestr("prevParent") out = event.prevParent; break;
+        casestr("nextParent") out = event.nextParent; break;
+        default:
+            return false;
+    }
+    return true;
 }
-bool OGUI::TryGet(const OGUI::AnimEndEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::PostDetachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
-    static ostr::string_view eventName = u"anim-end";
+    static ostr::string_view eventName = u"post-detach";
     if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
         return true;
     }
-    if(TryGet((const OGUI::AnimEventData&)event, name, out))
+    if(TryGet((const OGUI::EventBase&)event, name, out))
         return true;
-    return false;
+    switchstr(name)
+    {
+        casestr("prevParent") out = event.prevParent; break;
+        default:
+            return false;
+    }
+    return true;
 }
-bool OGUI::TryGet(const OGUI::AnimStopEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
+bool OGUI::TryGet(const OGUI::PostAttachEvent& event, ostr::string_view name, OGUI::Meta::ValueRef& out)
 {
-    static ostr::string_view eventName = u"anim-stop";
+    static ostr::string_view eventName = u"post-attach";
     if(name == ostr::string_view(u"eventName"))
     {
         out = eventName;
         return true;
     }
-    if(TryGet((const OGUI::AnimEventData&)event, name, out))
+    if(TryGet((const OGUI::EventBase&)event, name, out))
         return true;
-    return false;
+    switchstr(name)
+    {
+        casestr("prevParent") out = event.prevParent; break;
+        casestr("nextParent") out = event.nextParent; break;
+        default:
+            return false;
+    }
+    return true;
 }

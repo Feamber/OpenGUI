@@ -32,7 +32,7 @@ def GetInclude(path):
     return path.replace("\\", "/").rsplit("include/", 1)[-1]
 
 def main():
-    meta = json.load(open(os.path.join(BASE, "../build/meta.json")))
+    meta = json.load(open(os.path.join(BASE, "../build/meta.json"),'r',encoding='UTF-8'))
     db = Binding()
     for key, value in meta["records"].items():
         attr = value["attrs"]
