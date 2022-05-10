@@ -411,10 +411,14 @@ void OGUI::VisualElement::DestoryTree(VisualElement* element)
 
 void OGUI::VisualElement::UpdateRoot(VisualElement* child)
 {
-	child->_root = GetRoot();
 	if(child->_layoutType == _layoutType)
 		child->_layoutRoot = GetLayoutRoot();
-	for(auto grandson : child->_children)
+	else
+		child->_layoutRoot = this;
+	child->_root = GetRoot();
+	std::vector<VisualElement*> children;
+	child->GetChildren(children);
+	for(auto grandson : children)
 		child->UpdateRoot(grandson);
 }
 

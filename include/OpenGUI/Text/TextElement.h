@@ -37,6 +37,7 @@ namespace OGUI reflect
 
         //TODO: insertion api
         void AddInlineElement(VisualElement* element);
+        attr("script":true)
         void AddInlineText(TextElement* text);
         attr("script":true)
         void AddText(ostr::string text);

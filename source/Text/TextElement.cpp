@@ -46,7 +46,7 @@ namespace OGUI
     class TextElementGlyphDraw : public godot::TextServer::GlyphDrawPolicy
     {
         public:
-        TextElement* root;
+        TextElement* owner;
         Color4f color = Color4f::vector_one();
         std::vector<TextShadow> shadows;
         bool noGamma = true;
@@ -56,6 +56,7 @@ namespace OGUI
             auto rect = inRect;
             auto uv = inUv;
             auto finalcolor = color * inColor;
+            auto root = owner->_layoutType != LayoutType::Inline ? owner : (TextElement*)owner->GetLayoutRoot();
             if(root->currShadowPass != -1)
             {
                 if(shadows.size() <= root->currShadowPass)
@@ -218,7 +219,6 @@ namespace OGUI
         _inlines.push_back(InlineType{text});
         text->_layoutType = LayoutType::Inline;
         text->_physicalParent = this;
-        text->_drawPolicy->root = this;
         UpdateRoot(text);
         _paragraphDirty = true;
         {
@@ -253,6 +253,23 @@ namespace OGUI
 
     void TextElement::ClearText()
     {
+        for(auto& inl : _inlines)
+        {
+            std::visit(overloaded
+            {
+                [&](VisualElement*& child) 
+                { 
+                    delete child;
+                },
+                [&](TextElement*& child) 
+                { 
+                    delete child;
+                },
+                [&](auto& Bind) 
+                { 
+                }
+            }, inl);
+        }
         _inlines.clear();
         _paragraphDirty = true;
     }
@@ -573,11 +590,12 @@ namespace OGUI
         YGNodeSetMeasureFunc(_ygnode, MeasureText);
         YGNodeSetBaselineFunc(_ygnode, BaselineText);
         _drawPolicy = std::make_shared<TextElementGlyphDraw>();
-        _drawPolicy->root = this;
+        _drawPolicy->owner = this;
     }
 
     TextElement::~TextElement()
     {
+        ClearText();
         if(_paragraph)
             delete _paragraph;
     }

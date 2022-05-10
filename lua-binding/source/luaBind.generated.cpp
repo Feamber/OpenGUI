@@ -1,19 +1,19 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Style2/generated/border.h"
-#include "OpenGUI/Context.h"
-#include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Style2/generated/text.h"
-#include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/Bind/Bind.h"
-#include "OpenGUI/Text/TextElement.h"
-#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Style2/generated/effects.h"
 #include "OpenGUI/Event/FocusEvent.h"
 #include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Style2/generated/text.h"
+#include "OpenGUI/Bind/Bind.h"
+#include "OpenGUI/Style2/generated/position.h"
+#include "OpenGUI/Text/TextElement.h"
+#include "OpenGUI/Style2/generated/border.h"
+#include "OpenGUI/Bind/EventArg.h"
 #include "OpenGUI/Event/EventBase.h"
-#include "OpenGUI/Style2/generated/effects.h"
+#include "OpenGUI/Context.h"
 #include "OpenGUI/VisualElement.h"
-#include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Core/Types.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -77,6 +77,7 @@ void BindLua_generated(lua_State* L)
     {
         sol::usertype<OGUI::TextElement> type = 
             OGUI.new_usertype<OGUI::TextElement>("TextElement", sol::base_classes, sol::bases<OGUI::VisualElement>());
+        type["AddInlineText"] = (void(OGUI::TextElement::*)(OGUI::TextElement *))&OGUI::TextElement::AddInlineText;
         type["AddText"] = (void(OGUI::TextElement::*)(ostr::string))&OGUI::TextElement::AddText;
         type["ClearText"] = (void(OGUI::TextElement::*)())&OGUI::TextElement::ClearText;
         type["GetParent"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetParent;

@@ -644,6 +644,18 @@ void OGUI::BindLua(lua_State* state)
 		auto ve = asset->Instantiate(InstantState);
         return ve;
     };
+    OGUI["ParseXmlString"] = +[](std::string xmlString) -> OGUI::VisualElement*
+    {
+        OGUI::ParseXmlState xmlState;
+        auto asset = OGUI::ParseXml(xmlString.c_str(), xmlState);
+        if(asset)
+        {
+            OGUI::InstantiateXmlState InstantState;
+            auto ve = asset->Instantiate(InstantState);
+            return ve;
+        }
+        return nullptr;
+    };
     OGUI["CastTextElement"] = +[](VisualElement* target) -> OGUI::TextElement*
     {
         if(target->IsA(u"TextElement"))
