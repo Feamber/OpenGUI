@@ -393,11 +393,14 @@ void OGUI::VisualElement::SetName(ostr::string_view name)
 void OGUI::VisualElement::DestoryTree(VisualElement* element)
 {
 	std::vector<VisualElement*> toDestroy;
+	std::vector<VisualElement*> children;
 	toDestroy.push_back(element);
 	while (toDestroy.size() > 0)
 	{
 		auto back = toDestroy.back(); toDestroy.pop_back();
-		for (auto child : back->_children)
+		children.clear();
+		back->GetChildren(children);
+		for (auto child : children)
 		{
 			child->_logicalParent = child->_physicalParent = nullptr;
 			toDestroy.push_back(child);

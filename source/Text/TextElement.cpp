@@ -595,7 +595,6 @@ namespace OGUI
 
     TextElement::~TextElement()
     {
-        ClearText();
         if(_paragraph)
             delete _paragraph;
     }
