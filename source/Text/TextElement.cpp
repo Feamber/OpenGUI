@@ -259,11 +259,11 @@ namespace OGUI
             {
                 [&](VisualElement*& child) 
                 { 
-                    delete child;
+                    DestoryTree(child);
                 },
                 [&](TextElement*& child) 
                 { 
-                    delete child;
+                    DestoryTree(child);
                 },
                 [&](auto& Bind) 
                 { 

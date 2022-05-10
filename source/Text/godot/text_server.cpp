@@ -848,14 +848,16 @@ void TextServer::shaped_text_draw(RID p_shaped, OGUI::PrimDrawContext& list, con
 	{
 		nvgMoveTo(list.nvg, so_start.x, -so_start.y - spos);
 		nvgLineTo(list.nvg, ofs.x, -ofs.y - spos);
-		nvgStrokeColor(list.nvg, nvgRGBAf(ul_data.decorationColor.r, ul_data.decorationColor.g, ul_data.decorationColor.b, ul_data.decorationColor.a));
+		auto dcolor = p_color * ul_data.decorationColor;
+		nvgStrokeColor(list.nvg, nvgRGBAf(dcolor.r, dcolor.g, dcolor.b, dcolor.a));
 		nvgStrokeWidth(list.nvg, sthk * ul_data.decorationThickness);
 	};
 	auto drawUnderline = [&]
 	{
 		nvgMoveTo(list.nvg, ul_start.x, -ul_start.y - underline_off);
 		nvgLineTo(list.nvg, ofs.x, -ofs.y - underline_off);
-		nvgStrokeColor(list.nvg, nvgRGBAf(ul_data.decorationColor.r, ul_data.decorationColor.g, ul_data.decorationColor.b, ul_data.decorationColor.a));
+		auto dcolor = p_color * ul_data.decorationColor;
+		nvgStrokeColor(list.nvg, nvgRGBAf(dcolor.r, dcolor.g, dcolor.b, dcolor.a));
 		nvgStrokeWidth(list.nvg, underline_width * ul_data.decorationThickness);
 	};
 
