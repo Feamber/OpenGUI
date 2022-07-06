@@ -191,6 +191,7 @@ namespace OGUI reflect
 		RestyleDamage ApplyProcedureStyle();
 		using StyleOverridingFunc = std::function<RestyleDamage()>;
 		std::vector<StyleOverridingFunc> _styleOverriding;
+		attr("script":true)
 		bool ContainClass(ostr::string_view c);
 		void _ResetStyles();
 		void ResetStyles();

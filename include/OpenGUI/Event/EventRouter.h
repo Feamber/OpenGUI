@@ -7,6 +7,17 @@
 namespace OGUI
 {
     template<class T>
+    bool SendElementEvent(VisualElement* element, VisualElement* target, T& event)
+    {
+        bool handled = false;
+        static Name rawEvent("RawEvent");
+        if(auto eventBind = element->GetEventBind(GetEventName<T>()))
+            handled |= SendEvent(*element, *eventBind, event, MakeEventArg("element", element), MakeEventArg("target", target));
+        handled |= SendEvent(*element, rawEvent, event, MakeEventArg("element", element), MakeEventArg("target", target));
+        return handled;
+    }
+
+    template<class T>
     bool BroadcastEvent(VisualElement* element, T& event)
     {
         bool ghandled = false;
@@ -15,8 +26,7 @@ namespace OGUI
             if (next->_isPseudoElement)
                 return;
             bool handled = false;
-            if(auto eventBind = next->GetEventBind(GetEventName<T>()))
-				handled |= SendEvent(*next, *eventBind, event, MakeEventArg("element", next), MakeEventArg("target", element));
+            handled |= SendElementEvent(next, element, event);
             handled |= next->_eventHandler.Handle(event);
             ghandled |= handled;
             if(handled)
@@ -58,8 +68,7 @@ namespace OGUI
             {
                 auto& element = routePath[i];
                 bool handled = false;
-                if(auto eventBind = element->GetEventBind(GetEventName<T>()))
-					handled |= SendEvent(*element, *eventBind, event, MakeEventArg("element", element), MakeEventArg("target", target));
+                handled |= SendElementEvent(element, target, event);
                 handled |= element->_eventHandler.Handle(event);
                 if(handled)
                     return true;
@@ -69,14 +78,13 @@ namespace OGUI
         if (currentPhase == EventRoutePhase::Reach)
         {
             bool handled = false;
-            if(auto eventBind = target->GetEventBind(GetEventName<T>()))
-				handled |= SendEvent(*target, *eventBind, event, MakeEventArg("element", target), MakeEventArg("target", target));
+            
+            handled |= SendElementEvent(target, target, event);
             handled |= target->_eventHandler.Handle(event);
             if (target->_rerouteEvent)
                 if (auto parent = target->GetParent())
                 {
-                    if(auto eventBind = parent->GetEventBind(GetEventName<T>()))
-					    handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent), MakeEventArg("target", target));
+                    handled |= SendElementEvent(parent, target, event);
                     handled |= parent->_eventHandler.Handle(event);
                 }
             if(handled)
@@ -94,8 +102,7 @@ namespace OGUI
             for(auto parent : routePath)
             {
                 bool handled = false;
-                if(auto eventBind = parent->GetEventBind(GetEventName<T>()))
-					handled |= SendEvent(*parent, *eventBind, event, MakeEventArg("element", parent), MakeEventArg("target", target));
+                handled |= SendElementEvent(parent, target, event);
                 handled |= parent->_eventHandler.Handle(event);
                 if(handled)
                         return true;
