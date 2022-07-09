@@ -168,8 +168,8 @@ static void nvg__renderPath(OGUI::PrimDrawContext* dc, const NVGpath& path, NVGp
 {
     using namespace OGUI;
     Vector2f extend{paint->extent[0], paint->extent[1]};
-    auto& vertices = dc->prims.vertices;
-    auto& indices = dc->prims.indices;
+    auto& vertices = dc->current->vertices;
+    auto& indices = dc->current->indices;
     auto push_vertex = [&](const NVGvertex& nv)
     {
         Vertex v;
@@ -230,11 +230,11 @@ static void nvg__renderFill(void* uptr, NVGpaint* paint, NVGcompositeOperationSt
     //fast path
     if(npaths == 1 && paths[0].convex) 
     {
-        auto& command = dc->prims.GetCommand(resource);
-        auto begin = dc->prims.indices.size();
+        auto& command = dc->current->GetCommand(resource);
+        auto begin = dc->current->indices.size();
         for(int i=0; i<npaths; ++i)
             nvg__renderPath(dc, paths[i], paint, invTransform, 1.f);
-        command.element_count += dc->prims.indices.size()-begin;
+        command.element_count += dc->current->indices.size()-begin;
     }
     //slow path
     else 
@@ -255,8 +255,8 @@ static void nvg__renderStroke(void* uptr, NVGpaint* paint, NVGcompositeOperation
     resource.noGamma = paint->noGamma;
     auto invTransform = nvg__getMatrix(paint);
     //fast path
-    auto& command = dc->prims.GetCommand(resource);
-    auto& indices = dc->prims.indices;
+    auto& command = dc->current->GetCommand(resource);
+    auto& indices = dc->current->indices;
     auto begin = indices.size();
     float aa = (fringe*0.5f + strokeWidth*0.5f) / fringe;
     for(int i=0; i<npaths; ++i)
@@ -276,26 +276,31 @@ namespace OGUI
         return p;
     }
 
-    OGUI_API void BeginDraw(PrimDrawList& list)
+    void PrimDrawContext::BeginDraw()
     {
+        PrimDrawList& list = *current;
         list.beginCount = list.vertices.size();
     }
 
-    OGUI_API void EndDraw(PrimDrawList& list,
-        const float4x4& transform)
+    void PrimDrawContext::EndDraw(
+        const float4x4& inTransform)
     {
+        PrimDrawList& list = *current;
         int count = list.vertices.size();
+        float4x4 transform = inTransform;
+        if(inverseTransform)
+            transform = math::multiply(transform, *inverseTransform);
         for (int i = list.beginCount; i < count; ++i)
         {
             auto& vertex = list.vertices[i];
             vertex.position = Transform(vertex.position, transform);
-            if(!list.clipStack.empty())
+            if(!clipStack.empty())
             {
-                auto& back = list.clipStack.back();
+                auto& back = clipStack.back();
                 vertex.clipUV = Transform(vertex.position, back);
-                if(list.clipStack.size() > 1)
+                if(clipStack.size() > 1)
                 {
-                    auto& back2 = list.clipStack[list.clipStack.size() - 2];
+                    auto& back2 = clipStack[clipStack.size() - 2];
                     vertex.clipUV2 = Transform(vertex.position, back2);
                 }
             }
@@ -340,10 +345,9 @@ namespace OGUI
         params.edgeAntiAlias = true;
 
         nvg = nvgCreateInternal(&params);
-        
     }
-    
-	PrimDrawContext::~PrimDrawContext()
+
+    PrimDrawContext::~PrimDrawContext()
     {
         nvgDeleteInternal(nvg);
     }

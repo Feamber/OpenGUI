@@ -1171,7 +1171,7 @@ void TextServer::GlyphDrawPolicy::drawQuad(OGUI::PrimDrawContext& list, const OG
 	resource.texture = texture;
 	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
 	resource.noGamma = noGamma;
-	OGUI::BoxShape(list.prims, resource, rect, uv, color);
+	OGUI::BoxShape(*list.current, resource, rect, uv, color);
 }
 
 
@@ -1183,5 +1183,5 @@ void TextServer::canvas_item_add_rect(OGUI::PrimDrawContext& list, const Rect2 &
 	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
 	auto dstRect = p_rect;
 	dstRect.position.y = - p_rect.position.y - p_rect.size.y;
-	BoxShape(list.prims, resource, math_cast(dstRect), {Vector2f::vector_zero(), Vector2f::vector_one()}, math_cast(p_color));
+	BoxShape(*list.current, resource, math_cast(dstRect), {Vector2f::vector_zero(), Vector2f::vector_one()}, math_cast(p_color));
 }

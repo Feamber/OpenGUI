@@ -78,12 +78,14 @@ namespace OGUI
             uint16_t* indices, uint32_t num_indices) = 0;
         virtual void ReleasePrimitive(PersistantPrimitiveHandle primitive) = 0;
 
-        virtual void RenderPrimitives(const struct PrimDrawList&, const class WindowContext&) = 0;
+        virtual void RenderPrimitives(const struct PrimDrawContext&, const class WindowContext&) = 0;
         virtual void RenderPrimitives(const struct PersistantPrimDrawList&, const class WindowContext&) = 0;
 
 		virtual RenderTargetViewHandle RegisterRenderTargetView(const Bitmap&) = 0;
-		virtual RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) = 0;		
+		virtual RenderTargetViewHandle RegisterRenderTargetView(const ostr::string& url) = 0;		
+		virtual void UpdateRenderTargetView(RenderTargetViewHandle, const Bitmap&) = 0;
 		virtual void ReleaseRenderTargetView(RenderTargetViewHandle) = 0;
+		virtual TextureHandle GetTexture(RenderTargetViewHandle) = 0; 
 
         virtual TextureHandle RegisterTexture(const Bitmap&) = 0;
 		virtual void UpdateTexture(TextureHandle, const Bitmap&) = 0;
@@ -91,6 +93,7 @@ namespace OGUI
 
 		virtual MaterialHandle RegisterMaterial(const ostr::string& url) = 0;
 		virtual void ReleaseMaterial(MaterialHandle) = 0;
+		virtual void SetMaterialParameterTexture(MaterialHandle, const ostr::string& name, TextureHandle texture) {}
 
 		virtual Vector2f GetSize(RenderTargetViewHandle) = 0;
 

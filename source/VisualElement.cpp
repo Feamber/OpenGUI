@@ -192,10 +192,11 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimDrawContext& Ctx)
 	Rect rect = GetRect();
 	if(rect.max == rect.min)
 		return;
+	bool isMainPass = !retained || Ctx.current->renderTarget != _renderTarget;
 	auto& bg = StyleBackground::Get(_style);
 	auto& bd = StyleBorder::Get(_style);
 	auto transform = _worldTransform;
-	auto bgcolor = bg.backgroundColor;
+	auto bgcolor = isMainPass && retained ? Color4f(1.f,1.f,1.f,1.f) : bg.backgroundColor;
 	auto& ctx = Context::Get();
 	NVGpaint image;
 	if(!bg.backgroundMaterial.is_empty())
@@ -212,26 +213,45 @@ void OGUI::VisualElement::DrawBackgroundPrimitive(PrimDrawContext& Ctx)
 		backgroundMaterial = nullptr;
 	}
 	bgcolor.w *= _opacity;
-	if(!backgroundMaterial)
+	if(!backgroundMaterial || (!isMainPass && retained))
 	{
-		auto tex = GetBackgroundImage(bg);
-		if (backgroundImageResource && !tex) //如果图片没加载好，透明
-			bgcolor.w = 0;
-			
-		image = nvgImagePattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, tex, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
+		if(isMainPass && retained)
+		{
+			image = nvgImagePattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, _renderTarget, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
+		}
+		else 
+		{
+			auto tex = GetBackgroundImage(bg);
+			if (backgroundImageResource && !tex) //如果图片没加载好，透明
+				bgcolor.w = 0;
+				
+			image = nvgImagePattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, tex, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
+		}
 	}
 	else 
 	{
+		if(isMainPass && retained)
+		{
+			if(_renderTarget)
+				ctx.renderImpl->SetMaterialParameterTexture(backgroundMaterial, "Texture", ctx.renderImpl->GetTexture(_renderTarget));
+			else
+			{
+				auto tex = GetBackgroundImage(bg);
+				if (backgroundImageResource && !tex) //如果图片没加载好，透明
+					bgcolor.w = 0;
+				ctx.renderImpl->SetMaterialParameterTexture(backgroundMaterial, "Texture", tex);
+			}
+		}
 		image = nvgMaterialPattern(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, 0, backgroundMaterial, nvgRGBAf(bgcolor.x, bgcolor.y, bgcolor.z, bgcolor.w));
 	}
 	image.noGamma = !bg.backgroundGamma;
-	BeginDraw(Ctx.prims);
+	Ctx.BeginDraw();
 	nvgBeginPath(Ctx.nvg);
 	nvgRoundedRectVarying(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y, bd.borderTopLeftRadius.value, bd.borderTopRightRadius.value, bd.borderBottomRightRadius.value, bd.borderBottomLeftRadius.value);
 	
 	nvgFillPaint(Ctx.nvg, image);
 	nvgFill(Ctx.nvg);
-	EndDraw(Ctx.prims, transform);
+	Ctx.EndDraw(transform);
 }
 
 void OGUI::VisualElement::DrawBorderPrimitive(PrimDrawContext & Ctx)
@@ -246,7 +266,7 @@ void OGUI::VisualElement::DrawDebugPrimitive(PrimDrawContext & Ctx)
 		time_t seconds = time(NULL);
 		if(seconds - navDebugLastUpdate < 3)
 		{
-			BeginDraw(Ctx.prims);
+			Ctx.BeginDraw();
 			auto rect = navDebugRect;
 			auto color = FocusNavDebugState == CollisionBox ? 
 				Color4f(225, 0, 0, 0.3f) : 
@@ -255,7 +275,7 @@ void OGUI::VisualElement::DrawDebugPrimitive(PrimDrawContext & Ctx)
 			nvgRect(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y);
 			nvgFillColor(Ctx.nvg, nvgRGBAf(color.x, color.y, color.z, color.w));
 			nvgFill(Ctx.nvg);
-			EndDraw(Ctx.prims, float4x4());
+			Ctx.EndDraw(float4x4());
 		}
 	}
 }
@@ -329,6 +349,9 @@ OGUI::VisualElement::~VisualElement()
 		YGNodeFree(_ygnode);
 	}
 	auto& Ctx = Context::Get();
+	if(_renderTarget)
+		Ctx.renderImpl->ReleaseRenderTargetView(_renderTarget);
+	_renderTarget = nullptr;
 	if(!_styleSheets.empty())
 		Ctx.InvalidateCssCache();
 	auto& allElementHandle = Ctx._allElementHandle;

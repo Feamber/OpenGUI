@@ -159,10 +159,10 @@ public:
 		
 	}
 	
-	void RenderPrimitives(const PrimDrawList& list, const class WindowContext& wctx) override
+	void RenderPrimitives(const PrimDrawContext& ctx, const class WindowContext& wctx) override
 	{
 		ZoneScopedN("WebGPU Render");
-		
+		auto& list = ctx.prims.back();
 		if(list.command_list.size() <= 0) return;
 		static size_t old_vb_size = 0;
 		static size_t old_ib_size = 0;
@@ -338,14 +338,21 @@ public:
 		ogui_textures.erase(iter);
 	}
 
-	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap &) override
+	RenderTargetViewHandle RegisterRenderTargetView(const Bitmap& bitmap) override
 	{
 		return nullptr;
 	}
 
-	RenderTargetViewHandle RegisterRenderTargetView(const TextureHandle) override
+	RenderTargetViewHandle RegisterRenderTargetView(const ostr::string& url) override
 	{
 		return nullptr;
+	}
+
+	TextureHandle GetTexture(RenderTargetViewHandle handle) override { return (TextureHandle)handle; }
+
+	void UpdateRenderTargetView(RenderTargetViewHandle rt, const Bitmap& bitmap) override
+	{
+
 	}
 
 	void ReleaseRenderTargetView(RenderTargetViewHandle) override

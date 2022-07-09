@@ -70,6 +70,9 @@ namespace OGUI reflect
 		Matrix4x4 ApplyClipping();
 		bool CheckClip(const Matrix4x4& rect);
 		float _opacity = 1.f;
+		bool retained = false;
+		RenderTargetViewHandle _renderTarget = nullptr;
+
 #pragma endregion
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);

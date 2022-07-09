@@ -42,6 +42,8 @@ namespace OGUI
     const Name& VisualElementXmlFactory::Attr_NavLeft()     { static Name name = "nav-left"; return name;}
     const Name& VisualElementXmlFactory::Attr_NavRight()    { static Name name = "nav-right"; return name;}
     const Name& VisualElementXmlFactory::Attr_Filters()    { static Name name = "filters"; return name;}
+    const Name& VisualElementXmlFactory::Attr_Retained()    { static Name name = "retained"; return name;}
+    const Name& VisualElementXmlFactory::Attr_RenderTarget()    { static Name name = "render-target"; return name;}
 
     bool VisualElementXmlFactory::OnCreateElement(InstantiateXmlState &, XmlElement &, VisualElement *&outNewElement, VisualElement *parent)
     {
@@ -166,6 +168,12 @@ namespace OGUI
 
         // !Xml筛选，只有符合所有FilterTag才显示，否则隐藏
         FindAttribute(xe, Attr_Filters(), u","_o, element->_xmlFilters);
+
+        // 是否绘制在一张RT上面
+        FindAttribute(xe, Attr_Retained(), element->retained);
+        ostr::string renderTarget;
+        if(FindAttribute(xe, Attr_RenderTarget(), renderTarget) == FindResult::OK)
+            element->_renderTarget = Context::Get().renderImpl->RegisterRenderTargetView(renderTarget);
         return true;
     }
 

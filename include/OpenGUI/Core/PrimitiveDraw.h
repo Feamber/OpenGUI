@@ -41,18 +41,13 @@ namespace OGUI
             indices.resize(
                 i_aligned
             );
-			// batch not implemented now.
-			//std::sort(command_list.begin(), command_list.end(),
-			//    [](const PrimDraw& a, const PrimDraw& b){
-			//        return a.texture < b.texture;
-			//    });
 		}
 		VertexList vertices;
 		IndexList  indices;
 		std::vector<PrimDrawCommand> command_list;
-		std::vector<Matrix4x4> clipStack;
 		PrimDrawCommand& GetCommand(const PrimDrawResource& resource);
 		int beginCount;
+		RenderTargetViewHandle renderTarget;
 	};
 
 	struct OGUI_API PersistantPrimDrawList 
@@ -63,13 +58,14 @@ namespace OGUI
 	struct OGUI_API PrimDrawContext
 	{
 		WindowContext& wctx;
-		PrimDrawList prims;
-		NVGcontext* nvg;
+		std::vector<PrimDrawList> prims;
+		NVGcontext* nvg = nullptr;
+		PrimDrawList* current = nullptr;
+		float4x4* inverseTransform = nullptr;
+		std::vector<Matrix4x4> clipStack;
+		void BeginDraw();
+		void EndDraw(const float4x4& transform);
 		PrimDrawContext(WindowContext& window);
 		~PrimDrawContext();
-	}; 
-
-	// Call from DrawList.
-	OGUI_API void BeginDraw(PrimDrawList& list);
-	OGUI_API void EndDraw(PrimDrawList& list, const float4x4& transform);
+	};
 }

@@ -385,7 +385,7 @@ namespace OGUI
             return;
         BuildParagraph();
         //VisualElement::DrawPrimitive(Ctx);
-        BeginDraw(Ctx.prims);
+        Ctx.BeginDraw();
         auto Rect = GetRect();
         //_paragraph->draw_outline(Ctx.prims, godot::Vector2(Rect.min.x, Rect.min.y), 5, godot::Color(0, 0, 0), godot::Color(1, 0, 0));
         auto& txt = StyleText::Get(_style);
@@ -399,7 +399,7 @@ namespace OGUI
         }
         currShadowPass = -1;
         _paragraph->draw(Ctx, godot::Vector2(Rect.min.x, Rect.min.y), gcolor, gcolor);
-        EndDraw(Ctx.prims, _worldTransform);
+        Ctx.EndDraw(_worldTransform);
     }
 
     void TextElement::MarkLayoutDirty(bool visibility)

@@ -219,12 +219,8 @@ void OGUI::Context::Update(const OGUI::WindowHandle window, float dt)
 	}
 }
 
-void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
+namespace OGUI
 {
-	auto& wctx = GetWindowContext(window);
-	auto root = wctx.GetWindowUI();
-	wctx.currentDrawCtx = std::make_shared<PrimDrawContext>(wctx);
-	nvgBeginFrame(wctx.currentDrawCtx->nvg, 1.0f);
 	constexpr size_t maxClipNum = 2;
 	struct DrawElement
 	{
@@ -232,22 +228,66 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 		VisualElement* element;
 		Matrix4x4 clip[maxClipNum];
 		int clipNum = 0;
+		uint32_t drawPass;
 		bool operator<(const DrawElement& other) const
 		{
 			return zorder < other.zorder;
 		}
 	};
+	struct DrawList
+	{
+		RenderTargetViewHandle renderTarget = nullptr;
+		std::vector<DrawElement> list;
+		float4x4 inverseTransform;
+	};
+}
+
+void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
+{
+	auto& wctx = GetWindowContext(window);
+	auto root = wctx.GetWindowUI();
+	wctx.currentDrawCtx = std::make_shared<PrimDrawContext>(wctx);
+	nvgBeginFrame(wctx.currentDrawCtx->nvg, 1.0f);
 	std::deque<DrawElement> queue;
 	
 	auto& ctx = *wctx.currentDrawCtx;
-	queue.push_back({0, root, {}, false});
-	std::vector<DrawElement> toDraw;
+	std::vector<DrawList> drawLists;
+	queue.push_back({0, root, {}, 0, 0});
+	drawLists.emplace_back();
 	while(!queue.empty())
 	{
 		auto next = queue.front();
 		queue.pop_front();
-		toDraw.push_back(next);
-		auto clippingChild = next.element->IsClippingChildren();
+		if(next.element->retained)
+		{
+			drawLists[next.drawPass].list.push_back(next);
+			next.drawPass = drawLists.size();
+			drawLists.emplace_back();
+			next.clip[0] = next.clip[1] = {};
+			next.clipNum = 0;
+			drawLists[next.drawPass].inverseTransform = math::inverse(next.element->_worldTransform);
+			if(next.element->_renderTarget)
+			{
+				drawLists[next.drawPass].renderTarget = next.element->_renderTarget;
+				Bitmap bitmap;
+				auto size = next.element->GetSize();
+				bitmap.width = size.X;
+				bitmap.height = size.Y;
+				bitmap.format = PF_R8G8B8A8;
+				renderImpl->UpdateRenderTargetView(next.element->_renderTarget, bitmap);
+			}
+			else 
+			{
+				Bitmap bitmap;
+				auto size = next.element->GetSize();
+				bitmap.width = size.X;
+				bitmap.height = size.Y;
+				bitmap.format = PF_R8G8B8A8;
+				drawLists[next.drawPass].renderTarget = next.element->_renderTarget = renderImpl->RegisterRenderTargetView(bitmap);
+			}
+		}
+		drawLists[next.drawPass].list.push_back(next);
+		auto clippingChild = next.element->IsClippingChildren() && !next.element->retained;
 		next.element->Traverse([&](VisualElement* child)
 		{
 			if(!child->Visible())
@@ -256,6 +296,7 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 			newDraw.zorder = next.zorder + 1 + StylePosition::Get(child->_style).zOrderBias;
 			newDraw.element = child;
 			newDraw.clipNum = std::min((int)clippingChild + next.clipNum, (int)maxClipNum);
+			newDraw.drawPass = next.drawPass;
 			if(clippingChild)
 			{
 				newDraw.clip[1] = next.clip[0];
@@ -270,22 +311,35 @@ void OGUI::Context::PreparePrimitives(const OGUI::WindowHandle window)
 			queue.push_back(newDraw);
 		});
 	}
-	std::stable_sort(toDraw.begin(), toDraw.end());
-	for(auto& draw : toDraw)
+	for(auto& drawList : drawLists)
+		std::stable_sort(drawList.list.begin(), drawList.list.end());
+	ctx.prims.clear();
+	for(auto iter = drawLists.rbegin(); iter != drawLists.rend(); ++iter)
 	{
-		ctx.prims.clipStack.clear();
-		for(int i=0; i<draw.clipNum; ++i)
-			ctx.prims.clipStack.push_back(draw.clip[i]);
-		draw.element->DrawPrimitive(ctx);
+		ctx.current = &ctx.prims.emplace_back();
+		if(iter->renderTarget)
+		{
+			ctx.current->renderTarget = iter->renderTarget;
+			ctx.inverseTransform = &iter->inverseTransform;
+		}
+		for(auto& draw : iter->list)
+		{
+			ctx.clipStack.clear();
+			for(int i=0; i<draw.clipNum; ++i)
+				ctx.clipStack.push_back(draw.clip[i]);
+			draw.element->DrawPrimitive(ctx);
+		}
+		ctx.inverseTransform = nullptr;
 	}
-	wctx.currentDrawCtx->prims.ValidateAndBatch();
+	for(auto& prim : ctx.prims)
+		prim.ValidateAndBatch();
 }
 
 void OGUI::Context::Render(const OGUI::WindowHandle window)
 {
 	auto& wctx = GetWindowContext(window);
 	if(renderImpl.get()) 
-		renderImpl->RenderPrimitives(wctx.currentDrawCtx->prims, wctx);
+		renderImpl->RenderPrimitives(*wctx.currentDrawCtx, wctx);
 }
 
 void OGUI::Context::MarkDirty(VisualElement* element, DirtyReason reason)

@@ -28,6 +28,8 @@ namespace OGUI
         static const Name& Attr_NavLeft();
         static const Name& Attr_NavRight();
         static const Name& Attr_Filters();
+        static const Name& Attr_Retained();
+        static const Name& Attr_RenderTarget();
 
         virtual bool OnCreateElement(InstantiateXmlState&, XmlElement&, VisualElement*& outNewElement, VisualElement* parent) override;
         virtual bool OnInitElementHierarchy(InstantiateXmlState&, XmlElement&, VisualElement* element, VisualElement* parent, bool& isAutoPushToParent) override;
