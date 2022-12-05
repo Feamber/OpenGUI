@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <vector>
 #include <string>
+#include <memory>
 #include <map>
 #include "OpenGUI/Style2/Properties.h"
 #include "OpenGUI/Style2/Selector.h"
