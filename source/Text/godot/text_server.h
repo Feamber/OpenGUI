@@ -197,8 +197,13 @@ public:
 
 	struct GlyphDrawPolicy {
 		virtual ~GlyphDrawPolicy() {}
+		virtual int get_outline_size() const { return 0; }
 		virtual void draw(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one());
 		static void drawQuad(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one(), bool noGamma = true);
+#ifdef MODULE_MSDFGEN_ENABLED
+		virtual void drawMsdf(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one(), float p_outline_size = 0, float p_px_range = 1.0, float p_scale = 1.0);
+		static void drawMsdfQuad(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color = OGUI::Color4f::vector_one(), float p_outline_size = 0, float p_px_range = 1.0, float p_scale = 1.0, bool noGamma = true);
+#endif
 	};
 
 	struct ShapedTextData {
@@ -226,6 +231,9 @@ public:
 
 			String language;
 			Map<uint32_t, double> features;
+
+			float letter_spacing = 0;
+			float word_spacing = 0;
 			
 			TextDecorationData decoration;
 		};
@@ -444,7 +452,7 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) = 0;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const = 0;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, int64_t flags = 0, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", const TextDecorationData& decoration = {}) = 0;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, int64_t flags = 0, const std::shared_ptr<GlyphDrawPolicy> &draw_policy = {}, const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", const TextDecorationData& decoration = {}, float letter_spacing = 0, float word_spacing = 0) = 0;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) = 0;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
 	virtual bool shaped_text_resize_object_raw(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
@@ -509,6 +517,7 @@ public:
 	void canvas_item_add_rect(OGUI::PrimDrawContext& list, const Rect2 &p_rect, const Color &p_color) const;
 	void canvas_item_add_texture_rect(OGUI::PrimDrawContext& list, const Rect2 &p_rect, const Color &p_color, OGUI::TextureHandle p_texture) const;
 	void canvas_item_add_texture_rect_region(OGUI::PrimDrawContext& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), GlyphDrawPolicy* policy = nullptr) const;
+	void canvas_item_add_msdf_texture_rect_region(OGUI::PrimDrawContext& list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), float p_outline_size = 0, float p_px_range = 1.0, float p_scale = 1.0, GlyphDrawPolicy* policy = nullptr) const;
 
 	TextServer();
 	virtual ~TextServer();

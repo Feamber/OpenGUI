@@ -34,6 +34,8 @@ namespace OGUI reflect
             static constexpr size_t fontWeight = OGUI::hash(u"font-weight"_o);
             static constexpr size_t lineHeight = OGUI::hash(u"line-height"_o);
             static constexpr size_t textAlign = OGUI::hash(u"text-align"_o);
+            static constexpr size_t letterSpacing = OGUI::hash(u"letter-spacing"_o);
+            static constexpr size_t wordSpacing = OGUI::hash(u"word-spacing"_o);
             static constexpr size_t textShadow = OGUI::hash(u"text-shadow"_o);
             static constexpr size_t textDecorationColor = OGUI::hash(u"text-decoration-color"_o);
             static constexpr size_t textDecorationLine = OGUI::hash(u"text-decoration-line"_o);
@@ -47,6 +49,8 @@ namespace OGUI reflect
         int fontWeight;
         YGValue lineHeight;
         ETextAlign textAlign;
+        float letterSpacing;
+        float wordSpacing;
         std::vector<TextShadow> textShadow;
         Color4f textDecorationColor;
         ETextDecorationLine textDecorationLine;
@@ -103,6 +107,14 @@ namespace OGUI reflect
     OGUI_API void SetStyleTextAlign(VisualElement* element, const ETextAlign& value);
     attr("script": true)
     OGUI_API void ResetStyleTextAlign(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleLetterSpacing(VisualElement* element, const float& value);
+    attr("script": true)
+    OGUI_API void ResetStyleLetterSpacing(VisualElement* element);
+    attr("script": true)
+    OGUI_API void SetStyleWordSpacing(VisualElement* element, const float& value);
+    attr("script": true)
+    OGUI_API void ResetStyleWordSpacing(VisualElement* element);
     OGUI_API void SetStyleTextShadow(VisualElement* element, const gsl::span<const TextShadow>& value);
     attr("script": true)
     OGUI_API void ResetStyleTextShadow(VisualElement* element);

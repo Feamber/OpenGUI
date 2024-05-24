@@ -957,9 +957,9 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		ERR_FAIL_COND_V(mw > 4096, FontGlyph());
 		ERR_FAIL_COND_V(mh > 4096, FontGlyph());
 
-		FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, 4, Image::FORMAT_RGBA8, mw, mh);
+		FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, 4, OGUI::PixelFormat::PF_R8G8B8A8, mw, mh);
 		ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
-		FontTexture &tex = p_data->textures.data()[tex_pos.index];
+		FontTexture &tex = p_data->font_textures[tex_pos.index];
 
 		edgeColoringSimple(shape, 3.0); // Max. angle.
 		msdfgen::Bitmap<float, 4> image(w, h); // Texture size.
@@ -975,9 +975,6 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		td.projection = &projection;
 		td.distancePixelConversion = &distancePixelConversion;
 
-		if (p_font_data->work_pool.get_thread_count() == 0) {
-			p_font_data->work_pool.init();
-		}
 		p_font_data->work_pool.do_work(h, this, &TextServerAdvanced::_generateMTSDF_threaded, &td);
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
@@ -1001,16 +998,21 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 			}
 		}
 
+		
+
 		// Blit to image and texture.
 		{
-			if (RenderingServer::get_singleton() != nullptr) {
-				Ref<Image> img = memnew(Image(tex.texture_w, tex.texture_h, 0, Image::FORMAT_RGBA8, tex.imgdata));
-				if (tex.texture.is_null()) {
-					tex.texture.instantiate();
-					tex.texture->create_from_image(img);
-				} else {
-					tex.texture->update(img);
-				}
+			auto&& ctx = OGUI::Context::Get().renderImpl;
+
+			OGUI::Bitmap bitmap;
+			bitmap.resource = { tex.imgdata.data(), tex.imgdata.size() };
+			bitmap.format = tex.format;
+			bitmap.height = tex.texture_h;
+			bitmap.width = tex.texture_w;
+			if (!tex.texture.handle) {
+				tex.texture.handle = ctx->RegisterTexture(bitmap);
+			} else if(auto impl  = ctx.get();impl) {
+				impl->UpdateTexture(tex.texture.handle, bitmap);
 			}
 		}
 
@@ -1024,13 +1026,135 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
 		chr.rect.position = Vector2(bounds.l, -bounds.t);
 		chr.rect.size = chr.uv_rect.size;
+		auto tex_size = Vector2{(real_t)tex.texture_w, (real_t)tex.texture_h};
+		chr.uv_rect.position /= tex_size; chr.uv_rect.size /= tex_size;
 	}
 	return chr;
 }
 #endif
 
+void gaussian_blur(uint8_t* data, int32 texW, Vector2i pos, int32 w, int32 h, int32 passes)
+{
+
+	// Calculate the kernel size.
+	constexpr int32 kernel_size = 5;
+
+	float kernel[kernel_size] = { 0.06136f, 0.3f, 0.5f, 0.3f, 0.06136f };
+	constexpr int32 radius = kernel_size / 2;
+
+	// Create the temporary buffer.
+	float* temp = new float[w * h * 4];
+	float* temp2 = new float[w * h * 4];
+	
+	for (int32 y = 0; y < h; y++)
+	{
+		for (int32 x = 0; x < w; x++)
+		{
+			temp2[y * w * 4 + x * 4 + 0] = data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 0];
+			temp2[y * w * 4 + x * 4 + 1] = data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 1];
+			temp2[y * w * 4 + x * 4 + 2] = data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 2];
+			temp2[y * w * 4 + x * 4 + 3] = data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 3];
+		}
+	}
+
+	for(int p = 0; p < passes; ++p)
+	{
+		// Apply the horizontal pass.
+	for (int32 y = 0; y < h; y++)
+	{
+		for (int32 x = 0; x < w; x++)
+		{
+			float r = 0.0f;
+			float g = 0.0f;
+			float b = 0.0f;
+			float a = 0.0f;
+			for (int32 i = 0; i < kernel_size; i++)
+			{
+				int32 sx = x + i - radius;
+				if (sx < 0)
+				{
+					sx = 0;
+				}
+				if (sx >= w)
+				{
+					sx = w - 1;
+				}
+				int32 ofs = y * w * 4 + sx * 4;
+				float weight = kernel[i];
+				r += temp2[ofs + 0] * weight;
+				g += temp2[ofs + 1] * weight;
+				b += temp2[ofs + 2] * weight;
+				a += temp2[ofs + 3] * weight;
+			}
+			int32 ofs = y * w * 4 + x * 4;
+			temp[ofs + 0] = r;
+			temp[ofs + 1] = g;
+			temp[ofs + 2] = b;
+			temp[ofs + 3] = a;
+		}
+	}
+
+	// Apply the vertical pass.
+	for (int32 y = 0; y < h; y++)
+	{
+		for (int32 x = 0; x < w; x++)
+		{
+			float r = 0.0f;
+			float g = 0.0f;
+			float b = 0.0f;
+			float a = 0.0f;
+			for (int32 i = 0; i < kernel_size; i++)
+			{
+				int32 sy = y + i - radius;
+				if (sy < 0)
+				{
+					sy = 0;
+				}
+				if (sy >= h)
+				{
+					sy = h - 1;
+				}
+				int32 ofs = sy * w * 4 + x * 4;
+				float weight = kernel[i];
+				r += temp[ofs + 0] * weight;
+				g += temp[ofs + 1] * weight;
+				b += temp[ofs + 2] * weight;
+				a += temp[ofs + 3] * weight;
+			}
+			int32 ofs = y * w * 4 + x * 4;
+			temp2[ofs + 0] = r;
+			temp2[ofs + 1] = g;
+			temp2[ofs + 2] = b;
+			temp2[ofs + 3] = a;
+		}
+	}
+	}
+
+	// Copy the result back to the original buffer.
+	for (int32 y = 0; y < h; y++)
+	{
+		for (int32 x = 0; x < w; x++)
+		{
+			data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 0] = (uint8_t)CLAMP(temp2[y * w * 4 + x * 4 + 0], 0.0f, 255.0f);
+			data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 1] = (uint8_t)CLAMP(temp2[y * w * 4 + x * 4 + 1], 0.0f, 255.0f);
+			data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 2] = (uint8_t)CLAMP(temp2[y * w * 4 + x * 4 + 2], 0.0f, 255.0f);
+			data[(y + pos.y) * texW * 4 + (x + pos.x) * 4 + 3] = (uint8_t)CLAMP(temp2[y * w * 4 + x * 4 + 3], 0.0f, 255.0f);
+		}
+	}
+	
+	// Delete the temporary buffer.
+	delete[] temp;
+	delete[] temp2;
+}
+
 #ifdef MODULE_FREETYPE_ENABLED
 _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitmap(FontDataForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) const {
+	bool blur = p_data->size.y < 0;
+	if(blur)
+	{
+		p_rect_margin += -p_data->size.y;
+	}
+	
 	int w = bitmap.width;
 	int h = bitmap.rows;
 
@@ -1091,6 +1215,14 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 				}
 			}
 		}
+	}
+
+	if(blur)
+	{
+		gaussian_blur(tex.imgdata.ptrw(), tex.texture_w, {tex_pos.x, tex_pos.y} , mw, mh, -p_data->size.y);
+		p_rect_margin += p_data->size.y;
+		w += -p_data->size.y * 2;
+		h += -p_data->size.y * 2;
 	}
 
 	// Blit to image and texture.
@@ -2690,15 +2822,7 @@ void TextServerAdvanced::font_render_glyph(RID p_font_rid, const Vector2i &p_siz
 
 std::shared_ptr<TextServer::GlyphDrawPolicy> get_policy(TextServerAdvanced::ShapedTextDataAdvanced *sd, const TextServerAdvanced::Glyph& glyph)
 {
-	auto iter = std::find_if(sd->spans.begin(), sd->spans.end(), [&](const TextServerAdvanced::ShapedTextDataAdvanced::Span& s)
-	{
-		if(s.start <= glyph.start && s.end >= glyph.end)
-			return true;
-		return false;
-	});
-	if(iter == sd->spans.end())
-		return {};
-	return iter->draw_policy;
+	return sd->spans[glyph.span].draw_policy;
 }
 
 void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawContext& list, const Glyph& glyph, const Vector2 &p_pos, const Color &p_color) const {
@@ -2709,7 +2833,15 @@ void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawContext& li
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	Vector2i size = _get_size(fd, glyph.font_size);
+	auto policy = get_policy(sd, glyph);
+
+	int outline_size = 0;
+	if(policy)
+	{
+		outline_size = policy->get_outline_size();
+	}
+
+	Vector2i size = _get_size_outline(fd, { glyph.font_size, outline_size} );
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	if (!_ensure_glyph(fd, size, glyph.index)) {
 		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
@@ -2730,13 +2862,12 @@ void TextServerAdvanced::font_draw_glyph(RID p_shaped, OGUI::PrimDrawContext& li
 #ifdef MODULE_MSDFGEN_ENABLED
             if (fd->msdf) {
                 Point2 cpos = p_pos;
-                cpos += gl.rect.position * (real_t)p_size / (real_t)fd->msdf_source_size;
-                Size2 csize = gl.rect.size * (real_t)p_size / (real_t)fd->msdf_source_size;
-                RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, 0, fd->msdf_range);
+                cpos += gl.rect.position * (real_t)glyph.font_size / (real_t)fd->msdf_source_size;
+                Size2 csize = gl.rect.size * (real_t)glyph.font_size / (real_t)fd->msdf_source_size;
+                canvas_item_add_msdf_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate, 0, fd->msdf_range, (double)glyph.font_size / (double)fd->msdf_source_size, policy.get());
             } else 
 #endif
             {
-				auto policy = get_policy(sd, glyph);
 				Point2i cpos = p_pos;
 				cpos += gl.rect.position;
 				Size2i csize = gl.rect.size;
@@ -2772,17 +2903,16 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_shaped, OGUI::PrimDrawCon
 			}
 #endif
             auto& texture = fd->cache[size]->font_textures[gl.texture_idx].texture;
+			auto policy = get_policy(sd, glyph);
 #ifdef MODULE_MSDFGEN_ENABLED
-            RID texture = fd->cache[size]->textures[gl.texture_idx].texture->get_rid();
             if (fd->msdf) {
                 Point2 cpos = p_pos;
-                cpos += gl.rect.position * (real_t)p_size / (real_t)fd->msdf_source_size;
-                Size2 csize = gl.rect.size * (real_t)p_size / (real_t)fd->msdf_source_size;
-                canvas_item_add_msdf_texture_rect_region(list, Rect2(cpos, csize), texture, gl.uv_rect, modulate, p_outline_size * 2, fd->msdf_range);
+                cpos += gl.rect.position * (real_t)glyph.font_size / (real_t)fd->msdf_source_size;
+                Size2 csize = gl.rect.size * (real_t)glyph.font_size / (real_t)fd->msdf_source_size;
+                canvas_item_add_msdf_texture_rect_region(list, Rect2(cpos, csize), texture.handle, gl.uv_rect, modulate, p_outline_size * 2, fd->msdf_range, (double)glyph.font_size / (double)fd->msdf_source_size, policy.get());
             } else 
 #endif
             {
-				auto policy = get_policy(sd, glyph);
 				Point2i cpos = p_pos;
 				cpos += gl.rect.position;
 				Size2i csize = gl.rect.size;
@@ -3136,7 +3266,7 @@ TextServer::Orientation TextServerAdvanced::shaped_text_get_orientation(RID p_sh
 	return sd->orientation;
 }
 
-bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, int64_t p_flags, const std::shared_ptr<GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, const TextDecorationData& p_decoration) {
+bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, int64_t p_flags, const std::shared_ptr<GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, const TextDecorationData& p_decoration, float p_letter_spacing, float p_word_spacing) {
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
@@ -3164,6 +3294,8 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	span.features = p_opentype_features;
 	span.flags = p_flags;
 	span.decoration = p_decoration;
+	span.letter_spacing = p_letter_spacing;
+	span.word_spacing = p_word_spacing;
 
 	sd->spans.push_back(span);
 	sd->text += p_text;
@@ -4250,6 +4382,8 @@ TextServer::Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index) {
 	int fs = p_sd->spans[p_span].font_size;
+	float letter_spacing = p_sd->spans[p_span].letter_spacing;
+	float word_spacing = p_sd->spans[p_span].word_spacing;
 	if (p_fb_index >= p_fonts.size()) {
 		// Add fallback glyphs.
 		for (int i = p_start; i < p_end; i++) {
@@ -4274,6 +4408,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 					p_sd->ascent = MAX(p_sd->ascent, std::round(get_hex_code_box_size(fs, gl.index).x * 0.5f));
 					p_sd->descent = MAX(p_sd->descent, std::round(get_hex_code_box_size(fs, gl.index).x * 0.5f));
 				}
+				gl.advance += letter_spacing;
 				p_sd->width += gl.advance;
 
 				p_sd->glyphs.push_back(gl);
@@ -4373,11 +4508,13 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				gl.x_off = std::round(glyph_pos[i].x_offset / (64.0 / scale));
 				gl.y_off = -std::round(glyph_pos[i].y_offset / (64.0 / scale));
 			}
-			if (font_get_spacing(f, fs, SPACING_SPACE) && is_whitespace(p_sd->text[glyph_info[i].cluster])) {
+			if (is_whitespace(p_sd->text[glyph_info[i].cluster])) {
 				gl.advance += font_get_spacing(f, fs, SPACING_SPACE);
+				gl.advance += word_spacing;
 			} else {
 				gl.advance += font_get_spacing(f, fs, SPACING_GLYPH);
 			}
+			gl.advance += letter_spacing;
 
 			if (p_sd->preserve_control) {
 				last_cluster_valid = last_cluster_valid && ((glyph_info[i].codepoint != 0) || is_whitespace(p_sd->text[glyph_info[i].cluster]) || is_linebreak(p_sd->text[glyph_info[i].cluster]));

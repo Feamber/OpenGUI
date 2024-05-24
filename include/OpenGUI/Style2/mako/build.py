@@ -140,6 +140,8 @@ def gen_text():
     add_longhand("line-height", "YGValue", "YGValueAuto",
                  "Width", restyle_damage="TextLayout")
     add_longhand("text-align", "ETextAlign", "ETextAlign::Start", "TextAlign")
+    add_longhand("letter-spacing", "float", "0.f", "Length", restyle_damage="TextLayout")
+    add_longhand("word-spacing", "float", "0.f", "Length", restyle_damage="TextLayout")
     add_longhand("text-shadow", "TextShadow", "{}", "TextShadow", vector=True)
     add_longhand("text-decoration-color", "Color4f", "Color4f(0,0,0,1)", "Color", restyle_damage="TextLayout")
     add_longhand("text-decoration-line", "ETextDecorationLine", "ETextDecorationLine::None", "TextDecorationLine", restyle_damage="TextLayout")

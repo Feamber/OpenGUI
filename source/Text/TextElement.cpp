@@ -50,6 +50,18 @@ namespace OGUI
         Color4f color = Color4f::vector_one();
         std::vector<TextShadow> shadows;
         bool noGamma = true;
+
+        int get_outline_size() const override
+        {
+            auto root = owner->_layoutType != LayoutType::Inline ? owner : (TextElement*)owner->GetLayoutRoot();
+            if(root->currShadowPass != -1)
+            {
+                if(shadows.size() <= root->currShadowPass)
+                    return 0;
+                return -(int)shadows[root->currShadowPass].blur;
+            }
+            return 0;
+        }
         
         void draw(PrimDrawContext &list, const Rect &inRect, TextureHandle texture, const Rect &inUv, const Color4f &inColor = Color4f::vector_one()) override
         {
@@ -68,6 +80,29 @@ namespace OGUI
             }
             godot::TextServer::GlyphDrawPolicy::drawQuad(list, rect, texture, uv, finalcolor, noGamma);
         }
+
+#ifdef MODULE_MSDFGEN_ENABLED
+        void drawMsdf(OGUI::PrimDrawContext& list, const OGUI::Rect &inRect, OGUI::TextureHandle texture, const OGUI::Rect &inUv, const OGUI::Color4f &inColor = OGUI::Color4f::vector_one(), float p_outline_size = 0, float p_px_range = 1.0, float p_scale = 1.0) override
+        {
+            auto rect = inRect;
+            auto uv = inUv;
+            auto finalcolor = color * inColor;
+            auto root = owner->_layoutType != LayoutType::Inline ? owner : (TextElement*)owner->GetLayoutRoot();
+            p_scale = 1.0f;
+            if(root->currShadowPass != -1)
+            {
+                if(shadows.size() <= root->currShadowPass)
+                    return;
+                auto& shadow = shadows[root->currShadowPass];
+                rect.min += shadow.offset;
+                rect.max += shadow.offset;
+                finalcolor = shadow.color * inColor;
+                p_outline_size = shadow.outlineSize;
+                p_scale = shadow.blur;
+            }
+            godot::TextServer::GlyphDrawPolicy::drawMsdfQuad(list, rect, texture, uv, finalcolor, p_outline_size, p_px_range, p_scale, noGamma);
+        }
+#endif
     };
 
     YGSize MeasureText(
@@ -327,7 +362,7 @@ namespace OGUI
                     int64 flags = 0;
                     if(txt.textJustify == ETextJustify::InterIdeograph)
                         flags |= godot::TextServer::JustificationFlag::JUSTIFICATION_CHARACTER;
-                    p->add_string((wchar_t*)text.raw().data(), _font, txt.fontSize, 0, _drawPolicy, {}, "", decoration); 
+                    p->add_string((wchar_t*)text.raw().data(), _font, txt.fontSize, 0, _drawPolicy, {}, "", decoration, txt.letterSpacing, txt.wordSpacing); 
                 },
                 [&](VisualElement*& child) 
                 { 
@@ -352,7 +387,7 @@ namespace OGUI
                     decoration.decorationTexture = nullptr;
                     decoration.decorationLineFlag = (int64_t)txt.textDecorationLine;
                     decoration.decorationThickness = txt.textDecorationThickness;
-                    p->add_string((wchar_t*)Bind->text.raw().data(), _font, txt.fontSize, 0, _drawPolicy, {}, "", decoration); 
+                    p->add_string((wchar_t*)Bind->text.raw().data(), _font, txt.fontSize, 0, _drawPolicy, {}, "", decoration, txt.letterSpacing, txt.wordSpacing); 
                 }
             }, inl);
         }
@@ -459,7 +494,10 @@ namespace OGUI
                         continue;
                     auto& font = sheet->styleFonts[iter->second];
                     for(auto& data : font.datas)
+                    {
+                        // data->set_multichannel_signed_distance_field(true);
                         _font->add_data(data);
+                    }
                     found = true;
                     break;
                 }

@@ -106,7 +106,7 @@ public:
 	void clear_dropcap();
 
 	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, int64_t flags = 0, const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy = {}, 
-		const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", const TextDecorationData& decoration = {});
+		const Map<uint32_t, double> &p_opentype_features = {}, const String &p_language = "", const TextDecorationData& decoration = {}, float letter_spacing = 0, float word_spacing = 0);
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
 	Vector<Variant> get_objects() const;

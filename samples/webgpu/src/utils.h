@@ -31,6 +31,7 @@ static char const triangle_vert_wgsl[] = R"(
         output.vUV.y = 1.0 - output.vUV.y;
 		output.vAA = input.aAA;
 		output.vCUV = input.aCUV;
+		output.vCUV2 = input.aCUV2;
 		return output;
 	}
 )";
@@ -63,6 +64,90 @@ static char const triangle_frag_wgsl[] = R"(
     }
 )";
 
+static char const triangle_msdf_vert_wgsl[] = R"(
+	[[block]]
+	struct VertexIn {
+		[[location(0)]] aPos : vec2<f32>;
+		[[location(1)]] aUV  : vec2<f32>;
+		[[location(2)]] aAA  : vec2<f32>;
+		[[location(3)]] aCol : vec4<f32>;
+		[[location(4)]] aCUV  : vec2<f32>;
+		[[location(5)]] aCUV2  : vec2<f32>;
+		[[location(6)]] vParameter  : vec4<f32>;
+	};
+	struct VertexOut {
+		[[location(0)]] vCol : vec4<f32>;
+		[[location(1)]] vUV  : vec2<f32>;
+		[[location(2)]] vAA  : vec2<f32>;
+		[[location(3)]] vCUV  : vec2<f32>;
+		[[location(4)]] vCUV2  : vec2<f32>;
+		[[location(5)]] vParameter  : vec4<f32>;
+		[[builtin(position)]] Position : vec4<f32>;
+	};
+	[[stage(vertex)]] fn main(input : VertexIn) -> VertexOut {
+		var output : VertexOut;
+		output.Position = vec4<f32>(input.aPos * 2.0, 1.0, 1.0);
+		output.vCol = input.aCol;
+        output.vUV = input.aUV;
+        output.vUV.y = 1.0 - output.vUV.y;
+		output.vAA = input.aAA;
+		output.vCUV = input.aCUV;
+		output.vCUV2 = input.aCUV2;
+		output.vParameter = input.vParameter;
+		return output;
+	}
+)";
+
+
+static char const triangle_msdf_frag_wgsl[] = R"(
+	struct VertexOut {
+		[[location(0)]] vCol : vec4<f32>;
+		[[location(1)]] vUV  : vec2<f32>;
+		[[location(2)]] vAA  : vec2<f32>;
+		[[location(3)]] vCUV  : vec2<f32>;
+		[[location(4)]] vCUV2  : vec2<f32>;
+		[[location(5)]] vParameter  : vec4<f32>;
+		[[builtin(position)]] Position : vec4<f32>;
+	};
+    [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+    [[group(0), binding(1)]] var mySampler : sampler;
+
+	fn median(r : f32, g : f32, b : f32, a : f32) -> f32 {
+		return min(max(min(r, g), min(max(r, g), b)), a);
+	}
+
+	[[stage(fragment)]] 
+	fn main(input : VertexOut) ->  [[location(0)]] vec4<f32> {
+		var visible : f32;
+		visible = f32(all(input.vCUV == clamp(input.vCUV, vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, 1.0))));
+		var visible2 : f32;
+		visible2 = f32(all(input.vCUV2 == clamp(input.vCUV2, vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, 1.0))));
+		var edge : f32;
+		edge = min(1.0, (1.0-abs((input.vAA.x * 2.0) - 1.0)) * input.vAA.y) ;
+
+		var color : vec4<f32> = visible * visible2 * input.vCol;
+		color.w = color.w * edge;
+
+		var msdf_sample : vec4<f32> = textureSample(myTexture, mySampler, input.vUV);
+		var px_range : f32 = input.vParameter.y;
+		var blur : f32 = input.vParameter.z;
+		var outline_thickness : f32 = input.vParameter.x;
+		var msdf_size : vec2<f32> = vec2<f32>(textureDimensions(myTexture, 0));
+		var dest_size : vec2<f32> = vec2<f32>(1.0) / vec2<f32>(abs(dpdx(input.vUV.x)), abs(dpdy(input.vUV.y)));
+		var px_size : f32 = max(0.5 * dot((vec2<f32>(px_range) / msdf_size), dest_size), 1.0);
+		var d = median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
+		if(outline_thickness > 0.0)
+		{
+			var cr : f32 = clamp(outline_thickness / px_range, 0.0, 0.5);
+			var a : f32 = clamp((d + cr) * px_size * blur + 0.5, 0.0, 1.0);
+			color.w = a * color.w;
+		} else {
+			var a : f32 = clamp(d * px_size * blur + 0.5, 0.0, 1.0);
+			color.w = a * color.w;
+		}
+		return color;
+    }
+)";
 
 /**
  * Helper to create a shader from WGSL source.

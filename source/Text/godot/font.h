@@ -45,8 +45,8 @@ class FontData {
 
 	bool antialiased = true;
 	bool msdf = false;
-	int msdf_pixel_range = 16;
-	int msdf_size = 48;
+	int msdf_pixel_range = 32;
+	int msdf_size = 64;
 	int fixed_size = 0;
 	bool force_autohinter = false;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;

@@ -1159,6 +1159,21 @@ void TextServer::canvas_item_add_texture_rect_region(OGUI::PrimDrawContext& list
 		GlyphDrawPolicy::drawQuad(list, math_cast(dstRect), p_texture, math_cast(srcRect), math_cast(p_modulate));
 }
 
+#ifdef MODULE_MSDFGEN_ENABLED
+void TextServer::canvas_item_add_msdf_texture_rect_region(OGUI::PrimDrawContext &list, const Rect2 &p_rect, OGUI::TextureHandle p_texture, const Rect2 &p_src_rect, const Color &p_modulate, float p_outline_size, float p_px_range, float p_scale, GlyphDrawPolicy* policy) const
+{
+	using namespace OGUI;
+	auto dstRect = p_rect;
+	dstRect.position.y = - p_rect.position.y - p_rect.size.y;
+	auto srcRect = p_src_rect;
+	srcRect.position.y = 1 - p_src_rect.position.y - p_src_rect.size.y ;
+	if(policy)
+		policy->drawMsdf(list, math_cast(dstRect), p_texture, math_cast(srcRect), math_cast(p_modulate), p_outline_size, p_px_range, p_scale);
+	else
+		GlyphDrawPolicy::drawMsdfQuad(list, math_cast(dstRect), p_texture, math_cast(srcRect), math_cast(p_modulate), p_outline_size, p_px_range, p_scale);
+}
+#endif
+
 void TextServer::GlyphDrawPolicy::draw(OGUI::PrimDrawContext& list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color)
 {
 	drawQuad(list, rect, texture, uv, color);
@@ -1174,6 +1189,29 @@ void TextServer::GlyphDrawPolicy::drawQuad(OGUI::PrimDrawContext& list, const OG
 	OGUI::BoxShape(*list.current, resource, rect, uv, color);
 }
 
+#ifdef MODULE_MSDFGEN_ENABLED
+void TextServer::GlyphDrawPolicy::drawMsdf(OGUI::PrimDrawContext &list, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color, float p_outline_size, float p_px_range, float p_scale)
+{
+	drawMsdfQuad(list, rect, texture, uv, color, p_outline_size, p_px_range, p_scale);
+}
+
+void TextServer::GlyphDrawPolicy::drawMsdfQuad(OGUI::PrimDrawContext &ctx, const OGUI::Rect &rect, OGUI::TextureHandle texture, const OGUI::Rect &uv, const OGUI::Color4f &color, float p_outline_size, float p_px_range, float p_scale, bool noGamma)
+{
+	using namespace OGUI;
+	PrimDrawResource resource;
+	resource.texture = texture;
+	resource.compositeOperation = {NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA, NVG_ONE, NVG_ONE_MINUS_SRC_ALPHA};
+	resource.noGamma = noGamma;
+	resource.msdf = true;
+	auto& list = *ctx.current;
+	OGUI::BoxShape(list, resource, rect, uv, color);
+	for(int i=0; i<4; i++)
+	{
+		auto& v = list.vertices[list.vertices.size() - 4 + i];
+		v.parameters = {p_outline_size, p_px_range, p_scale, 0.f};
+	}
+}
+#endif
 
 void TextServer::canvas_item_add_rect(OGUI::PrimDrawContext& list, const Rect2 &p_rect, const Color &p_color) const
 {

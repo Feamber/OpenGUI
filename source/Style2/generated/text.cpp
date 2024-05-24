@@ -87,6 +87,8 @@ void OGUI::StyleText::Initialize()
     fontWeight = 400;
     lineHeight = YGValueAuto;
     textAlign = ETextAlign::Start;
+    letterSpacing = 0.f;
+    wordSpacing = 0.f;
     textShadow = {};
     textDecorationColor = Color4f(0,0,0,1);
     textDecorationLine = ETextDecorationLine::None;
@@ -110,11 +112,13 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
             case Ids::fontWeight: if(mask & (1ull<<4)) continue; break;
             case Ids::lineHeight: if(mask & (1ull<<5)) continue; break;
             case Ids::textAlign: if(mask & (1ull<<6)) continue; break;
-            case Ids::textShadow: if(mask & (1ull<<7)) continue; break;
-            case Ids::textDecorationColor: if(mask & (1ull<<8)) continue; break;
-            case Ids::textDecorationLine: if(mask & (1ull<<9)) continue; break;
-            case Ids::textDecorationThickness: if(mask & (1ull<<10)) continue; break;
-            case Ids::textJustify: if(mask & (1ull<<11)) continue; break;
+            case Ids::letterSpacing: if(mask & (1ull<<7)) continue; break;
+            case Ids::wordSpacing: if(mask & (1ull<<8)) continue; break;
+            case Ids::textShadow: if(mask & (1ull<<9)) continue; break;
+            case Ids::textDecorationColor: if(mask & (1ull<<10)) continue; break;
+            case Ids::textDecorationLine: if(mask & (1ull<<11)) continue; break;
+            case Ids::textDecorationThickness: if(mask & (1ull<<12)) continue; break;
+            case Ids::textJustify: if(mask & (1ull<<13)) continue; break;
         }
         if(prop.keyword)
         {
@@ -156,6 +160,16 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Ids::textAlign: {
                     auto& v = GetOrAdd(style);
                     v.textAlign = ETextAlign::Start;
+                    break;
+                    }
+                case Ids::letterSpacing: {
+                    auto& v = GetOrAdd(style);
+                    v.letterSpacing = 0.f;
+                    break;
+                    }
+                case Ids::wordSpacing: {
+                    auto& v = GetOrAdd(style);
+                    v.wordSpacing = 0.f;
                     break;
                     }
                 case Ids::textShadow: {
@@ -223,6 +237,16 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                 case Ids::textAlign:{
                     auto& v = GetOrAdd(style);
                     v.textAlign = pst->textAlign;
+                    break;
+                    }
+                case Ids::letterSpacing:{
+                    auto& v = GetOrAdd(style);
+                    v.letterSpacing = pst->letterSpacing;
+                    break;
+                    }
+                case Ids::wordSpacing:{
+                    auto& v = GetOrAdd(style);
+                    v.wordSpacing = pst->wordSpacing;
                     break;
                     }
                 case Ids::textShadow:{
@@ -293,6 +317,16 @@ void OGUI::StyleText::ApplyProperties(ComputedStyle& style, const StyleSheetStor
                     v.textAlign = sheet.Get<ETextAlign>(prop.value);
                     break;
                     }
+                case Ids::letterSpacing:{
+                    auto& v = GetOrAdd(style);
+                    v.letterSpacing = sheet.Get<float>(prop.value);
+                    break;
+                    }
+                case Ids::wordSpacing:{
+                    auto& v = GetOrAdd(style);
+                    v.wordSpacing = sheet.Get<float>(prop.value);
+                    break;
+                    }
                 case Ids::textShadow:{
                     auto& v = GetOrAdd(style);
                     v.textShadow = ToOwned(sheet.Get<const gsl::span<const TextShadow>>(prop.value));
@@ -342,11 +376,13 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
             case Ids::fontWeight: if(mask & (1ull<<4)) continue; break;
             case Ids::lineHeight: if(mask & (1ull<<5)) continue; break;
             case Ids::textAlign: if(mask & (1ull<<6)) continue; break;
-            case Ids::textShadow: if(mask & (1ull<<7)) continue; break;
-            case Ids::textDecorationColor: if(mask & (1ull<<8)) continue; break;
-            case Ids::textDecorationLine: if(mask & (1ull<<9)) continue; break;
-            case Ids::textDecorationThickness: if(mask & (1ull<<10)) continue; break;
-            case Ids::textJustify: if(mask & (1ull<<11)) continue; break;
+            case Ids::letterSpacing: if(mask & (1ull<<7)) continue; break;
+            case Ids::wordSpacing: if(mask & (1ull<<8)) continue; break;
+            case Ids::textShadow: if(mask & (1ull<<9)) continue; break;
+            case Ids::textDecorationColor: if(mask & (1ull<<10)) continue; break;
+            case Ids::textDecorationLine: if(mask & (1ull<<11)) continue; break;
+            case Ids::textDecorationThickness: if(mask & (1ull<<12)) continue; break;
+            case Ids::textJustify: if(mask & (1ull<<13)) continue; break;
         }
         switch(prop.id)
         {
@@ -536,6 +572,62 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyAnimatedProperties(ComputedStyle& styl
                 else
                     v.textAlign = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
                 
+                break;
+                }
+            case Ids::letterSpacing:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.letterSpacing;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    )
+                    {
+                        return GetDefault().letterSpacing;
+                    }
+                    else
+                    { 
+                        return GetDefault().letterSpacing;
+                    }
+                };
+                if(prop.alpha == 0.f)
+                    v.letterSpacing = getValue(prop.from, prop.fromKeyword);
+                else if(prop.alpha == 1.f)
+                    v.letterSpacing = getValue(prop.to, prop.toKeyword);
+                else
+                    v.letterSpacing = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
+                
+                if(prevValue != v.letterSpacing)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::wordSpacing:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.wordSpacing;
+                auto getValue = [&](VariantHandle& handle, bool keyword) -> float
+                {
+                    if(!keyword)
+                        return sheet.Get<float>(handle); 
+                    if (handle.index == (int)StyleKeyword::Initial // || !pst
+                    )
+                    {
+                        return GetDefault().wordSpacing;
+                    }
+                    else
+                    { 
+                        return GetDefault().wordSpacing;
+                    }
+                };
+                if(prop.alpha == 0.f)
+                    v.wordSpacing = getValue(prop.from, prop.fromKeyword);
+                else if(prop.alpha == 1.f)
+                    v.wordSpacing = getValue(prop.to, prop.toKeyword);
+                else
+                    v.wordSpacing = OGUI::Lerp(getValue(prop.from, prop.fromKeyword), getValue(prop.to, prop.toKeyword), prop.alpha);
+                
+                if(prevValue != v.wordSpacing)
+                    damage |= RestyleDamage::TextLayout;
                 break;
                 }
             case Ids::textShadow:{
@@ -770,6 +862,30 @@ OGUI::RestyleDamage OGUI::StyleText::ApplyTransitionProperties(ComputedStyle& st
                 
                 break;
                 }
+            case Ids::letterSpacing:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.letterSpacing;
+                if(prop.alpha == 1.f)
+                    v.letterSpacing = dst.letterSpacing;
+                else
+                    v.letterSpacing = OGUI::Lerp(src.letterSpacing, dst.letterSpacing, prop.alpha);
+                
+                if(prevValue != v.letterSpacing)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
+            case Ids::wordSpacing:{
+                auto& v = GetOrAdd(style);
+                auto prevValue = v.wordSpacing;
+                if(prop.alpha == 1.f)
+                    v.wordSpacing = dst.wordSpacing;
+                else
+                    v.wordSpacing = OGUI::Lerp(src.wordSpacing, dst.wordSpacing, prop.alpha);
+                
+                if(prevValue != v.wordSpacing)
+                    damage |= RestyleDamage::TextLayout;
+                break;
+                }
             case Ids::textShadow:{
                 auto& v = GetOrAdd(style);
                 if(prop.alpha == 1.f)
@@ -857,14 +973,18 @@ void OGUI::StyleText::Merge(ComputedStyle& style, ComputedStyle& other, const St
     if(mask & (1ull << 6))
         s.textAlign = po->textAlign;
     if(mask & (1ull << 7))
-        s.textShadow = po->textShadow;
+        s.letterSpacing = po->letterSpacing;
     if(mask & (1ull << 8))
-        s.textDecorationColor = po->textDecorationColor;
+        s.wordSpacing = po->wordSpacing;
     if(mask & (1ull << 9))
-        s.textDecorationLine = po->textDecorationLine;
+        s.textShadow = po->textShadow;
     if(mask & (1ull << 10))
-        s.textDecorationThickness = po->textDecorationThickness;
+        s.textDecorationColor = po->textDecorationColor;
     if(mask & (1ull << 11))
+        s.textDecorationLine = po->textDecorationLine;
+    if(mask & (1ull << 12))
+        s.textDecorationThickness = po->textDecorationThickness;
+    if(mask & (1ull << 13))
         s.textJustify = po->textJustify;
 }
 
@@ -912,6 +1032,16 @@ void OGUI::StyleText::MergeId(ComputedStyle& style, ComputedStyle& other, const 
                  v.textAlign = po->textAlign;
                  break;
             }
+            case Ids::letterSpacing: {
+                 auto& v = GetOrAdd(style);
+                 v.letterSpacing = po->letterSpacing;
+                 break;
+            }
+            case Ids::wordSpacing: {
+                 auto& v = GetOrAdd(style);
+                 v.wordSpacing = po->wordSpacing;
+                 break;
+            }
             case Ids::textShadow: {
                  auto& v = GetOrAdd(style);
                  v.textShadow = po->textShadow;
@@ -952,6 +1082,8 @@ size_t OGUI::StyleText::GetProperty(ostr::string_view pname)
         casestr("font-weight") return Ids::fontWeight;
         casestr("line-height") return Ids::lineHeight;
         casestr("text-align") return Ids::textAlign;
+        casestr("letter-spacing") return Ids::letterSpacing;
+        casestr("word-spacing") return Ids::wordSpacing;
         casestr("text-shadow") return Ids::textShadow;
         casestr("text-decoration-color") return Ids::textDecorationColor;
         casestr("text-decoration-line") return Ids::textDecorationLine;
@@ -1078,6 +1210,38 @@ void OGUI::StyleText::SetupParser()
                     ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
                 else
                     ctx.rule->properties.push_back({hash, ctx.storage->Push<ETextAlign>(std::any_cast<ETextAlign&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "letter-spacingValue <- GlobalValue / Length \nletter-spacing <- 'letter-spacing' _ ':' _ letter-spacingValue";
+        RegisterProperty("letter-spacing");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::letterSpacing;
+            parser["letter-spacingValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
+            };
+        });
+    }
+	{
+        using namespace CSSParser;
+        static const auto grammar = "word-spacingValue <- GlobalValue / Length \nword-spacing <- 'word-spacing' _ ':' _ word-spacingValue";
+        RegisterProperty("word-spacing");
+        RegisterGrammar(grammar, [](peg::parser& parser)
+        {
+            static size_t hash = Ids::wordSpacing;
+            parser["word-spacingValue"] = [](peg::SemanticValues& vs, std::any& dt){
+                auto& ctx = GetContext<PropertyListContext>(dt);
+                if(vs.choice() == 0)
+                    ctx.rule->properties.push_back({hash, (int)std::any_cast<StyleKeyword>(vs[0])});
+                else
+                    ctx.rule->properties.push_back({hash, ctx.storage->Push<float>(std::any_cast<float&>(vs[0]))});
             };
         });
     }
@@ -1398,9 +1562,71 @@ void OGUI::ResetStyleTextAlign(VisualElement* element)
 {
     element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<6);
 }
-void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<const TextShadow>& value)
+void OGUI::SetStyleLetterSpacing(VisualElement* element, const float& value)
 {
     element->_procedureOverrides[StyleTextEntry] |= 1ull<<7;
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::letterSpacing)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    auto& override = StyleText::GetOrAdd(element->_overrideStyle);
+    override.letterSpacing = value;
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).letterSpacing = override.letterSpacing;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).letterSpacing = StyleText::Get(element->_style).letterSpacing;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).letterSpacing = override.letterSpacing;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
+}
+void OGUI::ResetStyleLetterSpacing(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<7);
+}
+void OGUI::SetStyleWordSpacing(VisualElement* element, const float& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<8;
+    ComputedTransition* transition = nullptr;
+    for(auto& tran : element->_trans)
+    {
+        if(tran.style.transitionProperty == StyleText::Ids::wordSpacing)
+        {
+            transition = &tran;
+            break;
+        }
+    }
+    auto& override = StyleText::GetOrAdd(element->_overrideStyle);
+    override.wordSpacing = value;
+    if(transition)
+    {
+        StyleText::GetOrAdd(element->_transitionDstStyle).wordSpacing = override.wordSpacing;
+        StyleText::GetOrAdd(element->_transitionSrcStyle).wordSpacing = StyleText::Get(element->_style).wordSpacing;
+        transition->time = 0.f;
+    }
+    else
+    {
+        StyleText::GetOrAdd(element->_style).wordSpacing = override.wordSpacing;
+        RestyleDamage damage = RestyleDamage::TextLayout;
+        element->UpdateStyle(damage);
+    }
+}
+void OGUI::ResetStyleWordSpacing(VisualElement* element)
+{
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<8);
+}
+void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<const TextShadow>& value)
+{
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<9;
     ComputedTransition* transition = nullptr;
     for(auto& tran : element->_trans)
     {
@@ -1427,11 +1653,11 @@ void OGUI::SetStyleTextShadow(VisualElement* element, const gsl::span<const Text
 }
 void OGUI::ResetStyleTextShadow(VisualElement* element)
 {
-    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<7);
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<9);
 }
 void OGUI::SetStyleTextDecorationColor(VisualElement* element, const Color4f& value)
 {
-    element->_procedureOverrides[StyleTextEntry] |= 1ull<<8;
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<10;
     ComputedTransition* transition = nullptr;
     for(auto& tran : element->_trans)
     {
@@ -1458,11 +1684,11 @@ void OGUI::SetStyleTextDecorationColor(VisualElement* element, const Color4f& va
 }
 void OGUI::ResetStyleTextDecorationColor(VisualElement* element)
 {
-    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<8);
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<10);
 }
 void OGUI::SetStyleTextDecorationLine(VisualElement* element, const ETextDecorationLine& value)
 {
-    element->_procedureOverrides[StyleTextEntry] |= 1ull<<9;
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<11;
     ComputedTransition* transition = nullptr;
     for(auto& tran : element->_trans)
     {
@@ -1489,11 +1715,11 @@ void OGUI::SetStyleTextDecorationLine(VisualElement* element, const ETextDecorat
 }
 void OGUI::ResetStyleTextDecorationLine(VisualElement* element)
 {
-    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<9);
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<11);
 }
 void OGUI::SetStyleTextDecorationThickness(VisualElement* element, const float& value)
 {
-    element->_procedureOverrides[StyleTextEntry] |= 1ull<<10;
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<12;
     ComputedTransition* transition = nullptr;
     for(auto& tran : element->_trans)
     {
@@ -1520,11 +1746,11 @@ void OGUI::SetStyleTextDecorationThickness(VisualElement* element, const float& 
 }
 void OGUI::ResetStyleTextDecorationThickness(VisualElement* element)
 {
-    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<10);
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<12);
 }
 void OGUI::SetStyleTextJustify(VisualElement* element, const ETextJustify& value)
 {
-    element->_procedureOverrides[StyleTextEntry] |= 1ull<<11;
+    element->_procedureOverrides[StyleTextEntry] |= 1ull<<13;
     ComputedTransition* transition = nullptr;
     for(auto& tran : element->_trans)
     {
@@ -1551,5 +1777,5 @@ void OGUI::SetStyleTextJustify(VisualElement* element, const ETextJustify& value
 }
 void OGUI::ResetStyleTextJustify(VisualElement* element)
 {
-    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<11);
+    element->_procedureOverrides[StyleTextEntry] &= ~(1ull<<13);
 }

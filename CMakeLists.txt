@@ -57,6 +57,7 @@ option(OPENGUI_USE_TRACY "Use Tracy" ON)
 option(OPENGUI_LIB "Build VM as Static Library." OFF)
 option(OPENGUI_TESTS "Build Test Targets." ON)
 option(OPENGUI_SAMPLES "Build Test Targets." ON)
+option(OPENGUI_USE_MSDFGEN "Use MSDFGen for MSDF Font Generation." OFF)
 
 add_subdirectory(thirdparty)
 
@@ -75,6 +76,10 @@ else()
     message(STATUS "LibraryType: Shared Lib")
     target_compile_definitions(OpenGUI PRIVATE -DOGUI_BUILD_DLL)
 endif(OPENGUI_LIB)
+
+if(OPENGUI_USE_MSDFGEN)
+    target_compile_definitions(OpenGUI PUBLIC -DMODULE_MSDFGEN_ENABLED)
+endif(OPENGUI_USE_MSDFGEN)
 
 if(OPENGUI_USE_TRACY)
     add_library(TracyD SHARED ${TRACY_SOURCE})

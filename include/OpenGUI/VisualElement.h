@@ -74,6 +74,8 @@ namespace OGUI reflect
 		RenderTargetViewHandle _renderTarget = nullptr;
 
 #pragma endregion
+
+#pragma region Utils
 		void CreateYogaNode();
 		void MarkDirty(DirtyReason reason);
 		ostr::string _name;
@@ -96,6 +98,9 @@ namespace OGUI reflect
 		bool IsPick();
 		attr("script":true)
 		void SetIsPick(bool newIsPick);
+		
+#pragma endregion
+
 #pragma region Hierachy
 		void UpdateRoot(VisualElement* child);
 		attr("script":true)

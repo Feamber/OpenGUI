@@ -40,6 +40,7 @@ public:
 	WGPUQueue queue;
 	WGPUBindGroupLayout bindGroupLayout;
 	WGPURenderPipeline pipeline;
+	WGPURenderPipeline msdfPipeline;
 
 	WGPUSampler sampler;
 	WGPU_OGUI_Texture* default_ogui_texture;
@@ -93,6 +94,7 @@ public:
 		default_ogui_texture = t;
 
 		createPipelineAndBuffers();
+		createMsdfPipelineAndBuffers();
 	}
 
 	virtual ~OGUIWebGPURenderer()
@@ -236,6 +238,7 @@ public:
 		}
 
 		int last_index = -1;
+		bool last_msdf = false;
 		{
 			ZoneScopedN("Prepare DrawCalls");
 
@@ -271,6 +274,13 @@ public:
 					}
 					wgpuRenderPassEncoderSetBindGroup(pass, 0, texture->bind_group, 0, 0);
 				}
+#ifdef MODULE_MSDFGEN_ENABLED
+				if(cmd.resource.msdf != last_msdf)
+				{
+					wgpuRenderPassEncoderSetPipeline(pass, cmd.resource.msdf ? msdfPipeline : pipeline);
+					last_msdf = cmd.resource.msdf;
+				}
+#endif
 				wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_buffer,
 					0,
 					WGPU_WHOLE_SIZE
@@ -387,6 +397,96 @@ public:
 	WGPUBuffer vertex_buffer = nullptr;
 	WGPUBuffer index_buffer = nullptr;
 protected:
+	void createMsdfPipelineAndBuffers()
+	{
+#ifdef MODULE_MSDFGEN_ENABLED
+		// compile shaders
+		WGPUShaderModule vertMod = createShader(device, triangle_msdf_vert_wgsl);
+		WGPUShaderModule fragMod = createShader(device, triangle_msdf_frag_wgsl);
+
+		// pipeline layout (used by the render pipeline, released after its creation)
+		WGPUPipelineLayoutDescriptor layoutDesc = {};
+		layoutDesc.bindGroupLayoutCount = 1;
+		layoutDesc.bindGroupLayouts = &bindGroupLayout;
+		WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(device, &layoutDesc);
+
+		// begin pipeline set-up
+		WGPURenderPipelineDescriptor desc = {};
+		desc.layout = pipelineLayout;
+
+		// describe buffer layouts
+		WGPUVertexAttribute vertAttrs[7] = {};
+		vertAttrs[0].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[0].offset = offsetof(Vertex, position);
+		vertAttrs[0].shaderLocation = 0;
+		vertAttrs[1].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[1].offset = offsetof(Vertex, texcoord);
+		vertAttrs[1].shaderLocation = 1;
+		vertAttrs[2].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[2].offset = offsetof(Vertex, aa);
+		vertAttrs[2].shaderLocation = 2;
+		vertAttrs[3].format = WGPUVertexFormat_Unorm8x4;
+		vertAttrs[3].offset = offsetof(Vertex, color);
+		vertAttrs[3].shaderLocation = 3;
+		vertAttrs[4].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[4].offset = offsetof(Vertex, clipUV);
+		vertAttrs[4].shaderLocation = 4;
+		vertAttrs[5].format = WGPUVertexFormat_Float32x2;
+		vertAttrs[5].offset = offsetof(Vertex, clipUV2);
+		vertAttrs[5].shaderLocation = 5;
+		vertAttrs[6].format = WGPUVertexFormat_Float32x4;
+		vertAttrs[6].offset = offsetof(Vertex, parameters);
+		vertAttrs[6].shaderLocation = 6;
+		WGPUVertexBufferLayout vertDesc = {};
+		vertDesc.arrayStride = sizeof(Vertex);
+		vertDesc.attributeCount = 7;
+		vertDesc.attributes = vertAttrs;
+
+		// shader stages
+		WGPUVertexState vertexState = {};
+		vertexState.module = vertMod;
+		vertexState.entryPoint = "main";
+		vertexState.bufferCount = 1;
+		vertexState.buffers = &vertDesc;
+		desc.vertex = vertexState;
+
+		WGPUFragmentState fragStage = {};
+		fragStage.module = fragMod;
+		fragStage.entryPoint = "main";
+		desc.fragment = &fragStage;
+
+		desc.primitive.frontFace = WGPUFrontFace_CCW;
+		desc.primitive.cullMode = WGPUCullMode_None;
+		desc.primitive.topology = WGPUPrimitiveTopology_TriangleList;
+		desc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
+
+		// describe blend
+		WGPUBlendState blendDesc = {};
+		blendDesc.color.operation = WGPUBlendOperation_Add;
+		blendDesc.color.srcFactor = WGPUBlendFactor_SrcAlpha;
+		blendDesc.color.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
+		blendDesc.alpha.operation = WGPUBlendOperation_Add;
+		blendDesc.alpha.srcFactor = WGPUBlendFactor_SrcAlpha;
+		blendDesc.alpha.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
+
+		WGPUColorTargetState colorTarget = {};
+		colorTarget.format = WGPUTextureFormat_BGRA8Unorm;
+		colorTarget.blend = &blendDesc;
+		colorTarget.writeMask = WGPUColorWriteMask_All;
+		fragStage.targetCount = 1;
+		fragStage.targets = &colorTarget;
+
+		desc.multisample.count = 1;
+		desc.multisample.mask = 0xFFFFFFFF;
+		desc.multisample.alphaToCoverageEnabled = false;
+		msdfPipeline = wgpuDeviceCreateRenderPipeline(device, &desc);
+		// partial clean-up (just move to the end, no?)
+		wgpuPipelineLayoutRelease(pipelineLayout);
+		wgpuShaderModuleRelease(fragMod);
+		wgpuShaderModuleRelease(vertMod);
+#endif
+	}
+
 	void createPipelineAndBuffers()
 	{
 		// compile shaders
@@ -745,10 +845,10 @@ int main(int , char* []) {
 	//windows.push_back(sample.MakeWindow());
 	//LuaSample lsample;
 	//windows.push_back(lsample.MakeWindow());
-	//DataBindSample sample2;
-	//windows.push_back(sample2.MakeWindow());
-	// windows.push_back(CreateNavigationTestWindow());
-	windows.push_back(CreateCssTestWindow());
+	DataBindSample sample2;
+	windows.push_back(sample2.MakeWindow());
+	//windows.push_back(CreateNavigationTestWindow());
+	//windows.push_back(CreateCssTestWindow());
 	//windows.push_back(CreatePercentageMarginWindow());
 	// XmlFiltersSample sample3;
 	// windows.push_back(sample3.MakeWindow());
@@ -757,7 +857,7 @@ int main(int , char* []) {
 	reloader.Watch();
 	while(!windows.empty())
 	{
-		//sample2.Update();
+		// sample2.Update();
 		//sample3.Update();
 		using namespace ostr::literal;
 		

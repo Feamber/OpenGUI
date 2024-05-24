@@ -198,8 +198,6 @@ RID TextParagraph::get_dropcap_rid() const {
 }
 
 void TextParagraph::clear() {
-	spacing_top = 0;
-	spacing_bottom = 0;
 	for (int i = 0; i < lines_rid.size(); i++) {
 		TS->free(lines_rid[i]);
 	}
@@ -279,10 +277,10 @@ void TextParagraph::clear_dropcap() {
 }
 
 bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, int64_t p_flags, 
-	const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, const TextDecorationData& decoration) {
+	const std::shared_ptr<TextServer::GlyphDrawPolicy> &draw_policy, const Map<uint32_t, double> &p_opentype_features, const String &p_language, const TextDecorationData& decoration, float p_letter_spacing, float p_word_spacing) {
 	ERR_FAIL_COND_V(!p_fonts, false);
 	p_flags |= flags;
-	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_flags, draw_policy, p_opentype_features, p_language, decoration);
+	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_flags, draw_policy, p_opentype_features, p_language, decoration, p_letter_spacing, p_word_spacing);
 	mark_dirty();
 	return res;
 }

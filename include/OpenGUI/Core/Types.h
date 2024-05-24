@@ -20,7 +20,10 @@ namespace OGUI reflect
 		Vector2f aa;
         // Alignment
 		uint32_t  color; 
-
+#ifdef MODULE_MSDFGEN_ENABLED
+		// Parameter for sdf text rendering
+		Vector4f parameters;
+#endif
 		Vector2f clipUV; //uv in clipspace
 		Vector2f clipUV2;
     };

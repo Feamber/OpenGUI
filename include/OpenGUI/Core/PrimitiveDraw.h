@@ -11,6 +11,7 @@ namespace OGUI
 		TextureHandle texture = nullptr;
 		MaterialHandle material = nullptr;
 		bool noGamma = true;
+		bool msdf = false;
 		NVGcompositeOperationState compositeOperation;
 	};
 

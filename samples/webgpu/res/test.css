@@ -72,16 +72,18 @@ TextElement{
     text-align: justify;
     line-height: 120%;
     text-decoration-line: line-through;
-    text-decoration-color: black;
+    text-decoration-color: red;
     text-justify: inter-ideograph;
     background-color: transparent;
-    text-shadow: 3px 0px rgba(0,0,255,0.3), -3px 0px rgba(255,0,0,0.3);
+    text-shadow: 3px 0px 0 0 rgba(0,0,255,0.3), -3px 0px 0 0 rgba(255,0,0,0.3);
 }
 
 #Child4 {
     font-family: TestFont;
     font-size:35;
     color:aqua;
+    text-decoration-line: underline;
+    text-shadow: initial;
 }
 
 #Child5 {

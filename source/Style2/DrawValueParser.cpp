@@ -27,7 +27,7 @@ namespace OGUI
 std::string_view OGUI::DrawValueParser::GetGrammar()
 {
     static auto grammar = R"(
-        TextShadow <- Length w Length w Color
+        TextShadow <- Length w Length w Number w Number w Color
         TextWeight <- 'normal' / 'bold' / Integer
         TextDecorationLinePart <- 'none' / 'underline' / 'overline' / 'line-through'
         TextDecorationLine <- TextDecorationLinePart (_ TextDecorationLinePart)*
@@ -40,7 +40,7 @@ void OGUI::DrawValueParser::SetupAction(peg::parser &parser)
     using namespace peg;
     parser["TextShadow"] = [](SemanticValues& vs)
     {
-        return TextShadow{{std::any_cast<float>(vs[0]), std::any_cast<float>(vs[1])}, std::any_cast<Color4f>(vs[2])};
+        return TextShadow{{std::any_cast<float>(vs[0]), std::any_cast<float>(vs[1])}, std::any_cast<float>(vs[2]), std::any_cast<float>(vs[3]), std::any_cast<Color4f>(vs[4])};
     };
     parser["TextWeight"] = [](SemanticValues& vs)
     {

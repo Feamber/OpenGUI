@@ -270,7 +270,7 @@ void OGUI::VisualElement::DrawDebugPrimitive(PrimDrawContext & Ctx)
 			auto rect = navDebugRect;
 			auto color = FocusNavDebugState == CollisionBox ? 
 				Color4f(225, 0, 0, 0.3f) : 
-				Color4f(46, 225, 225, 0.3f);nvgBeginPath(Ctx.nvg);
+				Color4f(46, 225, 225, 0.3f);//nvgBeginPath(Ctx.nvg);
 			nvgBeginPath(Ctx.nvg);
 			nvgRect(Ctx.nvg, rect.min.x, rect.min.y, rect.max.x - rect.min.x, rect.max.y - rect.min.y);
 			nvgFillColor(Ctx.nvg, nvgRGBAf(color.x, color.y, color.z, color.w));

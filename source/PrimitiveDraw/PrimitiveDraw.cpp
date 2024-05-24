@@ -318,7 +318,7 @@ namespace OGUI
             auto& res = command_list.back().resource;
             if(res.texture == resource.texture && res.material == resource.material &&
             res.compositeOperation.dstAlpha == resource.compositeOperation.dstAlpha &&
-            res.noGamma == resource.noGamma &&
+            res.noGamma == resource.noGamma && res.msdf == resource.msdf &&
             res.compositeOperation.dstRGB == resource.compositeOperation.dstRGB &&
             res.compositeOperation.srcAlpha == resource.compositeOperation.srcAlpha &&
             res.compositeOperation.srcRGB == resource.compositeOperation.srcRGB)

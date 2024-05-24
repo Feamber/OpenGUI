@@ -2,31 +2,34 @@
 
 @font-face {
     font-family: TestFont;
-    src: url(res/arial.ttf);
+    src: url(res/SourceHanSerifCN-SemiBold.otf);
 }
 
 :root {
-    width: 700px;
-    height:600px;
-    background-color:rgb(255, 255, 255, 0.8);
-    background-image:url(res/test4.jpg);
+    width: 1500px;
+    height:700px;
+    background-color: white;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
     font-family: TestFont;
+    background-image:url(res/20240524-102803.png);
 }
 
 .Button {
-    width: 100px;
-    height:30px;
-    background-color: coral;
+    width: 200px;
+    height:90px;
+    background-color: rgb(55, 55, 55, 1);
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
+    transition-property: transform;
+    transition-duration: 0.5s;
+    transition-timing-function: linear;
 }
 
 Button:hover{
-    transform:  scale(1.05, 1.05);
+    transform:  scale(1.5, 1.5);
     background-color: rgb(80, 135, 255);
 }
 
@@ -36,11 +39,17 @@ Button:active{
 }
 
 .Text{
+    font-size: 22;
     background-color:transparent;
-    color: aliceblue;
+    color: white;
+    transform:  scale(1, 1);
+    text-shadow: -2px 1px 0 3 rgba(0,0,0,1);
+    letter-spacing: 5px;
+    word-spacing: 10px;
 }
 
 .InfoText{
-    height:30px; 
-    width:150px;
+    height:100px; 
+    width:300px;
+    text-align: center;
 }
