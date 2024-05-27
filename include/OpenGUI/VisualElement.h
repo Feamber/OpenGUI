@@ -144,6 +144,8 @@ namespace OGUI reflect
 		Rect _inlineLayout;
 		Rect _prevLayout;
 		//Rect _layout;
+		attr("script":true)
+		void SetTranslationYPixel(float value);
 #pragma endregion
 
 #pragma region Style
@@ -193,6 +195,7 @@ namespace OGUI reflect
 		attr("script":true)
 		void SetPseudoClass(PseudoStates state, bool b);
 		void InitInlineStyle(std::string_view str);
+		attr("script":true)
 		void CalculateLayout(float width = YGUndefined, float height = YGUndefined);
 		void SyncYogaStyle();
 		virtual void UpdateStyle(RestyleDamage damage = RestyleDamage::None, const std::vector<StyleSheet*>& ss = {});

@@ -1,19 +1,19 @@
 //DO NOT MODIFY THIS FILE
 //generated from luaBind.cpp.mako
-#include "OpenGUI/Style2/Selector.h"
+#include "OpenGUI/Event/FocusEvent.h"
+#include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Text/TextElement.h"
+#include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/VisualElement.h"
 #include "OpenGUI/Context.h"
 #include "OpenGUI/Core/Types.h"
-#include "OpenGUI/Bind/EventArg.h"
 #include "OpenGUI/Style2/generated/position.h"
-#include "OpenGUI/Style2/generated/text.h"
-#include "OpenGUI/Text/TextElement.h"
-#include "OpenGUI/Event/FocusEvent.h"
-#include "OpenGUI/Style2/generated/border.h"
-#include "OpenGUI/Bind/Bind.h"
 #include "OpenGUI/Style2/generated/effects.h"
-#include "OpenGUI/Event/EventBase.h"
+#include "OpenGUI/Bind/EventArg.h"
+#include "OpenGUI/Style2/generated/border.h"
+#include "OpenGUI/Style2/generated/text.h"
 #include "OpenGUI/Style2/generated/background.h"
+#include "OpenGUI/Style2/Selector.h"
 #include "luaBind.hpp"
 void BindLua_generated(lua_State* L)
 {
@@ -49,9 +49,11 @@ void BindLua_generated(lua_State* L)
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetRoot;
         type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetLayoutRoot;
         type["GetSize"] = (OGUI::Vector<float, 2>(OGUI::VisualElement::*)()const)&OGUI::VisualElement::GetSize;
+        type["SetTranslationYPixel"] = (void(OGUI::VisualElement::*)(float))&OGUI::VisualElement::SetTranslationYPixel;
         type["AddStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->AddStyleClass(_0); };
         type["RemoveStyleClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->RemoveStyleClass(_0); };
         type["SetPseudoClass"] = (void(OGUI::VisualElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
+        type["CalculateLayout"] = (void(OGUI::VisualElement::*)(float, float))&OGUI::VisualElement::CalculateLayout;
         type["ContainClass"] = +[](OGUI::VisualElement* self, ostr::string _0) { return self->ContainClass(_0); };
         type["SetFocusable"] = (void(OGUI::VisualElement::*)(bool))&OGUI::VisualElement::SetFocusable;
         type["GetFocusScopeFocused"] = (OGUI::VisualElement *(OGUI::VisualElement::*)())&OGUI::VisualElement::GetFocusScopeFocused;
@@ -99,9 +101,11 @@ void BindLua_generated(lua_State* L)
         type["GetRoot"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetRoot;
         type["GetLayoutRoot"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetLayoutRoot;
         type["GetSize"] = (OGUI::Vector<float, 2>(OGUI::TextElement::*)()const)&OGUI::VisualElement::GetSize;
+        type["SetTranslationYPixel"] = (void(OGUI::TextElement::*)(float))&OGUI::VisualElement::SetTranslationYPixel;
         type["AddStyleClass"] = +[](OGUI::TextElement* self, ostr::string _0) { return self->AddStyleClass(_0); };
         type["RemoveStyleClass"] = +[](OGUI::TextElement* self, ostr::string _0) { return self->RemoveStyleClass(_0); };
         type["SetPseudoClass"] = (void(OGUI::TextElement::*)(OGUI::PseudoStates, bool))&OGUI::VisualElement::SetPseudoClass;
+        type["CalculateLayout"] = (void(OGUI::TextElement::*)(float, float))&OGUI::VisualElement::CalculateLayout;
         type["ContainClass"] = +[](OGUI::TextElement* self, ostr::string _0) { return self->ContainClass(_0); };
         type["SetFocusable"] = (void(OGUI::TextElement::*)(bool))&OGUI::VisualElement::SetFocusable;
         type["GetFocusScopeFocused"] = (OGUI::VisualElement *(OGUI::TextElement::*)())&OGUI::VisualElement::GetFocusScopeFocused;
@@ -276,6 +280,10 @@ void BindLua_generated(lua_State* L)
     OGUI["ResetStyleLineHeight"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleLineHeight;
     OGUI["SetStyleTextAlign"] = (void(*)(OGUI::VisualElement *, const OGUI::ETextAlign &))&OGUI::SetStyleTextAlign;
     OGUI["ResetStyleTextAlign"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextAlign;
+    OGUI["SetStyleLetterSpacing"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleLetterSpacing;
+    OGUI["ResetStyleLetterSpacing"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleLetterSpacing;
+    OGUI["SetStyleWordSpacing"] = (void(*)(OGUI::VisualElement *, const float &))&OGUI::SetStyleWordSpacing;
+    OGUI["ResetStyleWordSpacing"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleWordSpacing;
     OGUI["ResetStyleTextShadow"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextShadow;
     OGUI["SetStyleTextDecorationColor"] = (void(*)(OGUI::VisualElement *, const OGUI::Vector<float, 4> &))&OGUI::SetStyleTextDecorationColor;
     OGUI["ResetStyleTextDecorationColor"] = (void(*)(OGUI::VisualElement *))&OGUI::ResetStyleTextDecorationColor;

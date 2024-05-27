@@ -641,6 +641,13 @@ OGUI::Vector2f OGUI::VisualElement::GetSize() const
 	return {YGNodeLayoutGetWidth(_ygnode), YGNodeLayoutGetHeight(_ygnode)};
 }
 
+void OGUI::VisualElement::SetTranslationYPixel(float value)
+{
+	vector<OGUI::TransformFunction> transformList;
+	transformList.push_back(OGUI::TransformFunction::translate({0, value}));
+	OGUI::SetStyleTransform(this, transformList);
+}
+
 OGUI::TextureHandle OGUI::VisualElement::BindTexture(ostr::string_view key, OGUI::TextureHandle texture)
 {
 	auto find = textures.find(key);
