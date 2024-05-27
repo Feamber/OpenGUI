@@ -4087,9 +4087,10 @@ static void YGRoundToPixelGrid(
   if (pointScaleFactor == 0.0f) {
     return;
   }
+  auto validatePos = [](float value) { return YGFloatIsUndefined(value) ? 0 : value; };
 
-  const double nodeLeft = node->getLayout().position[YGEdgeLeft];
-  const double nodeTop = node->getLayout().position[YGEdgeTop];
+  const double nodeLeft = validatePos(node->getLayout().position[YGEdgeLeft]);
+  const double nodeTop = validatePos(node->getLayout().position[YGEdgeTop]);
 
   const double nodeWidth = node->getLayout().dimensions[YGDimensionWidth];
   const double nodeHeight = node->getLayout().dimensions[YGDimensionHeight];
